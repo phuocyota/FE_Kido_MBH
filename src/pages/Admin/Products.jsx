@@ -1,6 +1,6 @@
 import React from "react";
-import SidebarFilter from "../components/Products/SidebarFilter.jsx";
-import TableProduct from "../components/Products/TableProduct.jsx";
+import SidebarFilter from "../../components/Products/SidebarFilter.jsx";
+import TableProduct from "../../components/Products/TableProduct.jsx";
 
 export default function Products() {
   return (

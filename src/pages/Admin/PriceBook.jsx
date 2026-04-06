@@ -1,6 +1,6 @@
 import React from "react";
-import SidebarPrice from "../components/PriceBook/SidebarPrice";
-import TablePrice from "../components/PriceBook/TablePrice";
+import SidebarPrice from "../../components/PriceBook/SidebarPrice";
+import TablePrice from "../../components/PriceBook/TablePrice";
 
 export default function PriceBook() {
   return (

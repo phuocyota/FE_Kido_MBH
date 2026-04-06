@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
-import logo from "../assets/kido.jpg";
+import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 

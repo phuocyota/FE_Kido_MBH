@@ -1,6 +1,6 @@
 import React from "react";
-import SidebarFilterStock from "../components/StockTakes/SidebarFilterStock";
-import TableStock from "../components/StockTakes/TableStock";
+import SidebarFilterStock from "../../components/StockTakes/SidebarFilterStock";
+import TableStock from "../../components/StockTakes/TableStock";
 
 export default function StockTakes() {
   return (

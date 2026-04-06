@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
-import banhmi from "../assets/banhmi.jpg";
+import banhmi from "../../assets/banhmi.jpg";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
 
   const [noteModal, setNoteModal] = useState(null);
   const [noteValue, setNoteValue] = useState("");
+  const [confirmModal, setConfirmModal] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
 
   // tạo số thứ tự không trùng lặp
@@ -65,61 +66,76 @@ export default function Home() {
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const handlePayment = () => {
-    if (cart.length === 0) {
-      alert("Chưa có món");
-      return;
-    }
+  if (cart.length === 0) {
+    alert("Chưa có món");
+    return;
+  }
 
-    if (total > student.balance) {
-      alert("❌ Không đủ tiền");
-      return;
-    }
+  if (total > student.balance) {
+    alert("❌ Không đủ tiền");
+    return;
+  }
 
-    // trừ tiền
-    const updated = { ...student, balance: student.balance - total };
-    localStorage.setItem("student", JSON.stringify(updated));
-    setStudent(updated);
+  // 👉 chỉ mở confirm modal
+  setConfirmModal(true);
+};
 
-    // tạo số thứ tự
-    const orderNumber = generateOrderNumber();
+const handleConfirmPayment = () => {
+  const updated = { ...student, balance: student.balance - total };
+  localStorage.setItem("student", JSON.stringify(updated));
+  setStudent(updated);
 
-    // show modal
-    setSuccessModal(orderNumber);
+  const orderNumber = generateOrderNumber();
 
-    // clear cart
-    setCart([]);
-  };
+  // ✅ LƯU ORDER
+  const oldOrders = JSON.parse(localStorage.getItem("orders")) || [];
 
+  const newOrder = {
+  id: orderNumber,
+  items: cart,
+  total,
+  status: "pending",
+  studentId: student?.cardId || "unknown", // ✅ ĐÚNG
+};
+ 
+
+  localStorage.setItem("orders", JSON.stringify([...oldOrders, newOrder]));
+
+  setConfirmModal(false);
+  setSuccessModal(orderNumber);
+  setCart([]);
+};
   if (!student) return <div className="p-6">Không có dữ liệu</div>;
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
 
-     
+
       {/* HEADER */}
-<div className="bg-blue-700 text-white px-6 py-3 flex items-center justify-between">
+      <div className="bg-blue-700 text-white px-6 py-3 flex items-center justify-between">
 
-  {/* LEFT */}
-  <div className="flex items-center gap-4">
-    <div className="text-lg font-bold whitespace-nowrap">
-      🍔 Căn Tin Số
-    </div>
+        {/* LEFT */}
+        <div className="flex items-center gap-4">
+          <div className="text-lg font-bold whitespace-nowrap">
+            🍔 Căn Tin Số
+          </div>
 
-    <input
-      placeholder="Tìm món..."
-      className="px-4 py-2 rounded-xl text-white w-100 shadow-lg outline-none border border-gray-200 focus:ring-2 focus:ring-blue-400"
-    />
-  </div>
+          <input
+            placeholder="Tìm món..."
+            className="px-4 py-2 rounded-xl text-white w-100 shadow-lg outline-none border border-gray-200 focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-  {/* RIGHT */}
-  <div className="flex items-center gap-4 font-semibold">
-    <span>👨‍🎓 {student.name}</span>
-    <span>💰 {student.balance.toLocaleString()}đ</span>
-  </div>
+        {/* RIGHT */}
+        <div className="flex items-center gap-4 font-semibold">
+          <span>👨‍🎓 {student.name}</span>
+          <span>💰 {student.balance.toLocaleString()}đ</span>
+        </div>
 
-</div>
+      </div>
 
-      {/* BODY */}
+      {/* BODY */ }
+
       <div className="flex flex-1 bg-gray-200">
 
         {/* LEFT */}
@@ -362,6 +378,59 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* confirm modal */}
+      {confirmModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl p-6 w-[400px]">
+
+      <h2 className="text-lg font-bold mb-3">
+        🧾 Xác nhận đơn hàng
+      </h2>
+
+      {/* LIST MÓN */}
+      <div className="max-h-60 overflow-auto space-y-2 mb-4">
+        {cart.map((item) => (
+          <div key={item.id} className="flex justify-between text-sm">
+            <span>
+              {item.name} x{item.qty}
+            </span>
+            <span>
+              {(item.price * item.qty).toLocaleString()}đ
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* TOTAL */}
+      <div className="flex justify-between font-bold mb-4 border-t border-gray-300 pt-3">
+        <span>Tổng:</span>
+        <span className="text-blue-600">
+          {total.toLocaleString()}đ
+        </span>
+      </div>
+
+      {/* BUTTON */}
+      <div className="flex gap-2  ">
+        <button
+          onClick={() => setConfirmModal(false)}
+          className="flex-1 bg-gray-200 py-2 rounded cursor-pointer"
+        >
+          Hủy
+        </button>
+
+        <button
+          onClick={handleConfirmPayment}
+          className="flex-1 bg-blue-600 text-white py-2 rounded cursor-pointer"
+        >
+          Xác nhận
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
