@@ -7,3 +7,14 @@
   font-family: "Outfit", sans-serif;
 }
 
+
+
+/* Ẩn scrollbar nhưng vẫn scroll được */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE, Edge */
+  scrollbar-width: none;     /* Firefox */
+}

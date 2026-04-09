@@ -1,6 +1,8 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import bg from "../../assets/anh-can-tin-so-2.png";
+import scanner from "../../assets/dau-doc-the-tu.jpeg";
+import avatarImg from "../../assets/avatar.png";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -35,31 +37,52 @@ export default function Welcome() {
   }, []);
 
   const handleScan = (cardId) => {
-  console.log("📌 Card:", cardId);
+    console.log("📌 Card:", cardId);
 
-  const student = {
-    cardId,
-    name: "Học sinh",
-    balance: 50000,
+    const student = {
+      cardId,
+      name: "Nguyễn Văn A",
+      balance: 50000,
+      avatar: avatarImg, // 👈 thêm dòng này
+    };
+
+    localStorage.setItem("student", JSON.stringify(student));
+    navigate("/order");
   };
 
-  // ✅ LƯU VÀO localStorage
-  localStorage.setItem("student", JSON.stringify(student));
-
-  // 👉 chuyển trang
-  navigate("/order");
-};
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-      <div className="bg-white/10 backdrop-blur-xl p-10 rounded-3xl text-center text-white w-[420px]">
+    <div
+      className="h-screen w-full bg-cover bg-center flex items-center justify-center relative"
+      style={{
+        backgroundImage: `url(${bg})`,
+      }}
+    >
+      {/* overlay */}
+      <div className="absolute inset-0 bg-black/40"></div>
+
+      {/* FORM */}
+      <div className="relative bg-blue/10 backdrop-blur-2xl border border-blue20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
+
         <div className="text-6xl mb-4">🍔</div>
-        <h1 className="text-3xl font-bold mb-2">Căn Tin Số</h1>
-        <p className="text-white/80">
+
+        <h1 className="text-3xl font-bold mb-2">
+          Căn Tin Số
+        </h1>
+
+        <p className="text-white/80 mb-6">
           Vui lòng quét thẻ học sinh để bắt đầu đặt món
         </p>
 
-        <p className="mt-6 text-sm text-white/60">
-          👉 Không cần bấm gì, chỉ cần đưa thẻ vào máy
+        <div className="flex justify-center">
+          <img
+            src={scanner}
+            alt="scan"
+            className="w-40 h-40 object-contain rounded-xl shadow-lg border border-white/20"
+          />
+        </div>
+
+        <p className="mt-4 text-sm text-white/60">
+          Đưa thẻ vào thiết bị để tiếp tục
         </p>
       </div>
     </div>
