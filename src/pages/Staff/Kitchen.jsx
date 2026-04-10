@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import { Trash2 } from "lucide-react";
 
@@ -28,58 +28,110 @@ export default function Kitchen() {
   // xác nhận lấy món (quẹt thẻ)
   const [pickupModal, setPickupModal] = useState(null);
   const [cardInput, setCardInput] = useState("");
-
+  const [confirmModal, setConfirmModal] = useState(null);
+const bufferRef = useRef("");
   useEffect(() => {
-    if (!pickupModal) return;
+  let timeout;
 
-    let buffer = "";
-    let timeout;
+  const handleKeyDown = (e) => {
 
-    const handleKeyDown = (e) => {
-      // 👉 nhận số
-      if (e.key >= "0" && e.key <= "9") {
-        buffer += e.key;
+    // 👉 nhập số
+    if (e.key >= "0" && e.key <= "9") {
+      bufferRef.current += e.key;
 
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          buffer = "";
-        }, 500);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        bufferRef.current = "";
+      }, 500);
+    }
+
+    // 👉 enter = scan xong
+    if (e.key === "Enter") {
+      if (bufferRef.current.length > 0) {
+        handleScan(bufferRef.current);
+        bufferRef.current = "";
       }
-
-      // 👉 khi Enter
-      if (e.key === "Enter") {
-        if (buffer.length > 0) {
-          handleScan(buffer);
-          buffer = "";
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [pickupModal]);
-
-  const handleScan = (cardId) => {
-    console.log("📌 Quét:", cardId);
-
-    if (cardId === pickupModal.studentId) {
-      const all = JSON.parse(localStorage.getItem("orders")) || [];
-
-      const updated = all.filter(o => o.id !== pickupModal.id);
-
-      localStorage.setItem("orders", JSON.stringify(updated));
-
-      setPickupModal(null);
-
-      alert("✅ Nhận món thành công");
-    } else {
-      alert("❌ Sai thẻ sinh viên");
     }
   };
 
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+  const handleScan = (cardId) => {
+  // console.log("📌 Quét:", cardId);
+
+  const all = JSON.parse(localStorage.getItem("orders")) || [];
+
+  // console.log("📦 Orders:", all);
+
+  // 👉 tìm đơn theo studentId
+  const foundOrder = all.find(
+    o => String(o.studentId) === String(cardId)
+  );
+
+  if (foundOrder) {
+    // 👉 hiện popup
+    setConfirmModal(foundOrder);
+  } else {
+    alert("❌ Sai thẻ hoặc không có đơn");
+  }
+};
+
+const handleAction = (order) => {
+  const all = JSON.parse(localStorage.getItem("orders")) || [];
+
+  let updated = [];
+
+  if (order.status === "cash") {
+    updated = all.map(o =>
+      o.id === order.id ? { ...o, status: "pending" } : o
+    );
+  }
+
+  else if (order.status === "pending") {
+    updated = all.map(o =>
+      o.id === order.id ? { ...o, status: "done" } : o
+    );
+  }
+
+  else if (order.status === "done") {
+    updated = all.filter(o => o.id !== order.id);
+  }
+
+  localStorage.setItem("orders", JSON.stringify(updated));
+
+  setConfirmModal(null);
+};
+
+const updateOrder = (order, action) => {
+  const all = JSON.parse(localStorage.getItem("orders")) || [];
+
+  let updated = [];
+
+  if (action === "pending") {
+    updated = all.map(o =>
+      o.id === order.id ? { ...o, status: "pending" } : o
+    );
+  }
+
+  else if (action === "done") {
+    updated = all.map(o =>
+      o.id === order.id ? { ...o, status: "done" } : o
+    );
+  }
+
+  else if (action === "remove") {
+    updated = all.filter(o => o.id !== order.id);
+  }
+
+  localStorage.setItem("orders", JSON.stringify(updated));
+
+  setConfirmModal(null);
+}; 
   return (
     <div className="h-screen flex bg-gray-300">
 
@@ -126,6 +178,135 @@ export default function Kitchen() {
           ))}
         </div>
       </div>
+
+     {confirmModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl p-6 w-[420px] relative shadow-lg">
+
+      {/* ❌ CLOSE */}
+      <button
+        onClick={() => setConfirmModal(null)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-black text-lg cursor-pointer"
+      >
+        ✖
+      </button>
+
+      {/* TITLE */}
+      <h2 className="text-xl font-bold mb-3">
+        🧾 Thông tin đơn hàng
+      </h2>
+
+      {/* 👤 */}
+      <p className="text-gray-600 mb-2">
+        👤 Học sinh: <b>{confirmModal.studentName}</b>
+      </p>
+
+      {/* ID */}
+      <p className="font-bold text-gray-700 mb-3 border-b border-gray-300 pb-2">
+        #{confirmModal.id}
+      </p>
+
+      {/* PAYMENT */}
+      <div className="mb-3">
+        <span className="font-semibold">Thanh toán: </span>
+
+        {confirmModal.paymentMethod === "card" ? (
+          <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-sm ml-2">
+            💳 Quẹt thẻ
+          </span>
+        ) : (
+          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm ml-2">
+            💵 Tiền mặt
+          </span>
+        )}
+      </div>
+      {/* 📦 HÌNH THỨC NHẬN */}
+<div className="mb-3">
+  <span className="font-semibold">Hình thức nhận: </span>
+
+  {confirmModal.pickupType === "Lấy liền" && (
+    <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-sm ml-2">
+      Lấy liền
+    </span>
+  )}
+
+  {confirmModal.pickupType === "Ra chơi lấy" && (
+    <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded text-sm ml-2">
+      Ra chơi lấy
+    </span>
+  )}
+
+  {confirmModal.pickupType === "Ra về lấy" && (
+    <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm ml-2">
+      Ra về lấy
+    </span>
+  )}
+</div>
+
+      {/* ITEMS */}
+      {confirmModal.items.map(item => (
+        <div key={item.id} className="text-sm mb-1">
+          <div className="flex justify-between">
+            <span>{item.name} x{item.qty}</span>
+            <span>{(item.price * item.qty).toLocaleString()}đ</span>
+          </div>
+
+          {item.note && (
+            <div className="text-xs text-orange-500 italic">
+              📝 {item.note}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* TOTAL */}
+      <div className="font-bold mt-3 flex justify-between border-t border-gray-300 pt-2">
+        <span>Tổng:</span>
+        <span className="text-blue-600">
+          {confirmModal.total.toLocaleString()}đ
+        </span>
+      </div>
+
+      {/* 🔥 3 BUTTON */}
+      <div className="mt-4 grid gap-2">
+
+  {/* 💵 CHỜ THANH TOÁN */}
+  {confirmModal.status === "cash" && (
+    <button
+      onClick={() => updateOrder(confirmModal, "pending")}
+      className="w-full bg-yellow-500 text-white py-2 rounded font-semibold cursor-pointer"
+    >
+      Xác nhận đã thanh toán
+    </button>
+  )}
+
+  {/* 🍳 + 🎉 */}
+  {confirmModal.status !== "cash" && (
+    <div className="grid grid-cols-2 gap-2">
+
+      <button
+        onClick={() => updateOrder(confirmModal, "done")}
+        className="bg-blue-600 text-white py-2 rounded font-semibold cursor-pointer"
+      >
+        Hoàn thành
+      </button>
+
+      <button
+        onClick={() => updateOrder(confirmModal, "remove")}
+        className="bg-green-600 text-white py-2 rounded font-semibold cursor-pointer"
+      >
+        Đã nhận món
+      </button>
+
+    </div>
+  )}
+
+</div> 
+
+    </div>
+  </div>
+)}
 
     </div>
   );

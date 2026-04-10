@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.jpg";
 
 export default function Right({
   cart,
@@ -215,119 +216,124 @@ export default function Right({
       )}
 
       {/* confirm modal */}
-      {confirmModal && (
+     {confirmModal && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-    <div className="bg-white rounded-2xl p-6 w-[400px]">
+    <div
+      className="rounded-2xl w-[400px] bg-cover bg-center"
+      style={{ backgroundImage: `url(${bgConfirm})` }}
+    >
 
-      <h2 className="text-lg font-bold mb-3">
-        🧾 Xác nhận đơn hàng
-      </h2>
-      <p className="text-sm text-gray-600 mb-3">
-  👤 Học sinh: <span className="font-semibold">{student?.name}</span>
-</p>
+      {/* lớp phủ */}
+    <div className=" rounded-2xl p-6">
 
-      {/* LIST MÓN */}
-      <div className="max-h-60 overflow-auto space-y-2 mb-4">
-  {cart.map((item) => (
-    <div key={item.id} className="text-sm pb-1">
+        <h2 className="text-lg font-bold mb-3">
+          🧾 Xác nhận đơn hàng
+        </h2>
 
-      {/* DÒNG CHÍNH */}
-      <div className="flex justify-between">
-        <span>{item.name} x{item.qty}</span>
-        <span>{(item.price * item.qty).toLocaleString()}đ</span>
-      </div>
+        <p className="text-sm text-gray-600 mb-3">
+          👤 Học sinh: <span className="font-semibold">{student?.name}</span>
+        </p>
 
-      {/* 👉 GHI CHÚ */}
-      {item.note && (
-        <div className="text-xs text-orange-500 italic mt-1">
-          📝 {item.note}
+        {/* LIST */}
+        <div className="max-h-60 overflow-auto space-y-2 mb-4">
+          {cart.map((item) => (
+            <div key={item.id} className="text-sm pb-1">
+
+              <div className="flex justify-between">
+                <span>{item.name} x{item.qty}</span>
+                <span>{(item.price * item.qty).toLocaleString()}đ</span>
+              </div>
+
+              {item.note && (
+                <div className="text-xs text-orange-500 italic mt-1">
+                  📝 {item.note}
+                </div>
+              )}
+
+            </div>
+          ))}
         </div>
-      )}
 
-    </div>
-  ))}
-</div>
+        {/* TOTAL */}
+        <div className="flex justify-between font-bold mb-4 border-t border-gray-300 pt-3">
+          <span>Tổng:</span>
+          <span className="text-blue-600">
+            {total.toLocaleString()}đ
+          </span>
+        </div>
 
-      {/* TOTAL */}
-      <div className="flex justify-between font-bold mb-4 border-t border-gray-300 pt-3">
-        <span>Tổng:</span>
-        <span className="text-blue-600">
-          {total.toLocaleString()}đ
-        </span>
-      </div>
+        {/* PICKUP */}
+        <div className="mb-4">
+          <p className="font-semibold mb-2">📦 Hình thức nhận</p>
 
-      {/* ===== HÌNH THỨC NHẬN ===== */}
-      <div className="mb-4">
-        <p className="font-semibold mb-2">📦 Hình thức nhận</p>
+          <div className="flex gap-2 flex-wrap text-sm">
+            {["Lấy liền", "Ra chơi lấy", "Ra về lấy"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setPickupType(type)}
+                className={`px-3 py-1 rounded-lg border border-gray-300 ${
+                  pickupType === type
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <div className="flex gap-2 flex-wrap text-sm">
-          {["Lấy liền", "Ra chơi lấy", "Ra về lấy"].map((type) => (
+        {/* PAYMENT */}
+        <div className="mb-4">
+          <p className="font-semibold mb-2">💳 Thanh toán</p>
+
+          <div className="flex gap-2">
             <button
-              key={type}
-              onClick={() => setPickupType(type)}
-              className={`px-3 py-1 rounded-lg border border-gray-300 cursor-pointer ${
-                pickupType === type
+              onClick={() => setPaymentMethod("card")}
+              className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${
+                paymentMethod === "card"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100"
               }`}
             >
-              {type}
+              Quẹt thẻ
             </button>
-          ))}
+
+            <button
+              onClick={() => setPaymentMethod("cash")}
+              className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${
+                paymentMethod === "cash"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              Tiền mặt
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* ===== THANH TOÁN ===== */}
-      <div className="mb-4">
-        <p className="font-semibold mb-2">💳 Thanh toán</p>
-
+        {/* BUTTON */}
         <div className="flex gap-2">
           <button
-            onClick={() => setPaymentMethod("card")}
-            className={`px-3 py-1 rounded-lg border border-gray-300 cursor-pointer text-sm ${
-              paymentMethod === "card"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100"
-            }`}
+            onClick={() => setConfirmModal(false)}
+            className="flex-1 bg-gray-200 py-2 rounded text-sm"
           >
-            Quẹt thẻ
+            Hủy
           </button>
 
           <button
-            onClick={() => setPaymentMethod("cash")}
-            className={`px-3 py-1 rounded-lg border border-gray-300 cursor-pointer text-sm ${
-              paymentMethod === "cash"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100"
-            }`}
+            onClick={handleConfirmPayment}
+            className="flex-1 bg-blue-600 text-white py-2 rounded text-sm"
           >
-            Tiền mặt
+            Xác nhận
           </button>
         </div>
+
       </div>
-
-      {/* BUTTON */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setConfirmModal(false)}
-          className="flex-1 bg-gray-200 py-2 rounded cursor-pointer text-sm"
-        >
-          Hủy
-        </button>
-
-        <button
-          onClick={handleConfirmPayment}
-          className="flex-1 bg-blue-600 text-white py-2 rounded text-sm cursor-pointer"
-        >
-          Xác nhận
-        </button>
-      </div>
-
     </div>
   </div>
 )}
-
     </div>
   );
 }

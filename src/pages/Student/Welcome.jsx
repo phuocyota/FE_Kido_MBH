@@ -2,7 +2,10 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import bg from "../../assets/anh-can-tin-so-2.png";
 import scanner from "../../assets/dau-doc-the-tu.jpeg";
-import avatarImg from "../../assets/avatar.png";
+import avatar1 from "../../assets/avatar.png";
+import avatar2 from "../../assets/avatar2.png";
+import avatar3 from "../../assets/avatar3.png";
+import avatar4 from "../../assets/avatar4.png";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -36,19 +39,45 @@ export default function Welcome() {
     };
   }, []);
 
-  const handleScan = (cardId) => {
-    console.log("📌 Card:", cardId);
+  const studentsMock = [
+  {
+    name: "Nguyễn Văn A",
+    balance: 50000,
+    avatar: avatar1,
+  },
+  {
+    name: "Trần Thị B",
+    balance: 50000,
+    avatar: avatar2,
+  },
+  {
+    name: "Lê Văn C",
+    balance: 50000,
+    avatar: avatar3,
+  },
+  {
+    name: "Phạm Thị D",
+    balance: 50000,
+    avatar: avatar4,
+  },
+];
 
-    const student = {
-      cardId,
-      name: "Nguyễn Văn A",
-      balance: 50000,
-      avatar: avatarImg, // 👈 thêm dòng này
-    };
+ const handleScan = (cardId) => {
+  console.log("📌 Card:", cardId);
 
-    localStorage.setItem("student", JSON.stringify(student));
-    navigate("/order");
+  // 👉 random 1 user
+  const randomStudent =
+    studentsMock[Math.floor(Math.random() * studentsMock.length)];
+
+  const student = {
+    ...randomStudent,
+    cardId: cardId, // 👉 vẫn lưu card thật
   };
+
+  localStorage.setItem("student", JSON.stringify(student));
+
+  navigate("/order");
+};
 
   return (
     <div
