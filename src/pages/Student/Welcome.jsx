@@ -44,21 +44,29 @@ export default function Welcome() {
     name: "Nguyễn Văn A",
     balance: 50000,
     avatar: avatar1,
+    school: "THPT Nguyễn Trãi",
+    class: "12A1",
   },
   {
     name: "Trần Thị B",
     balance: 50000,
     avatar: avatar2,
+    school: "THPT Lê Quý Đôn",
+    class: "11A2",
   },
   {
     name: "Lê Văn C",
     balance: 50000,
     avatar: avatar3,
+    school: "THPT Trần Hưng Đạo",
+    class: "10A3",
   },
   {
     name: "Phạm Thị D",
     balance: 50000,
     avatar: avatar4,
+    school: "THPT Gia Định",
+    class: "12A4",
   },
 ];
 

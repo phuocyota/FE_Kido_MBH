@@ -11,7 +11,7 @@ export default function Left({
   addToCart,
 }) {
   return (
-    <div className="w-[60%] bg-white rounded-xl m-3 shadow flex flex-col">
+    <div className="w-[60%] bg-white rounded-xl m-3 shadow flex flex-col p-4">
 
       {/* CATEGORY */}
       <div className="p-3 flex gap-2 border-b border-gray-400">
