@@ -10,6 +10,7 @@ import trasuaImg from "../../assets/trasua.jpg";
 import cocaImg from "../../assets/coca.jpg";
 import banhngotImg from "../../assets/banhngot.jpeg";
 import banhmiImg from "../../assets/banhmi.jpg";
+import bgImg from "../../assets/anh-can-tin-so-2.png";
 
 export default function Order() {
 
@@ -171,11 +172,15 @@ export default function Order() {
   if (!student) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="h-screen flex flex-col">
+    // <div className="h-screen flex flex-col">
+    <div
+  className="h-screen flex flex-col bg-cover bg-center"
+  style={{ backgroundImage: `url(${bgImg})` }}
+>
 
       <Header student={student} />
 
-      <div className="flex flex-1 bg-gray-200">
+      <div className="flex flex-1">
 
         <Left
           categories={categories}

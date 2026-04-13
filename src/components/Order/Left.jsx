@@ -1,6 +1,7 @@
 import React from "react";
 import banhmi from "../../assets/banhmi.jpg";
 import { ShoppingCart } from "lucide-react";
+import bg_left from "../../assets/left_order.png";
 
 export default function Left({
   categories,
@@ -70,40 +71,58 @@ export default function Left({
       </div>
 
       {/* PRODUCTS */}
-      <div className="flex-1 p-2 grid grid-cols-4 gap-4 items-start content-start overflow-auto">
-  {products.map((item) => (
-    <div
-      key={item.id}
-      onClick={() => addToCart(item)} // ❗ fix luôn bug p -> item
-      className="bg-white rounded-xl border border-gray-300 hover:shadow-md transition cursor-pointer overflow-hidden"
-    >
+      <div className="relative flex-1 overflow-hidden">
 
-      {/* 📦 ẢNH VUÔNG */}
-      <div className="w-full aspect-square bg-gray-100">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
+  {/* NỀN TRẮNG */}
+  <div className="absolute inset-0 bg-white" />
 
-      {/* 📄 INFO */}
-      <div className="p-2">
-        <p className="text-sm font-semibold line-clamp-1">
-          {item.name}
-        </p>
+  {/* BG LEFT */}
+  <div
+    className="absolute inset-0 pointer-events-none z-10"
+    style={{
+      backgroundImage: `url(${bg_left})`,
+      backgroundRepeat: "repeat",
+      backgroundSize: "200px"
+    }}
+  />
 
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-blue-600 text-sm font-bold">
-            {item.price.toLocaleString()}đ
-          </span>
+  {/* PRODUCTS */}
+  <div className="relative z-20 p-2 grid grid-cols-4 gap-4 items-start content-start overflow-auto">
+    {products.map((item) => (
+      <div
+        key={item.id}
+        onClick={() => addToCart(item)}
+        className="bg-white rounded-xl border border-gray-300 hover:shadow-md transition cursor-pointer overflow-hidden"
+      >
 
-          <ShoppingCart size={16} />
+        {/* ẢNH */}
+        <div className="w-full aspect-square bg-gray-100">
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
         </div>
-      </div>
 
-    </div>
-  ))}
+        {/* INFO */}
+        <div className="p-2">
+          <p className="text-sm font-semibold line-clamp-1">
+            {item.name}
+          </p>
+
+          <div className="flex justify-between items-center mt-1">
+            <span className="text-blue-600 text-sm font-bold">
+              {item.price.toLocaleString()}đ
+            </span>
+
+            <ShoppingCart size={16} />
+          </div>
+        </div>
+
+      </div>
+    ))}
+  </div>
+
 </div>
     </div>
   );
