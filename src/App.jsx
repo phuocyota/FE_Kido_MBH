@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 // import StockTakes from "./pages/Admin/StockTakes";
 
 import ParentHome from "./pages/Parent/ParentHome";
+import ParentLayout from "./components/Parent/ParentLayout";
 
 const App = () => {
   return (
@@ -17,21 +18,17 @@ const App = () => {
       <Toaster position="top-right" />
 
       <Routes>
-        {/* LOGIN (KHÔNG CÓ HEADER) */}
-        {/* <Route path="/login" element={<Login />} /> */}
 
-        {/* CÁC TRANG CÓ HEADER */}
-        <Route
-          path="/*"
-          element={
-            <>            
-              <Routes>
-                <Route path="/" element={<ParentHome />} />
-                
-              </Routes>
-            </>
-          }
-        />
+        {/* Layout cha */}
+        <Route path="/" element={<ParentLayout />}>
+
+          {/* Trang con */}
+          <Route index element={<ParentHome />} />
+          <Route path="history" element={<div>Lịch sử</div>} />
+          <Route path="stats" element={<div>Thống kê</div>} />
+
+        </Route>
+
       </Routes>
     </>
   );
