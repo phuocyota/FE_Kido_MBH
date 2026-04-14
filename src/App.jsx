@@ -2,12 +2,12 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
- 
-import Home from "./pages/Student/Order";
+import Header from "./components/layout/Header";
+// import Home from "./pages/Home";
 import Login from "./pages/Admin/Login";
- 
-import Welcome from "./pages/Student/Welcome";
-import Kitchen from "./pages/Staff/Kitchen";
+import Products from "./pages/Admin/Products";
+import PriceBook from "./pages/Admin/PriceBook";
+import StockTakes from "./pages/Admin/StockTakes";
 
 const App = () => {
   return (
@@ -23,13 +23,13 @@ const App = () => {
           path="/*"
           element={
             <>
-              {/* <Header /> */}
+              <Header />
               <Routes>
-                <Route path="/" element={<Welcome />} />
-                <Route path="/order" element={<Home />} />
-                 <Route path="/kitchen" element={<Kitchen />} />
+                {/* <Route path="/" element={<Home />} /> */}
+                <Route path="/products" element={<Products />} />
+                <Route path="/price-book" element={<PriceBook />} />
+                <Route path="/stock-takes" element={<StockTakes />} />
               </Routes>
-
             </>
           }
         />
