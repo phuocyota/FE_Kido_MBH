@@ -8,9 +8,12 @@ export default function Kitchen() {
   // localStorage.removeItem("orders"); 
 
 
+
   const [orders, setOrders] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null);
   const [cashInput, setCashInput] = React.useState("");
+  const [cancelModal, setCancelModal] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   const bufferRef = useRef("");
 
@@ -66,7 +69,9 @@ export default function Kitchen() {
 
     // tìm đơn theo studentId
     const foundOrder = all.find(
-      o => String(o.studentId) === String(cardId)
+      o =>
+        String(o.studentId) === String(cardId) &&
+        o.status !== "cancelled"
     );
 
     if (foundOrder) {
@@ -77,30 +82,103 @@ export default function Kitchen() {
   };
 
   // ================= UPDATE ORDER =================
-  const updateOrder = (order, action) => {
+  const updateOrder = (order, action, extra = {}) => {
     const all = JSON.parse(localStorage.getItem("orders")) || [];
 
     let updated = [];
 
     if (action === "pending") {
       updated = all.map(o =>
-        o.id === order.id ? { ...o, status: "pending" } : o
+        o.orderKey === order.orderKey
+          ? { ...o, status: "pending" }
+          : o
       );
     }
 
     else if (action === "done") {
       updated = all.map(o =>
-        o.id === order.id ? { ...o, status: "done" } : o
+        o.orderKey === order.orderKey
+          ? { ...o, status: "done" }
+          : o
+      );
+    }
+
+    else if (action === "cancel") {
+      updated = all.map(o =>
+        o.orderKey === order.orderKey
+          ? {
+            ...o,
+            status: "cancelled",
+            isRefunded: true,
+            cancelReason: extra.reason || "Không có lý do"
+          }
+          : o
       );
     }
 
     else if (action === "remove") {
-      updated = all.filter(o => o.id !== order.id);
+      updated = all.filter(o => o.orderKey !== order.orderKey);
     }
 
     localStorage.setItem("orders", JSON.stringify(updated));
     setConfirmModal(null);
   };
+
+  // hủy đơn và hoàn tiền
+  //   const handleCancel = (order, reason = "") => {
+  //   const isCancelable = Date.now() - order.createdAt <= 15 * 60 * 1000;
+
+  //   if (!isCancelable) {
+  //     alert("❌ Đơn đã quá 15 phút, không thể hủy");
+  //     return;
+  //   }
+
+  //   if (order.isRefunded) return;
+
+  //   const all = JSON.parse(localStorage.getItem("orders")) || [];
+
+  //   // 👉 HOÀN TIỀN
+  //   if (order.status === "pending") {
+  //     if (order.paymentMethod === "card") {
+  //       refundToCard(order);
+  //       alert(`💳 Đã hoàn ${order.total.toLocaleString()}đ vào tài khoản`);
+  //     } else {
+  //       alert(`💰 Trả lại ${order.total.toLocaleString()}đ`);
+  //     }
+  //   }
+
+  //   const updated = all.map(o =>
+  //     o.orderKey === order.orderKey
+  //       ? {
+  //           ...o,
+  //           status: "cancelled",
+  //           isRefunded: true,
+  //           cancelReason: reason || "Không có lý do"
+  //         }
+  //       : o
+  //   );
+
+  //   localStorage.setItem("orders", JSON.stringify(updated));
+  //   setConfirmModal(null);
+  // };
+
+  // hoàn tiền vào thẻ
+  const refundToCard = (order) => {
+    const students = JSON.parse(localStorage.getItem("students")) || [];
+
+    const updated = students.map(s => {
+      if (String(s.cardId) === String(order.studentId)) {
+        return {
+          ...s,
+          balance: s.balance + order.total
+        };
+      }
+      return s;
+    });
+
+    localStorage.setItem("students", JSON.stringify(updated));
+  };
+
 
   return (
     <div
@@ -220,6 +298,22 @@ export default function Kitchen() {
             {/* BUTTON */}
             <div className="mt-4 grid gap-2">
 
+              {(confirmModal.status === "cash" || confirmModal.status === "pending") &&
+                Date.now() - confirmModal.createdAt <= 15 * 60 * 1000 && (
+                  <button
+                    onClick={() => {
+                      if (confirmModal.status === "pending") {
+                        setCancelModal(confirmModal);
+                      } else {
+                        handleCancel(confirmModal);
+                      }
+                    }}
+                    className="bg-red-300 text-white py-2 rounded font-semibold"
+                  >
+                    ❌ Hủy đơn
+                  </button>
+                )}
+
               {/* 💵 CHỜ THANH TOÁN */}
               {confirmModal.status === "cash" && (
                 <div className="space-y-2">
@@ -235,19 +329,26 @@ export default function Kitchen() {
 
                   {/* ⚡ MỆNH GIÁ NHANH */}
                   <div className="grid grid-cols-3 gap-2">
-                    {[10000, 20000, 30000, 40000, 50000].map(v => (
+                    {[10000, 20000, 30000, 40000, 50000, "full"].map(v => (
                       <button
                         key={v}
-                        onClick={() => setCashInput(v)}
+                        onClick={() => {
+                          if (v === "full") {
+                            setCashInput(confirmModal.total); // 💥 nhận đủ
+                          } else {
+                            setCashInput(v);
+                          }
+                        }}
                         className="bg-gray-100 py-2 rounded text-sm hover:bg-gray-200"
                       >
-                        {v.toLocaleString()}đ
-                      </button>
+                        {v === "full" ? "Nhận đủ" : `${v.toLocaleString()}đ` }
+                      </button> 
+                      
                     ))}
                   </div>
 
                   {/* 💰 TIỀN THỐI */}
-                  <div className="text-sm">
+                  <div className="text-sm"> 
                     <span className="text-gray-600">Tiền thối lại: </span>
                     <span className="font-bold text-green-600 ml-2">
                       {cashInput
@@ -264,8 +365,8 @@ export default function Kitchen() {
                     }}
                     disabled={Number(cashInput) < confirmModal.total}
                     className={`w-full py-2 rounded font-semibold text-white ${Number(cashInput) < confirmModal.total
-                        ? "bg-gray-400"
-                        : "bg-yellow-500"
+                      ? "bg-gray-400"
+                      : "bg-yellow-500"
                       }`}
                   >
                     Xác nhận đã thanh toán
@@ -304,6 +405,95 @@ export default function Kitchen() {
                 </button>
               )}
 
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ================= HỦY ĐƠN MODAL ================= */}
+      {cancelModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-2xl p-5 w-[380px] relative">
+
+            {/* ❌ NÚT X */}
+            <button
+              onClick={() => {
+                setCancelModal(null);
+                setCancelReason("");
+              }}
+              className="absolute top-3 right-3 text-gray-400 hover:text-black text-lg"
+            >
+              ✖
+            </button>
+
+            <h2 className="text-lg font-bold mb-3">
+              Lý do hủy đơn
+            </h2>
+
+            {/* INPUT */}
+            <textarea
+              placeholder="Nhập lý do..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="w-full border rounded p-2 mb-3"
+            />
+
+            {/* GỢI Ý */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {[
+                "Hết món",
+                "Nhập sai đơn",
+                "Khách không lấy",
+                "Lỗi hệ thống"
+              ].map(reason => (
+                <button
+                  key={reason}
+                  onClick={() => setCancelReason(reason)}
+                  className="bg-gray-100 py-2 rounded text-sm hover:bg-gray-200"
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+
+            {/* BUTTON */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setCancelModal(null);
+                  setCancelReason("");
+                }}
+                className="flex-1 bg-gray-300 py-2 rounded"
+              >
+                Đóng
+              </button>
+
+              <button
+                onClick={() => {
+                  // hoàn tiền trước
+                  if (cancelModal.paymentMethod === "card") {
+                    refundToCard(cancelModal);
+                    alert(`💳 Đã hoàn ${cancelModal.total.toLocaleString()}đ vào tài khoản`);
+                  } else {
+                    alert(`💰 Trả lại ${cancelModal.total.toLocaleString()}đ`);
+                  }
+
+                  // cập nhật trạng thái
+                  updateOrder(cancelModal, "cancel", {
+                    reason: cancelReason
+
+                  });
+
+                  setCancelModal(null);
+                  setCancelReason("");
+                }}
+
+                className="flex-1 bg-red-500 text-white py-2 rounded"
+              >
+                Xác nhận hủy
+              </button>
             </div>
 
           </div>

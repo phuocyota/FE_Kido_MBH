@@ -149,16 +149,20 @@ export default function Order() {
     const oldOrders = JSON.parse(localStorage.getItem("orders")) || [];
 
     const newOrder = {
-      id: orderNumber,
-      items: cart,
-      total,
-      studentId: String(student?.cardId),
-      studentName: student?.name,
-      status: isCash ? "cash" : "pending",
-      createdAt: Date.now(),
-      paymentMethod: paymentMethod,
-      pickupType: pickupType,
-    };
+      orderKey: Date.now() + Math.random(), // 🔥 unique thật
+  id: orderNumber,
+  items: cart,
+  total,
+  studentId: String(student?.cardId),
+  studentName: student?.name,
+
+  status: paymentMethod === "cash" ? "cash" : "pending",
+  paymentMethod: paymentMethod, // "cash" hoặc "card"
+
+  isRefunded: false,
+  pickupType: pickupType,
+  createdAt: Date.now(),
+};
 
     localStorage.setItem("orders", JSON.stringify([...oldOrders, newOrder]));
 

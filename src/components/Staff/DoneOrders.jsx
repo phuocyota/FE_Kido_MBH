@@ -8,7 +8,7 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
     return (
   <div 
     onClick={() => onSelect(order)}
-    className="bg-white border border-gray-300 rounded-xl p-3 mb-3 shadow cursor-pointer flex flex-col h-[230px] w-[190px] flex-shrink-0"
+    className="bg-white border border-gray-300 rounded-xl p-3 mb-3 shadow cursor-pointer flex flex-col h-[230px]   flex-shrink-0"
   >
 
     {/* HEADER */}
@@ -78,7 +78,7 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
         e.stopPropagation(); // 🔥 tránh mở popup khi bấm nút
         onPickup(order);
       }}
-      className="mt-2 w-full bg-blue-600 text-white py-2 rounded"
+      className="mt-2 w-full bg-green-600 text-white py-2 rounded"
     >
       Nhận món
     </button>
@@ -109,7 +109,7 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
         <div className="relative z-20 grid grid-cols-3 gap-3 p-4 overflow-y-auto">
           {orders.map(order => (
             <OrderDoneCard
-              key={order.id}
+              key={order.orderKey}
               order={order}
             />
           ))}

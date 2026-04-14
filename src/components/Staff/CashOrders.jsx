@@ -7,19 +7,21 @@ export default function CashOrders({ orders, onSelect }) {
   function CashOrderCard({ order }) {
 
     const handlePaid = () => {
-      const all = JSON.parse(localStorage.getItem("orders")) || [];
+  const all = JSON.parse(localStorage.getItem("orders")) || [];
 
-      const updated = all.map(o =>
-        o.id === order.id ? { ...o, status: "pending" } : o
-      );
+  const updated = all.map(o =>
+    o.orderKey === order.orderKey
+      ? { ...o, status: "pending" }
+      : o
+  );
 
-      localStorage.setItem("orders", JSON.stringify(updated));
-    };
+  localStorage.setItem("orders", JSON.stringify(updated));
+};
 
     return (
   <div
     onClick={() => onSelect(order)}
-    className="bg-white border border-gray-300 rounded-xl p-3 shadow cursor-pointer flex flex-col h-[230px] w-[190px] flex-shrink-0  "
+    className="bg-white border border-gray-300 rounded-xl p-3 shadow cursor-pointer flex flex-col h-[230px] flex-shrink-0  "
   >
 
     {/* HEADER */}
@@ -123,7 +125,7 @@ export default function CashOrders({ orders, onSelect }) {
         {/* CONTENT */}
         <div className="relative z-20 grid grid-cols-2 lg:grid-cols-3 gap-3 p-4 overflow-y-auto">
           {orders.map(order => (
-            <CashOrderCard key={order.id} order={order} />
+            <CashOrderCard key={order.orderKey} order={order} />
           ))}
         </div>
 
