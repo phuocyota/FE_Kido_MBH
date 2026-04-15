@@ -57,7 +57,7 @@ export default function PendingOrders({ orders, onSelect }) {
 
           {/* RIGHT */}
           <p className="text-xs text-red-500 font-semibold">
-            ⏳ {formatTime(timeLeft)}
+            {formatTime(timeLeft)}
           </p>
            
         </div>
