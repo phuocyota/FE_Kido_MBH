@@ -396,9 +396,9 @@ className="bg-white p-4 rounded-2xl shadow hover:shadow-md transition cursor-poi
 
       {selectedOrder && (
   <div
-    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-    onClick={() => setSelectedOrder(null)}
-  >
+  className="fixed inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50"
+  onClick={() => setSelectedOrder(null)}
+>
     {/* BOX */}
     <div
       onClick={(e) => e.stopPropagation()}
@@ -491,9 +491,6 @@ className="bg-white p-4 rounded-2xl shadow hover:shadow-md transition cursor-poi
             {selectedOrder.note || "Không có ghi chú"}
           </p>
         </div>
-
-        
-
       </div>
     </div>
   </div>
