@@ -8,15 +8,28 @@ import Dashboard from "./pages/Parent/Dashboard";
 import History from "./pages/Parent/History";
 import Stats from "./pages/Parent/Stats";
 import Topup from "./pages/Parent/Topup";
+import Login from "./pages/Parent/Login";
+import ProtectedRoute from "./api/ProtectedRoute";
 
 const App = () => {
   return (
     <>
       <Toaster position="top-right" />
 
-      <Routes> {/* 👈 BẮT BUỘC */}
+      <Routes>
 
-        <Route path="/" element={<ParentHome />}>
+        {/* LOGIN */}
+        <Route path="/login" element={<Login />} />
+
+        {/* PRIVATE */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <ParentHome />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="history" element={<History />} />
           <Route path="stats" element={<Stats />} />

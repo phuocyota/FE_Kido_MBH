@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState,  } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavLink, Outlet } from "react-router-dom";
-import { Home, History, BarChart, CreditCard, Menu } from "lucide-react";
+import { Home, History, BarChart, CreditCard, Menu, LogOut } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
 
 export default function ParentHome() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  navigate("/login");
+};
 
   const child = {
     name: "Nguyễn Văn B",
@@ -72,6 +81,16 @@ export default function ParentHome() {
                   </NavLink>
                 );
               })}
+
+               {/* LOGOUT */}
+  <button
+    onClick={handleLogout}
+    className=" flex items-center gap-3 px-3 py-2 rounded-xl text-sm 
+    text-red-600 hover:bg-red-50 transition cursor-pointer "
+  >
+    <LogOut size={18} />
+    Đăng xuất
+  </button>
             </div>
           </div>
 
@@ -148,6 +167,17 @@ export default function ParentHome() {
                 </NavLink>
               );
             })}
+
+            <button
+  onClick={() => {
+    handleLogout();
+    setOpen(false);
+  }}
+  className="flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 cursor-pointer  "
+>
+  <LogOut size={18} />
+  Đăng xuất
+</button>
           </div>
         </div>
 
@@ -160,6 +190,6 @@ export default function ParentHome() {
         )}
 
       </div>
-    </div>
+    </div> 
   );
 }
