@@ -8,6 +8,10 @@ export default function Right({
   setCart,
   total,
 
+   removeFromCart,     // 👈 thêm
+  increaseQty,        // 👈 thêm
+  decreaseQty,  
+
   student,
 
   noteModal,
@@ -72,9 +76,7 @@ export default function Right({
                     </div>
 
                     <button
-                      onClick={() =>
-                        setCart(cart.filter((p) => p.id !== item.id))
-                      }
+                      onClick={() => removeFromCart(item)}
                       className="text-red-500 cursor-pointer"
                     >
                       ✖
@@ -104,15 +106,16 @@ export default function Right({
                     {/* QTY */}
                     <div className="flex gap-2">
                       <button
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((p) =>
-                              p.id === item.id
-                                ? { ...p, qty: Math.max(1, p.qty - 1) }
-                                : p
-                            )
-                          )
-                        }
+                        // onClick={() =>
+                        //   setCart((prev) =>
+                        //     prev.map((p) =>
+                        //       p.id === item.id
+                        //         ? { ...p, qty: Math.max(1, p.qty - 1) }
+                        //         : p
+                        //     )
+                        //   )
+                        // }
+                        onClick={() => decreaseQty(item)}
                         className="cursor-pointer"
                       >
                         -
@@ -121,15 +124,16 @@ export default function Right({
                       {item.qty}
 
                       <button
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((p) =>
-                              p.id === item.id
-                                ? { ...p, qty: p.qty + 1 }
-                                : p
-                            )
-                          )
-                        }
+                        // onClick={() =>
+                        //   setCart((prev) =>
+                        //     prev.map((p) =>
+                        //       p.id === item.id
+                        //         ? { ...p, qty: p.qty + 1 }
+                        //         : p
+                        //     )
+                        //   )
+                        // }
+                        onClick={() => increaseQty(item)}
                         className="cursor-pointer"
                       >
                         +

@@ -9,6 +9,8 @@ export default function Left({
   setActiveCategory,
   products,
   addToCart,
+  amount,        // 👈 thêm
+  remaining,     // 👈 thêm
 }) {
   return (
     <div className="w-[60%] bg-white rounded-xl m-3 shadow flex flex-col p-4">
@@ -40,8 +42,8 @@ export default function Left({
                 key={c}
                 onClick={() => setActiveCategory(c)}
                 className={`px-4 py-2 rounded-xl whitespace-nowrap cursor-pointer ${activeCategory === c
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100"
                   }`}
               >
                 {c}
@@ -71,59 +73,72 @@ export default function Left({
       </div>
 
       {/* PRODUCTS */}
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden min-h-0">
 
-  {/* NỀN TRẮNG */}
-  <div className="absolute inset-0 bg-white" />
+        {/* NỀN TRẮNG */}
+        <div className="absolute inset-0 bg-white" />
 
-  {/* BG LEFT */}
-  <div
-    className="absolute inset-0 pointer-events-none z-10"
-    style={{
-      backgroundImage: `url(${bg_left})`,
-      backgroundRepeat: "repeat",
-      backgroundSize: "200px"
-    }}
-  />
+        {/* BG LEFT */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            backgroundImage: `url(${bg_left})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "200px"
+          }}
+        />
 
-  {/* PRODUCTS */}
-  <div className="relative z-20 p-2 grid grid-cols-4 gap-4 items-start content-start overflow-auto">
-    {products.map((item) => (
-      <div
-        key={item.id}
-        onClick={() => addToCart(item)}
-        className="bg-white rounded-xl border border-gray-300 hover:shadow-md transition cursor-pointer overflow-hidden"
-      >
+        {/* PRODUCTS */}
+        <div className="relative z-20 p-2 grid grid-cols-4 gap-4 h-full overflow-y-auto auto-rows-[320px]">
+          {products.map((item) => (
+            <div
+              key={item.id}
+              // onClick={() => addToCart(item)}
+              onClick={() => {
+                if (!amount || item.price <= remaining) {
+                  addToCart(item);
+                } else {
+                  alert("❌ Bạn không đủ tiền để thêm món này vào giỏ");
+                }
+              }}
+             className={`bg-white rounded-xl border border-gray-300 transition overflow-hidden
+  ${
+    amount && item.price > remaining
+      ? "opacity-40 pointer-events-none"
+      : "hover:shadow-md cursor-pointer"
+  }
+`}
+            >
 
-        {/* ẢNH */}
-        <div className="w-full aspect-square bg-gray-100">
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+              {/* ẢNH */}
+              <div className="w-full aspect-square bg-gray-100">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-        {/* INFO */}
-        <div className="p-2">
-          <p className="text-sm font-semibold line-clamp-1">
-            {item.name}
-          </p>
+              {/* INFO */}
+              <div className="p-2">
+                <p className="text-sm font-semibold line-clamp-1">
+                  {item.name}
+                </p>
 
-          <div className="flex justify-between items-center mt-1">
-            <span className="text-blue-600 text-sm font-bold">
-              {item.price.toLocaleString()}đ
-            </span>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-blue-600 text-sm font-bold">
+                    {item.price.toLocaleString()}đ
+                  </span>
 
-            <ShoppingCart size={16} />
-          </div>
+                  <ShoppingCart size={16} />
+                </div>
+              </div>
+
+            </div>
+          ))}
         </div>
 
       </div>
-    ))}
-  </div>
-
-</div>
     </div>
   );
 }

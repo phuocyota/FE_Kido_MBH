@@ -12,6 +12,13 @@ import banhngotImg from "../../assets/banhngot.jpeg";
 import banhmiImg from "../../assets/banhmi.jpg";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
 
+
+import keomutImg from "../../assets/keomut.jpg";
+import banhquyImg from "../../assets/banhquy.jpg";
+import nuocsuoiImg from "../../assets/nuocsuoi.jpg";
+import trachanhImg from "../../assets/trachanh.jpg";
+import banhtrungImg from "../../assets/banhtrung.png";
+import xucxichImg from "../../assets/xucxich.png";
 export default function Order() {
 
   // 🔥 THÊM CÁC STATE NÀY
@@ -26,6 +33,8 @@ export default function Order() {
 
   const [pickupType, setPickupType] = useState("Lấy liền");
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [amount, setAmount] = useState(null);
+  const [remaining, setRemaining] = useState(null);
 
   const categories = ["Tất cả", "Nước", "Bánh", "Bánh mì", "Cơm"];
 
@@ -58,22 +67,110 @@ export default function Order() {
       category: "Bánh mì",
       image: banhmiImg,
     },
+
+    // ✅ thêm 3 món 5K
+    {
+      id: 5,
+      name: "Kẹo mút",
+      price: 5000,
+      category: "Snack",
+      image: keomutImg, // nhớ import ảnh
+    },
+    {
+      id: 6,
+      name: "Bánh quy nhỏ",
+      price: 5000,
+      category: "Snack",
+      image: banhquyImg,
+    },
+    {
+      id: 7,
+      name: "Nước suối mini",
+      price: 5000,
+      category: "Nước",
+      image: nuocsuoiImg,
+    },
+    // ✅ thêm 3 món 10K
+    {
+      id: 8,
+      name: "Trà chanh",
+      price: 10000,
+      category: "Nước",
+      image: trachanhImg,
+    },
+    {
+      id: 9,
+      name: "Bánh trứng",
+      price: 10000,
+      category: "Bánh",
+      image: banhtrungImg,
+    },
+    {
+      id: 10,
+      name: "Xúc xích",
+      price: 10000,
+      category: "Ăn vặt",
+      image: xucxichImg,
+    },
   ];
+
+
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("student"));
-    setStudent(data);
-    // console.log("ORDERS:", JSON.parse(localStorage.getItem("orders")));
+    const qrAmount = localStorage.getItem("amount");
+
+    if (qrAmount) {
+      // 👉 TRƯỜNG HỢP QUÉT QR
+      setAmount(qrAmount);
+      setRemaining(Number(qrAmount));
+      setStudent(null);
+    } else {
+
+      setStudent(data);
+      setAmount(null);
+    }
   }, []);
 
 
-  const filteredProducts =
-    activeCategory === "Tất cả"
-      ? products
-      : products.filter((p) => p.category === activeCategory);
+  const filteredProducts = products.filter((p) => {
+    // 👉 lọc theo category
+    const matchCategory =
+      activeCategory === "Tất cả" || p.category === activeCategory;
 
+    // 👉 lọc theo tiền QR
+    const matchPrice =
+      !amount || p.price <= Number(amount);
+
+    return matchCategory && matchPrice;
+  });
+
+  // const addToCart = (item) => {
+  //   setCart((prev) => {
+  //     const exist = prev.find((p) => p.id === item.id);
+
+  //     if (exist) {
+  //       return prev.map((p) =>
+  //         p.id === item.id ? { ...p, qty: p.qty + 1 } : p
+  //       );
+  //     }
+
+  //     return [...prev, { ...item, qty: 1 }];
+  //   });
+  // };
 
   const addToCart = (item) => {
+    // 👉 Nếu đang dùng QR
+    if (amount) {
+      if (remaining < item.price) {
+        alert("❌ Bạn không đủ tiền để mua món này");
+        return;
+      }
+
+      setRemaining((prev) => prev - item.price);
+    }
+
+    // 👉 thêm vào giỏ như bình thường
     setCart((prev) => {
       const exist = prev.find((p) => p.id === item.id);
 
@@ -149,20 +246,20 @@ export default function Order() {
     const oldOrders = JSON.parse(localStorage.getItem("orders")) || [];
 
     const newOrder = {
-      orderKey: Date.now() + Math.random(), // 🔥 unique thật
-  id: orderNumber,
-  items: cart,
-  total,
-  studentId: String(student?.cardId),
-  studentName: student?.name,
+      orderKey: Date.now() + Math.random(),
+      id: orderNumber,
+      items: cart,
+      total,
+      studentId: String(student?.cardId),
+      studentName: student?.name,
 
-  status: paymentMethod === "cash" ? "cash" : "pending",
-  paymentMethod: paymentMethod, // "cash" hoặc "card"
+      status: paymentMethod === "cash" ? "cash" : "pending",
+      paymentMethod: paymentMethod,
 
-  isRefunded: false,
-  pickupType: pickupType,
-  createdAt: Date.now(),
-};
+      isRefunded: false,
+      pickupType: pickupType,
+      createdAt: Date.now(),
+    };
 
     localStorage.setItem("orders", JSON.stringify([...oldOrders, newOrder]));
 
@@ -172,19 +269,59 @@ export default function Order() {
   };
 
 
+  // xử lý trường hợp công tiền hoặc xóa sản phẩm khi quét mã QR 
+  const removeFromCart = (item) => {
+    setCart((prev) => prev.filter((p) => p.id !== item.id));
 
-  if (!student) return <div className="p-6">Loading...</div>;
+    // 👉 trả tiền lại nếu dùng QR
+    if (amount) {
+      setRemaining((prev) => prev + item.price * item.qty);
+    }
+  };
+
+  const increaseQty = (item) => {
+    if (amount) {
+      if (remaining < item.price) {
+        alert("❌ Không đủ tiền");
+        return;
+      }
+      setRemaining((prev) => prev - item.price);
+    }
+
+    setCart((prev) =>
+      prev.map((p) =>
+        p.id === item.id ? { ...p, qty: p.qty + 1 } : p
+      )
+    );
+  };
+
+  const decreaseQty = (item) => {
+    setCart((prev) =>
+      prev
+        .map((p) =>
+          p.id === item.id ? { ...p, qty: p.qty - 1 } : p
+        )
+        .filter((p) => p.qty > 0)
+    );
+
+    if (amount) {
+      setRemaining((prev) => prev + item.price);
+    }
+  };
+
+
+  if (!student && !amount) return <div className="p-6">Loading...</div>;
 
   return (
     // <div className="h-screen flex flex-col">
     <div
-  className="h-screen flex flex-col bg-cover bg-center"
-  style={{ backgroundImage: `url(${bgImg})` }}
->
+      className="h-screen flex flex-col bg-cover bg-center"
+      style={{ backgroundImage: `url(${bgImg})` }}
+    >
 
-      <Header student={student} />
+      <Header student={student} amount={remaining || amount} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
 
         <Left
           categories={categories}
@@ -192,11 +329,17 @@ export default function Order() {
           setActiveCategory={setActiveCategory}
           products={filteredProducts}
           addToCart={addToCart}
+          amount={amount}           // 👈 thêm
+          remaining={remaining}
         />
 
         <Right
           cart={cart}
           setCart={setCart}
+          removeFromCart={removeFromCart}     // 👈 thêm
+          increaseQty={increaseQty}           // 👈 thêm
+          decreaseQty={decreaseQty}
+
           total={total}
 
           student={student}

@@ -5,7 +5,7 @@ import header2 from "../../assets/header2.png";
 import header3 from "../../assets/header3.png";
 import header4 from "../../assets/header4.png";
 
-export default function Header({ student }) {
+export default function Header({ student, amount }) {
   return (
     <div className="bg-blue-700 text-white flex items-center justify-between overflow-hidden">
 
@@ -32,32 +32,45 @@ export default function Header({ student }) {
       </div>
 
       {/* RIGHT: Thông tin học sinh */}
-{student && (
-  <div className="flex items-center gap-3 px-4 bg-blue-700 z-10">
+{/* RIGHT */}
+<div className="flex items-center gap-3 px-4 bg-blue-700 z-10">
 
-    {/* Avatar */}
-    <img
-      src={student.avatar}
-      alt=""
-      className="w-10 h-10 rounded-full border-2 border-white"
-    />
-
-    {/* Grid 2 cột */}
-    <div className="grid grid-cols-2 gap-x-4 text-sm">
-
-      {/* Hàng 1 */}
-      <p className="font-semibold">{student.name}</p>
-      <p className="text-gray-200 text-sm font-bold">{student.school}</p>
-
-      {/* Hàng 2 */}
-      <p className="text-yellow-300 font-bold">
-        💰 {student.balance.toLocaleString()}
-      </p>
-      <p className="text-gray-200 text-sm font-bold">Lớp: {student.class}</p>
-
+  {/* 👉 TRƯỜNG HỢP QUÉT QR */}
+  {amount && !student && (
+    <div className="text-yellow-300 font-bold text-lg">
+      💰 Bạn có: {Number(amount).toLocaleString()}đ
     </div>
-  </div>
-)}
+  )}
+
+  {/* 👉 TRƯỜNG HỢP QUẸT THẺ */}
+  {student && (
+    <>
+      {/* Avatar */}
+      <img
+        src={student.avatar}
+        alt=""
+        className="w-10 h-10 rounded-full border-2 border-white"
+      />
+
+      {/* Grid */}
+      <div className="grid grid-cols-2 gap-x-4 text-sm">
+
+        <p className="font-semibold">{student.name}</p>
+        <p className="text-gray-200 font-bold">{student.school}</p>
+
+        <p className="text-yellow-300 font-bold">
+          💰 {student.balance.toLocaleString()}đ
+        </p>
+
+        <p className="text-gray-200 font-bold">
+          Lớp: {student.class}
+        </p>
+
+      </div>
+    </>
+  )}
+
+</div>
     </div>
   );
 }
