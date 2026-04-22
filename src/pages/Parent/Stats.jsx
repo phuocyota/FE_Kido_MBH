@@ -5,6 +5,9 @@ import { mockOrders } from "../../datas/mockOrders";
 export default function Stats() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("week");
+  const [compareType, setCompareType] = useState("");
+  const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
 
 
   // =========================
@@ -87,21 +90,185 @@ export default function Stats() {
   // =========================
   // 📊 CHART DATA (CHUẨN T2 → CN)
   // =========================
-  const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+  let labels = [];
+  let chartData = [];
 
-  const chartData = [0, 0, 0, 0, 0, 0, 0];
+  if (filter === "today") {
+    // chia theo giờ
+    labels = Array.from({ length: 24 }, (_, i) => `${i}h`);
+    chartData = Array(24).fill(0);
 
-  // map dữ liệu vào đúng ngày
-  filteredOrders.forEach((o) => {
-    const d = new Date(o.date).getDay(); // CN = 0
+    filteredOrders.forEach((o) => {
+      const h = new Date(o.date).getHours();
+      chartData[h] += o.price * o.quantity;
+    });
+  }
 
-    const index = d === 0 ? 6 : d - 1; // convert về T2 = 0
+  else if (filter === "week") {
+    labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+    chartData = Array(7).fill(0);
 
-    chartData[index] += o.price * o.quantity;
-  });
+    filteredOrders.forEach((o) => {
+      const d = new Date(o.date).getDay();
+      const index = d === 0 ? 6 : d - 1;
+      chartData[index] += o.price * o.quantity;
+    });
+  }
+
+  else if (filter === "month") {
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0
+    ).getDate();
+
+    labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    chartData = Array(daysInMonth).fill(0);
+
+    filteredOrders.forEach((o) => {
+      const d = new Date(o.date).getDate();
+      chartData[d - 1] += o.price * o.quantity;
+    });
+  }
 
   const maxChart = Math.max(...chartData, 1);
 
+ // =========================
+// 📊 SO SÁNH
+// =========================
+const getTotal = (list) =>
+  list.reduce((sum, o) => sum + o.price * o.quantity, 0);
+
+// =========================
+// 📅 TÍNH TOTAL THEO TỪNG KIỂU
+// =========================
+
+// 👉 TUẦN
+const getWeekRange = (date, offset = 0) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+
+  const start = new Date(d);
+  start.setDate(d.getDate() - diff + offset);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+};
+
+// 👉 THÁNG
+const getMonth = (date, offset = 0) => {
+  const d = new Date(date);
+  return {
+    month: d.getMonth() + offset,
+    year: d.getFullYear(),
+  };
+};
+
+// =========================
+// 🎯 MAIN COMPARE
+// =========================
+let currentTotal = 0;
+let prevTotal = 0;
+
+if (compareType === "week") {
+  const { start, end } = getWeekRange(now, 0);
+  const { start: prevStart, end: prevEnd } = getWeekRange(now, -7);
+
+  const current = orders.filter(
+    (o) => new Date(o.date) >= start && new Date(o.date) <= end
+  );
+
+  const prev = orders.filter(
+    (o) => new Date(o.date) >= prevStart && new Date(o.date) <= prevEnd
+  );
+
+  currentTotal = getTotal(current);
+  prevTotal = getTotal(prev);
+}
+
+else if (compareType === "month") {
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const prevDate = new Date(currentYear, currentMonth - 1);
+
+  const current = orders.filter((o) => {
+    const d = new Date(o.date);
+    return (
+      d.getMonth() === currentMonth &&
+      d.getFullYear() === currentYear
+    );
+  });
+
+  const prev = orders.filter((o) => {
+    const d = new Date(o.date);
+    return (
+      d.getMonth() === prevDate.getMonth() &&
+      d.getFullYear() === prevDate.getFullYear()
+    );
+  });
+
+  currentTotal = getTotal(current);
+  prevTotal = getTotal(prev);
+}
+
+// 👉 CUSTOM (CHỌN LỊCH)
+else if (compareType === "custom" && startDate && endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const rangeDays =
+    (end - start) / (1000 * 60 * 60 * 24) + 1;
+
+  const prevStart = new Date(start);
+  prevStart.setDate(start.getDate() - rangeDays);
+
+  const prevEnd = new Date(end);
+  prevEnd.setDate(end.getDate() - rangeDays);
+
+  const current = orders.filter((o) => {
+    const d = new Date(o.date);
+    return d >= start && d <= end;
+  });
+
+  const prev = orders.filter((o) => {
+    const d = new Date(o.date);
+    return d >= prevStart && d <= prevEnd;
+  });
+
+  currentTotal = getTotal(current);
+  prevTotal = getTotal(prev);
+}
+
+// 👉 CHÊNH LỆCH
+const diff = currentTotal - prevTotal;
+
+// 👉 FEEDBACK
+const getFeedback = (diff) => {
+  if (diff < 0) {
+    return {
+      text: `🎉 Tiết kiệm ${Math.abs(diff).toLocaleString()}đ`,
+      type: "good",
+    };
+  }
+  if (diff > 0) {
+    return {
+      text: `😢 Tiêu nhiều hơn ${diff.toLocaleString()}đ`,
+      type: "bad",
+    };
+  }
+  return {
+    text: "😐 Không thay đổi",
+    type: "neutral",
+  };
+};
+
+const feedback = getFeedback(diff);
   // =========================
   // 🍱 TOP FOOD
   // =========================
@@ -146,9 +313,7 @@ export default function Stats() {
       <div className="flex flex-wrap gap-2">
         {[
           ["today", "Hôm nay"],
-          ["7days", "7 ngày"],
           ["week", "Tuần"],
-          ["30days", "30 ngày"],
           ["month", "Tháng"],
         ].map(([key, label]) => (
           <button
@@ -198,12 +363,16 @@ export default function Stats() {
             📊 Chi tiêu theo ngày
           </p>
           <span className="text-xs text-gray-400">
-            Tuần này
+            {filter === "today"
+              ? "Hôm nay"
+              : filter === "week"
+                ? "Tuần này"
+                : "Tháng này"}
           </span>
         </div>
 
         {/* CHART */}
-        <div className="flex items-end justify-between h-44 gap-3">
+        <div className="flex items-end justify-between h-44 gap-1 overflow-x-auto">
 
           {chartData.map((v, i) => (
             <div key={i} className="flex flex-col items-center flex-1">
@@ -226,7 +395,7 @@ export default function Stats() {
 
               {/* DAY */}
               <span className="text-xs mt-2 text-gray-600 font-medium">
-                {days[i]}
+                {labels[i]}
               </span>
             </div>
           ))}
@@ -234,144 +403,228 @@ export default function Stats() {
 
       </div>
 
+      {/* So sánh chi tiêu */}
+      <div className="bg-white p-5 rounded-2xl shadow space-y-4">
+
+  <p className="font-semibold">⚖️ So sánh chi tiêu</p>
+
+  {/* COMBOBOX */}
+  <select
+    value={compareType}
+    onChange={(e) => setCompareType(e.target.value)}
+    className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+  >
+    <option value="">-- Chọn kiểu so sánh --</option>
+    <option value="week">Tuần này với tuần trước</option>
+    <option value="month">Tháng này với tháng trước</option>
+  </select>
+
+  {compareType && (
+  <div className="p-4 rounded-xl bg-gray-50 space-y-3">
+
+  {/* TITLE */}
+  <p className="text-sm text-gray-500">
+    {compareType === "week"
+      ? "Tuần này vs tuần trước"
+      : compareType === "month"
+      ? "Tháng này vs tháng trước"
+      : "Khoảng thời gian"}
+  </p>
+
+  {/* 2 CỘT SO SÁNH */}
+  <div className="flex justify-between items-center">
+
+    <div className="text-center flex-1">
+      <p className="text-xs text-gray-400">Hiện tại</p>
+      <p className="font-bold text-lg text-blue-600">
+        {currentTotal.toLocaleString()}đ
+      </p>
+    </div>
+
+    <div className="text-gray-300 text-xl">→</div>
+
+    <div className="text-center flex-1">
+      <p className="text-xs text-gray-400">Kỳ trước</p>
+      <p className="font-bold text-lg text-gray-600">
+        {prevTotal.toLocaleString()}đ
+      </p>
+    </div>
+
+  </div>
+
+  {/* KẾT LUẬN */}
+  <div className="text-center">
+
+    <p
+      className={`text-sm font-medium ${
+        diff < 0
+          ? "text-green-500"
+          : diff > 0
+          ? "text-red-500"
+          : "text-gray-500"
+      }`}
+    >
+      {diff < 0 && `🎉 Tiết kiệm ${Math.abs(diff).toLocaleString()}đ`}
+      {diff > 0 && `😢 Tiêu nhiều hơn ${diff.toLocaleString()}đ`}
+      {diff === 0 && "😐 Không thay đổi"}
+    </p>
+
+  </div>
+
+  {/* IMAGE */}
+  <div className="flex justify-center">
+    <img
+      src={
+        diff < 0
+          ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+          : "https://cdn-icons-png.flaticon.com/512/742/742751.png"
+      }
+      className="w-20"
+    />
+  </div>
+
+</div>
+)}
+
+</div>
+
       {/* TOP FOOD */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-4">
 
-  {/* HEADER */}
-  <div className="flex justify-between items-center">
-    <p className="font-semibold text-gray-800">
-      🍱 Món ăn yêu thích
-    </p>
-    <span className="text-xs text-gray-400">
-      Top {topFoods.length}
-    </span>
-  </div>
-
-  {/* LIST */}
-  <div className="space-y-3">
-
-    {topFoods.map((f, i) => {
-      const max = topFoods[0]?.[1] || 1;
-      const percent = (f[1] / max) * 100;
-
-      return (
-        <div
-          key={i}
-          className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
-        >
-          {/* TOP ROW */}
-          <div className="flex justify-between items-center mb-2">
-
-            {/* LEFT */}
-            <div className="flex items-center gap-2">
-              <span className="text-lg">
-                {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
-              </span>
-
-              <span className="font-medium text-gray-800">
-                {f[0]}
-              </span>
-            </div>
-
-            {/* RIGHT */}
-            <span className="text-sm text-gray-500">
-              {f[1]} lần
-            </span>
-          </div>
-
-          {/* PROGRESS BAR */}
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={`h-2 rounded-full transition-all duration-500 ${
-                i === 0
-                  ? "bg-green-500"
-                  : i === 1
-                  ? "bg-blue-500"
-                  : "bg-purple-400"
-              }`}
-              style={{ width: `${percent}%` }}
-            />
-          </div>
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <p className="font-semibold text-gray-800">
+            🍱 Món ăn yêu thích
+          </p>
+          <span className="text-xs text-gray-400">
+            Top {topFoods.length}
+          </span>
         </div>
-      );
-    })}
 
-    {/* EMPTY */}
-    {topFoods.length === 0 && (
-      <p className="text-center text-gray-400 text-sm">
-        Chưa có dữ liệu
-      </p>
-    )}
+        {/* LIST */}
+        <div className="space-y-3">
 
-  </div>
-</div>
+          {topFoods.map((f, i) => {
+            const max = topFoods[0]?.[1] || 1;
+            const percent = (f[1] / max) * 100;
+
+            return (
+              <div
+                key={i}
+                className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
+              >
+                {/* TOP ROW */}
+                <div className="flex justify-between items-center mb-2">
+
+                  {/* LEFT */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
+                    </span>
+
+                    <span className="font-medium text-gray-800">
+                      {f[0]}
+                    </span>
+                  </div>
+
+                  {/* RIGHT */}
+                  <span className="text-sm text-gray-500">
+                    {f[1]} lần
+                  </span>
+                </div>
+
+                {/* PROGRESS BAR */}
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-500 ${i === 0
+                      ? "bg-green-500"
+                      : i === 1
+                        ? "bg-blue-500"
+                        : "bg-purple-400"
+                      }`}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          {/* EMPTY */}
+          {topFoods.length === 0 && (
+            <p className="text-center text-gray-400 text-sm">
+              Chưa có dữ liệu
+            </p>
+          )}
+
+        </div>
+      </div>
 
       {/* HABITS */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-4">
 
-  {/* HEADER */}
-  <div className="flex justify-between items-center">
-    <p className="font-semibold text-gray-800">
-      🕒 Thói quen ăn
-    </p>
-    <span className="text-xs text-gray-400">
-      Theo buổi
-    </span>
-  </div>
-
-  {/* LIST */}
-  <div className="space-y-4">
-
-    {[
-      {
-        label: "Sáng",
-        value: Math.round((morning / totalTime) * 100),
-        icon: "🌅",
-        color: "from-yellow-400 to-orange-400",
-      },
-      {
-        label: "Trưa",
-        value: Math.round((noon / totalTime) * 100),
-        icon: "🌞",
-        color: "from-green-400 to-green-600",
-      },
-      {
-        label: "Chiều",
-        value: Math.round((evening / totalTime) * 100),
-        icon: "🌙",
-        color: "from-purple-400 to-indigo-500",
-      },
-    ].map((item, i) => (
-      <div key={i} className="space-y-1">
-
-        {/* TOP ROW */}
-        <div className="flex justify-between items-center text-sm">
-          <div className="flex items-center gap-2">
-            <span>{item.icon}</span>
-            <span className="font-medium text-gray-700">
-              {item.label}
-            </span>
-          </div>
-
-          <span className="text-gray-500 font-medium">
-            {item.value}%
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <p className="font-semibold text-gray-800">
+            🕒 Thói quen ăn
+          </p>
+          <span className="text-xs text-gray-400">
+            Theo buổi
           </span>
         </div>
 
-        {/* PROGRESS */}
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className={`h-2 rounded-full bg-gradient-to-r ${item.color} transition-all duration-500`}
-            style={{ width: `${item.value}%` }}
-          />
+        {/* LIST */}
+        <div className="space-y-4">
+
+          {[
+            {
+              label: "Sáng",
+              value: Math.round((morning / totalTime) * 100),
+              icon: "🌅",
+              color: "from-yellow-400 to-orange-400",
+            },
+            {
+              label: "Trưa",
+              value: Math.round((noon / totalTime) * 100),
+              icon: "🌞",
+              color: "from-green-400 to-green-600",
+            },
+            {
+              label: "Chiều",
+              value: Math.round((evening / totalTime) * 100),
+              icon: "🌙",
+              color: "from-purple-400 to-indigo-500",
+            },
+          ].map((item, i) => (
+            <div key={i} className="space-y-1">
+
+              {/* TOP ROW */}
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-2">
+                  <span>{item.icon}</span>
+                  <span className="font-medium text-gray-700">
+                    {item.label}
+                  </span>
+                </div>
+
+                <span className="text-gray-500 font-medium">
+                  {item.value}%
+                </span>
+              </div>
+
+              {/* PROGRESS */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-2 rounded-full bg-gradient-to-r ${item.color} transition-all duration-500`}
+                  style={{ width: `${item.value}%` }}
+                />
+              </div>
+
+            </div>
+          ))}
+
         </div>
 
       </div>
-    ))}
-
-  </div>
-
-</div>
 
     </div>
   );
