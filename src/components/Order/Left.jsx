@@ -89,52 +89,49 @@ export default function Left({
         />
 
         {/* PRODUCTS */}
-        <div className="relative z-20 p-2 grid grid-cols-4 gap-4 h-full overflow-y-auto auto-rows-[320px]">
+        <div className="relative z-20 p-2 grid grid-cols-4 gap-4 h-full overflow-y-auto auto-rows-[minmax(140px,auto)]">
           {products.map((item) => (
             <div
-              key={item.id}
-              // onClick={() => addToCart(item)}
-              onClick={() => {
-                if (!amount || item.price <= remaining) {
-                  addToCart(item);
-                } else {
-                  alert("❌ Bạn không đủ tiền để thêm món này vào giỏ");
-                }
-              }}
-             className={`bg-white rounded-xl border border-gray-300 transition overflow-hidden
+  key={item.id}
+  onClick={() => {
+    if (!amount || item.price <= remaining) {
+      addToCart(item);
+    } else {
+      alert("❌ Bạn không đủ tiền để thêm món này vào giỏ");
+    }
+  }}
+  className={`bg-white rounded-xl border border-gray-300 transition overflow-hidden flex flex-col
   ${
     amount && item.price > remaining
       ? "opacity-40 pointer-events-none"
       : "hover:shadow-md cursor-pointer"
-  }
-`}
-            >
+  }`}
+>
+   
+  {/* IMAGE */}
+  <div className="w-full h-38 overflow-hidden">
+    <img
+      src={item.image}
+      className="w-full h-full object-cover"
+    />
+  </div>
 
-              {/* ẢNH */}
-              <div className="w-full aspect-square bg-gray-100">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+  {/* INFO */}
+  <div className="p-2 flex flex-col gap-1">
+    <p className="text-sm font-semibold line-clamp-1">
+      {item.name}
+    </p>
 
-              {/* INFO */}
-              <div className="p-2">
-                <p className="text-sm font-semibold line-clamp-1">
-                  {item.name}
-                </p>
+    <div className="flex justify-between items-center">
+      <span className="text-blue-600 text-sm font-bold">
+        {item.price.toLocaleString()}đ
+      </span>
 
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-blue-600 text-sm font-bold">
-                    {item.price.toLocaleString()}đ
-                  </span>
+      <ShoppingCart size={16} />
+    </div>
+  </div>
 
-                  <ShoppingCart size={16} />
-                </div>
-              </div>
-
-            </div>
+</div> 
           ))}
         </div>
 

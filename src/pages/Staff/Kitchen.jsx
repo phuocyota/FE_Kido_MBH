@@ -3,6 +3,7 @@ import CashOrders from "../../components/Staff/CashOrders";
 import PendingOrders from "../../components/Staff/PendingOrders";
 import DoneOrders from "../../components/Staff/DoneOrders";
 import bgCantin from "../../assets/anh-can-tin-so-2.png";
+import { el } from "date-fns/locale";
 
 export default function Kitchen() {
   // localStorage.removeItem("orders"); 
@@ -196,11 +197,15 @@ export default function Kitchen() {
         onSelect={setConfirmModal}
       />
 
-      <DoneOrders
+      {/* <DoneOrders
         orders={orders.filter(o => o.status === "done")}
         onSelect={setConfirmModal}
-      />
-
+      /> */}
+<DoneOrders
+  orders={orders.filter(o => o.status === "done")}
+  onPickup={(order) => updateOrder(order, "remove")}
+   onSelect={setConfirmModal}
+/>
 
       {/* ================= MODAL ================= */}
       {confirmModal && (
@@ -304,7 +309,11 @@ export default function Kitchen() {
                     onClick={() => {
                       if (confirmModal.status === "pending") {
                         setCancelModal(confirmModal);
-                      } else {
+                      } 
+                      else if (confirmModal.status === "cash") {
+                        setCancelModal(confirmModal);
+                      }
+                      else {
                         handleCancel(confirmModal);
                       }
                     }}

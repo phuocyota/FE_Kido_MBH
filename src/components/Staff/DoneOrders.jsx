@@ -17,31 +17,33 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
     </p>
 
     {/* ID */}
-    <p className="font-bold text-green-600 mb-2 border-b border-gray-300 pb-1">
+    <p className="font-bold text-green-600 mb-2 border-b border-green-600 pb-1">
       #{order.id}
     </p>
 
     {/* 🔥 LIST MÓN (SCROLL) */}
-    <div className="flex-1 overflow-y-auto pr-1">
+    <div className="flex-1 overflow-y-auto pr-1 space-y-1 max-h-[120px]">
+          {order.items.map(item => (
+            <div key={item.id} className="text-sm">
 
-      {order.items.map(item => (
-        <div key={item.id} className="text-sm mb-1">
+              <div className="flex justify-between">
+                <span className="truncate">
+                  {item.name} x{item.qty}
+                </span>
+                <span className="whitespace-nowrap">
+                  {(item.price * item.qty).toLocaleString()}đ
+                </span>
+              </div>
 
-          <div className="flex justify-between">
-            <span>{item.name} x{item.qty}</span>
-            <span>{(item.price * item.qty).toLocaleString()}đ</span>
-          </div>
-
-          {item.note && (
-            <div className="text-xs text-orange-500 italic">
-              📝 {item.note}
+              {item.note && (
+                <div className="text-xs text-orange-500 italic truncate">
+                  📝 {item.note}
+                </div>
+              )}
             </div>
-          )}
-
+          ))}
         </div>
-      ))}
 
-    </div>
 
     {/* 📦 HÌNH THỨC NHẬN (ĐẶT NGOÀI MAP) */}
     <div className="mt-2 text-xs">
@@ -68,20 +70,24 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
 
     {/* TOTAL */}
     <div className="font-bold mt-2 flex justify-between border-t border-gray-300 pt-2">
-      <span>Tổng:</span>
+      {/* <span>Tổng:</span> */}
       <span>{order.total.toLocaleString()}đ</span>
     </div>
 
     {/* BUTTON */}
     <button
-      onClick={(e) => {
-        e.stopPropagation(); // 🔥 tránh mở popup khi bấm nút
-        onPickup(order);
-      }}
-      className="mt-2 w-full bg-green-600 text-white py-2 rounded"
-    >
-      Nhận món
-    </button>
+  onClick={(e) => {
+    e.stopPropagation();
+
+    // 🔥 gọi đúng logic quẹt thẻ
+    if (onPickup) {
+      onPickup(order);
+    }
+  }}
+  className="mt-2 w-full bg-green-600 text-white py-2 rounded"
+>
+  Nhận món
+</button>
 
   </div>
 ); 
@@ -89,32 +95,54 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
   }
 
   return (
-    <div className="w-1/3 p-2 flex flex-col">
-      <div className="bg-green-700 text-white px-4 py-2 rounded-t-xl font-semibold">
-        Đã xong / Chờ lấy món
-      </div>
+  <div className="
+      w-full 
+      sm:w-1/2 
+      lg:w-1/3 
+      p-2 flex flex-col
+      min-h-0
+    ">
 
-      <div className="relative flex-1 rounded-b-xl overflow-hidden">
-        <div className="absolute inset-0 bg-white" />
+    {/* HEADER */}
+    <div className="bg-green-700 text-white px-4 py-2 rounded-t-xl font-semibold sticky top-0 z-20">
+      Đã xong / Chờ lấy món ({orders.length})
+    </div>
+
+    {/* BODY */}
+    <div className="relative flex-1 min-h-0 rounded-b-xl overflow-hidden">
+
+      {/* BG pattern */}
+      <div className="absolute inset-0 bg-white" />
 
         <div
-  className="absolute inset-0 z-10 pointer-events-none"
-  style={{
-    backgroundImage: `url(${bgXanhLa})`,
-    backgroundRepeat: "repeat",
-    backgroundSize: "200px"
-  }}
-/>
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            backgroundImage: `url(${bgXanhLa})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "200px"
+          }}
+        />
 
-        <div className="relative z-20 grid grid-cols-3 gap-3 p-4 overflow-y-auto">
-          {orders.map(order => (
-            <OrderDoneCard
-              key={order.orderKey}
-              order={order}
-            />
-          ))}
-        </div>
+      {/* CONTENT */}
+      <div className="
+        relative z-10
+        grid 
+        grid-cols-1 
+        sm:grid-cols-2 
+        lg:grid-cols-3 
+        gap-3 
+        p-3 
+        overflow-y-auto
+      ">
+        {orders.map(order => (
+          <OrderDoneCard
+            key={order.orderKey}
+            order={order}
+          />
+        ))}
       </div>
+
     </div>
-  );
+  </div>
+);
 }
