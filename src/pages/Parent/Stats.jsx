@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { BarChart3, Wallet, Utensils, Clock } from "lucide-react";
 import { mockOrders } from "../../datas/mockOrders";
 
+import bang from "../../assets/bang.png";
+import vuot from "../../assets/vuot.png";
+import tietkiem from "../../assets/tietkiem.png";
+
 export default function Stats() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("week");
@@ -474,19 +478,21 @@ const feedback = getFeedback(diff);
   {/* IMAGE */}
   <div className="flex justify-center">
     <img
-      src={
-        diff < 0
-          ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-          : "https://cdn-icons-png.flaticon.com/512/742/742751.png"
-      }
-      className="w-20"
-    />
+  src={
+    diff < 0
+      ? tietkiem
+      : diff > 0
+      ? vuot
+      : bang
+  }
+  className="w-40"
+/>
   </div>
 
 </div>
 )}
 
-</div>
+      </div>
 
       {/* TOP FOOD */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-4">
