@@ -73,41 +73,39 @@ export default function Welcome() {
     },
   ];
 
- const handleScan = (data) => {
-  // console.log("📌 Scan:", data);
+  const handleScan = (data) => {
+    // console.log("📌 Scan:", data);
 
-  // 👉 nếu là QR (ví dụ: chỉ có số tiền nhỏ)
-  if (Number(data) <= 20000) {
-    // 👉 QR mode
-    localStorage.setItem("amount", data);
-    localStorage.removeItem("student"); // 🔥 XÓA student cũ
-  } else {
-    // 👉 thẻ học sinh
-    const randomStudent =
-      studentsMock[Math.floor(Math.random() * studentsMock.length)];
+    // 👉 nếu là QR (ví dụ: chỉ có số tiền nhỏ)
+    if (Number(data) <= 20000) {
+      // 👉 QR mode
+      localStorage.setItem("amount", data);
+      localStorage.removeItem("student"); // 🔥 XÓA student cũ
+    } else {
+      // 👉 thẻ học sinh
+      const randomStudent =
+        studentsMock[Math.floor(Math.random() * studentsMock.length)];
 
-    const student = {
-      ...randomStudent,
-      cardId: data,
-    };
+      const student = {
+        ...randomStudent,
+        cardId: data,
+      };
 
-    localStorage.setItem("student", JSON.stringify(student));
-    localStorage.removeItem("amount");  
-  }
+      localStorage.setItem("student", JSON.stringify(student));
+      localStorage.removeItem("amount");
+    }
 
-  navigate("/order");
-};
+    navigate("/order");
+  };
 
   // quét mã QR
   const [showQR, setShowQR] = useState(false);
   const [qrInstance, setQrInstance] = useState(null);
 
   const startQRScan = async () => {
-  setShowQR(true);
+    setShowQR(true);
 
-  setTimeout(async () => {
     try {
-      // 🔥 lấy danh sách camera
       const devices = await Html5Qrcode.getCameras();
 
       if (!devices || devices.length === 0) {
@@ -115,35 +113,51 @@ export default function Welcome() {
         return;
       }
 
-      console.log("CAMERAS:", devices);
-
-      const cameraId = devices[0].id; // 👉 chọn camera đầu tiên
+      // 👉 ưu tiên camera sau
+      const backCamera =
+        devices.find((d) =>
+          d.label.toLowerCase().includes("back")
+        ) || devices[0];
 
       const qr = new Html5Qrcode("qr-reader");
       setQrInstance(qr);
 
       await qr.start(
-        cameraId, // 🔥 QUAN TRỌNG NHẤT
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        (decodedText) => {
-          console.log("QR:", decodedText);
+  backCamera.id,
+  {
+    fps: 20,
+    qrbox: { width: 280, height: 280 },
 
+    // 🔥 QUAN TRỌNG
+    disableFlip: false,
+    aspectRatio: 1.777,
+
+    // 👇 thêm cái này
+    // formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+  },
+        (decodedText) => {
           handleScan(decodedText);
 
-          qr.stop();
-          setShowQR(false);
+          qr.stop().then(() => {
+            setShowQR(false);
+          });
         },
-        () => {}
+        () => { }
       );
+
+      // 🔥 FIX ĐEN (rất quan trọng)
+      setTimeout(() => {
+        const region = document.querySelector("#qr-reader__scan_region");
+        if (region) {
+          region.style.background = "transparent";
+        }
+      }, 300);
+
     } catch (err) {
       console.error("❌ CAMERA ERROR:", err);
       alert("Không mở được camera");
     }
-  }, 500);
-};
+  };
 
   return (
     <div
@@ -183,7 +197,7 @@ export default function Welcome() {
 
         {/* ✅ BUTTON QR (thêm đúng yêu cầu) */}
         <button
-           onClick={startQRScan}
+          onClick={startQRScan}
           className="mt-6 w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl font-semibold"
         >
           📷 Quét mã QR để bắt đầu đặt món
@@ -191,22 +205,55 @@ export default function Welcome() {
 
         {/* ✅ CAMERA QR */}
         {showQR && (
-          <div className="mt-5 bg-black/40 p-3 rounded-xl">
-            <div id="qr-reader" className="rounded-lg overflow-hidden"></div>
+  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
 
-            <button
-              onClick={async () => {
-                if (qrInstance) {
-                  await qrInstance.stop();
-                }
-                setShowQR(false);
-              }}
-              className="mt-3 text-red-300 text-sm"
-            >
-              ❌ Tắt camera
-            </button>
-          </div>
-        )}
+    {/* TITLE */}
+    <p className="text-white text-lg mb-5 font-semibold tracking-wide">
+      📷 Đưa mã QR vào khung
+    </p>
+
+    {/* CAMERA WRAPPER */}
+    <div className="relative w-[320px] h-[320px]">
+
+      {/* CAMERA */}
+      <div
+        id="qr-reader"
+        className="w-full h-full rounded-2xl overflow-hidden bg-black"
+      />
+
+      {/* OVERLAY TỐI XUNG QUANH */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-black/10 rounded-2xl" />
+
+        {/* LỖ TRONG SUỐT Ở GIỮA */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-[260px] h-[260px] border-2 border-transparent rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
+        </div>
+      </div>
+
+      {/* KHUNG SCAN */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[260px] h-[260px] border-4 border-green-400 rounded-xl" />
+      </div>
+
+      {/* LINE SCAN */}
+      <div className="absolute left-1/2 -translate-x-1/2 w-[260px] h-1 bg-green-400 animate-scan" />
+
+    </div>
+
+    {/* BUTTON */}
+    <button
+      onClick={async () => {
+        if (qrInstance) await qrInstance.stop();
+        setShowQR(false);
+      }}
+      className="mt-6 bg-red-500 hover:bg-red-600 transition px-6 py-2 rounded-xl text-white font-semibold"
+    >
+      ❌ Tắt camera
+    </button>
+
+  </div>
+)}
 
       </div>
     </div>

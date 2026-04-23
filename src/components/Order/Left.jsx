@@ -87,53 +87,35 @@ export default function Left({
             backgroundSize: "200px"
           }}
         />
-
+{/* auto-rows-[minmax(140px,auto)] */}
         {/* PRODUCTS */}
-        <div className="relative z-20 p-2 grid grid-cols-4 gap-4 h-full overflow-y-auto auto-rows-[minmax(140px,auto)]">
-          {products.map((item) => (
-            <div
-  key={item.id}
-  onClick={() => {
-    if (!amount || item.price <= remaining) {
-      addToCart(item);
-    } else {
-      alert("❌ Bạn không đủ tiền để thêm món này vào giỏ");
-    }
-  }}
-  className={`bg-white rounded-xl border border-gray-300 transition overflow-hidden flex flex-col
-  ${
-    amount && item.price > remaining
-      ? "opacity-40 pointer-events-none"
-      : "hover:shadow-md cursor-pointer"
-  }`}
->
-   
-  {/* IMAGE */}
-  <div className="w-full h-38 overflow-hidden">
-    <img
-      src={item.image}
-      className="w-full h-full object-cover"
-    />
-  </div>
+        <div className="relative z-20 p-2 grid grid-cols-4 gap-x-4 gap-y-2 overflow-y-auto">
+  {products.map((item) => (
+    <div
+      key={item.id}
+      className="bg-white rounded-xl border border-gray-300 overflow-hidden flex flex-col h-[180px]"
+    >
+      {/* IMAGE */}
+      <div className="w-full h-[110px] overflow-hidden">
+        <img
+          src={item.image}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-  {/* INFO */}
-  <div className="p-2 flex flex-col gap-1">
-    <p className="text-sm font-semibold line-clamp-1">
-      {item.name}
-    </p>
+      {/* INFO */}
+      <div className="p-2 flex flex-col justify-between flex-1">
+        <p className="text-sm font-semibold line-clamp-1">
+          {item.name}
+        </p>
 
-    <div className="flex justify-between items-center">
-      <span className="text-blue-600 text-sm font-bold">
-        {item.price.toLocaleString()}đ
-      </span>
-
-      <ShoppingCart size={16} />
+        <span className="text-blue-600 text-sm font-bold">
+          {item.price.toLocaleString()}đ
+        </span>
+      </div>
     </div>
-  </div>
-
-</div> 
-          ))}
-        </div>
+  ))}
+</div>
 
       </div>
     </div>

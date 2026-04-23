@@ -33,3 +33,14 @@
   width: max-content;
   animation: marquee 30s linear infinite;
 }
+
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+.animate-scan {
+  position: absolute;
+  top: 0;
+  animation: scan 2s linear infinite;
+}
