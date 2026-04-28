@@ -93,6 +93,7 @@ export default function Left({
   {products.map((item) => (
     <div
       key={item.id}
+      onClick={() => addToCart(item)} 
       className="bg-white rounded-xl border border-gray-300 overflow-hidden flex flex-col h-[180px]"
     >
       {/* IMAGE */}
