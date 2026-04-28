@@ -10,8 +10,13 @@ export default function Stats() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("week");
   const [compareType, setCompareType] = useState("");
-  const [startDate, setStartDate] = useState("");
-const [endDate, setEndDate] = useState("");
+  
+  
+  const [start1, setStart1] = useState("");
+const [end1, setEnd1] = useState("");
+
+const [start2, setStart2] = useState("");
+const [end2, setEnd2] = useState("");
 
 
   // =========================
@@ -222,27 +227,15 @@ else if (compareType === "month") {
 }
 
 // 👉 CUSTOM (CHỌN LỊCH)
-else if (compareType === "custom" && startDate && endDate) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const rangeDays =
-    (end - start) / (1000 * 60 * 60 * 24) + 1;
-
-  const prevStart = new Date(start);
-  prevStart.setDate(start.getDate() - rangeDays);
-
-  const prevEnd = new Date(end);
-  prevEnd.setDate(end.getDate() - rangeDays);
-
+else if (compareType === "custom" && start1 && end1 && start2 && end2) {
   const current = orders.filter((o) => {
     const d = new Date(o.date);
-    return d >= start && d <= end;
+    return d >= new Date(start1) && d <= new Date(end1);
   });
 
   const prev = orders.filter((o) => {
     const d = new Date(o.date);
-    return d >= prevStart && d <= prevEnd;
+    return d >= new Date(start2) && d <= new Date(end2);
   });
 
   currentTotal = getTotal(current);
@@ -421,18 +414,55 @@ const feedback = getFeedback(diff);
     <option value="">-- Chọn kiểu so sánh --</option>
     <option value="week">Tuần này với tuần trước</option>
     <option value="month">Tháng này với tháng trước</option>
+    <option value="custom">Chọn khoảng thời gian</option>
   </select>
 
+  {/* nếu chọn khoảng thời gian thì hiện thị  */}
+  {compareType === "custom" && (
+  <div className="grid grid-cols-2 gap-3">
+    
+    {/* KHOẢNG 1 */}
+    <div>
+      <p className="text-xs text-gray-500">Khoảng 1</p>
+      <input
+        type="date"
+        onChange={(e) => setStart1(e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="date"
+        onChange={(e) => setEnd1(e.target.value)}
+        className="w-full border p-2 rounded mt-1"
+      />
+    </div>
+
+    {/* KHOẢNG 2 */}
+    <div>
+      <p className="text-xs text-gray-500">Khoảng 2</p>
+      <input
+        type="date"
+        onChange={(e) => setStart2(e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="date"
+        onChange={(e) => setEnd2(e.target.value)}
+        className="w-full border p-2 rounded mt-1"
+      />
+    </div>
+
+  </div>
+)}
   {compareType && (
   <div className="p-4 rounded-xl bg-gray-50 space-y-3">
 
   {/* TITLE */}
   <p className="text-sm text-gray-500">
     {compareType === "week"
-      ? "Tuần này vs tuần trước"
-      : compareType === "month"
-      ? "Tháng này vs tháng trước"
-      : "Khoảng thời gian"}
+  ? "Tuần này vs tuần trước"
+  : compareType === "month"
+  ? "Tháng này vs tháng trước"
+  : "Khoảng bạn chọn với khoảng bạn chọn"}
   </p>
 
   {/* 2 CỘT SO SÁNH */}

@@ -1,7 +1,10 @@
 import React from "react";
 import { Bell, Wallet, Utensils, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   return (
     <div className="p-6 space-y-6">
 
@@ -66,9 +69,12 @@ export default function Dashboard() {
   
   <div className="flex items-center justify-between mb-4">
     <p className="font-semibold text-gray-800">🧾 Lịch sử gần đây</p>
-    <span className="text-xs text-blue-600 cursor-pointer hover:underline">
-      Xem tất cả
-    </span>
+    <span
+  onClick={() => navigate("/history")} // 👈 đường dẫn route
+  className="text-xs text-blue-600 cursor-pointer hover:underline"
+>
+  Xem tất cả
+</span>
   </div>
 
   <div className="space-y-3 text-sm">
