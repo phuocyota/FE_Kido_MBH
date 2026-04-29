@@ -4,6 +4,7 @@ import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { loginStudent } from "../../api/auth"; // sửa đúng path của bạn
 
 export default function Login() {
       const [studentId, setStudentId] = useState("");
@@ -19,29 +20,43 @@ export default function Login() {
             inputRef.current?.focus();
       }, []);
 
-      const handleLogin = () => {
+      const handleLogin = async () => {
             if (!studentId || !password) {
                   toast.error("Vui lòng nhập đầy đủ thông tin");
                   return;
             }
 
-            setLoading(true);
+            try {
+                  setLoading(true);
 
-            // fake delay (sau thay API)
-            setTimeout(() => {
-                  if (studentId === "123" && password === "123") {
-                        localStorage.setItem("token", "token_canteen");
+                  const res = await loginStudent({
+                        username: studentId,
+                        password,
+                        deviceId: "device-12345",
+                  });
+
+                  // console.log("Login response:", res);
+
+                  const data = res?.data;
+
+
+                  if (res?.success && data?.accessToken) {
+                        localStorage.setItem("accessToken", data.accessToken);
 
                         toast.success("Đăng nhập thành công 🎉");
+
                         navigate("/");
                   } else {
-                        toast.error("Vui lòng kiểm tra lại mã học sinh hoặc mật khẩu");
+                        toast.error(res?.message || "Đăng nhập thất bại");
                   }
 
+            } catch (error) {
+                  console.error(error);
+                  toast.error(error.message);
+            } finally {
                   setLoading(false);
-            }, 1200);
+            }
       };
-
       return (
             <div
                   className="min-h-screen flex items-center justify-center bg-cover bg-center relative"

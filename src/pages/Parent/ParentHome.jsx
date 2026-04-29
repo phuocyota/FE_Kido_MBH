@@ -1,25 +1,48 @@
-import React, { useState,  } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavLink, Outlet } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
+import { getUserById } from "../../api/student"; // sửa đúng path
 
 export default function ParentHome() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
 
-  navigate("/login");
-};
-
-  const child = {
-    name: "Nguyễn Văn B",
-    class: "Lớp 5A",
-    avatar: "https://i.pravatar.cc/100?img=3",
+    navigate("/login");
   };
+
+  // api login 
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+
+        if (!userId) return;
+
+        const res = await getUserById(userId);
+
+        console.log("USER DETAIL:", res);
+
+        if (res?.success) {
+          setUser(res.data);
+        }
+      } catch (err) {
+        console.error("Fetch user error:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+
 
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
@@ -34,11 +57,11 @@ const handleLogout = () => {
       style={{ backgroundImage: `url(${bg})` }}
     >
       {/* 🌫️ BLUR XUNG QUANH CENTER */}
-<div className="absolute inset-0 pointer-events-none">
-  <div className="w-full h-full backdrop-blur-sm 
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="w-full h-full backdrop-blur-sm 
     [mask-image:radial-gradient(circle_at_center,transparent_40%,black_100%)]
   "></div>
-</div>
+      </div>
       {/* 🌟 NỘI DUNG */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
 
@@ -51,11 +74,21 @@ const handleLogout = () => {
             {/* USER */}
             <div className="flex flex-col items-center mb-6 border-b border-gray-200 pb-4">
               <img
-                src={child.avatar}
+                src={
+                  user?.avatar
+                    ? `${import.meta.env.VITE_API_BASE_URL}/${user.avatar}`
+                    : "https://i.pravatar.cc/100"
+                }
                 className="w-14 h-14 rounded-full mb-2 border-2 border-blue-500 shadow"
               />
-              <p className="font-semibold text-gray-800">{child.name}</p>
-              <p className="text-xs text-gray-500">{child.class}</p>
+
+              <p className="font-semibold text-gray-800">
+                {user?.fullName || "Loading..."}
+              </p>
+
+              <p className="text-xs text-gray-500">
+                {user?.userName}
+              </p>
             </div>
 
             {/* MENU */}
@@ -69,10 +102,9 @@ const handleLogout = () => {
                     end={item.path === ""}
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition
-                      ${
-                        isActive
-                          ? "bg-blue-600 text-white shadow-md"
-                          : "text-gray-700 hover:bg-blue-50"
+                      ${isActive
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "text-gray-700 hover:bg-blue-50"
                       }`
                     }
                   >
@@ -82,15 +114,15 @@ const handleLogout = () => {
                 );
               })}
 
-               {/* LOGOUT */}
-  <button
-    onClick={handleLogout}
-    className=" flex items-center gap-3 px-3 py-2 rounded-xl text-sm 
+              {/* LOGOUT */}
+              <button
+                onClick={handleLogout}
+                className=" flex items-center gap-3 px-3 py-2 rounded-xl text-sm 
     text-red-600 hover:bg-red-50 transition cursor-pointer "
-  >
-    <LogOut size={18} />
-    Đăng xuất
-  </button>
+              >
+                <LogOut size={18} />
+                Đăng xuất
+              </button>
             </div>
           </div>
 
@@ -106,7 +138,11 @@ const handleLogout = () => {
               <p className="font-semibold">Canteen</p>
 
               <img
-                src={child.avatar}
+                src={
+                  user?.avatar
+                    ? `${import.meta.env.VITE_API_BASE_URL}/${user.avatar}`
+                    : "https://i.pravatar.cc/100"
+                }
                 className="w-8 h-8 rounded-full"
               />
             </div>
@@ -121,10 +157,10 @@ const handleLogout = () => {
 
         {/* ================= MOBILE DRAWER ================= */}
         <div
-  className={`absolute top-10 left-4 w-64 bg-white z-50 shadow-[0_20px_60px_rgba(0,0,0,0.25)] rounded-2xl 
+          className={`absolute top-10 left-4 w-64 bg-white z-50 shadow-[0_20px_60px_rgba(0,0,0,0.25)] rounded-2xl 
   transform transition-all duration-300
   ${open ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`}
->
+        >
           {/* HEADER */}
           <div className="p-4 border-b border-gray-300 flex justify-between items-center">
             <p className="font-semibold">Menu</p>
@@ -134,12 +170,23 @@ const handleLogout = () => {
           {/* USER */}
           <div className="p-4 flex items-center gap-3 border-b border-gray-300">
             <img
-              src={child.avatar}
+              src={
+                user?.avatar
+                  ? `${import.meta.env.VITE_API_BASE_URL}/${user.avatar}`
+                  : "https://i.pravatar.cc/100"
+              }
               className="w-10 h-10 rounded-full"
             />
             <div>
-              <p className="font-semibold">{child.name}</p>
-              <p className="text-xs text-gray-500">{child.class}</p>
+              <div>
+  <p className="font-semibold">
+    {user?.fullName || "Loading..."}
+  </p>
+
+  <p className="text-xs text-gray-500">
+    {user?.userName || ""}
+  </p>
+</div>
             </div>
           </div>
 
@@ -155,10 +202,9 @@ const handleLogout = () => {
                   end={item.path === ""}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-xl
-                    ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-blue-50"
+                    ${isActive
+                      ? "bg-blue-600 text-white"
+                      : "hover:bg-blue-50"
                     }`
                   }
                 >
@@ -169,15 +215,15 @@ const handleLogout = () => {
             })}
 
             <button
-  onClick={() => {
-    handleLogout();
-    setOpen(false);
-  }}
-  className="flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 cursor-pointer  "
->
-  <LogOut size={18} />
-  Đăng xuất
-</button>
+              onClick={() => {
+                handleLogout();
+                setOpen(false);
+              }}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 cursor-pointer  "
+            >
+              <LogOut size={18} />
+              Đăng xuất
+            </button>
           </div>
         </div>
 
@@ -190,6 +236,6 @@ const handleLogout = () => {
         )}
 
       </div>
-    </div> 
+    </div>
   );
 }
