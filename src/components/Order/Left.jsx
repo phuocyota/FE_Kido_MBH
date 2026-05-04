@@ -73,7 +73,7 @@ export default function Left({
       </div>
 
       {/* PRODUCTS */}
-      <div className="relative flex-1 overflow-hidden min-h-0">
+      <div className="relative flex-1 overflow-hidden min-h-0 h-full">
 
         {/* NỀN TRẮNG */}
         <div className="absolute inset-0 bg-white" />
@@ -89,7 +89,7 @@ export default function Left({
         />
 {/* auto-rows-[minmax(140px,auto)] */}
         {/* PRODUCTS */}
-        <div className="relative z-20 p-2 grid grid-cols-4 gap-x-4 gap-y-2 overflow-y-auto">
+        <div className="relative z-20 p-2 grid grid-cols-4 gap-x-4 gap-y-2 overflow-y-auto h-full">
   {products.map((item) => (
     <div
       key={item.id}
