@@ -102,62 +102,106 @@ export default function Welcome() {
   const [showQR, setShowQR] = useState(false);
   const [qrInstance, setQrInstance] = useState(null);
 
+  const [cameras, setCameras] = useState([]);
+const [currentCameraId, setCurrentCameraId] = useState(null);
+
   const startQRScan = async () => {
-    setShowQR(true);
+  setShowQR(true);
 
-    try {
-      const devices = await Html5Qrcode.getCameras();
+  try {
+    const devices = await Html5Qrcode.getCameras();
 
-      if (!devices || devices.length === 0) {
-        alert("❌ Không tìm thấy camera");
-        return;
-      }
+    if (!devices || devices.length === 0) {
+      alert("❌ Không tìm thấy camera");
+      return;
+    }
 
-      // 👉 ưu tiên camera sau
-      const backCamera =
+    // 🔥 detect mobile
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    let selectedCamera;
+
+    if (isMobile) {
+      // 📱 Mobile → ưu tiên camera sau
+      selectedCamera =
         devices.find((d) =>
-          d.label.toLowerCase().includes("back")
+          d.label.toLowerCase().includes("back") ||
+          d.label.toLowerCase().includes("rear") ||
+          d.label.toLowerCase().includes("environment")
         ) || devices[0];
+    } else {
+      // 💻 Desktop → camera trước (thường là cái đầu tiên)
+      selectedCamera = devices[0];
+    }
 
-      const qr = new Html5Qrcode("qr-reader");
-      setQrInstance(qr);
+    const qr = new Html5Qrcode("qr-reader");
+    setQrInstance(qr);
+    setCameras(devices);
+    setCurrentCameraId(selectedCamera.id);
 
-      await qr.start(
-  backCamera.id,
-  {
-    fps: 20,
-    qrbox: { width: 280, height: 280 },
+    await qr.start(
+      selectedCamera.id,
+      {
+        fps: 20,
+        qrbox: { width: 280, height: 280 },
+        disableFlip: false,
+        aspectRatio: 1.777,
+      },
+      (decodedText) => {
+        handleScan(decodedText);
 
-    // 🔥 QUAN TRỌNG
-    disableFlip: false,
-    aspectRatio: 1.777,
+        qr.stop().then(() => {
+          setShowQR(false);
+        });
+      },
+      () => {}
+    );
 
-    // 👇 thêm cái này
-    // formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-  },
-        (decodedText) => {
-          handleScan(decodedText);
+    // 🔥 FIX nền đen
+    setTimeout(() => {
+      const region = document.querySelector("#qr-reader__scan_region");
+      if (region) {
+        region.style.background = "transparent";
+      }
+    }, 300);
 
-          qr.stop().then(() => {
-            setShowQR(false);
-          });
-        },
-        () => { }
-      );
+  } catch (err) {
+    console.error("❌ CAMERA ERROR:", err);
+    alert("Không mở được camera");
+  }
+};
+  const startCamera = async (cameraId) => {
+  if (!qrInstance) return;
 
-      // 🔥 FIX ĐEN (rất quan trọng)
-      setTimeout(() => {
-        const region = document.querySelector("#qr-reader__scan_region");
-        if (region) {
-          region.style.background = "transparent";
-        }
-      }, 300);
+  try {
+  
+    try {
+      await qrInstance.stop();
+    } catch {}
 
-    } catch (err) {
-      console.error("❌ CAMERA ERROR:", err);
-      alert("Không mở được camera");
+    await qrInstance.start(
+      cameraId,
+      { fps: 20, qrbox: { width: 280, height: 280 } },
+      (decodedText) => {
+        handleScan(decodedText);
+
+        qrInstance.stop().then(() => {
+          setShowQR(false);
+        });
+      }
+    );
+  } catch (err) {
+    console.error("Start camera error:", err);
+  }
+};
+
+useEffect(() => {
+  return () => {
+    if (qrInstance) {
+      qrInstance.stop().catch(() => {});
     }
   };
+}, [qrInstance]);
 
   return (
     <div
@@ -251,6 +295,34 @@ export default function Welcome() {
     >
       ❌ Tắt camera
     </button>
+
+    <button
+  onClick={async () => {
+  if (!qrInstance || cameras.length < 2) return;
+
+  try {
+    await qrInstance.stop();
+
+    setTimeout(async () => {
+      const currentIndex = cameras.findIndex(
+        (c) => c.id === currentCameraId
+      );
+
+      const nextIndex = (currentIndex + 1) % cameras.length;
+      const nextCamera = cameras[nextIndex];
+
+      setCurrentCameraId(nextCamera.id);
+
+      await startCamera(nextCamera.id);
+    }, 300);  
+  } catch (err) {
+    console.error("Switch camera error:", err);
+  }
+}}
+  className="mt-3 bg-blue-500 hover:bg-blue-600 transition px-6 py-2 rounded-xl text-white font-semibold"
+>
+  🔄 Đổi camera
+</button>
 
   </div>
 )}
