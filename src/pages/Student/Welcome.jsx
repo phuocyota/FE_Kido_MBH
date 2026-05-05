@@ -103,105 +103,116 @@ export default function Welcome() {
   const [qrInstance, setQrInstance] = useState(null);
 
   const [cameras, setCameras] = useState([]);
-const [currentCameraId, setCurrentCameraId] = useState(null);
+  const [currentCameraId, setCurrentCameraId] = useState(null);
 
   const startQRScan = async () => {
-  setShowQR(true);
+    setShowQR(true);
 
-  try {
-    const devices = await Html5Qrcode.getCameras();
-
-    if (!devices || devices.length === 0) {
-      alert("❌ Không tìm thấy camera");
-      return;
-    }
-
-    // 🔥 detect mobile
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    let selectedCamera;
-
-    if (isMobile) {
-      // 📱 Mobile → ưu tiên camera sau
-      selectedCamera =
-        devices.find((d) =>
-          d.label.toLowerCase().includes("back") ||
-          d.label.toLowerCase().includes("rear") ||
-          d.label.toLowerCase().includes("environment")
-        ) || devices[0];
-    } else {
-      // 💻 Desktop → camera trước (thường là cái đầu tiên)
-      selectedCamera = devices[0];
-    }
-
-    const qr = new Html5Qrcode("qr-reader");
-    setQrInstance(qr);
-    setCameras(devices);
-    setCurrentCameraId(selectedCamera.id);
-
-    await qr.start(
-      selectedCamera.id,
-      {
-        fps: 20,
-        qrbox: { width: 280, height: 280 },
-        disableFlip: false,
-        aspectRatio: 1.777,
-      },
-      (decodedText) => {
-        handleScan(decodedText);
-
-        qr.stop().then(() => {
-          setShowQR(false);
-        });
-      },
-      () => {}
-    );
-
-    // 🔥 FIX nền đen
-    setTimeout(() => {
-      const region = document.querySelector("#qr-reader__scan_region");
-      if (region) {
-        region.style.background = "transparent";
-      }
-    }, 300);
-
-  } catch (err) {
-    console.error("❌ CAMERA ERROR:", err);
-    alert("Không mở được camera");
-  }
-};
-  const startCamera = async (cameraId) => {
-  if (!qrInstance) return;
-
-  try {
-  
     try {
-      await qrInstance.stop();
-    } catch {}
+      const devices = await Html5Qrcode.getCameras();
 
-    await qrInstance.start(
-      cameraId,
-      { fps: 20, qrbox: { width: 280, height: 280 } },
-      (decodedText) => {
-        handleScan(decodedText);
-
-        qrInstance.stop().then(() => {
-          setShowQR(false);
-        });
+      if (!devices || devices.length === 0) {
+        alert("❌ Không tìm thấy camera");
+        return;
       }
-    );
-  } catch (err) {
-    console.error("Start camera error:", err);
-  }
-};
 
-useEffect(() => {
-  return () => {
-    if (qrInstance) {
-      qrInstance.stop().catch(() => {});
+      // 🔥 detect mobile
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      let selectedCamera;
+
+      if (isMobile) {
+        // 📱 Mobile → ưu tiên camera sau
+        selectedCamera =
+          devices.find((d) =>
+            d.label.toLowerCase().includes("back") ||
+            d.label.toLowerCase().includes("rear") ||
+            d.label.toLowerCase().includes("environment")
+          ) || devices[0];
+      } else {
+        // 💻 Desktop → camera trước (thường là cái đầu tiên)
+        selectedCamera = devices[0];
+      }
+
+      const qr = new Html5Qrcode("qr-reader");
+      setQrInstance(qr);
+      setCameras(devices);
+      setCurrentCameraId(selectedCamera.id);
+
+      await qr.start(
+        selectedCamera.id,
+        {
+          fps: 20,
+          qrbox: { width: 280, height: 280 },
+          disableFlip: false,
+          aspectRatio: 1.777,
+        },
+        (decodedText) => {
+          handleScan(decodedText);
+
+          qr.stop().then(() => {
+            setShowQR(false);
+          });
+        },
+        () => { }
+      );
+
+      // 🔥 FIX nền đen
+      setTimeout(() => {
+        const region = document.querySelector("#qr-reader__scan_region");
+        if (region) {
+          region.style.background = "transparent";
+        }
+      }, 300);
+
+    } catch (err) {
+      console.error("❌ CAMERA ERROR:", err);
+      alert("Không mở được camera");
     }
   };
-}, [qrInstance]);
+  const startCamera = async (cameraId) => {
+    if (!qrInstance) return;
+
+    try {
+
+      try {
+        await qrInstance.stop();
+      } catch { }
+
+      await qrInstance.start(
+        cameraId,
+        {
+          fps: 10, qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.floor(minEdge * 0.8);
+            return { width: size, height: size };
+          }
+        },
+        (decodedText) => {
+          if (!qrInstance) return;
+
+          qrInstance.stop().then(() => {
+            setShowQR(false);
+
+            // 🔥 delay để đảm bảo release camera
+            setTimeout(() => {
+              handleScan(decodedText);
+            }, 100);
+          });
+        }
+      );
+    } catch (err) {
+      console.error("Start camera error:", err);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (qrInstance) {
+        qrInstance.stop().catch(() => { });
+      }
+    };
+  }, [qrInstance]);
 
   return (
     <div
@@ -249,83 +260,83 @@ useEffect(() => {
 
         {/* ✅ CAMERA QR */}
         {showQR && (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
+          <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
 
-    {/* TITLE */}
-    <p className="text-white text-lg mb-5 font-semibold tracking-wide">
-      📷 Đưa mã QR vào khung
-    </p>
+            {/* TITLE */}
+            <p className="text-white text-lg mb-5 font-semibold tracking-wide">
+              📷 Đưa mã QR vào khung
+            </p>
 
-    {/* CAMERA WRAPPER */}
-    <div className="relative w-[320px] h-[320px]">
+            {/* CAMERA WRAPPER */}
+            <div className="relative w-[320px] h-[320px]">
 
-      {/* CAMERA */}
-      <div
-        id="qr-reader"
-        className="w-full h-full rounded-2xl overflow-hidden bg-black"
-      />
+              {/* CAMERA */}
+              <div
+                id="qr-reader"
+                className="w-full h-full rounded-2xl overflow-hidden bg-black"
+              />
 
-      {/* OVERLAY TỐI XUNG QUANH */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-black/10 rounded-2xl" />
+              {/* OVERLAY TỐI XUNG QUANH */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 bg-black/10 rounded-2xl" />
 
-        {/* LỖ TRONG SUỐT Ở GIỮA */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-[260px] h-[260px] border-2 border-transparent rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
-        </div>
-      </div>
+                {/* LỖ TRONG SUỐT Ở GIỮA */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[260px] h-[260px] border-2 border-transparent rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
+                </div>
+              </div>
 
-      {/* KHUNG SCAN */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[260px] h-[260px] border-4 border-green-400 rounded-xl" />
-      </div>
+              {/* KHUNG SCAN */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[260px] h-[260px] border-4 border-green-400 rounded-xl" />
+              </div>
 
-      {/* LINE SCAN */}
-      <div className="absolute left-1/2 -translate-x-1/2 w-[260px] h-1 bg-green-400 animate-scan" />
+              {/* LINE SCAN */}
+              <div className="absolute left-1/2 -translate-x-1/2 w-[260px] h-1 bg-green-400 animate-scan" />
 
-    </div>
+            </div>
 
-    {/* BUTTON */}
-    <button
-      onClick={async () => {
-        if (qrInstance) await qrInstance.stop();
-        setShowQR(false);
-      }}
-      className="mt-6 bg-red-500 hover:bg-red-600 transition px-6 py-2 rounded-xl text-white font-semibold"
-    >
-      ❌ Tắt camera
-    </button>
+            {/* BUTTON */}
+            <button
+              onClick={async () => {
+                if (qrInstance) await qrInstance.stop();
+                setShowQR(false);
+              }}
+              className="mt-6 bg-red-500 hover:bg-red-600 transition px-6 py-2 rounded-xl text-white font-semibold"
+            >
+              ❌ Tắt camera
+            </button>
 
-    <button
-  onClick={async () => {
-  if (!qrInstance || cameras.length < 2) return;
+            <button
+              onClick={async () => {
+                if (!qrInstance || cameras.length < 2) return;
 
-  try {
-    await qrInstance.stop();
+                try {
+                  await qrInstance.stop();
 
-    setTimeout(async () => {
-      const currentIndex = cameras.findIndex(
-        (c) => c.id === currentCameraId
-      );
+                  setTimeout(async () => {
+                    const currentIndex = cameras.findIndex(
+                      (c) => c.id === currentCameraId
+                    );
 
-      const nextIndex = (currentIndex + 1) % cameras.length;
-      const nextCamera = cameras[nextIndex];
+                    const nextIndex = (currentIndex + 1) % cameras.length;
+                    const nextCamera = cameras[nextIndex];
 
-      setCurrentCameraId(nextCamera.id);
+                    setCurrentCameraId(nextCamera.id);
 
-      await startCamera(nextCamera.id);
-    }, 300);  
-  } catch (err) {
-    console.error("Switch camera error:", err);
-  }
-}}
-  className="mt-3 bg-blue-500 hover:bg-blue-600 transition px-6 py-2 rounded-xl text-white font-semibold"
->
-  🔄 Đổi camera
-</button>
+                    await startCamera(nextCamera.id);
+                  }, 300);
+                } catch (err) {
+                  console.error("Switch camera error:", err);
+                }
+              }}
+              className="mt-3 bg-blue-500 hover:bg-blue-600 transition px-6 py-2 rounded-xl text-white font-semibold"
+            >
+              🔄 Đổi camera
+            </button>
 
-  </div>
-)}
+          </div>
+        )}
 
       </div>
     </div>
