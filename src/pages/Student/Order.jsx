@@ -117,21 +117,23 @@ export default function Order() {
 
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("student"));
-    const qrAmount = localStorage.getItem("amount");
+  const data = JSON.parse(localStorage.getItem("student") || "null");
+  const qrAmount = localStorage.getItem("amount");
 
-    if (qrAmount) {
-      // 👉 TRƯỜNG HỢP QUÉT QR
-      setAmount(qrAmount);
-      setRemaining(Number(qrAmount));
-      setStudent(null);
-    } else {
+  if (qrAmount) {
+    const amountNumber = Number(qrAmount);
 
-      setStudent(data);
-      setAmount(null);
-    }
-  }, []);
-
+    setAmount(amountNumber);        
+    setRemaining(amountNumber);    
+    setStudent(null);
+  } else if (data) {
+    setStudent(data);
+    setAmount(null);
+  } else {
+    
+    console.warn("Không có dữ liệu từ scan");
+  }
+}, []);
 
   const filteredProducts = products.filter((p) => {
     // 👉 lọc theo category
@@ -145,20 +147,7 @@ export default function Order() {
     return matchCategory && matchPrice;
   });
 
-  // const addToCart = (item) => {
-  //   setCart((prev) => {
-  //     const exist = prev.find((p) => p.id === item.id);
-
-  //     if (exist) {
-  //       return prev.map((p) =>
-  //         p.id === item.id ? { ...p, qty: p.qty + 1 } : p
-  //       );
-  //     }
-
-  //     return [...prev, { ...item, qty: 1 }];
-  //   });
-  // };
-
+  
   const addToCart = (item) => {
     // 👉 Nếu đang dùng QR
     if (amount) {
@@ -187,18 +176,19 @@ export default function Order() {
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   const handlePayment = () => {
-    if (cart.length === 0) {
-      alert("Chưa có món");
-      return;
-    }
+  if (cart.length === 0) {
+    alert("Chưa có món");
+    return;
+  }
 
-    if (total > student.balance) {
-      alert("Không đủ tiền");
-      return;
-    }
+  // 🔥 Nếu dùng QR → bỏ check student
+  if (!amount && student && total > student.balance) {
+    alert("Không đủ tiền");
+    return;
+  }
 
-    setConfirmModal(true);
-  };
+  setConfirmModal(true);
+};
   const generateOrderNumber = () => {
     let current = localStorage.getItem("orderNumber");
 
@@ -220,7 +210,7 @@ export default function Order() {
     const isCash = paymentMethod === "cash";
 
     // ✅ CHỈ TRỪ TIỀN NẾU KHÔNG PHẢI TIỀN MẶT
-    if (!isCash) {
+    if (!isCash && student) {
       const updated = { ...student, balance: student.balance - total };
       localStorage.setItem("student", JSON.stringify(updated));
       setStudent(updated);

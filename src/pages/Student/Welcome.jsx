@@ -74,30 +74,31 @@ export default function Welcome() {
   ];
 
   const handleScan = (data) => {
-    // console.log("📌 Scan:", data);
+  if (!data || !/^\d+$/.test(data)) {
+    alert("QR không hợp lệ");
+    return;
+  }
 
-    // 👉 nếu là QR (ví dụ: chỉ có số tiền nhỏ)
-    if (Number(data) <= 20000) {
-      // 👉 QR mode
-      localStorage.setItem("amount", data);
-      localStorage.removeItem("student"); // 🔥 XÓA student cũ
-    } else {
-      // 👉 thẻ học sinh
-      const randomStudent =
-        studentsMock[Math.floor(Math.random() * studentsMock.length)];
+  const amount = Number(data);
 
-      const student = {
-        ...randomStudent,
-        cardId: data,
-      };
+  if (amount <= 20000) {
+    localStorage.setItem("amount", amount);
+    localStorage.removeItem("student");
+  } else {
+    const randomStudent =
+      studentsMock[Math.floor(Math.random() * studentsMock.length)];
 
-      localStorage.setItem("student", JSON.stringify(student));
-      localStorage.removeItem("amount");
-    }
+    const student = {
+      ...randomStudent,
+      cardId: data,
+    };
 
-    navigate("/order");
-  };
+    localStorage.setItem("student", JSON.stringify(student));
+    localStorage.removeItem("amount");
+  }
 
+  navigate("/order");
+};
   // quét mã QR
   const [showQR, setShowQR] = useState(false);
   const [qrInstance, setQrInstance] = useState(null);
@@ -148,13 +149,21 @@ export default function Welcome() {
           aspectRatio: 1.777,
         },
         (decodedText) => {
-          handleScan(decodedText);
+  if (!qr) return;
 
-          qr.stop().then(() => {
-            setShowQR(false);
-          });
-        },
-        () => { }
+  qr.stop().then(() => {
+  // 🔥 delay trước khi unmount UI
+  setTimeout(() => {
+    setShowQR(false);
+
+    // 🔥 delay thêm để chắc chắn release camera
+    setTimeout(() => {
+      handleScan(decodedText);
+    }, 150);
+
+  }, 50);
+});
+}
       );
 
       // 🔥 FIX nền đen
