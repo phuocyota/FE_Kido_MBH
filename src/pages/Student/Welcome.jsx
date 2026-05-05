@@ -71,7 +71,10 @@ export default function Welcome() {
       school: "THPT Gia Định",
       class: "12A4",
     },
+   
   ];
+
+  //  {name: "May mắn", balance: 5000, avatar: avatar1, school: "THPT Nguyễn Trãi",},
 
   const handleScan = (data) => {
   if (!data || !/^\d+$/.test(data)) {
