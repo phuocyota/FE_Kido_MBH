@@ -36,39 +36,35 @@ export default function Header({ student, amount }) {
 <div className="flex items-center gap-3 px-4 bg-blue-700 z-10">
 
   {/* 👉 TRƯỜNG HỢP QUÉT QR */}
-  {amount && !student && (
-    <div className="text-yellow-300 font-bold text-lg">
-      💰 Bạn có: {Number(amount).toLocaleString()}đ
-    </div>
-  )}
+  {amount != null && !isNaN(amount) && (
+  <div className="text-yellow-300 font-bold text-lg">
+    💰 Bạn có: {Number(amount).toLocaleString()}đ
+  </div>
+)}
 
   {/* 👉 TRƯỜNG HỢP QUẸT THẺ */}
-  {student && (
-    <>
-      {/* Avatar */}
-      <img
-        src={student.avatar}
-        alt=""
-        className="w-10 h-10 rounded-full border-2 border-white"
-      />
+  {student && student.balance != null && (
+  <>
+    <img
+      src={student.avatar}
+      alt=""
+      className="w-10 h-10 rounded-full border-2 border-white"
+    />
 
-      {/* Grid */}
-      <div className="grid grid-cols-2 gap-x-4 text-sm">
+    <div className="grid grid-cols-2 gap-x-4 text-sm">
+      <p className="font-semibold">{student.name}</p>
+      <p className="text-gray-200 font-bold">{student.school}</p>
 
-        <p className="font-semibold">{student.name}</p>
-        <p className="text-gray-200 font-bold">{student.school}</p>
+      <p className="text-yellow-300 font-bold">
+        💰 {Number(student.balance).toLocaleString()}đ
+      </p>
 
-        <p className="text-yellow-300 font-bold">
-          💰 {student.balance.toLocaleString()}đ
-        </p>
-
-        <p className="text-gray-200 font-bold">
-          Lớp: {student.class}
-        </p>
-
-      </div>
-    </>
-  )}
+      <p className="text-gray-200 font-bold">
+        Lớp: {student.class}
+      </p>
+    </div>
+  </>
+)}
 
 </div>
     </div>

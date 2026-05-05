@@ -2,6 +2,7 @@
 
 
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import Header from "../../components/Order/Header";
 import Left from "../../components/Order/Left";
@@ -20,8 +21,36 @@ import trachanhImg from "../../assets/trachanh.jpg";
 import banhtrungImg from "../../assets/banhtrung.png";
 import xucxichImg from "../../assets/xucxich.png";
 export default function Order() {
+  const location = useLocation();
+   
+useEffect(() => {
+  const state = location.state;
 
-  // 🔥 THÊM CÁC STATE NÀY
+  if (state?.type === "qr") {
+    setAmount(state.amount);
+    setRemaining(state.amount);
+    setStudent(null);
+  } else if (state?.type === "student") {
+    setStudent(state.student);
+    setAmount(null);
+  } else {
+    // 🔥 fallback localStorage (chỉ khi reload)
+    const data = JSON.parse(localStorage.getItem("student") || "null");
+    const qrAmount = localStorage.getItem("amount");
+
+    if (qrAmount) {
+      const amountNumber = Number(qrAmount);
+      setAmount(amountNumber);
+      setRemaining(amountNumber);
+    } else if (data) {
+      setStudent(data);
+    } else {
+      console.warn("Không có dữ liệu");
+    }
+  }
+}, []);
+
+  // THÊM CÁC STATE NÀY
   const [student, setStudent] = useState(null);
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState("Tất cả");
@@ -116,24 +145,24 @@ export default function Order() {
 
 
 
-  useEffect(() => {
-  const data = JSON.parse(localStorage.getItem("student") || "null");
-  const qrAmount = localStorage.getItem("amount");
+//   useEffect(() => {
+//   const data = JSON.parse(localStorage.getItem("student") || "null");
+//   const qrAmount = localStorage.getItem("amount");
 
-  if (qrAmount) {
-    const amountNumber = Number(qrAmount);
+//   if (qrAmount) {
+//     const amountNumber = Number(qrAmount);
 
-    setAmount(amountNumber);        
-    setRemaining(amountNumber);    
-    setStudent(null);
-  } else if (data) {
-    setStudent(data);
-    setAmount(null);
-  } else {
+//     setAmount(amountNumber);        
+//     setRemaining(amountNumber);    
+//     setStudent(null);
+//   } else if (data) {
+//     setStudent(data);
+//     setAmount(null);
+//   } else {
     
-    console.warn("Không có dữ liệu từ scan");
-  }
-}, []);
+//     console.warn("Không có dữ liệu từ scan");
+//   }
+// }, []);
 
   const filteredProducts = products.filter((p) => {
     // 👉 lọc theo category
@@ -156,7 +185,7 @@ export default function Order() {
         return;
       }
 
-      setRemaining((prev) => prev - item.price);
+      setRemaining((prev) => (prev ?? 0) - item.price);
     }
 
     // 👉 thêm vào giỏ như bình thường
@@ -265,7 +294,7 @@ export default function Order() {
 
     // 👉 trả tiền lại nếu dùng QR
     if (amount) {
-      setRemaining((prev) => prev + item.price * item.qty);
+      setRemaining((prev) => (prev ?? 0) + item.price * item.qty);
     }
   };
 
@@ -275,7 +304,7 @@ export default function Order() {
         alert("❌ Không đủ tiền");
         return;
       }
-      setRemaining((prev) => prev - item.price);
+      setRemaining((prev) => (prev ?? 0) - item.price);
     }
 
     setCart((prev) =>
@@ -295,7 +324,7 @@ export default function Order() {
     );
 
     if (amount) {
-      setRemaining((prev) => prev + item.price);
+      setRemaining((prev) => (prev ?? 0) + item.price);
     }
   };
 
@@ -309,7 +338,8 @@ export default function Order() {
       style={{ backgroundImage: `url(${bgImg})` }}
     >
 
-      <Header student={student} amount={remaining || amount} />
+      <Header student={student} amount={remaining ?? amount} />
+
 
       <div className="flex flex-1 overflow-hidden">
 

@@ -81,10 +81,16 @@ export default function Welcome() {
 
   const amount = Number(data);
 
+  // 👉 QR tiền
   if (amount <= 20000) {
-    localStorage.setItem("amount", amount);
-    localStorage.removeItem("student");
+    navigate("/order", {
+      state: {
+        type: "qr",
+        amount: amount,
+      },
+    });
   } else {
+    // 👉 thẻ học sinh
     const randomStudent =
       studentsMock[Math.floor(Math.random() * studentsMock.length)];
 
@@ -93,11 +99,13 @@ export default function Welcome() {
       cardId: data,
     };
 
-    localStorage.setItem("student", JSON.stringify(student));
-    localStorage.removeItem("amount");
+    navigate("/order", {
+      state: {
+        type: "student",
+        student: student,
+      },
+    });
   }
-
-  navigate("/order");
 };
   // quét mã QR
   const [showQR, setShowQR] = useState(false);
