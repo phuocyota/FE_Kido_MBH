@@ -194,8 +194,7 @@ export default function Welcome() {
           qrInstance.stop().then(() => {
             setShowQR(false);
 
-            // 🔥 delay để đảm bảo release camera
-            setTimeout(() => {
+             setTimeout(() => {
               handleScan(decodedText);
             }, 100);
           });
