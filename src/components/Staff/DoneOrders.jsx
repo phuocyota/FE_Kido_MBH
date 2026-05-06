@@ -109,7 +109,7 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
     </div>
 
     {/* BODY */}
-    <div className="relative flex-1 min-h-0 rounded-b-xl overflow-hidden">
+    <div className="relative flex-1 min-h-0 rounded-b-xl overflow-hidden h-0">
 
       {/* BG pattern */}
       <div className="absolute inset-0 bg-white" />
@@ -133,6 +133,8 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
         gap-3 
         p-3 
         overflow-y-auto
+        h-full
+    max-h-full
       ">
         {orders.map(order => (
           <OrderDoneCard

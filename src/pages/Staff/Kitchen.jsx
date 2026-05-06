@@ -201,11 +201,11 @@ export default function Kitchen() {
         orders={orders.filter(o => o.status === "done")}
         onSelect={setConfirmModal}
       /> */}
-<DoneOrders
-  orders={orders.filter(o => o.status === "done")}
-  onPickup={(order) => updateOrder(order, "remove")}
-   onSelect={setConfirmModal}
-/>
+      <DoneOrders
+        orders={orders.filter(o => o.status === "done")}
+        onPickup={(order) => updateOrder(order, "remove")}
+        onSelect={setConfirmModal}
+      />
 
       {/* ================= MODAL ================= */}
       {confirmModal && (
