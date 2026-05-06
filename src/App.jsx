@@ -2,12 +2,13 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
- 
+
 import Home from "./pages/Student/Order";
 import Login from "./pages/Admin/Login";
- 
+
 import Welcome from "./pages/Student/Welcome";
 import Kitchen from "./pages/Staff/Kitchen";
+import RegisterFace from "./components/FaceId/RegisterFace";
 
 const App = () => {
   return (
@@ -26,8 +27,10 @@ const App = () => {
               {/* <Header /> */}
               <Routes>
                 <Route path="/" element={<Welcome />} />
+                <Route path="/register" element={<RegisterFace />} />
                 <Route path="/order" element={<Home />} />
-                 <Route path="/kitchen" element={<Kitchen />} />
+
+                <Route path="/kitchen" element={<Kitchen />} />
               </Routes>
 
             </>

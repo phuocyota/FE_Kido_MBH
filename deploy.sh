@@ -2,4 +2,7 @@
 set -euo pipefail
 
 git pull
+npm install
 npm run build -- --mode production
+
+sudo systemctl reload nginx

@@ -22,33 +22,33 @@ import banhtrungImg from "../../assets/banhtrung.png";
 import xucxichImg from "../../assets/xucxich.png";
 export default function Order() {
   const location = useLocation();
-   
-useEffect(() => {
-  const state = location.state;
 
-  if (state?.type === "qr") {
-    setAmount(state.amount);
-    setRemaining(state.amount);
-    setStudent(null);
-  } else if (state?.type === "student") {
-    setStudent(state.student);
-    setAmount(null);
-  } else {
-    // 🔥 fallback localStorage (chỉ khi reload)
-    const data = JSON.parse(localStorage.getItem("student") || "null");
-    const qrAmount = localStorage.getItem("amount");
-
-    if (qrAmount) {
-      const amountNumber = Number(qrAmount);
-      setAmount(amountNumber);
-      setRemaining(amountNumber);
-    } else if (data) {
-      setStudent(data);
+  useEffect(() => {
+    const state = location.state;
+    console.log(state);
+    if (state?.type === "qr") {
+      setAmount(state.amount);
+      setRemaining(state.amount);
+      setStudent(null);
+    } else if (state?.type === "student") {
+      setStudent(state.student);
+      setAmount(null);
     } else {
-      console.warn("Không có dữ liệu");
+      // 🔥 fallback localStorage (chỉ khi reload)
+      const data = JSON.parse(localStorage.getItem("student") || "null");
+      const qrAmount = localStorage.getItem("amount");
+
+      if (qrAmount) {
+        const amountNumber = Number(qrAmount);
+        setAmount(amountNumber);
+        setRemaining(amountNumber);
+      } else if (data) {
+        setStudent(data);
+      } else {
+        console.warn("Không có dữ liệu");
+      }
     }
-  }
-}, []);
+  }, []);
 
   // THÊM CÁC STATE NÀY
   const [student, setStudent] = useState(null);
@@ -145,24 +145,24 @@ useEffect(() => {
 
 
 
-//   useEffect(() => {
-//   const data = JSON.parse(localStorage.getItem("student") || "null");
-//   const qrAmount = localStorage.getItem("amount");
+  //   useEffect(() => {
+  //   const data = JSON.parse(localStorage.getItem("student") || "null");
+  //   const qrAmount = localStorage.getItem("amount");
 
-//   if (qrAmount) {
-//     const amountNumber = Number(qrAmount);
+  //   if (qrAmount) {
+  //     const amountNumber = Number(qrAmount);
 
-//     setAmount(amountNumber);        
-//     setRemaining(amountNumber);    
-//     setStudent(null);
-//   } else if (data) {
-//     setStudent(data);
-//     setAmount(null);
-//   } else {
-    
-//     console.warn("Không có dữ liệu từ scan");
-//   }
-// }, []);
+  //     setAmount(amountNumber);        
+  //     setRemaining(amountNumber);    
+  //     setStudent(null);
+  //   } else if (data) {
+  //     setStudent(data);
+  //     setAmount(null);
+  //   } else {
+
+  //     console.warn("Không có dữ liệu từ scan");
+  //   }
+  // }, []);
 
   const filteredProducts = products.filter((p) => {
     // 👉 lọc theo category
@@ -176,7 +176,7 @@ useEffect(() => {
     return matchCategory && matchPrice;
   });
 
-  
+
   const addToCart = (item) => {
     // 👉 Nếu đang dùng QR
     if (amount) {
@@ -205,19 +205,19 @@ useEffect(() => {
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   const handlePayment = () => {
-  if (cart.length === 0) {
-    alert("Chưa có món");
-    return;
-  }
+    if (cart.length === 0) {
+      alert("Chưa có món");
+      return;
+    }
 
-  // 🔥 Nếu dùng QR → bỏ check student
-  if (!amount && student && total > student.balance) {
-    alert("Không đủ tiền");
-    return;
-  }
+    // 🔥 Nếu dùng QR → bỏ check student
+    if (!amount && student && total > student.balance) {
+      alert("Không đủ tiền");
+      return;
+    }
 
-  setConfirmModal(true);
-};
+    setConfirmModal(true);
+  };
   const generateOrderNumber = () => {
     let current = localStorage.getItem("orderNumber");
 
@@ -267,10 +267,10 @@ useEffect(() => {
     const newOrder = {
       orderKey: Date.now() + Math.random(),
       id: orderNumber,
-      items: cart,
+      items: cart | 0,
       total,
       studentId: String(student?.cardId),
-      studentName: student?.name,
+      studentName: student?.name | 0,
 
       status: paymentMethod === "cash" ? "cash" : "pending",
       paymentMethod: paymentMethod,
@@ -279,7 +279,7 @@ useEffect(() => {
       pickupType: pickupType,
       createdAt: Date.now(),
     };
-
+    console.log(newOrder)
     localStorage.setItem("orders", JSON.stringify([...oldOrders, newOrder]));
 
     setConfirmModal(false);
