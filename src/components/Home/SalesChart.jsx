@@ -1,202 +1,324 @@
-import React, { useState } from "react";
+
+
+import React, { useMemo, useState } from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
+  ChevronDown,
+  BarChart3,
+  LineChart,
+} from "lucide-react";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+export default function DashboardCharts() {
+  const [activeTab1, setActiveTab1] = useState("Theo thứ");
+  const [activeTab2, setActiveTab2] = useState("Theo thứ");
 
-const data = [
-  { label: "T2", value: 9 },
-  { label: "T3", value: 1.5 },
-  { label: "T4", value: 4 },
-  { label: "T5", value: 14 },
-  { label: "T6", value: 4.5 },
-  { label: "T7", value: 3.5 },
-  { label: "CN", value: 5.5 },
+  const [filter1, setFilter1] = useState("7 ngày qua");
+  const [filter2, setFilter2] = useState("7 ngày qua");
+
+  const tabs = ["Theo giờ", "Theo ngày", "Theo thứ"];
+
+
+  // LEFT 
+const [activeTab, setActiveTab] = useState("Theo thứ");
+
+const [filter, setFilter] = useState("7 ngày qua");
+
+const [open, setOpen] = useState(false);
+const filters = [
+  "Hôm nay",
+  "Hôm qua",
+  "7 ngày qua",
+  "Tháng này",
+  "Tháng trước",
 ];
 
-export default function SalesChart() {
-  const [activeTab, setActiveTab] = useState("Theo thứ");
-  const [filter, setFilter] = useState("Tháng trước");
-  const [open, setOpen] = useState(false);
-  const titleMap = {
-    "Hôm nay": "DOANH SỐ HÔM NAY",
-    "Hôm qua": "DOANH SỐ HÔM QUA",
-    "7 ngày qua": "DOANH SỐ 7 NGÀY QUA",
-    "Tháng này": "DOANH SỐ THÁNG NÀY",
-    "Tháng trước": "DOANH SỐ THÁNG TRƯỚC",
-  };
+const mockData = {
+  "Hôm nay": {
+    revenue: "2,450,000",
+    orders: 12,
 
-  // biểu đồ
-  // ===== DATA =====
-  const dataByDay = {
-    labels: Array.from({ length: 26 }, (_, i) =>
-      String(i + 1).padStart(2, "0")
-    ),
-    values: [
-      3.8, 2.7, 0.2, 0.6, 0.5, 0.4, 0.4, 0.7, 4.8, 0.9,
-      1.7, 1.1, 1.6, 2.8, 1.1, 0.7, 0.1, 0.4, 5.1, 2.4,
-      0.4, 0.4, 1.5, 0.2, 1.4, 7.8,
-    ],
-  };
-
-  const dataByHour = {
-    labels: [
-      "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-      "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-      "18:00", "19:00", "20:00", "21:00", "22:00",
-    ],
-    values: [
-      3.9, 0.3, 5.2, 2.5, 1.0, 1.7, 2.8, 1.0, 4.3, 2.9, 0.6,
-      5.8, 2.9, 0.8, 0.7, 2.2, 4.9
-    ],
-  };
-
-  const dataByWeek = {
-    labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-    values: [9, 1.5, 4, 14, 4.5, 3.5, 5.5],
-  };
-
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false, // QUAN TRỌNG
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: {
-          boxWidth: 10,
-        },
-      },
+    hour: {
+      labels: ["06h", "07h", "08h", "09h"],
+      values: [1, 2, 4, 3],
     },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: (value) => (value === 0 ? "0" : value + " tr"),
-        },
-        grid: {
-          color: "#e5e7eb",
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
+
+    day: {
+      labels: ["Hôm nay"],
+      values: [24],
     },
-  };
+
+    week: {
+      labels: ["T2", "T3", "T4", "T5"],
+      values: [5, 9, 6, 12],
+    },
+  },
+
+  "7 ngày qua": {
+    revenue: "8,031,000",
+    orders: 35,
+
+    hour: {
+      labels: ["06h", "07h", "08h", "09h"],
+      values: [2, 4, 5, 3],
+    },
+
+    day: {
+      labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+      values: [8, 12, 9, 15, 11, 18, 13],
+    },
+
+    week: {
+      labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+      values: [45, 58, 62, 77],
+    },
+  },
+};
+
+
+
+const currentData = mockData[filter];
+const chartData = useMemo(() => {
+
+  if (activeTab === "Theo giờ") {
+    return currentData.hour;
+  }
+
+  if (activeTab === "Theo ngày") {
+    return currentData.day;
+  }
+
+  return currentData.week;
+
+}, [activeTab, currentData]);
+
+  // RIGHT
+
+
+
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 sm:p-5">
+    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
 
-      {/* HEADER */}
-      <div className="flex flex-col gap-2 mb-3">
+      {/* ================= LEFT ================= */}
+      <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
 
-        {/* TITLE */}
-        <div className="text-sm font-semibold">
-          {titleMap[filter]}
-          <span className="text-blue-600 ml-2 font-bold">
-            ● 43,575,000
-          </span>
-        </div>
+        {/* HEADER */}
+        <div className="p-4 sm:p-5">
 
-        {/* DROPDOWN */}
-        <div className="relative w-fit">
-          <button
-            onClick={() => setOpen(!open)}
-            className="text-sm border px-3 py-1 rounded-md bg-gray-50 flex items-center gap-2"
-          >
-            {filter}
-            <span
-              className={`transition-transform duration-200 ${open ? "rotate-180" : ""
-                }`}
-            >
-              ▼
-            </span>
-          </button>
+          <div className="flex items-start justify-between gap-3">
 
-          {open && (
-            <div className="absolute left-0 mt-2 w-40 bg-white border rounded shadow z-50">
-              {[
-                "Hôm nay",
-                "Hôm qua",
-                "7 ngày qua",
-                "Tháng này",
-                "Tháng trước",
-              ].map((item) => (
-                <div
-                  key={item}
-                  onClick={() => {
-                    setFilter(item);
-                    setOpen(false);
-                  }}
-                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${filter === item
-                      ? "font-semibold text-blue-600"
-                      : ""
-                    }`}
-                >
-                  {item}
-                </div>
-              ))}
+            <div>
+              <h2 className="text-[18px] font-bold text-gray-900">
+                Doanh thu thuần
+              </h2>
+
+              <p className="mt-3 text-[18px] font-semibold text-gray-900">
+                ({currentData.orders} hóa đơn)
+              </p>
             </div>
-          )}
+
+            {/* FILTER */}
+            <div className="relative">
+
+  <button
+    onClick={() => setOpen(!open)}
+    className="
+      h-11
+      px-4
+      rounded-2xl
+      border
+      border-blue-500
+      bg-white
+      flex
+      items-center
+      gap-2
+    "
+  >
+    {filter}
+  </button>
+
+  {open && (
+    <div className="
+      absolute
+      right-0
+      mt-2
+      w-[180px]
+      bg-white
+      rounded-2xl
+      shadow-xl
+      border
+      overflow-hidden
+      z-50
+    ">
+
+      {filters.map((item) => (
+
+        <button
+          key={item}
+          onClick={() => {
+            setFilter(item);
+            setOpen(false);
+          }}
+          className={`
+            w-full
+            px-4
+            py-3
+            text-left
+            hover:bg-gray-50
+
+            ${filter === item
+              ? "bg-blue-50 text-blue-600"
+              : ""
+            }
+          `}
+        >
+          {item}
+        </button>
+
+      ))}
+
+    </div>
+  )}
+</div>
+          </div>
+
+          {/* TABS */}
+          <div className="flex gap-7 mt-7 border-b border-gray-200 overflow-x-auto">
+
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab1(tab)}
+                className={`
+                  pb-3 text-[15px] whitespace-nowrap transition relative
+                  ${activeTab1 === tab
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-600 hover:text-black"
+                  }
+                `}
+              >
+                {tab}
+
+                {activeTab1 === tab && (
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-600 rounded-full" />
+                )}
+              </button>
+            ))}
+
+          </div>
+        </div>
+
+        {/* EMPTY */}
+        <div className="h-[340px] sm:h-[420px] flex flex-col items-center justify-center px-6">
+
+          {/* ICON */}
+          <div className="relative mb-5">
+            <div className="flex items-end gap-1">
+
+              <div className="w-3 h-5 rounded-sm border-2 border-blue-600 bg-blue-50" />
+
+              <div className="w-3 h-9 rounded-sm bg-blue-500" />
+
+              <div className="w-3 h-14 rounded-sm bg-blue-700" />
+
+              <div className="w-3 h-8 rounded-sm bg-blue-200" />
+
+            </div>
+          </div>
+
+          <p className="text-gray-600 text-center text-[16px]">
+            Bạn chưa bán đơn nào
+          </p>
+
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="flex gap-4 sm:gap-6 text-sm mb-4 border-b border-gray-300 overflow-x-auto">
-        {["Theo ngày", "Theo giờ", "Theo thứ"].map((tab) => (
-          <span
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 whitespace-nowrap cursor-pointer ${activeTab === tab
-                ? "border-b-2 border-blue-500 text-black font-medium"
-                : "text-gray-400"
-              }`}
-          >
-            {tab}
-          </span>
-        ))}
-      </div>
+      {/* ================= RIGHT ================= */}
+      <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
 
-      {/* CHART (SCROLL NGANG MOBILE) */}
-      {/* CHART */}
-      <div className="w-full overflow-hidden">
-  <div className="overflow-x-auto">
-    <div className="w-[600px] h-[280px] sm:h-[350px]">
-          <Bar
-            data={{
-              labels:
-                activeTab === "Theo ngày"
-                  ? dataByDay.labels
-                  : activeTab === "Theo giờ"
-                    ? dataByHour.labels
-                    : dataByWeek.labels,
-              datasets: [
-                {
-                  label: "Chi nhánh trung tâm",
-                  data:
-                    activeTab === "Theo ngày"
-                      ? dataByDay.values
-                      : activeTab === "Theo giờ"
-                        ? dataByHour.values
-                        : dataByWeek.values,
-                  backgroundColor: "#2563eb",
-                  borderRadius: 4,
-                },
-              ],
-            }}
-            options={options}
-          />
+        {/* HEADER */}
+        <div className="p-4 sm:p-5">
+
+          <div className="flex items-start justify-between gap-3">
+
+            <div>
+              <h2 className="text-[18px] font-bold text-gray-900">
+                Lượng khách hàng
+              </h2>
+
+              <p className="mt-3 text-[18px] font-bold text-black">
+                0 lượt khách
+              </p>
+            </div>
+
+            {/* FILTER */}
+            <button className="h-11 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 transition flex items-center gap-2 text-[15px] font-medium text-gray-700 shrink-0">
+              {filter2}
+              <ChevronDown size={18} />
+            </button>
+          </div>
+
+          {/* TABS */}
+          <div className="flex gap-7 mt-7 border-b border-gray-200 overflow-x-auto">
+
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab2(tab)}
+                className={`
+                  pb-3 text-[15px] whitespace-nowrap transition relative
+                  ${activeTab2 === tab
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-600 hover:text-black"
+                  }
+                `}
+              >
+                {tab}
+
+                {activeTab2 === tab && (
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-600 rounded-full" />
+                )}
+              </button>
+            ))}
+
+          </div>
         </div>
-      </div>
+
+        {/* EMPTY */}
+        <div className="h-[340px] sm:h-[420px] flex flex-col items-center justify-center px-6">
+
+          {/* ICON */}
+          <div className="mb-5 relative">
+
+            <div className="relative">
+
+              {/* CHART BG */}
+              <div className="w-[58px] h-[38px] bg-blue-100 rounded-md" />
+
+              {/* LINE */}
+              <svg
+                className="absolute inset-0"
+                width="58"
+                height="38"
+                viewBox="0 0 58 38"
+                fill="none"
+              >
+                <path
+                  d="M2 25L12 18L22 22L32 15L42 18L52 8"
+                  stroke="#1677ff"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+
+            </div>
+          </div>
+
+          <p className="text-gray-600 text-center text-[16px]">
+            Chưa có lượt khách nào
+          </p>
+
+        </div>
       </div>
     </div>
   );
