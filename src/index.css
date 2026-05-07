@@ -15,3 +15,38 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+.toolbar-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+
+@media print {
+
+  body {
+    background: white !important;
+  }
+
+  .toolbar-btn,
+  .sidebar-report,
+  .report-sidebar {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+}

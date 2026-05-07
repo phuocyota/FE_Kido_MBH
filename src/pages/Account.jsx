@@ -21,19 +21,18 @@ export default function Account() {
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 lg:p-6">
-
-      {/* CONTAINER */}
       <div className="max-w-[1600px] mx-auto">
- 
+
+         
 
         {/* MAIN CARD */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 lg:p-8">
 
           {/* TITLE */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <User size={20} className="text-blue-600" />
-            </div>
+            <div className="w-20 h-20 rounded-3xl bg-blue-100 flex items-center justify-center">
+            <User size={40} className="text-blue-600" />
+          </div>
 
             <div>
               <h2 className="text-xl font-bold text-gray-800">
@@ -52,7 +51,7 @@ export default function Account() {
             {/* LEFT */}
             <div className="space-y-5">
 
-              {/* USERNAME */}
+              {/* USER NAME */}
               <div>
                 <label className="block mb-2 font-medium text-gray-700">
                   Tên người dùng
@@ -66,8 +65,8 @@ export default function Account() {
 
                   <input
                     type="text"
-                      disabled={!isEditing}
                     defaultValue="Nguyen"
+                    disabled={!isEditing}
                     className="
                       w-full
                       border
@@ -80,6 +79,9 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
                 </div>
@@ -99,6 +101,7 @@ export default function Account() {
 
                   <input
                     type="text"
+                    disabled
                     defaultValue="0776142018"
                     className="
                       w-full
@@ -108,10 +111,10 @@ export default function Account() {
                       h-12
                       pl-12
                       pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
+                      bg-gray-100
+                      text-gray-500
+                      cursor-not-allowed
+                      opacity-80
                     "
                   />
                 </div>
@@ -135,14 +138,16 @@ export default function Account() {
                     defaultValue="Admin"
                     className="
                       w-full
-                      bg-gray-100
                       border
                       border-gray-300
                       rounded-2xl
                       h-12
                       pl-12
                       pr-4
-                      text-gray-600
+                      bg-gray-100
+                      text-gray-500
+                      cursor-not-allowed
+                      opacity-80
                     "
                   />
                 </div>
@@ -169,7 +174,7 @@ export default function Account() {
 
                   <input
                     type={showPass ? "text" : "password"}
-                      disabled={!isEditing}
+                    disabled={!isEditing}
                     placeholder="Nhập mật khẩu hiện tại"
                     className="
                       w-full
@@ -183,15 +188,31 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
 
                   <button
                     type="button"
+                    disabled={!isEditing}
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-500
+                      disabled:opacity-40
+                      disabled:cursor-not-allowed
+                    "
                   >
-                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPass ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -210,7 +231,7 @@ export default function Account() {
 
                   <input
                     type={showNewPass ? "text" : "password"}
-                      disabled={!isEditing}
+                    disabled={!isEditing}
                     placeholder="Nhập mật khẩu mới"
                     className="
                       w-full
@@ -224,13 +245,25 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
 
                   <button
                     type="button"
+                    disabled={!isEditing}
                     onClick={() => setShowNewPass(!showNewPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="
+                      absolute
+                      right-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-gray-500
+                      disabled:opacity-40
+                      disabled:cursor-not-allowed
+                    "
                   >
                     {showNewPass ? (
                       <EyeOff size={18} />
@@ -255,6 +288,7 @@ export default function Account() {
 
                   <input
                     type="text"
+                    disabled
                     defaultValue="+84776142018"
                     className="
                       w-full
@@ -264,10 +298,10 @@ export default function Account() {
                       h-12
                       pl-12
                       pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
+                      bg-gray-100
+                      text-gray-500
+                      cursor-not-allowed
+                      opacity-80
                     "
                   />
                 </div>
@@ -287,7 +321,7 @@ export default function Account() {
 
                   <input
                     type="email"
-                      disabled={!isEditing}
+                    disabled={!isEditing}
                     placeholder="Nhập email"
                     className="
                       w-full
@@ -301,11 +335,13 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
                 </div>
               </div>
-
             </div>
 
             {/* RIGHT */}
@@ -325,7 +361,7 @@ export default function Account() {
 
                   <input
                     type="text"
-                      disabled={!isEditing}
+                    disabled={!isEditing}
                     placeholder="Nhập địa chỉ"
                     className="
                       w-full
@@ -339,6 +375,9 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
                 </div>
@@ -352,7 +391,7 @@ export default function Account() {
 
                 <input
                   type="text"
-                    disabled={!isEditing}
+                  disabled={!isEditing}
                   placeholder="Tỉnh / Thành phố"
                   className="
                     w-full
@@ -365,6 +404,9 @@ export default function Account() {
                     focus:border-blue-500
                     focus:ring-4
                     focus:ring-blue-100
+                    disabled:bg-gray-100
+                    disabled:text-gray-500
+                    disabled:cursor-not-allowed
                   "
                 />
               </div>
@@ -377,7 +419,7 @@ export default function Account() {
 
                 <input
                   type="text"
-                    disabled={!isEditing}
+                  disabled={!isEditing}
                   placeholder="Quận / Huyện"
                   className="
                     w-full
@@ -390,6 +432,9 @@ export default function Account() {
                     focus:border-blue-500
                     focus:ring-4
                     focus:ring-blue-100
+                    disabled:bg-gray-100
+                    disabled:text-gray-500
+                    disabled:cursor-not-allowed
                   "
                 />
               </div>
@@ -408,7 +453,7 @@ export default function Account() {
 
                   <input
                     type="date"
-                      disabled={!isEditing}
+                    disabled={!isEditing}
                     className="
                       w-full
                       border
@@ -421,6 +466,9 @@ export default function Account() {
                       focus:border-blue-500
                       focus:ring-4
                       focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
                 </div>
@@ -434,7 +482,7 @@ export default function Account() {
 
                 <textarea
                   rows="6"
-                    disabled={!isEditing}
+                  disabled={!isEditing}
                   placeholder="Nhập ghi chú..."
                   className="
                     w-full
@@ -447,78 +495,74 @@ export default function Account() {
                     focus:border-blue-500
                     focus:ring-4
                     focus:ring-blue-100
+                    disabled:bg-gray-100
+                    disabled:text-gray-500
+                    disabled:cursor-not-allowed
                   "
                 />
               </div>
-
             </div>
-
           </div>
 
           {/* ACTIONS */}
-          {/* ACTIONS */}
-<div className="flex justify-end gap-3 mt-10">
+          <div className="flex justify-end gap-3 mt-10">
+            {!isEditing ? (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="
+                  h-12
+                  px-6
+                  rounded-2xl
+                  bg-blue-600
+                  hover:bg-blue-700
+                  text-white
+                  transition-all
+                  font-medium
+                  flex items-center gap-2
+                "
+              >
+                <Pencil size={18} />
+                Chỉnh sửa
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="
+                    h-12
+                    px-6
+                    rounded-2xl
+                    bg-gray-200
+                    hover:bg-gray-300
+                    transition-all
+                    font-medium
+                    flex items-center gap-2
+                  "
+                >
+                  <Ban size={18} />
+                  Bỏ qua
+                </button>
 
-  {!isEditing ? (
-    <button
-      onClick={() => setIsEditing(true)}
-      className="
-        h-12
-        px-6
-        rounded-2xl
-        bg-blue-600
-        hover:bg-blue-700
-        text-white
-        transition-all
-        font-medium
-        flex items-center gap-2
-      "
-    >
-      <Pencil size={18} />
-      Chỉnh sửa
-    </button>
-  ) : (
-    <>
-      <button
-        onClick={() => setIsEditing(false)}
-        className="
-          h-12
-          px-6
-          rounded-2xl
-          bg-gray-200
-          hover:bg-gray-300
-          transition-all
-          font-medium
-          flex items-center gap-2
-        "
-      >
-        <Ban size={18} />
-        Bỏ qua
-      </button>
-
-      <button
-        className="
-          h-12
-          px-6
-          rounded-2xl
-          bg-green-500
-          hover:bg-green-600
-          text-white
-          transition-all
-          font-medium
-          flex items-center gap-2
-        "
-      >
-        <Save size={18} />
-        Lưu thay đổi
-      </button>
-    </>
-  )}
-
-</div>
+                <button
+                  className="
+                    h-12
+                    px-6
+                    rounded-2xl
+                    bg-green-500
+                    hover:bg-green-600
+                    text-white
+                    transition-all
+                    font-medium
+                    flex items-center gap-2
+                  "
+                >
+                  <Save size={18} />
+                  Lưu thay đổi
+                </button>
+              </>
+            )}
+          </div>
         </div>
- 
-
       </div>
     </div>
   );

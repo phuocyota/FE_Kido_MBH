@@ -55,7 +55,19 @@ const menu = [
   },
 
   { name: "Sổ quỹ", path: "/so-quy" },
-  { name: "Báo cáo", path: "/bao-cao" },
+  {
+    name: "Báo cáo",
+    children: [
+      { name: "Cuối ngày", path: "/report-end-day" },
+      { name: "Bán hàng", path: "/bao-cao/ban-hang" },
+      { name: "Hàng hóa", path: "/bao-cao/hang-hoa" },
+      { name: "Khách hàng", path: "/bao-cao/khach-hang" },
+      { name: "Nhà cung cấp", path: "/bao-cao/nha-cung-cap" },
+      { name: "Nhân viên", path: "/bao-cao/nhan-vien" },
+      { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
+      { name: "Tài chính", path: "/bao-cao/tai-chinh" },
+    ],
+  },
 
   {
     name: "Thuế & Kế toán",
@@ -151,45 +163,36 @@ export default function Header() {
                   >
                     {/* MENU CHA */}
                     <div
-                      // onMouseEnter={(e) => {
-                      //   const dropdown =
-                      //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
-
-                      //   if (dropdown) {
-                      //     dropdown.style.display = "block";
-                      //   }
-                      // }}
-
-                      // onMouseLeave={(e) => {
-                      //   const dropdown =
-                      //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
-
-                      //   if (dropdown) {
-                      //     dropdown.style.display = "none";
-                      //   }
-                      // }}
-
                       onClick={() => item.path && navigate(item.path)}
                       className={`
-  cursor-pointer
-  px-2
-  lg:px-3
-  xl:px-4
-  py-2
-  rounded-xl
-  transition-all
-  whitespace-nowrap
-  text-[13px]
-  lg:text-[16px]
-  xl:text-[18px]
+    cursor-pointer
+    px-2
+    lg:px-3
+    xl:px-4
+    py-2
+    rounded-xl
+    transition-all
+    whitespace-nowrap
+    text-[13px]
+    lg:text-[14px]
+    xl:text-[15px]
+    flex
+    items-center
+    gap-1
 
-  ${isParentActive(item)
+    ${isParentActive(item)
                           ? "bg-blue-800 text-white"
                           : "hover:bg-blue-800"
                         }
-`}
+  `}
                     >
-                      {item.name}
+                      <span>{item.name}</span>
+
+                      {item.children && (
+                        <span className="text-[10px] opacity-80">
+                          ▼
+                        </span>
+                      )}
                     </div>
 
                     {/* CẦU NỐI */}
@@ -364,6 +367,7 @@ export default function Header() {
                     </div>
 
                     {item.children && (
+
                       <div className="ml-3 space-y-2">
                         {item.children.map((sub, idx) => (
                           <div

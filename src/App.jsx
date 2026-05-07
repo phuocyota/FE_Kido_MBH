@@ -10,6 +10,7 @@ import PriceBook from "./pages/PriceBook";
 import StockTakes from "./pages/StockTakes";
 import Account from "./pages/Account";
 import StoreInfo from "./pages/StoreInfo";
+import ReportEndDay from "./pages/reports/ReportEndDay";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
                 <Route path="/stock-takes" element={<StockTakes />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/store-info" element={<StoreInfo />} />
+                <Route path="/report-end-day" element={<ReportEndDay />} />
               </Routes>
             </>
           }
