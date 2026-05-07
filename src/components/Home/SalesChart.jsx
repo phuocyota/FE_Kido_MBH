@@ -2,96 +2,333 @@
 
 import React, { useMemo, useState } from "react";
 import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import {
   ChevronDown,
-  BarChart3,
-  LineChart,
+  Check,
 } from "lucide-react";
 
-export default function DashboardCharts() {
-  const [activeTab1, setActiveTab1] = useState("Theo thứ");
-  const [activeTab2, setActiveTab2] = useState("Theo thứ");
+import { Bar, Line } from "react-chartjs-2";
 
-  const [filter1, setFilter1] = useState("7 ngày qua");
-  const [filter2, setFilter2] = useState("7 ngày qua");
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend
+);
+
+export default function DashboardCharts() {
+
 
   const tabs = ["Theo giờ", "Theo ngày", "Theo thứ"];
 
 
   // LEFT 
-const [activeTab, setActiveTab] = useState("Theo thứ");
+  const [activeTab, setActiveTab] = useState("Theo thứ");
 
-const [filter, setFilter] = useState("7 ngày qua");
+  const [filter, setFilter] = useState("7 ngày qua");
 
-const [open, setOpen] = useState(false);
-const filters = [
-  "Hôm nay",
-  "Hôm qua",
-  "7 ngày qua",
-  "Tháng này",
-  "Tháng trước",
-];
+  const [open, setOpen] = useState(false);
+  const filters = [
+    "Hôm nay",
+    "Hôm qua",
+    "7 ngày qua",
+    "Tháng này",
+    "Tháng trước",
+  ];
 
-const mockData = {
-  "Hôm nay": {
-    revenue: "2,450,000",
-    orders: 12,
+  const mockData = {
 
-    hour: {
-      labels: ["06h", "07h", "08h", "09h"],
-      values: [1, 2, 4, 3],
+    "Hôm nay": {
+      revenue: "2,450,000",
+      orders: 12,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [1, 2, 4, 3, 5],
+      },
+
+      day: {
+        labels: ["Hôm nay"],
+        values: [24],
+      },
+
+      week: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [5, 9, 6, 12, 8, 15, 10],
+      },
     },
 
-    day: {
-      labels: ["Hôm nay"],
-      values: [24],
+    "Hôm qua": {
+      revenue: "1,820,000",
+      orders: 9,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [1, 1.5, 2, 3, 2],
+      },
+
+      day: {
+        labels: ["Hôm qua"],
+        values: [18],
+      },
+
+      week: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [4, 7, 5, 10, 7, 11, 8],
+      },
     },
 
-    week: {
-      labels: ["T2", "T3", "T4", "T5"],
-      values: [5, 9, 6, 12],
+    "7 ngày qua": {
+      revenue: "8,031,000",
+      orders: 35,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [2, 4, 5, 3, 6],
+      },
+
+      day: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [8, 12, 9, 15, 11, 18, 13],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [45, 58, 62, 77],
+      },
     },
-  },
 
-  "7 ngày qua": {
-    revenue: "8,031,000",
-    orders: 35,
+    "Tháng này": {
+      revenue: "32,550,000",
+      orders: 148,
 
-    hour: {
-      labels: ["06h", "07h", "08h", "09h"],
-      values: [2, 4, 5, 3],
+      hour: {
+        labels: ["06h", "08h", "10h", "12h", "14h"],
+        values: [5, 8, 12, 18, 15],
+      },
+
+      day: {
+        labels: ["1", "5", "10", "15", "20", "25", "30"],
+        values: [12, 18, 25, 22, 28, 30, 26],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [68, 74, 91, 103],
+      },
     },
 
-    day: {
-      labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-      values: [8, 12, 9, 15, 11, 18, 13],
+    "Tháng trước": {
+      revenue: "28,740,000",
+      orders: 132,
+
+      hour: {
+        labels: ["06h", "08h", "10h", "12h", "14h"],
+        values: [4, 7, 10, 15, 13],
+      },
+
+      day: {
+        labels: ["1", "5", "10", "15", "20", "25", "30"],
+        values: [10, 15, 20, 19, 25, 28, 24],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [55, 67, 83, 95],
+      },
     },
 
-    week: {
-      labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-      values: [45, 58, 62, 77],
+  };
+
+
+  const currentData = mockData[filter];
+  const chartData = useMemo(() => {
+
+    if (activeTab === "Theo giờ") {
+      return currentData.hour;
+    }
+
+    if (activeTab === "Theo ngày") {
+      return currentData.day;
+    }
+
+    return currentData.week;
+
+  }, [activeTab, currentData]);
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+
+    plugins: {
+      legend: {
+        display: false,
+      },
     },
-  },
-};
 
+    scales: {
+      y: {
+        beginAtZero: true,
 
+        ticks: {
+          callback: (value) => value + "tr",
+        },
 
-const currentData = mockData[filter];
-const chartData = useMemo(() => {
+        grid: {
+          color: "#f1f5f9",
+        },
 
-  if (activeTab === "Theo giờ") {
-    return currentData.hour;
-  }
+        border: {
+          display: false,
+        },
+      },
 
-  if (activeTab === "Theo ngày") {
-    return currentData.day;
-  }
+      x: {
+        grid: {
+          display: false,
+        },
 
-  return currentData.week;
-
-}, [activeTab, currentData]);
+        border: {
+          display: false,
+        },
+      },
+    },
+  };
 
   // RIGHT
+  const [activeTab2, setActiveTab2] = useState("Theo thứ");
 
+  const [filter2, setFilter2] = useState("7 ngày qua");
+
+  const [open2, setOpen2] = useState(false);
+
+  const customerData = {
+
+    "Hôm nay": {
+      total: 48,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [2, 5, 8, 12, 9],
+      },
+
+      day: {
+        labels: ["Hôm nay"],
+        values: [48],
+      },
+
+      week: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [12, 18, 15, 20, 17, 25, 21],
+      },
+    },
+
+    "Hôm qua": {
+      total: 36,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [1, 3, 6, 9, 7],
+      },
+
+      day: {
+        labels: ["Hôm qua"],
+        values: [36],
+      },
+
+      week: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [10, 14, 12, 17, 15, 20, 18],
+      },
+    },
+
+    "7 ngày qua": {
+      total: 214,
+
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: [5, 9, 15, 22, 18],
+      },
+
+      day: {
+        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+        values: [28, 35, 31, 40, 37, 45, 39],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [120, 158, 174, 214],
+      },
+    },
+
+    "Tháng này": {
+      total: 856,
+
+      hour: {
+        labels: ["06h", "08h", "10h", "12h", "14h"],
+        values: [18, 25, 32, 40, 37],
+      },
+
+      day: {
+        labels: ["1", "5", "10", "15", "20", "25", "30"],
+        values: [45, 52, 68, 74, 81, 90, 86],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [220, 315, 428, 512],
+      },
+    },
+
+    "Tháng trước": {
+      total: 721,
+
+      hour: {
+        labels: ["06h", "08h", "10h", "12h", "14h"],
+        values: [15, 20, 28, 35, 31],
+      },
+
+      day: {
+        labels: ["1", "5", "10", "15", "20", "25", "30"],
+        values: [40, 48, 59, 66, 72, 78, 74],
+      },
+
+      week: {
+        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
+        values: [180, 264, 358, 441],
+      },
+    },
+
+  };
+
+  const currentCustomerData = customerData[filter2];
+
+  const customerChartData = useMemo(() => {
+
+    if (activeTab2 === "Theo giờ") {
+      return currentCustomerData.hour;
+    }
+
+    if (activeTab2 === "Theo ngày") {
+      return currentCustomerData.day;
+    }
+
+    return currentCustomerData.week;
+
+  }, [activeTab2, currentCustomerData]);
 
 
 
@@ -119,25 +356,40 @@ const chartData = useMemo(() => {
             {/* FILTER */}
             <div className="relative">
 
-  <button
-    onClick={() => setOpen(!open)}
-    className="
-      h-11
-      px-4
-      rounded-2xl
-      border
-      border-blue-500
-      bg-white
-      flex
-      items-center
-      gap-2
-    "
-  >
-    {filter}
-  </button>
+              <button
+                onClick={() => setOpen(!open)}
+                className="
+    h-11
+    px-4
+    rounded-2xl
+    border
+    border-blue-500
+    bg-white
+    hover:bg-blue-50
+    transition-all
+    flex
+    items-center
+    justify-between
+    gap-3
+    min-w-[160px]
+    text-[15px]
+    font-medium
+    text-gray-700
+  "
+              >
+                <span>{filter}</span>
 
-  {open && (
-    <div className="
+                <ChevronDown
+                  size={18}
+                  className={`
+      transition-transform duration-300
+      ${open ? "rotate-180" : ""}
+    `}
+                />
+              </button>
+
+              {open && (
+                <div className="
       absolute
       right-0
       mt-2
@@ -146,19 +398,20 @@ const chartData = useMemo(() => {
       rounded-2xl
       shadow-xl
       border
+      border-gray-200
       overflow-hidden
       z-50
     ">
 
-      {filters.map((item) => (
+                  {filters.map((item) => (
 
-        <button
-          key={item}
-          onClick={() => {
-            setFilter(item);
-            setOpen(false);
-          }}
-          className={`
+                    <button
+                      key={item}
+                      onClick={() => {
+                        setFilter(item);
+                        setOpen(false);
+                      }}
+                      className={`
             w-full
             px-4
             py-3
@@ -166,19 +419,19 @@ const chartData = useMemo(() => {
             hover:bg-gray-50
 
             ${filter === item
-              ? "bg-blue-50 text-blue-600"
-              : ""
-            }
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                        }
           `}
-        >
-          {item}
-        </button>
+                    >
+                      {item}
+                    </button>
 
-      ))}
+                  ))}
 
-    </div>
-  )}
-</div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* TABS */}
@@ -187,18 +440,18 @@ const chartData = useMemo(() => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab1(tab)}
+                onClick={() => setActiveTab(tab)}
                 className={`
-                  pb-3 text-[15px] whitespace-nowrap transition relative
-                  ${activeTab1 === tab
+        pb-3 text-[15px] whitespace-nowrap transition relative
+        ${activeTab === tab
                     ? "text-blue-600 font-medium"
                     : "text-gray-600 hover:text-black"
                   }
-                `}
+      `}
               >
                 {tab}
 
-                {activeTab1 === tab && (
+                {activeTab === tab && (
                   <div className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-600 rounded-full" />
                 )}
               </button>
@@ -207,28 +460,41 @@ const chartData = useMemo(() => {
           </div>
         </div>
 
-        {/* EMPTY */}
-        <div className="h-[340px] sm:h-[420px] flex flex-col items-center justify-center px-6">
 
-          {/* ICON */}
-          <div className="relative mb-5">
-            <div className="flex items-end gap-1">
+        {/* CHART */}
+        <div className="p-4 sm:p-5 pt-0">
 
-              <div className="w-3 h-5 rounded-sm border-2 border-blue-600 bg-blue-50" />
+          <div className="w-full overflow-x-auto">
 
-              <div className="w-3 h-9 rounded-sm bg-blue-500" />
+            <div className="
+      min-w-[700px]
+      h-[320px]
+      sm:h-[420px]
+    ">
 
-              <div className="w-3 h-14 rounded-sm bg-blue-700" />
+              <Bar
+                data={{
+                  labels: chartData.labels,
 
-              <div className="w-3 h-8 rounded-sm bg-blue-200" />
+                  datasets: [
+                    {
+                      label: "Doanh thu",
+
+                      data: chartData.values,
+
+                      backgroundColor: "#1677ff",
+
+                      borderRadius: 8,
+
+                      maxBarThickness: 32,
+                    },
+                  ],
+                }}
+                options={options}
+              />
 
             </div>
           </div>
-
-          <p className="text-gray-600 text-center text-[16px]">
-            Bạn chưa bán đơn nào
-          </p>
-
         </div>
       </div>
 
@@ -246,15 +512,89 @@ const chartData = useMemo(() => {
               </h2>
 
               <p className="mt-3 text-[18px] font-bold text-black">
-                0 lượt khách
+                {currentCustomerData.total} lượt khách
               </p>
             </div>
 
             {/* FILTER */}
-            <button className="h-11 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 transition flex items-center gap-2 text-[15px] font-medium text-gray-700 shrink-0">
-              {filter2}
-              <ChevronDown size={18} />
-            </button>
+            <div className="relative">
+
+              <button
+                onClick={() => setOpen2(!open2)}
+                className="
+      h-11
+      px-4
+      rounded-2xl
+      border
+      border-blue-500
+      bg-white
+      hover:bg-blue-50
+      transition-all
+      flex
+      items-center
+      justify-between
+      gap-3
+      min-w-[160px]
+      text-[15px]
+      font-medium
+      text-gray-700
+    "
+              >
+                <span>{filter2}</span>
+
+                <ChevronDown
+                  size={18}
+                  className={`
+        transition-transform duration-300
+        ${open2 ? "rotate-180" : ""}
+      `}
+                />
+              </button>
+
+              {open2 && (
+                <div className="
+      absolute
+      right-0
+      mt-2
+      w-[180px]
+      bg-white
+      rounded-2xl
+      shadow-xl
+      border
+      border-gray-200
+      overflow-hidden
+      z-50
+    ">
+
+                  {filters.map((item) => (
+
+                    <button
+                      key={item}
+                      onClick={() => {
+                        setFilter2(item);
+                        setOpen2(false);
+                      }}
+                      className={`
+            w-full
+            px-4
+            py-3
+            text-left
+            hover:bg-gray-50
+
+            ${filter2 === item
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                        }
+          `}
+                    >
+                      {item}
+                    </button>
+
+                  ))}
+
+                </div>
+              )}
+            </div>
           </div>
 
           {/* TABS */}
@@ -283,41 +623,84 @@ const chartData = useMemo(() => {
           </div>
         </div>
 
-        {/* EMPTY */}
-        <div className="h-[340px] sm:h-[420px] flex flex-col items-center justify-center px-6">
+        {/* CHART */}
+        <div className="p-4 sm:p-5 pt-0">
 
-          {/* ICON */}
-          <div className="mb-5 relative">
+          <div className="w-full overflow-x-auto">
 
-            <div className="relative">
+            <div className="
+      min-w-[700px]
+      h-[320px]
+      sm:h-[420px]
+    ">
 
-              {/* CHART BG */}
-              <div className="w-[58px] h-[38px] bg-blue-100 rounded-md" />
+              <Line
+  data={{
+    labels: customerChartData.labels,
 
-              {/* LINE */}
-              <svg
-                className="absolute inset-0"
-                width="58"
-                height="38"
-                viewBox="0 0 58 38"
-                fill="none"
-              >
-                <path
-                  d="M2 25L12 18L22 22L32 15L42 18L52 8"
-                  stroke="#1677ff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+    datasets: [
+      {
+        label: "Khách hàng",
+
+        data: customerChartData.values,
+
+        borderColor: "#22c55e",
+
+        backgroundColor: "rgba(34,197,94,0.15)",
+
+        fill: true,
+
+        tension: 0.4,
+
+        pointRadius: 5,
+
+        pointHoverRadius: 7,
+
+        pointBackgroundColor: "#22c55e",
+
+        pointBorderColor: "#ffffff",
+
+        pointBorderWidth: 2,
+      },
+    ],
+  }}
+  options={{
+    ...options,
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+
+    scales: {
+      y: {
+        beginAtZero: true,
+
+        grid: {
+          color: "#f1f5f9",
+        },
+
+        border: {
+          display: false,
+        },
+      },
+
+      x: {
+        grid: {
+          display: false,
+        },
+
+        border: {
+          display: false,
+        },
+      },
+    },
+  }}
+/>
 
             </div>
           </div>
-
-          <p className="text-gray-600 text-center text-[16px]">
-            Chưa có lượt khách nào
-          </p>
-
         </div>
       </div>
     </div>

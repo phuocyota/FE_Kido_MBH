@@ -100,9 +100,21 @@ export default function Header() {
     <>
       {/* ================= HEADER ================= */}
       <div className="bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 text-white">
-          {/* LEFT */}
-          <div className="flex items-center gap-4">
+<div className="
+  w-full
+  max-w-[1800px]
+  mx-auto
+  px-3
+  sm:px-4
+  lg:px-5
+  flex
+  items-center
+  justify-between
+  h-14
+  lg:h-16
+  text-white
+">          {/* LEFT */}
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             {/* MOBILE BUTTON */}
             <button
               className="md:hidden text-xl"
@@ -114,18 +126,68 @@ export default function Header() {
               <FaBars />
             </button>
 
-            {/* MENU DESKTOP */}
-            <div className="hidden md:flex gap-4">
+             {/* MENU DESKTOP */}
+<div className="
+  hidden
+  md:block
+  flex-1
+  mx-3
+  min-w-0
+">
+
+  <div className="
+  flex
+  items-center
+  gap-1
+  lg:gap-2
+  xl:gap-3
+  overflow-visible
+  relative
+">
               {menu.map((item, i) => (
-                <div key={i} className="relative group">
+                <div
+  key={i}
+  className="relative shrink-0 group"
+>
                   {/* MENU CHA */}
                   <div
-                    onClick={() => item.path && navigate(item.path)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all
-    ${isParentActive(item)
-                        ? "bg-blue-800 text-white"
-                        : "hover:bg-blue-800"
-                      }`}
+  // onMouseEnter={(e) => {
+  //   const dropdown =
+  //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
+
+  //   if (dropdown) {
+  //     dropdown.style.display = "block";
+  //   }
+  // }}
+
+  // onMouseLeave={(e) => {
+  //   const dropdown =
+  //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
+
+  //   if (dropdown) {
+  //     dropdown.style.display = "none";
+  //   }
+  // }}
+
+  onClick={() => item.path && navigate(item.path)}
+                    className={`
+  cursor-pointer
+  px-2
+  lg:px-3
+  xl:px-4
+  py-2
+  rounded-xl
+  transition-all
+  whitespace-nowrap
+  text-[13px]
+  lg:text-[16px]
+  xl:text-[18px]
+
+  ${isParentActive(item)
+    ? "bg-blue-800 text-white"
+    : "hover:bg-blue-800"
+  }
+`}
                   >
                     {item.name}
                   </div>
@@ -137,13 +199,33 @@ export default function Header() {
 
                   {/* DROPDOWN */}
                   {item.children && (
-                    <div className="absolute left-0 top-full mt-3 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
-                      <div className="bg-gray-100 rounded-xl shadow-lg w-72 py-2">
+<div className="
+  absolute
+  left-0
+  top-full
+  pt-4
+  hidden
+  group-hover:block
+  z-[9999]
+">                      <div className="
+  menu-dropdown
+ 
+  bg-white
+  rounded-2xl
+  shadow-2xl
+  border
+  border-gray-200
+  w-[260px]
+  xl:w-[300px]
+  py-2
+  backdrop-blur-xl
+">
                         {item.children.map((sub, idx) => (
                           <div
                             key={idx}
                             onClick={() => navigate(sub.path)}
-                            className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer"
+                            className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer lg:text-[16px]
+  xl:text-[18px]"
                           >
                             <span>{sub.name}</span>
                           </div>
@@ -155,6 +237,7 @@ export default function Header() {
               ))}
             </div>
           </div>
+          </div>
 
           {/* RIGHT */}
           <div className="relative">
@@ -162,7 +245,8 @@ export default function Header() {
               // ===== CHƯA ĐĂNG NHẬP =====
               <button
                 onClick={() => navigate("/login")}
-                className="bg-white text-black px-4 py-2 rounded-xl border border-gray-300 font-medium hover:bg-gray-100 transition"
+                className=" lg:text-[16px]
+  xl:text-[18px] bg-white text-black px-4 py-2 rounded-xl border border-gray-300 font-medium hover:bg-gray-100 transition cursor-pointer"
               >
                 Đăng nhập
               </button>
@@ -173,11 +257,15 @@ export default function Header() {
                   onClick={() => setOpenUser(true)}
                   className="cursor-pointer"
                 >
-                  <FaUserCircle className="text-2xl text-white" />
+                  <FaUserCircle className="
+  text-[26px]
+  lg:text-[30px]
+  text-white
+" />
                 </div>
 
                 {/* DROPDOWN */}
-                <div className="absolute right-0 mt-3 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                <div className="absolute right-0 mt-5 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
                   <div className="bg-gray-100 rounded-xl shadow-lg w-64 py-2">
 
                     {/* HEADER */}
@@ -215,7 +303,15 @@ export default function Header() {
         <div className="fixed inset-0 z-50">
           <div className="flex h-full">
             {/* SIDEBAR */}
-            <div className="w-72 bg-white h-full shadow-xl flex flex-col">
+            <div className="
+  w-[85vw]
+  max-w-[340px]
+  bg-white
+  h-full
+  shadow-2xl
+  flex
+  flex-col
+">
               {/* HEADER */}
               <div className="flex items-center gap-3 p-4 border-b">
                 <button onClick={() => setOpenMobile(false)}>←</button>
@@ -272,7 +368,15 @@ export default function Header() {
             />
 
             {/* SIDEBAR RIGHT */}
-            <div className="w-80 bg-white h-full shadow-xl flex flex-col">
+            <div className="
+  w-[85vw]
+  max-w-[360px]
+  bg-white
+  h-full
+  shadow-2xl
+  flex
+  flex-col
+">
               {/* HEADER */}
               <div className="p-4 border-b flex items-center justify-between">
                 <span className="font-semibold">0979370077</span>
@@ -282,10 +386,10 @@ export default function Header() {
               {/* MENU */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 text-gray-700">
                 <div className="cursor-pointer">👤 Tài khoản</div>
-                <div className="cursor-pointer">⚙️ Thiết lập cửa hàng</div>
-                <div className="cursor-pointer">🏬 Quản lý mẫu in</div>
+                <div className="cursor-pointer">⚙️ Thông tin gian hàng</div>
+                {/* <div className="cursor-pointer">🏬 Quản lý mẫu in</div>
                 <div className="cursor-pointer">📍 Quản lý chi nhánh</div>
-                <div className="cursor-pointer">🧾 Lịch sử thao tác</div>
+                <div className="cursor-pointer">🧾 Lịch sử thao tác</div> */}
                 <div className="cursor-pointer text-red-500">
                   🚪 Đăng xuất
                 </div>

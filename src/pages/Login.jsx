@@ -3,6 +3,7 @@ import { Eye, EyeOff, User, Lock } from "lucide-react";
 import logo from "../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import bgLogin from "../assets/can-tin-so.png";
 
 export default function Login() {
       const navigate = useNavigate();
@@ -21,11 +22,38 @@ const handleLogin = () => {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      
+<div
+  className="
+    min-h-screen
+    flex
+    items-center
+    justify-center
+    px-4
+    bg-cover
+    bg-center
+    bg-no-repeat
+    relative
+  "
+  style={{
+    backgroundImage: `url(${bgLogin})`,
+  }}
+>      
+<div className="absolute inset-0 bg-black/10"></div>
       {/* CARD */}
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
-
+<div
+  className="
+    relative
+    z-10
+    bg-white/95
+    backdrop-blur-md
+    w-full
+    max-w-md
+    rounded-3xl
+    shadow-2xl
+    p-6
+    sm:p-8
+  "
+>
         {/* LOGO TRÒN */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 rounded-full overflow-hidden shadow">

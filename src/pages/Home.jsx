@@ -1,7 +1,9 @@
 import React from "react";
 import Summary from "../components/Home/Summary";
 import SalesChart from "../components/Home/SalesChart";
-import TopProducts from "../components/Home/TopProducts";
+// import TopProducts from "../components/Home/TopProducts";
+import MenuPerformance from "../components/Home/MenuPerformance";
+import StaffAndCancelReport from "../components/Home/StaffAndCancelReport";
 
 export default function Home() {
   return (
@@ -49,22 +51,14 @@ export default function Home() {
         <div className="space-y-4">
 
           {/* SALES CHART */}
-          <div >
+          
             <SalesChart />
-          </div>
 
-          {/* TOP PRODUCTS */}
-          <div className="
-            bg-white
-            rounded-3xl
-            border
-            border-gray-200
-            shadow-sm
-            overflow-hidden
-          ">
-            <TopProducts />
-          </div>
+            <MenuPerformance />
 
+            <StaffAndCancelReport />         
+
+         
         </div>
 
       </div>
