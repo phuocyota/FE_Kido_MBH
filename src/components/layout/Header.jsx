@@ -100,7 +100,7 @@ export default function Header() {
     <>
       {/* ================= HEADER ================= */}
       <div className="bg-blue-600">
-<div className="
+        <div className="
   w-full
   max-w-[1800px]
   mx-auto
@@ -126,8 +126,8 @@ export default function Header() {
               <FaBars />
             </button>
 
-             {/* MENU DESKTOP */}
-<div className="
+            {/* MENU DESKTOP */}
+            <div className="
   hidden
   md:block
   flex-1
@@ -135,7 +135,7 @@ export default function Header() {
   min-w-0
 ">
 
-  <div className="
+              <div className="
   flex
   items-center
   gap-1
@@ -144,33 +144,33 @@ export default function Header() {
   overflow-visible
   relative
 ">
-              {menu.map((item, i) => (
-                <div
-  key={i}
-  className="relative shrink-0 group"
->
-                  {/* MENU CHA */}
+                {menu.map((item, i) => (
                   <div
-  // onMouseEnter={(e) => {
-  //   const dropdown =
-  //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
+                    key={i}
+                    className="relative shrink-0 group"
+                  >
+                    {/* MENU CHA */}
+                    <div
+                      // onMouseEnter={(e) => {
+                      //   const dropdown =
+                      //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
 
-  //   if (dropdown) {
-  //     dropdown.style.display = "block";
-  //   }
-  // }}
+                      //   if (dropdown) {
+                      //     dropdown.style.display = "block";
+                      //   }
+                      // }}
 
-  // onMouseLeave={(e) => {
-  //   const dropdown =
-  //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
+                      // onMouseLeave={(e) => {
+                      //   const dropdown =
+                      //     e.currentTarget.parentElement.querySelector(".menu-dropdown");
 
-  //   if (dropdown) {
-  //     dropdown.style.display = "none";
-  //   }
-  // }}
+                      //   if (dropdown) {
+                      //     dropdown.style.display = "none";
+                      //   }
+                      // }}
 
-  onClick={() => item.path && navigate(item.path)}
-                    className={`
+                      onClick={() => item.path && navigate(item.path)}
+                      className={`
   cursor-pointer
   px-2
   lg:px-3
@@ -184,22 +184,22 @@ export default function Header() {
   xl:text-[18px]
 
   ${isParentActive(item)
-    ? "bg-blue-800 text-white"
-    : "hover:bg-blue-800"
-  }
+                          ? "bg-blue-800 text-white"
+                          : "hover:bg-blue-800"
+                        }
 `}
-                  >
-                    {item.name}
-                  </div>
+                    >
+                      {item.name}
+                    </div>
 
-                  {/* CẦU NỐI */}
-                  {item.children && (
-                    <div className="absolute left-0 top-full h-3 w-full"></div>
-                  )}
+                    {/* CẦU NỐI */}
+                    {item.children && (
+                      <div className="absolute left-0 top-full h-3 w-full"></div>
+                    )}
 
-                  {/* DROPDOWN */}
-                  {item.children && (
-<div className="
+                    {/* DROPDOWN */}
+                    {item.children && (
+                      <div className="
   absolute
   left-0
   top-full
@@ -220,23 +220,23 @@ export default function Header() {
   py-2
   backdrop-blur-xl
 ">
-                        {item.children.map((sub, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => navigate(sub.path)}
-                            className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer lg:text-[16px]
+                          {item.children.map((sub, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => navigate(sub.path)}
+                              className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer lg:text-[16px]
   xl:text-[18px]"
-                          >
-                            <span>{sub.name}</span>
-                          </div>
-                        ))}
+                            >
+                              <span>{sub.name}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
           </div>
 
           {/* RIGHT */}
@@ -275,10 +275,16 @@ export default function Header() {
 
                     {/* MENU */}
                     <div className="py-2">
-                      <div className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black">
+                      <div
+                        onClick={() => navigate("/account")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black"
+                      >
                         Tài khoản
                       </div>
-                      <div className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black">
+                      <div
+                        onClick={() => navigate("/store-info")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black"
+                      >
                         Thông tin gian hàng
                       </div>
                       <div
@@ -314,7 +320,7 @@ export default function Header() {
 ">
               {/* HEADER */}
               <div className="flex items-center gap-3 p-4 border-b">
-                <button onClick={() => setOpenMobile(false)}>←</button>
+                <button onClick={() => setOpenMobile(false)} className="cursor-pointer">←</button>
                 <span className="font-semibold">Menu</span>
               </div>
 
@@ -322,8 +328,39 @@ export default function Header() {
               <div className="flex-1 overflow-y-auto p-3 pb-10">
                 {menu.map((item, i) => (
                   <div key={i} className="mb-4">
-                    <div className="font-semibold text-gray-800 py-2">
-                      {item.name}
+                    <div
+                      onClick={() => {
+                        if (item.path) {
+                          navigate(item.path);
+                          setOpenMobile(false);
+                        }
+                      }}
+                      className={`
+    font-semibold
+    py-3
+    px-3
+    rounded-lg
+    transition-all
+    flex
+    items-center
+    justify-between
+
+    ${item.path
+                          ? "cursor-pointer hover:bg-gray-100"
+                          : "cursor-default"
+                        }
+
+    ${isParentActive(item)
+                          ? "bg-blue-500 text-white"
+                          : "text-gray-800"
+                        }
+  `}
+                    >
+                      <span>{item.name}</span>
+
+                      {item.children && (
+                        <span className="text-sm opacity-70">›</span>
+                      )}
                     </div>
 
                     {item.children && (
@@ -334,7 +371,7 @@ export default function Header() {
                             onClick={() => navigate(sub.path)}
                             className={`flex justify-between items-center px-4 py-3 text-sm cursor-pointer rounded-md
   ${location.pathname === sub.path
-                                ? "bg-blue-800 text-blue-600 font-medium"
+                                ? "bg-blue-400 text-white-400 font-medium"
                                 : "text-gray-800 hover:bg-gray-200"
                               }`}
                           >
@@ -385,8 +422,36 @@ export default function Header() {
 
               {/* MENU */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 text-gray-700">
-                <div className="cursor-pointer">👤 Tài khoản</div>
-                <div className="cursor-pointer">⚙️ Thông tin gian hàng</div>
+                <div
+                  onClick={() => {
+                    navigate("/account");
+                    setOpenUser(false);
+                  }}
+                  className="
+    cursor-pointer
+    p-3
+    rounded-xl
+    hover:bg-gray-100
+    transition-all
+  "
+                >
+                  👤 Tài khoản
+                </div>
+                <div
+                  onClick={() => {
+                    navigate("/store-info");
+                    setOpenUser(false);
+                  }}
+                  className="
+    cursor-pointer
+    p-3
+    rounded-xl
+    hover:bg-gray-100
+    transition-all
+  "
+                >
+                  ⚙️ Thông tin gian hàng
+                </div>
                 {/* <div className="cursor-pointer">🏬 Quản lý mẫu in</div>
                 <div className="cursor-pointer">📍 Quản lý chi nhánh</div>
                 <div className="cursor-pointer">🧾 Lịch sử thao tác</div> */}

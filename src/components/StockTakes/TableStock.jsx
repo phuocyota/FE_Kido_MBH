@@ -21,39 +21,75 @@ export default function TableStock() {
         </div>
       </div>
 
+     
       {/* TABLE */}
-      <table className="w-full text-sm border border-gray-300 rounded-lg overflow-hidden">
-        <thead className="bg-blue-100">
-          <tr>
-            <th className="p-2">
-              <input type="checkbox" />
-            </th>
-            <th>Mã kiểm kho</th>
-            <th>Thời gian</th>
-            <th>Ngày cân bằng</th>
-            <th>Tổng chênh lệch</th>
-            <th>SL lệch tăng</th>
-            <th>SL lệch giảm</th>
-            <th>Ghi chú</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
+<div className="overflow-x-auto">
 
-        <tbody>
-          {data.length === 0 && (
-            <tr>
-              <td colSpan="9" className="text-center py-20 text-gray-400">
-                <div className="flex flex-col items-center">
-                  📦
-                  <p className="mt-2">
-                    Không tìm thấy phiếu kiểm kho nào phù hợp
-                  </p>
-                </div>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+  <div className="min-w-[1100px]">
+
+    <table className="w-full text-sm border border-gray-300 rounded-lg overflow-hidden">
+      <thead className="bg-blue-100 sticky top-0 z-10">
+        <tr>
+          <th className="p-3">
+            <input type="checkbox" />
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Mã kiểm kho
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Thời gian
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Ngày cân bằng
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Tổng chênh lệch
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            SL lệch tăng
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            SL lệch giảm
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Ghi chú
+          </th>
+
+          <th className="p-3 text-left whitespace-nowrap">
+            Trạng thái
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {data.length === 0 && (
+          <tr>
+            <td
+              colSpan="9"
+              className="text-center py-24 text-gray-400"
+            >
+              <div className="flex flex-col items-center">
+                <div className="text-5xl mb-3">📦</div>
+
+                <p className="text-base">
+                  Không tìm thấy phiếu kiểm kho nào phù hợp
+                </p>
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+
+  </div>
+</div>
     </div>
   );
 }
