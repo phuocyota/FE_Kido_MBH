@@ -11,6 +11,7 @@ import StockTakes from "./pages/StockTakes";
 import Account from "./pages/Account";
 import StoreInfo from "./pages/StoreInfo";
 import ReportEndDay from "./pages/reports/ReportEndDay";
+import ReportProduct from "./pages/reports/ReportProduct";
 
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
                 <Route path="/account" element={<Account />} />
                 <Route path="/store-info" element={<StoreInfo />} />
                 <Route path="/report-end-day" element={<ReportEndDay />} />
+                <Route path="/report-product" element={<ReportProduct />} />
               </Routes>
             </>
           }

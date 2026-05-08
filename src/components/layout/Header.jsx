@@ -21,17 +21,17 @@ const menu = [
     name: "Nhà cung cấp", path: "/nha-cung-cap",
   },
 
-  {
-    name: "Giao dịch",
-    children: [
-      { name: "Hóa đơn", path: "/hoa-don" },
-      { name: "Trả hàng", path: "/tra-hang" },
-      { name: "Hóa đơn đầu vào", path: "/hoa-don-dau-vao" },
-      { name: "Nhập hàng", path: "/nhap-hang" },
-      { name: "Trả hàng nhập", path: "/tra-hang-nhap" },
-      { name: "Xuất hủy", path: "/xuat-huy" },
-    ],
-  },
+  // {
+  //   name: "Giao dịch",
+  //   children: [
+  //     { name: "Hóa đơn", path: "/hoa-don" },
+  //     { name: "Trả hàng", path: "/tra-hang" },
+  //     { name: "Hóa đơn đầu vào", path: "/hoa-don-dau-vao" },
+  //     { name: "Nhập hàng", path: "/nhap-hang" },
+  //     { name: "Trả hàng nhập", path: "/tra-hang-nhap" },
+  //     { name: "Xuất hủy", path: "/xuat-huy" },
+  //   ],
+  // },
 
   {
     name: "Nhân viên",
@@ -40,32 +40,27 @@ const menu = [
       { name: "Lịch làm việc", path: "/lich-lam-viec" },
       { name: "Bảng chấm công", path: "/cham-cong" },
       { name: "Bảng lương", path: "/bang-luong" },
-      { name: "Bảng hoa hồng", path: "/hoa-hong" },
-      { name: "Thiết lập nhân viên", path: "/thiet-lap-nv" },
     ],
   },
 
-  {
-    name: "Bán Online",
-    children: [
-      { name: "Bán hàng Zalo", path: "/zalo" },
-      { name: "Bán hàng Facebook", path: "/facebook" },
-      { name: "Website bán hàng", path: "/website" },
-    ],
-  },
+  // {
+  //   name: "Bán Online",
+  //   children: [
+  //     { name: "Bán hàng Zalo", path: "/zalo" },
+  //     { name: "Bán hàng Facebook", path: "/facebook" },
+  //     { name: "Website bán hàng", path: "/website" },
+  //   ],
+  // },
 
   { name: "Sổ quỹ", path: "/so-quy" },
   {
     name: "Báo cáo",
     children: [
       { name: "Cuối ngày", path: "/report-end-day" },
-      { name: "Bán hàng", path: "/bao-cao/ban-hang" },
-      { name: "Hàng hóa", path: "/bao-cao/hang-hoa" },
-      { name: "Khách hàng", path: "/bao-cao/khach-hang" },
-      { name: "Nhà cung cấp", path: "/bao-cao/nha-cung-cap" },
+      { name: "Hàng hóa", path: "/report-product" },
       { name: "Nhân viên", path: "/bao-cao/nhan-vien" },
       { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
-      { name: "Tài chính", path: "/bao-cao/tai-chinh" },
+
     ],
   },
 
@@ -84,6 +79,9 @@ export default function Header() {
 
   const [openMobile, setOpenMobile] = useState(false);
   const [openUser, setOpenUser] = useState(false);
+
+  const [openTabletMenu, setOpenTabletMenu] =
+    useState(null);
 
   // biến giả lập đăng nhập
   const isLoggedIn = localStorage.getItem("isLogin") === "true";
@@ -139,107 +137,218 @@ export default function Header() {
             </button>
 
             {/* MENU DESKTOP */}
-            <div className="
-  hidden
-  md:block
-  flex-1
-  mx-3
-  min-w-0
-">
+            {/* MENU DESKTOP + TABLET */}
+<div
+  className="
+    hidden
+    md:block
+    flex-1
+    mx-3
+    min-w-0
+  "
+>
+  <div
+    className="
+      flex
+      items-center
+      gap-1
+      lg:gap-2
+      xl:gap-3
+      overflow-visible
+      relative
+    "
+  >
+    {menu.map((item, i) => {
 
-              <div className="
-  flex
-  items-center
-  gap-1
-  lg:gap-2
-  xl:gap-3
-  overflow-visible
-  relative
-">
-                {menu.map((item, i) => (
-                  <div
-                    key={i}
-                    className="relative shrink-0 group"
-                  >
-                    {/* MENU CHA */}
+      const isTablet =
+        window.innerWidth >= 768 &&
+        window.innerWidth < 1280;
+
+      const isOpen =
+        openTabletMenu === i;
+
+      return (
+        <div
+          key={i}
+          className="
+            relative
+            shrink-0
+            group
+          "
+        >
+
+          {/* MENU CHA */}
+          <div
+            onClick={() => {
+
+              // ===== TABLET / IPAD =====
+              if (
+                isTablet &&
+                item.children
+              ) {
+
+                setOpenTabletMenu(
+                  isOpen ? null : i
+                );
+
+                return;
+              }
+
+              // ===== MENU THƯỜNG =====
+              if (item.path) {
+                navigate(item.path);
+              }
+            }}
+            className={`
+              cursor-pointer
+
+              px-3
+              lg:px-4
+              xl:px-4
+
+              py-2
+
+              rounded-xl
+              transition-all
+
+              whitespace-nowrap
+
+              text-[15px]
+              lg:text-[17px]
+              xl:text-[18px]
+
+              flex
+              items-center
+              gap-2
+
+              ${
+                isParentActive(item)
+                  ? "bg-blue-800 text-white"
+                  : "hover:bg-blue-800"
+              }
+            `}
+          >
+            <span>{item.name}</span>
+
+            {item.children && (
+              <span
+                className={`
+                  text-[10px]
+                  transition-all
+                  duration-200
+                  ${
+                    isOpen
+                      ? "rotate-180"
+                      : ""
+                  }
+                `}
+              >
+                ▼
+              </span>
+            )}
+          </div>
+
+          {/* CẦU NỐI */}
+          {item.children && (
+            <div
+              className="
+                absolute
+                left-0
+                top-full
+                h-3
+                w-full
+              "
+            />
+          )}
+
+          {/* DROPDOWN */}
+          {item.children && (
+
+            <div
+              className={`
+                absolute
+                left-0
+                top-full
+                pt-4
+                z-[9999]
+
+                ${
+                  isTablet
+                    ? isOpen
+                      ? "block"
+                      : "hidden"
+                    : "hidden group-hover:block"
+                }
+              `}
+            >
+
+              <div
+                className="
+                  bg-white
+                  rounded-2xl
+                  shadow-2xl
+                  border
+                  border-gray-200
+
+                  w-[260px]
+                  xl:w-[300px]
+
+                  py-2
+
+                  backdrop-blur-xl
+                "
+              >
+
+                {item.children.map(
+                  (sub, idx) => (
                     <div
-                      onClick={() => item.path && navigate(item.path)}
-                      className={`
-    cursor-pointer
-    px-2
-    lg:px-3
-    xl:px-4
-    py-2
-    rounded-xl
-    transition-all
-    whitespace-nowrap
-    text-[13px]
-    lg:text-[14px]
-    xl:text-[15px]
-    flex
-    items-center
-    gap-1
+                      key={idx}
+                      onClick={() => {
 
-    ${isParentActive(item)
-                          ? "bg-blue-800 text-white"
-                          : "hover:bg-blue-800"
-                        }
-  `}
+                        navigate(
+                          sub.path
+                        );
+
+                        setOpenTabletMenu(
+                          null
+                        );
+                      }}
+                      className="
+                        flex
+                        items-center
+                        justify-between
+
+                        px-5
+                        py-4
+
+                        cursor-pointer
+
+                        text-gray-800
+
+                        hover:bg-gray-100
+
+                        transition-all
+
+                        text-[16px]
+                        lg:text-[17px]
+                        xl:text-[18px]
+                      "
                     >
-                      <span>{item.name}</span>
-
-                      {item.children && (
-                        <span className="text-[10px] opacity-80">
-                          ▼
-                        </span>
-                      )}
+                      <span>
+                        {sub.name}
+                      </span>
                     </div>
+                  )
+                )}
 
-                    {/* CẦU NỐI */}
-                    {item.children && (
-                      <div className="absolute left-0 top-full h-3 w-full"></div>
-                    )}
-
-                    {/* DROPDOWN */}
-                    {item.children && (
-                      <div className="
-  absolute
-  left-0
-  top-full
-  pt-4
-  hidden
-  group-hover:block
-  z-[9999]
-">                      <div className="
-  menu-dropdown
- 
-  bg-white
-  rounded-2xl
-  shadow-2xl
-  border
-  border-gray-200
-  w-[260px]
-  xl:w-[300px]
-  py-2
-  backdrop-blur-xl
-">
-                          {item.children.map((sub, idx) => (
-                            <div
-                              key={idx}
-                              onClick={() => navigate(sub.path)}
-                              className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer lg:text-[16px]
-  xl:text-[18px]"
-                            >
-                              <span>{sub.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>
           </div>
 
           {/* RIGHT */}

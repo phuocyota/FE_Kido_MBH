@@ -62,7 +62,7 @@ export default function Products() {
             >
               {/* HEADER */}
               <div className="flex items-center justify-between p-4 border-b border-gray-300">
-                <div className="font-semibold text-lg  ">
+                <div className="font-semibold text-lg">
                   Bộ lọc
                 </div>
 
