@@ -33,6 +33,7 @@ export default function ReportProductFilter({
 
 const [openTime, setOpenTime] =
   React.useState(false);
+  
 
   const toggleFoodType = (item) => {
 
@@ -49,6 +50,10 @@ const [openTime, setOpenTime] =
       ]);
     }
   };
+  const [dateMode, setDateMode] =
+  React.useState("preset");
+
+  
 
   return (
     <div
@@ -121,7 +126,7 @@ const [openTime, setOpenTime] =
         </div>
       </div>
 
-      {/* INTEREST */}
+      
       {/* INTEREST */}
 <div className="mb-8 relative">
 
@@ -178,7 +183,9 @@ const [openTime, setOpenTime] =
 
         {[
           "Bán hàng",
-          "Hủy món",
+          "Lợi nhuận ",
+          "Xuất nhập tồn",
+          "Xuất hủy",
         ].map((item) => {
 
           const active =
@@ -258,14 +265,62 @@ const [openTime, setOpenTime] =
 </div>
        
 
-      {/* TIME */}
-      {/* TIME */}
-<div className="mb-8 relative">
+       
+  
+{/* TIME */}
+<div className="mb-8">
 
-  <h2 className="font-semibold text-xl mb-4">
+  <h2 className="font-semibold text-xl mb-5">
     Thời gian
   </h2>
 
+  <div className="space-y-5">
+
+    {/* PRESET */}
+    <label className="flex gap-3 items-start">
+
+      {/* RADIO */}
+      <div
+        onClick={() =>
+          setDateMode("preset")
+        }
+        className={`
+          mt-5
+          w-5
+          h-5
+          rounded-full
+          border-2
+          cursor-pointer
+          flex
+          items-center
+          justify-center
+
+          ${
+            dateMode === "preset"
+              ? "border-purple-500"
+              : "border-gray-400"
+          }
+        `}
+      >
+
+        {dateMode === "preset" && (
+          <div
+            className="
+              w-2.5
+              h-2.5
+              rounded-full
+              bg-purple-500
+            "
+          />
+        )}
+
+      </div>
+
+      {/* BOX */}
+      {/* BOX */}
+<div className="flex-1 relative">
+
+  {/* COMBOBOX */}
   <button
     onClick={() =>
       setOpenTime(!openTime)
@@ -273,7 +328,7 @@ const [openTime, setOpenTime] =
     className="
       w-full
       h-14
-      border
+      border-2
       border-gray-300
       rounded-2xl
       px-4
@@ -285,9 +340,29 @@ const [openTime, setOpenTime] =
     "
   >
 
-    <span>{timeType}</span>
+    {/* VALUE */}
+    <span
+      className="
+        text-[17px]
+        font-medium
+        text-gray-800
+      "
+    >
+      {timeType || "Hôm nay"}
+    </span>
 
-    <ChevronDown size={22} />
+    <ChevronDown
+      size={22}
+      className={`
+        transition-all
+        duration-200
+        ${
+          openTime
+            ? "rotate-180"
+            : ""
+        }
+      `}
+    />
 
   </button>
 
@@ -397,8 +472,137 @@ const [openTime, setOpenTime] =
       </div>
     </div>
   )}
-</div>
 
+</div>
+    </label>
+
+    {/* CUSTOM */}
+    <label className="flex gap-3 items-start">
+
+      {/* RADIO */}
+      <div
+        onClick={() =>
+          setDateMode("custom")
+        }
+        className={`
+          mt-5
+          w-5
+          h-5
+          rounded-full
+          border-2
+          cursor-pointer
+          flex
+          items-center
+          justify-center
+
+          ${
+            dateMode === "custom"
+              ? "border-purple-500"
+              : "border-gray-400"
+          }
+        `}
+      >
+
+        {dateMode === "custom" && (
+          <div
+            className="
+              w-2.5
+              h-2.5
+              rounded-full
+              bg-purple-500
+            "
+          />
+        )}
+
+      </div>
+
+      {/* BOX */}
+      <div
+        className="
+          flex-1
+          border-2
+          border-gray-300
+          rounded-3xl
+          p-4
+          bg-white
+        "
+      >
+
+        {/* TITLE */}
+        <div
+          className="
+            font-semibold
+             
+            mb-5
+          "
+        >
+
+          Từ 7/5/2026
+          <span className="mx-3">-</span>
+          Đến 7/5/2026
+
+        </div>
+
+        {/* INPUTS */}
+        <div className="grid grid-cols-2 gap-4">
+
+          <div
+            className="
+              h-14
+              border
+              border-gray-300
+              rounded-2xl
+              px-4
+              flex
+              items-center
+              justify-between
+            "
+          >
+
+            <input
+              type="date"
+              className="
+                outline-none
+                bg-transparent
+                text-[18px]
+                w-full
+              "
+            />
+
+          </div>
+
+          <div
+            className="
+              h-14
+              border
+              border-gray-300
+              rounded-2xl
+              px-4
+              flex
+              items-center
+              justify-between
+            "
+          >
+
+            <input
+              type="date"
+              className="
+                outline-none
+                bg-transparent
+                text-[18px]
+                w-full
+              "
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+    </label>
+
+  </div>
+</div>
        
         
 

@@ -14,8 +14,7 @@ export default function ReportProduct() {
   const [branch, setBranch] =
     useState("Chi nhánh trung tâm");
 
-  const [timeType, setTimeType] =
-    useState("week");
+  
 
   const [productKeyword, setProductKeyword] =
     useState("");
@@ -48,10 +47,9 @@ export default function ReportProduct() {
               setInterest={setInterest}
 
               branch={branch}
-              setBranch={setBranch}
+              setBranch={setBranch} 
 
-              timeType={timeType}
-              setTimeType={setTimeType}
+             
 
               productKeyword={productKeyword}
               setProductKeyword={
