@@ -56,30 +56,26 @@ export default function MenuPerformance() {
 
   const topProducts = [
     {
-      name: "Hamburger bò",
+      name: "Mì gói omachi",
       sold: 124,
       revenue: "8,450,000",
     },
     {
-      name: "Trà sữa trân châu",
+      name: "Nước suối",
       sold: 98,
       revenue: "5,620,000",
     },
     {
-      name: "Khoai tây chiên",
+      name: "Sữa Milo",
       sold: 86,
       revenue: "3,910,000",
     },
     {
-      name: "Mì Ý sốt bò",
+      name: "Kẹo dẻo",
       sold: 74,
       revenue: "6,100,000",
     },
-    {
-      name: "Pizza hải sản",
-      sold: 58,
-      revenue: "9,800,000",
-    },
+    
   ];
 
   return (

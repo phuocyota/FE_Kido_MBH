@@ -52,7 +52,7 @@ const menu = [
   //   ],
   // },
 
-  { name: "Sổ quỹ", path: "/so-quy" },
+  // { name: "Sổ quỹ", path: "/so-quy" },
   {
     name: "Báo cáo",
     children: [
