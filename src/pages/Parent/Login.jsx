@@ -42,6 +42,8 @@ export default function Login() {
 
                   if (res?.success && data?.accessToken) {
                         localStorage.setItem("accessToken", data.accessToken);
+                        // ✅ THÊM DÒNG NÀY
+                        localStorage.setItem("userId", data.userId);
 
                         toast.success("Đăng nhập thành công 🎉");
 
