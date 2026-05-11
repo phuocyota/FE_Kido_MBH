@@ -22,6 +22,7 @@ export default function Kitchen() {
   useEffect(() => {
     const loadOrders = () => {
       const data = JSON.parse(localStorage.getItem("orders")) || [];
+      console.log(data)
       setOrders(data);
     };
 
@@ -201,11 +202,11 @@ export default function Kitchen() {
         orders={orders.filter(o => o.status === "done")}
         onSelect={setConfirmModal}
       /> */}
-<DoneOrders
-  orders={orders.filter(o => o.status === "done")}
-  onPickup={(order) => updateOrder(order, "remove")}
-   onSelect={setConfirmModal}
-/>
+      <DoneOrders
+        orders={orders.filter(o => o.status === "done")}
+        onPickup={(order) => updateOrder(order, "remove")}
+        onSelect={setConfirmModal}
+      />
 
       {/* ================= MODAL ================= */}
       {confirmModal && (
@@ -309,7 +310,7 @@ export default function Kitchen() {
                     onClick={() => {
                       if (confirmModal.status === "pending") {
                         setCancelModal(confirmModal);
-                      } 
+                      }
                       else if (confirmModal.status === "cash") {
                         setCancelModal(confirmModal);
                       }
@@ -350,14 +351,14 @@ export default function Kitchen() {
                         }}
                         className="bg-gray-100 py-2 rounded text-sm hover:bg-gray-200"
                       >
-                        {v === "full" ? "Nhận đủ" : `${v.toLocaleString()}đ` }
-                      </button> 
-                      
+                        {v === "full" ? "Nhận đủ" : `${v.toLocaleString()}đ`}
+                      </button>
+
                     ))}
                   </div>
 
                   {/* 💰 TIỀN THỐI */}
-                  <div className="text-sm"> 
+                  <div className="text-sm">
                     <span className="text-gray-600">Tiền thối lại: </span>
                     <span className="font-bold text-green-600 ml-2">
                       {cashInput
