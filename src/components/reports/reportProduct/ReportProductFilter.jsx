@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   ChevronDown,
@@ -53,7 +53,22 @@ const [openTime, setOpenTime] =
   const [dateMode, setDateMode] =
   React.useState("preset");
 
-  
+  // ✅ state ngày
+  const [fromDate, setFromDate] =
+    useState("2026-05-07");
+
+  const [toDate, setToDate] =
+    useState("2026-05-07");
+
+  // ✅ format yyyy-mm-dd -> d/m/yyyy
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    const d = new Date(date);
+
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
+
 
   return (
     <div
@@ -529,74 +544,85 @@ const [openTime, setOpenTime] =
       >
 
         {/* TITLE */}
-        <div
-          className="
-            font-semibold
-             
-            mb-5
-          "
-        >
+<div
+  className="
+    font-semibold
+    mb-5
+  "
+>
 
-          Từ 7/5/2026
-          <span className="mx-3">-</span>
-          Đến 7/5/2026
+  Từ {fromDate?.split("-").reverse().join("/")}
 
-        </div>
+  <span className="mx-3">-</span>
 
-        {/* INPUTS */}
-        <div className="grid grid-cols-2 gap-4">
+  Đến {toDate?.split("-").reverse().join("/")}
 
-          <div
-            className="
-              h-14
-              border
-              border-gray-300
-              rounded-2xl
-              px-4
-              flex
-              items-center
-              justify-between
-            "
-          >
+</div>
 
-            <input
-              type="date"
-              className="
-                outline-none
-                bg-transparent
-                text-[18px]
-                w-full
-              "
-            />
+{/* INPUTS */}
+<div className="grid grid-cols-2 gap-4">
 
-          </div>
+  {/* FROM */}
+  <div
+    className="
+      h-14
+      border
+      border-gray-300
+      rounded-2xl
+      px-4
+      flex
+      items-center
+      justify-between
+    "
+  >
 
-          <div
-            className="
-              h-14
-              border
-              border-gray-300
-              rounded-2xl
-              px-4
-              flex
-              items-center
-              justify-between
-            "
-          >
+    <input
+      type="date"
+      value={fromDate}
+      onChange={(e) =>
+        setFromDate(e.target.value)
+      }
+      className="
+        outline-none
+        bg-transparent
+        text-[18px]
+        w-full
+      "
+    />
 
-            <input
-              type="date"
-              className="
-                outline-none
-                bg-transparent
-                text-[18px]
-                w-full
-              "
-            />
+  </div>
 
-          </div>
+  {/* TO */}
+  <div
+    className="
+      h-14
+      border
+      border-gray-300
+      rounded-2xl
+      px-4
+      flex
+      items-center
+      justify-between
+    "
+  >
 
-        </div>
+    <input
+      type="date"
+      value={toDate}
+      onChange={(e) =>
+        setToDate(e.target.value)
+      }
+      className="
+        outline-none
+        bg-transparent
+        text-[18px]
+        w-full
+      "
+    />
+
+  </div>
+
+</div>
 
       </div>
     </label>
