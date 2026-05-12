@@ -2,6 +2,7 @@ import { API_BASE_URL } from "./client";
 
 export const API = {
   AUTH: {
+    LOGIN: `${API_BASE_URL}/auth/login`,
     LOGIN_STUDENT: `${API_BASE_URL}/auth/login/student`,
   },
   GRADE: {

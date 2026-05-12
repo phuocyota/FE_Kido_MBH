@@ -5,7 +5,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    basicSsl()
+    // basicSsl()
   ],
   server: {
     host: '0.0.0.0',
@@ -13,7 +13,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://160.250.132.143:3001',
+        target: 'https://be.kidostudent.kidoedu.vn',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
