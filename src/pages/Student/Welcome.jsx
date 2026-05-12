@@ -140,7 +140,7 @@ export default function Welcome() {
               : "text-white/60"
               }`}
           >
-            🎫 Quét thẻ
+            🎫 Scan QR / NFC card
           </button>
 
           <button
@@ -154,9 +154,6 @@ export default function Welcome() {
           </button>
         </div>
 
-        <p className="text-white/80 mb-6">
-          Vui lòng quét thẻ học sinh để bắt đầu đặt món
-        </p>
 
         {(tab === "face" || tab === "qr") && (
           <div className="mt-4">
@@ -180,10 +177,6 @@ export default function Welcome() {
             />
           </div>
         )}
-
-
-
-
       </div>
     </div>
   );
