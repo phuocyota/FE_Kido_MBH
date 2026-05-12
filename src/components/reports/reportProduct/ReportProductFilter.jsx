@@ -82,64 +82,69 @@ const [openTime, setOpenTime] =
       "
     >
 
+     
       {/* DISPLAY */}
-      <div className="mb-8">
+<div className="mb-8">
 
-        <h2 className="filter-title">
-          Kiểu hiển thị
-        </h2>
+  <h2 className="filter-title">
+    Kiểu hiển thị
+  </h2>
 
-        <div className="space-y-4">
+  <div className="flex flex-wrap gap-5">
 
-          {[
+    {[
+      ...(interest === "Bán hàng"
+        ? [
             {
               label: "Biểu đồ",
               value: "chart",
             },
+          ]
+        : []),
 
-            {
-              label: "Báo cáo dọc",
-              value: "portrait",
-            },
+      {
+        label: "Báo cáo dọc",
+        value: "portrait",
+      },
 
-            {
-              label: "Báo cáo ngang",
-              value: "landscape",
-            },
-          ].map((item) => (
+      {
+        label: "Báo cáo ngang",
+        value: "landscape",
+      },
+    ].map((item) => (
 
-            <label
-              key={item.value}
-              className="
-                flex
-                items-center
-                gap-3
-                cursor-pointer
-              "
-            >
+      <label
+        key={item.value}
+        className="
+          flex
+          items-center
+          gap-3
+          cursor-pointer
+        "
+      >
 
-              <input
-                type="radio"
-                checked={
-                  viewType === item.value
-                }
-                onChange={() =>
-                  setViewType(
-                    item.value
-                  )
-                }
-                className="w-5 h-5"
-              />
+        <input
+          type="radio"
+          checked={
+            viewType === item.value
+          }
+          onChange={() =>
+            setViewType(item.value)
+          }
+          className="w-5 h-5"
+        />
 
-              <span className="text-[17px]">
-                {item.label}
-              </span>
+        <span className="text-[17px]">
+          {item.label}
+        </span>
 
-            </label>
-          ))}
+      </label>
 
-        </div>
-      </div>
+    ))}
+
+  </div>
+
+</div>
 
       
       {/* INTEREST */}

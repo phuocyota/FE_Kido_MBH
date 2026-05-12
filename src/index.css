@@ -111,3 +111,13 @@
   text-[16px]
   bg-white;
 }
+
+.report-td{
+  @apply
+  border
+  border-gray-200
+  px-5
+  py-4
+  text-center
+  text-gray-700;
+}
