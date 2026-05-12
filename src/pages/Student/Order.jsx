@@ -14,12 +14,21 @@ import banhmiImg from "../../assets/banhmi.jpg";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
 
 
-import keomutImg from "../../assets/keomut.jpg";
-import banhquyImg from "../../assets/banhquy.jpg";
-import nuocsuoiImg from "../../assets/nuocsuoi.jpg";
-import trachanhImg from "../../assets/trachanh.jpg";
-import banhtrungImg from "../../assets/banhtrung.png";
-import xucxichImg from "../../assets/xucxich.png";
+import butChiImg from "../../assets/but_chi.jpg";
+import butQuatImg from "../../assets/but_quat.jpg";
+import butThuImg from "../../assets/but_thu.jpg";
+import ghimCaiAoImg from "../../assets/ghim_cai_ao.jpg";
+import keomutImg from "../../assets/keo_mut.jpg";
+import keovienImg from "../../assets/keo_vien.jpg";
+import mohinhLapRapImg from "../../assets/mo_hinh_lap_rap.jpg";
+import nuocSuoiImg from "../../assets/nuoc_suoi.jpg";
+import quatCamTayImg from "../../assets/quat_cam_tay.jpg";
+import snackImg from "../../assets/snack.jpg";
+import stickerImg from "../../assets/sticker.jpg";
+import suachuanoImg from "../../assets/sua_chua_nho.jpg";
+import tapImg from "../../assets/tap.jpg";
+import thachraucauImg from "../../assets/thach_rau_cau.jpg";
+import thuocConThuImg from "../../assets/thuoc_con_thu.jpg";
 export default function Order() {
   const location = useLocation();
 
@@ -65,83 +74,132 @@ export default function Order() {
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
 
-  const categories = ["Tất cả", "Nước", "Bánh", "Bánh mì", "Cơm"];
+  const categories = [
+  "Tất cả",
+  "Kẹo",
+  "Phụ kiện",
+  "Snack",
+  "Ăn vặt",
+  "Sữa",
+  "Nước",
+  "Học tập",
+  "Tiện ích",
+  "Đồ chơi",
+];
+ const products = [
+  // ===== 5K =====
+  {
+    id: 1,
+    name: "Kẹo mút",
+    price: 5000,
+    category: "Kẹo",
+    image: keomutImg,
+  },
+  {
+    id: 2,
+    name: "Kẹo viên",
+    price: 5000,
+    category: "Kẹo",
+    image: keovienImg,
+  },
+  {
+    id: 3,
+    name: "Sticker",
+    price: 5000,
+    category: "Phụ kiện",
+    image: stickerImg,
+  },
+  {
+    id: 4,
+    name: "Ghim cài áo",
+    price: 5000,
+    category: "Phụ kiện",
+    image: ghimCaiAoImg,
+  },
 
-  const products = [
-    {
-      id: 1,
-      name: "Trà sữa",
-      price: 20000,
-      category: "Nước",
-      image: trasuaImg,
-    },
-    {
-      id: 2,
-      name: "Coca",
-      price: 10000,
-      category: "Nước",
-      image: cocaImg,
-    },
-    {
-      id: 3,
-      name: "Bánh ngọt",
-      price: 15000,
-      category: "Bánh",
-      image: banhngotImg,
-    },
-    {
-      id: 4,
-      name: "Bánh mì",
-      price: 20000,
-      category: "Bánh mì",
-      image: banhmiImg,
-    },
+  // ===== 10K =====
+  {
+    id: 5,
+    name: "Bánh snack",
+    price: 10000,
+    category: "Snack",
+    image: snackImg,
+  },
+  {
+    id: 6,
+    name: "Thạch rau câu",
+    price: 10000,
+    category: "Ăn vặt",
+    image: thachraucauImg,
+  },
+  {
+    id: 7,
+    name: "Sữa chua nhỏ",
+    price: 10000,
+    category: "Sữa",
+    image: suachuanoImg,
+  },
+  {
+    id: 8,
+    name: "Nước suối",
+    price: 10000,
+    category: "Nước",
+    image: nuocSuoiImg,
+  },
 
-    // ✅ thêm 3 món 5K
-    {
-      id: 5,
-      name: "Kẹo mút",
-      price: 5000,
-      category: "Snack",
-      image: keomutImg, // nhớ import ảnh
-    },
-    {
-      id: 6,
-      name: "Bánh quy nhỏ",
-      price: 5000,
-      category: "Snack",
-      image: banhquyImg,
-    },
-    {
-      id: 7,
-      name: "Nước suối mini",
-      price: 5000,
-      category: "Nước",
-      image: nuocsuoiImg,
-    },
-    // ✅ thêm 3 món 10K
-    {
-      id: 8,
-      name: "Trà chanh",
-      price: 10000,
-      category: "Nước",
-      image: trachanhImg,
-    },
-    {
-      id: 9,
-      name: "Bánh trứng",
-      price: 10000,
-      category: "Bánh",
-      image: banhtrungImg,
-    },
-    {
-      id: 10,
-      name: "Xúc xích",
-      price: 10000,
-      category: "Ăn vặt",
-      image: xucxichImg,
-    },
-  ];
+  // ===== Học tập =====
+  {
+    id: 9,
+    name: "Tập",
+    price: 10000,
+    category: "Học tập",
+    image: tapImg,
+  },
+  {
+    id: 10,
+    name: "Bút chì",
+    price: 10000,
+    category: "Học tập",
+    image: butChiImg,
+  },
+  {
+    id: 11,
+    name: "Bút thú",
+    price: 10000,
+    category: "Học tập",
+    image: butThuImg,
+  },
+
+  // ===== Tiện ích / đồ chơi =====
+  {
+    id: 12,
+    name: "Quạt cầm tay",
+    price: 5000,
+    category: "Tiện ích",
+    image: quatCamTayImg,
+  },
+  {
+    id: 13,
+    name: "Bút quạt",
+    price: 10000,
+    category: "Tiện ích",
+    image: butQuatImg,
+  },
+  {
+    id: 14,
+    name: "Mô hình lắp ráp",
+    price: 10000,
+    category: "Đồ chơi",
+    image: mohinhLapRapImg,
+  },
+  {
+    id: 15,
+    name: "Thước con thú",
+    price: 5000,
+    category: "Học tập",
+    image: thuocConThuImg,
+  },
+];
 
 
 
