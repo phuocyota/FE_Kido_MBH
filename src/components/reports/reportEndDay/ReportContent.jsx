@@ -359,25 +359,170 @@ export default function ReportContent({
   </div>
 
   {/* EXPORT */}
-  <div className="fixed left-[-99999px] top-0">
-    <div
-      ref={exportRef}
-      style={{
-        width:
-          reportType === "portrait"
-            ? "210mm"
-            : "297mm",
+<div className="fixed left-[-99999px] top-0">
 
-        minHeight:
-          reportType === "portrait"
-            ? "297mm"
-            : "210mm",
-      }}
-      className="bg-white p-10"
+  <div
+    ref={exportRef}
+    style={{
+      width:
+        reportType === "portrait"
+          ? "210mm"
+          : "297mm",
+
+      minHeight:
+        reportType === "portrait"
+          ? "297mm"
+          : "210mm",
+    }}
+    className="bg-white"
+  >
+
+    {/* HEADER */}
+    <div
+      className={`
+        border-b
+        border-gray-300
+
+        ${
+          isPortrait
+            ? "pb-4 pt-8 px-8"
+            : "pb-5 pt-6 px-12"
+        }
+      `}
     >
-      Export PDF
+
+      <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+
+        {interest === "Hủy món"
+          ? "Báo cáo hủy món"
+          : "Báo cáo doanh thu bán hàng"}
+
+      </h1>
+
+      <div className="text-center mt-3 text-[20px] text-gray-700">
+        Trường tiểu học ABC
+      </div>
+
     </div>
+
+    {/* TABLE */}
+    <div
+      className={`
+        overflow-x-auto
+
+        ${
+          isPortrait
+            ? "px-3 py-6"
+            : "px-8 py-4"
+        }
+      `}
+    >
+
+      <table className="w-full border-collapse">
+
+        <thead>
+
+          <tr className="bg-[#F3F4F6]">
+
+            <th className="report-th w-[120px]">
+              Ngày
+            </th>
+
+            <th className="report-th">
+              Mã Hàng
+            </th>
+
+            <th className="report-th">
+              Tên sản phẩm
+            </th>
+
+            <th className="report-th">
+              Giá
+            </th>
+
+            <th className="report-th">
+              Số lượng
+            </th>
+
+            <th className="report-th">
+              Tổng
+            </th>
+
+            <th className="report-th">
+              Doanh thu
+              <br />
+              (Gross Sale)
+            </th>
+
+            <th className="report-th">
+              Thuế GTGT
+            </th>
+
+            <th className="report-th">
+              Doanh thu
+              <br />
+              (Net Sale)
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {data.map((item, index) => (
+
+            <tr key={index}>
+
+              <td className="report-td">
+                {item.date}
+              </td>
+
+              <td className="report-td">
+                {item.code}
+              </td>
+
+              <td className="report-td">
+                {item.name}
+              </td>
+
+              <td className="report-td">
+                {item.price}
+              </td>
+
+              <td className="report-td">
+                {item.qty}
+              </td>
+
+              <td className="report-td">
+                {item.total}
+              </td>
+
+              <td className="report-td">
+                {item.gross}
+              </td>
+
+              <td className="report-td">
+                {item.tax}
+              </td>
+
+              <td className="report-td">
+                {item.net}
+              </td>
+
+            </tr>
+
+          ))}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
   </div>
+
+</div>
 </div>
     </div>
   );

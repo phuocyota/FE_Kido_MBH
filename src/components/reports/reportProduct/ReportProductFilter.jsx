@@ -6,18 +6,36 @@ import {
 } from "lucide-react";
 
 export default function ReportProductFilter({
+
+  // VIEW
   viewType,
   setViewType,
 
+  // INTEREST
   interest,
   setInterest,
+  interests,
 
+  // BRANCH
   branch,
   setBranch,
+
+  // TIME
+  dateMode,
+  setDateMode,
 
   timeType,
   setTimeType,
 
+  fromDate,
+  toDate,
+
+  setFromDate,
+  setToDate,
+
+  formatDate,
+
+  // FILTER
   productKeyword,
   setProductKeyword,
 
@@ -28,12 +46,12 @@ export default function ReportProductFilter({
   setFoodTypes,
 }) {
 
-      const [openInterest, setOpenInterest] =
-  React.useState(false);
+  const [openInterest, setOpenInterest] =
+    React.useState(false);
 
-const [openTime, setOpenTime] =
-  React.useState(false);
-  
+  const [openTime, setOpenTime] =
+    React.useState(false);
+
 
   const toggleFoodType = (item) => {
 
@@ -50,24 +68,6 @@ const [openTime, setOpenTime] =
       ]);
     }
   };
-  const [dateMode, setDateMode] =
-  React.useState("preset");
-
-  // ✅ state ngày
-  const [fromDate, setFromDate] =
-    useState("2026-05-07");
-
-  const [toDate, setToDate] =
-    useState("2026-05-07");
-
-  // ✅ format yyyy-mm-dd -> d/m/yyyy
-  const formatDate = (date) => {
-    if (!date) return "";
-
-    const d = new Date(date);
-
-    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  };
 
 
   return (
@@ -82,83 +82,143 @@ const [openTime, setOpenTime] =
       "
     >
 
-     
+
       {/* DISPLAY */}
 <div className="mb-8">
 
-  <h2 className="filter-title">
+  <h2 className="font-semibold text-xl mb-5">
     Kiểu hiển thị
   </h2>
 
-  <div className="flex flex-wrap gap-5">
+  <div className="space-y-4">
 
-    {[
-      ...(interest === "Bán hàng"
-        ? [
-            {
-              label: "Biểu đồ",
-              value: "chart",
-            },
-          ]
-        : []),
-
-      {
-        label: "Báo cáo dọc",
-        value: "portrait",
-      },
-
-      {
-        label: "Báo cáo ngang",
-        value: "landscape",
-      },
-    ].map((item) => (
+    {/* BIỂU ĐỒ */}
+    {interest === "Bán hàng" && (
 
       <label
-        key={item.value}
         className="
-          flex
-          items-center
-          gap-3
+          flex items-center gap-3
           cursor-pointer
+          border rounded-2xl p-4
         "
+        style={{
+          borderColor:
+            viewType === "chart"
+              ? "#2563eb"
+              : "#e5e7eb",
+
+          background:
+            viewType === "chart"
+              ? "#eff6ff"
+              : "#ffffff",
+        }}
       >
 
         <input
           type="radio"
-          checked={
-            viewType === item.value
-          }
+          checked={viewType === "chart"}
           onChange={() =>
-            setViewType(item.value)
+            setViewType("chart")
           }
           className="w-5 h-5"
         />
 
-        <span className="text-[17px]">
-          {item.label}
+        <span className="text-lg font-medium">
+          Biểu đồ
         </span>
 
       </label>
 
-    ))}
+    )}
+
+    {/* DỌC */}
+    <label
+      className="
+        flex items-center gap-3
+        cursor-pointer
+        border rounded-2xl p-4
+      "
+      style={{
+        borderColor:
+          viewType === "portrait"
+            ? "#2563eb"
+            : "#e5e7eb",
+
+        background:
+          viewType === "portrait"
+            ? "#eff6ff"
+            : "#ffffff",
+      }}
+    >
+
+      <input
+        type="radio"
+        checked={viewType === "portrait"}
+        onChange={() =>
+          setViewType("portrait")
+        }
+        className="w-5 h-5"
+      />
+
+      <span className="text-lg font-medium">
+        Báo cáo dọc
+      </span>
+
+    </label>
+
+    {/* NGANG */}
+    <label
+      className="
+        flex items-center gap-3
+        cursor-pointer
+        border rounded-2xl p-4
+      "
+      style={{
+        borderColor:
+          viewType === "landscape"
+            ? "#2563eb"
+            : "#e5e7eb",
+
+        background:
+          viewType === "landscape"
+            ? "#eff6ff"
+            : "#ffffff",
+      }}
+    >
+
+      <input
+        type="radio"
+        checked={
+          viewType === "landscape"
+        }
+        onChange={() =>
+          setViewType("landscape")
+        }
+        className="w-5 h-5"
+      />
+
+      <span className="text-lg font-medium">
+        Báo cáo ngang
+      </span>
+
+    </label>
 
   </div>
 
 </div>
 
-      
       {/* INTEREST */}
-<div className="mb-8 relative">
+      <div className="mb-8 relative">
 
-  <h2 className="font-semibold text-xl mb-4">
-    Mối quan tâm
-  </h2>
+        <h2 className="font-semibold text-xl mb-4">
+          Mối quan tâm
+        </h2>
 
-  <button
-    onClick={() =>
-      setOpenInterest(!openInterest)
-    }
-    className="
+        <button
+          onClick={() =>
+            setOpenInterest(!openInterest)
+          }
+          className="
       w-full
       h-14
       border
@@ -171,19 +231,19 @@ const [openTime, setOpenTime] =
       text-lg
       bg-white
     "
-  >
+        >
 
-    <span>{interest}</span>
+          <span>{interest}</span>
 
-    <ChevronDown size={22} />
+          <ChevronDown size={22} />
 
-  </button>
+        </button>
 
-  {/* DROPDOWN */}
-  {openInterest && (
+        {/* DROPDOWN */}
+        {openInterest && (
 
-    <div
-      className="
+          <div
+            className="
         absolute
         left-0
         right-0
@@ -197,30 +257,25 @@ const [openTime, setOpenTime] =
         z-50
         p-2
       "
-    >
+          >
 
-      <div className="max-h-[320px] overflow-y-auto">
+            <div className="max-h-[320px] overflow-y-auto">
 
-        {[
-          "Bán hàng",
-          "Lợi nhuận ",
-          "Xuất nhập tồn",
-          "Xuất hủy",
-        ].map((item) => {
+              {interests.map((item) => {
 
-          const active =
-            interest === item;
+                const active =
+                  interest === item;
 
-          return (
-            <button
-              key={item}
-              onClick={() => {
+                return (
+                  <button
+                    key={item}
+                    onClick={() => {
 
-                setInterest(item);
+                      setInterest(item);
 
-                setOpenInterest(false);
-              }}
-              className={`
+                      setOpenInterest(false);
+                    }}
+                    className={`
                 w-full
                 px-5
                 py-4
@@ -233,32 +288,30 @@ const [openTime, setOpenTime] =
                 justify-between
                 mb-1
 
-                ${
-                  active
-                    ? "bg-[#EAF7EE]"
-                    : "hover:bg-gray-50"
-                }
+                ${active
+                        ? "bg-[#EAF7EE]"
+                        : "hover:bg-gray-50"
+                      }
               `}
-            >
+                  >
 
-              <span
-                className={`
+                    <span
+                      className={`
                   text-[16px]
                   font-medium
 
-                  ${
-                    active
-                      ? "text-[#16A34A]"
-                      : "text-gray-700"
-                  }
+                  ${active
+                          ? "text-[#16A34A]"
+                          : "text-gray-700"
+                        }
                 `}
-              >
-                {item}
-              </span>
+                    >
+                      {item}
+                    </span>
 
-              {active && (
-                <div
-                  className="
+                    {active && (
+                      <div
+                        className="
                     w-6
                     h-6
                     rounded-full
@@ -270,41 +323,41 @@ const [openTime, setOpenTime] =
                     text-sm
                     font-bold
                   "
-                >
-                  ✓
-                </div>
-              )}
+                      >
+                        ✓
+                      </div>
+                    )}
 
-            </button>
-          );
-        })}
+                  </button>
+                );
+              })}
 
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  )}
-</div>
-       
 
-       
-  
-{/* TIME */}
-<div className="mb-8">
 
-  <h2 className="font-semibold text-xl mb-5">
-    Thời gian
-  </h2>
 
-  <div className="space-y-5">
 
-    {/* PRESET */}
-    <label className="flex gap-3 items-start">
+      {/* TIME */}
+      <div className="mb-8">
 
-      {/* RADIO */}
-      <div
-        onClick={() =>
-          setDateMode("preset")
-        }
-        className={`
+        <h2 className="font-semibold text-xl mb-5">
+          Thời gian
+        </h2>
+
+        <div className="space-y-5">
+
+          {/* PRESET */}
+          <label className="flex gap-3 items-start">
+
+            {/* RADIO */}
+            <div
+              onClick={() =>
+                setDateMode("preset")
+              }
+              className={`
           mt-5
           w-5
           h-5
@@ -315,37 +368,36 @@ const [openTime, setOpenTime] =
           items-center
           justify-center
 
-          ${
-            dateMode === "preset"
-              ? "border-purple-500"
-              : "border-gray-400"
-          }
+          ${dateMode === "preset"
+                  ? "border-purple-500"
+                  : "border-gray-400"
+                }
         `}
-      >
+            >
 
-        {dateMode === "preset" && (
-          <div
-            className="
+              {dateMode === "preset" && (
+                <div
+                  className="
               w-2.5
               h-2.5
               rounded-full
               bg-purple-500
             "
-          />
-        )}
+                />
+              )}
 
-      </div>
+            </div>
 
-      {/* BOX */}
-      {/* BOX */}
-<div className="flex-1 relative">
 
-  {/* COMBOBOX */}
-  <button
-    onClick={() =>
-      setOpenTime(!openTime)
-    }
-    className="
+            {/* BOX */}
+            <div className="flex-1 relative">
+
+              {/* COMBOBOX */}
+              <button
+                onClick={() =>
+                  setOpenTime(!openTime)
+                }
+                className="
       w-full
       h-14
       border-2
@@ -358,39 +410,38 @@ const [openTime, setOpenTime] =
       text-lg
       bg-white
     "
-  >
+              >
 
-    {/* VALUE */}
-    <span
-      className="
+                {/* VALUE */}
+                <span
+                  className="
         text-[17px]
         font-medium
         text-gray-800
       "
-    >
-      {timeType || "Hôm nay"}
-    </span>
+                >
+                  {timeType || "Hôm nay"}
+                </span>
 
-    <ChevronDown
-      size={22}
-      className={`
+                <ChevronDown
+                  size={22}
+                  className={`
         transition-all
         duration-200
-        ${
-          openTime
-            ? "rotate-180"
-            : ""
-        }
+        ${openTime
+                      ? "rotate-180"
+                      : ""
+                    }
       `}
-    />
+                />
 
-  </button>
+              </button>
 
-  {/* DROPDOWN */}
-  {openTime && (
+              {/* DROPDOWN */}
+              {openTime && (
 
-    <div
-      className="
+                <div
+                  className="
         absolute
         left-0
         right-0
@@ -404,33 +455,33 @@ const [openTime, setOpenTime] =
         z-50
         p-2
       "
-    >
+                >
 
-      <div className="max-h-[320px] overflow-y-auto">
+                  <div className="max-h-[320px] overflow-y-auto">
 
-        {[
-          "Hôm nay",
-          "Hôm qua",
-          "Tuần này",
-          "Tuần trước",
-          "Tháng này",
-          "Tháng trước",
-          "Tùy chỉnh",
-        ].map((item) => {
+                    {[
+                      "Hôm nay",
+                      "Hôm qua",
+                      "Tuần này",
+                      "Tuần trước",
+                      "Tháng này",
+                      "Tháng trước",
+                      "Tùy chỉnh",
+                    ].map((item) => {
 
-          const active =
-            timeType === item;
+                      const active =
+                        timeType === item;
 
-          return (
-            <button
-              key={item}
-              onClick={() => {
+                      return (
+                        <button
+                          key={item}
+                          onClick={() => {
 
-                setTimeType(item);
+                            setTimeType(item);
 
-                setOpenTime(false);
-              }}
-              className={`
+                            setOpenTime(false);
+                          }}
+                          className={`
                 w-full
                 px-5
                 py-4
@@ -443,32 +494,30 @@ const [openTime, setOpenTime] =
                 justify-between
                 mb-1
 
-                ${
-                  active
-                    ? "bg-[#EAF7EE]"
-                    : "hover:bg-gray-50"
-                }
+                ${active
+                              ? "bg-[#EAF7EE]"
+                              : "hover:bg-gray-50"
+                            }
               `}
-            >
+                        >
 
-              <span
-                className={`
+                          <span
+                            className={`
                   text-[16px]
                   font-medium
 
-                  ${
-                    active
-                      ? "text-[#16A34A]"
-                      : "text-gray-700"
-                  }
+                  ${active
+                                ? "text-[#16A34A]"
+                                : "text-gray-700"
+                              }
                 `}
-              >
-                {item}
-              </span>
+                          >
+                            {item}
+                          </span>
 
-              {active && (
-                <div
-                  className="
+                          {active && (
+                            <div
+                              className="
                     w-6
                     h-6
                     rounded-full
@@ -480,31 +529,31 @@ const [openTime, setOpenTime] =
                     text-sm
                     font-bold
                   "
-                >
-                  ✓
+                            >
+                              ✓
+                            </div>
+                          )}
+
+                        </button>
+                      );
+                    })}
+
+                  </div>
                 </div>
               )}
 
-            </button>
-          );
-        })}
+            </div>
+          </label>
 
-      </div>
-    </div>
-  )}
+          {/* CUSTOM */}
+          <label className="flex gap-3 items-start">
 
-</div>
-    </label>
-
-    {/* CUSTOM */}
-    <label className="flex gap-3 items-start">
-
-      {/* RADIO */}
-      <div
-        onClick={() =>
-          setDateMode("custom")
-        }
-        className={`
+            {/* RADIO */}
+            <div
+              onClick={() =>
+                setDateMode("custom")
+              }
+              className={`
           mt-5
           w-5
           h-5
@@ -515,30 +564,29 @@ const [openTime, setOpenTime] =
           items-center
           justify-center
 
-          ${
-            dateMode === "custom"
-              ? "border-purple-500"
-              : "border-gray-400"
-          }
+          ${dateMode === "custom"
+                  ? "border-purple-500"
+                  : "border-gray-400"
+                }
         `}
-      >
+            >
 
-        {dateMode === "custom" && (
-          <div
-            className="
+              {dateMode === "custom" && (
+                <div
+                  className="
               w-2.5
               h-2.5
               rounded-full
               bg-purple-500
             "
-          />
-        )}
+                />
+              )}
 
-      </div>
+            </div>
 
-      {/* BOX */}
-      <div
-        className="
+            {/* BOX */}
+            <div
+              className="
           flex-1
           border-2
           border-gray-300
@@ -546,30 +594,30 @@ const [openTime, setOpenTime] =
           p-4
           bg-white
         "
-      >
+            >
 
-        {/* TITLE */}
-<div
-  className="
+              {/* TITLE */}
+              <div
+                className="
     font-semibold
     mb-5
   "
->
+              >
 
-  Từ {fromDate?.split("-").reverse().join("/")}
+                Từ {fromDate?.split("-").reverse().join("/")}
 
-  <span className="mx-3">-</span>
+                <span className="mx-3">-</span>
 
-  Đến {toDate?.split("-").reverse().join("/")}
+                Đến {toDate?.split("-").reverse().join("/")}
 
-</div>
+              </div>
 
-{/* INPUTS */}
-<div className="grid grid-cols-2 gap-4">
+              {/* INPUTS */}
+              <div className="grid grid-cols-2 gap-4">
 
-  {/* FROM */}
-  <div
-    className="
+                {/* FROM */}
+                <div
+                  className="
       h-14
       border
       border-gray-300
@@ -579,27 +627,27 @@ const [openTime, setOpenTime] =
       items-center
       justify-between
     "
-  >
+                >
 
-    <input
-      type="date"
-      value={fromDate}
-      onChange={(e) =>
-        setFromDate(e.target.value)
-      }
-      className="
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) =>
+                      setFromDate(e.target.value)
+                    }
+                    className="
         outline-none
         bg-transparent
         text-[18px]
         w-full
       "
-    />
+                  />
 
-  </div>
+                </div>
 
-  {/* TO */}
-  <div
-    className="
+                {/* TO */}
+                <div
+                  className="
       h-14
       border
       border-gray-300
@@ -609,36 +657,36 @@ const [openTime, setOpenTime] =
       items-center
       justify-between
     "
-  >
+                >
 
-    <input
-      type="date"
-      value={toDate}
-      onChange={(e) =>
-        setToDate(e.target.value)
-      }
-      className="
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) =>
+                      setToDate(e.target.value)
+                    }
+                    className="
         outline-none
         bg-transparent
         text-[18px]
         w-full
       "
-    />
+                  />
 
-  </div>
+                </div>
 
-</div>
+              </div>
 
+            </div>
+          </label>
+
+        </div>
       </div>
-    </label>
 
-  </div>
-</div>
-       
-        
+
 
       {/* FOOD TYPE */}
-      <div>
+      {/* <div>
 
         <h2 className="filter-title">
           Loại thực đơn
@@ -683,7 +731,7 @@ const [openTime, setOpenTime] =
           ))}
 
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

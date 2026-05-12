@@ -122,7 +122,11 @@ export default function ReportEndDay() {
       );
     };
 
-  const handlePrint = async () => { };
+  const handlePrint = () => {
+
+    window.print();
+
+  };
 
   const handleDownloadExcel =
     () => { };
