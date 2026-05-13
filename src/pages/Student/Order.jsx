@@ -135,77 +135,77 @@ export default function Order() {
 
   useEffect(() => {
 
-  console.log(
-    "CART STATE:",
-    cart
-  );
+    console.log(
+      "CART STATE:",
+      cart
+    );
 
-}, [cart]);
+  }, [cart]);
 
   const addToCart = async (item) => {
 
-  try {
+    try {
 
-    console.log(
-      "CLICK ITEM:",
-      item
-    );
-
-    // 👇 ADD API
-    const res = await addCartItem({
-      productId: item.id,
-      quantity: 1,
-      note: "",
-    });
-
-    // 👇 UPDATE RIGHT NGAY
-    setCart((prev) => {
-
-      // kiểm tra sản phẩm đã tồn tại chưa
-      const exist = prev.find(
-        (p) => p.id === item.id
+      console.log(
+        "CLICK ITEM:",
+        item
       );
 
-      // nếu đã có -> tăng qty
-      if (exist) {
+      // 👇 ADD API
+      const res = await addCartItem({
+        productId: item.id,
+        quantity: 1,
+        note: "",
+      });
 
-        return prev.map((p) =>
-          p.id === item.id
-            ? {
+      // 👇 UPDATE RIGHT NGAY
+      setCart((prev) => {
+
+        // kiểm tra sản phẩm đã tồn tại chưa
+        const exist = prev.find(
+          (p) => p.id === item.id
+        );
+
+        // nếu đã có -> tăng qty
+        if (exist) {
+
+          return prev.map((p) =>
+            p.id === item.id
+              ? {
                 ...p,
                 qty: p.qty + 1,
               }
-            : p
-        );
-      }
+              : p
+          );
+        }
 
-      // nếu chưa có -> thêm mới
-      return [
-        ...prev,
-        {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          qty: 1,
-          note: "",
-          cartItemId:
-            res?.data?.id ||
-            res?.id ||
-            null,
-        },
-      ];
-    });
+        // nếu chưa có -> thêm mới
+        return [
+          ...prev,
+          {
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            qty: 1,
+            note: "",
+            cartItemId:
+              res?.data?.id ||
+              res?.id ||
+              null,
+          },
+        ];
+      });
 
-  } catch (error) {
+    } catch (error) {
 
-    console.log(
-      "ADD CART ERROR:",
-      error
-    );
+      console.log(
+        "ADD CART ERROR:",
+        error
+      );
 
-  }
-};
+    }
+  };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
@@ -245,15 +245,16 @@ export default function Order() {
       }
 
       const result = await completeCart({
-        branchId: localStorage.getItem("branchId") || import.meta.env.VITE_BRANCH_ID || "branch-id",
-        posDeviceId:
-          localStorage.getItem("posDeviceId") ||
-          localStorage.getItem("deviceId") ||
-          import.meta.env.VITE_POS_DEVICE_ID ||
-          "student-app",
-        paymentMethod: paymentMethod === "cash" ? "CASH" : "WALLET",
+
+        paymentMethod:
+          paymentMethod === "cash"
+            ? "CASH"
+            : "WALLET",
+
         orderType: "TAKEAWAY",
+
         note: pickupType,
+
       });
 
       const payload = result?.data || result;

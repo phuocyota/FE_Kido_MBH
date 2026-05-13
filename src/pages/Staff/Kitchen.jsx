@@ -126,44 +126,7 @@ export default function Kitchen() {
     setConfirmModal(null);
   };
 
-  // hủy đơn và hoàn tiền
-  //   const handleCancel = (order, reason = "") => {
-  //   const isCancelable = Date.now() - order.createdAt <= 15 * 60 * 1000;
-
-  //   if (!isCancelable) {
-  //     alert("❌ Đơn đã quá 15 phút, không thể hủy");
-  //     return;
-  //   }
-
-  //   if (order.isRefunded) return;
-
-  //   const all = JSON.parse(localStorage.getItem("orders")) || [];
-
-  //   // 👉 HOÀN TIỀN
-  //   if (order.status === "pending") {
-  //     if (order.paymentMethod === "card") {
-  //       refundToCard(order);
-  //       alert(`💳 Đã hoàn ${order.total.toLocaleString()}đ vào tài khoản`);
-  //     } else {
-  //       alert(`💰 Trả lại ${order.total.toLocaleString()}đ`);
-  //     }
-  //   }
-
-  //   const updated = all.map(o =>
-  //     o.orderKey === order.orderKey
-  //       ? {
-  //           ...o,
-  //           status: "cancelled",
-  //           isRefunded: true,
-  //           cancelReason: reason || "Không có lý do"
-  //         }
-  //       : o
-  //   );
-
-  //   localStorage.setItem("orders", JSON.stringify(updated));
-  //   setConfirmModal(null);
-  // };
-
+   
   // hoàn tiền vào thẻ
   const refundToCard = (order) => {
     const students = JSON.parse(localStorage.getItem("students")) || [];
