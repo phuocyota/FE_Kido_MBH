@@ -1,21 +1,9 @@
 import React from "react";
 import bgCam from "../../assets/bg_cam.png";
 
-export default function CashOrders({ orders, onSelect }) {
+export default function CashOrders({ orders, onSelect, onPaid }) {
 
   function CashOrderCard({ order }) {
-
-    const handlePaid = () => {
-      const all = JSON.parse(localStorage.getItem("orders")) || [];
-
-      const updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "pending" }
-          : o
-      );
-
-      localStorage.setItem("orders", JSON.stringify(updated));
-    };
 
     return (
       <div
@@ -75,7 +63,7 @@ export default function CashOrders({ orders, onSelect }) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handlePaid();
+            onPaid?.(order);
           }}
           className="
             mt-2 w-full bg-yellow-600 text-white py-2 rounded-lg
