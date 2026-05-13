@@ -16,6 +16,16 @@ export const API = {
     ITEM: (itemId) => `${API_BASE_URL}/cart/me/items/${itemId}`,
     COMPLETE: `${API_BASE_URL}/cart/me/complete`,
   },
+  ORDERS: {
+    PENDING_CASH: `${API_BASE_URL}/orders/pending-cash`,
+    PREPARING: `${API_BASE_URL}/orders/preparing`,
+    READY_TO_PICKUP: `${API_BASE_URL}/orders/ready-to-pickup`,
+    DONE: `${API_BASE_URL}/orders?status=DONE`,
+    UPDATE_STATUS: (id, status) => `${API_BASE_URL}/orders/${id}/${status}`,
+    UPDATE_READY_TO_PICKUP: (id) => `${API_BASE_URL}/orders/${id}/ready-to-pickup`,
+    UPDATE_DONE: (id) => `${API_BASE_URL}/orders/${id}/done`,
+    RECEIVE_CASH: (id) => `${API_BASE_URL}/orders/${id}/receive-cash`,
+  },
   GRADE: {
     GET_ALL: `${API_BASE_URL}/grade?isGetAllDetail=true`,
 
