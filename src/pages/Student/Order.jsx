@@ -142,9 +142,7 @@ export default function Order() {
 
 }, [cart]);
 
-  const addToCart = async (
-  item
-) => {
+  const addToCart = async (item) => {
 
   try {
 
@@ -154,23 +152,50 @@ export default function Order() {
     );
 
     // 👇 ADD API
-    await addCartItem({
+    const res = await addCartItem({
       productId: item.id,
       quantity: 1,
       note: "",
     });
 
-    // 👇 GET NEW ITEMS
-    const items =
-      await getMyCartItems();
-
-    console.log(
-      "NEW ITEMS:",
-      items
-    );
-
     // 👇 UPDATE RIGHT NGAY
-    setCart(items);
+    setCart((prev) => {
+
+      // kiểm tra sản phẩm đã tồn tại chưa
+      const exist = prev.find(
+        (p) => p.id === item.id
+      );
+
+      // nếu đã có -> tăng qty
+      if (exist) {
+
+        return prev.map((p) =>
+          p.id === item.id
+            ? {
+                ...p,
+                qty: p.qty + 1,
+              }
+            : p
+        );
+      }
+
+      // nếu chưa có -> thêm mới
+      return [
+        ...prev,
+        {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          qty: 1,
+          note: "",
+          cartItemId:
+            res?.data?.id ||
+            res?.id ||
+            null,
+        },
+      ];
+    });
 
   } catch (error) {
 
