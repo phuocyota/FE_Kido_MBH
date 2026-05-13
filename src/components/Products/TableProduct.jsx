@@ -1,14 +1,27 @@
-import React, { useState } from "react";
-import mockExamData from "../../datas/mockExamData";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getProductsFull } from "../../api/products";
 
 export default function TableProduct() {
-  const data = mockExamData.products;
-
   const ITEMS_PER_PAGE = 22;
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const categories = await getProductsFull();
+        setData(categories.flatMap((category) => category.products || []));
+      } catch (error) {
+        console.error("Không tải được danh sách hàng hóa", error);
+        setData([]);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  const totalPages = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -61,15 +74,23 @@ export default function TableProduct() {
 
       {/* BODY */}
       <tbody>
+        {currentData.length === 0 && (
+          <tr>
+            <td colSpan={8} className="p-6 text-center text-gray-500">
+              Không có hàng hóa để hiển thị
+            </td>
+          </tr>
+        )}
+
         {currentData.map((item, index) => (
           <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
             <td className="p-4 text-center"><input type="checkbox" /></td>
-            <td className="p-4">{item.code}</td>
+            <td className="p-4">{item.sku || item.id}</td>
             <td className="p-4">{item.name}</td>
             <td className="p-4 text-center">{item.category}</td>
-            <td className="p-4 text-center">{item.price}</td>
-            <td className="p-4 text-center">{item.cost}</td>
-            <td className="p-4 text-center">{item.stock}</td>
+            <td className="p-4 text-center">{Number(item.price || 0).toLocaleString()}đ</td>
+            <td className="p-4 text-center">-</td>
+            <td className="p-4 text-center">-</td>
             <td className="p-4 text-center">0</td>
           </tr>
         ))}

@@ -9,6 +9,7 @@ export default function Welcome() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("card");
   const scanInFlightRef = useRef(false);
+  const qrInFlightRef = useRef(false);
   const scanBufferRef = useRef([]);
 
   const saveAuthSession = (authData) => {
@@ -27,7 +28,7 @@ export default function Welcome() {
     return numericValue;
   };
 
-  const handleScan = async (data) => {
+  const handleCardScan = async (data) => {
     const cardId = normalizeCardId(data);
 
     if (cardId.length < 6 || scanInFlightRef.current) return;
@@ -72,7 +73,7 @@ export default function Welcome() {
     }
   };
 
-  const handleQrScan = (value) => {
+  const handleQrPaymentScan = async (value) => {
     const cardId = normalizeCardId(value);
 
     if (!cardId) {
@@ -80,7 +81,52 @@ export default function Welcome() {
       return;
     }
 
-    handleScan(cardId);
+    if (qrInFlightRef.current) return;
+
+    try {
+      qrInFlightRef.current = true;
+      const authData = await loginByCard(cardId);
+
+      if (!authData?.accessToken) {
+        throw new Error("Dang nhap QR thanh cong nhung thieu accessToken");
+      }
+
+      saveAuthSession(authData);
+
+      const student = {
+        id: authData.userId,
+        cardId,
+        userType: authData.userType,
+        name: authData.studentFullName || authData.fullName,
+        avatar: authData.avatar,
+        school: authData.school,
+        class: authData.class,
+        balance: authData.walletBalance,
+      };
+
+      localStorage.setItem("student", JSON.stringify(student));
+      localStorage.removeItem("amount");
+
+      navigate("/order", {
+        state: {
+          type: "student",
+          student,
+        },
+      });
+    } catch (error) {
+      alert(error?.message || "QR thanh toán không hợp lệ");
+    } finally {
+      qrInFlightRef.current = false;
+    }
+  };
+
+  const handleFaceLoginSuccess = (student) => {
+    navigate("/order", {
+      state: {
+        type: "student",
+        student,
+      },
+    });
   };
 
   useEffect(() => {
@@ -117,7 +163,7 @@ export default function Welcome() {
 
         e.preventDefault();
         e.stopPropagation();
-        handleScan(chars.map((item) => item.key).join(""));
+        handleCardScan(chars.map((item) => item.key).join(""));
       }
     };
 
@@ -187,7 +233,7 @@ export default function Welcome() {
             <FaceVerify
               mode="qr"
               onSuccess={(data) => {
-                handleQrScan(data?.value);
+                handleQrPaymentScan(data?.value);
               }}
             />
           </div>
@@ -197,19 +243,7 @@ export default function Welcome() {
           <div className="mt-4">
             <FaceVerify
               mode="face"
-              onSuccess={(data) => {
-                if (data?.type === "qr") {
-                  handleQrScan(data.value);
-                  return;
-                }
-
-                navigate("/order", {
-                  state: {
-                    type: "student",
-                    student: data,
-                  },
-                });
-              }}
+              onSuccess={handleFaceLoginSuccess}
             />
           </div>
         )}

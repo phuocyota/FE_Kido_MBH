@@ -1,6 +1,4 @@
 import React from "react";
-import banhmi from "../../assets/banhmi.jpg";
-import { ShoppingCart } from "lucide-react";
 import bg_left from "../../assets/left_order.png";
 
 export default function Left({
@@ -9,8 +7,6 @@ export default function Left({
   setActiveCategory,
   products,
   addToCart,
-  amount,        // 👈 thêm
-  remaining,     // 👈 thêm
 }) {
   return (
     <div className="w-[60%] bg-white rounded-xl m-3 shadow flex flex-col p-4">
@@ -90,6 +86,12 @@ export default function Left({
 {/* auto-rows-[minmax(140px,auto)] */}
         {/* PRODUCTS */}
         <div className="relative z-20 p-2 grid grid-cols-4 gap-x-4 gap-y-2 overflow-y-auto h-full">
+  {products.length === 0 && (
+    <div className="col-span-4 flex h-full items-center justify-center text-gray-500 font-medium">
+      Không có món để hiển thị
+    </div>
+  )}
+
   {products.map((item) => (
     <div
       key={item.id}

@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 import { faceApi } from "../../service/face";
-import avatar1 from "../../assets/avatar.png";
-import avatar2 from "../../assets/avatar2.png";
-import avatar3 from "../../assets/avatar3.png";
-import avatar4 from "../../assets/avatar4.png";
 import jsQR from "jsqr";
 
 import React from "react";
@@ -101,6 +97,20 @@ export default function FaceVerify({ onSuccess, mode = "face" }: Props) {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const loggedRef = useRef(false);
+    const getVideoConstraints = () => {
+        if (mode === "qr") {
+            return {
+                facingMode: { ideal: "environment" },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+            };
+        }
+
+        return {
+            facingMode: "user",
+        };
+    };
+
     const stopCamera = () => {
         const video = videoRef.current;
         if (video && video.srcObject) {
@@ -121,21 +131,29 @@ export default function FaceVerify({ onSuccess, mode = "face" }: Props) {
 
                 const MODEL_URL = "/models";
 
-                // 🔥 chỉ load model 1 lần
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                ]);
+                if (mode === "face") {
+                    // 🔥 chỉ load model khi xác thực khuôn mặt
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                    ]);
+                }
 
                 // 🔥 stop camera cũ trước
                 stopCamera();
 
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user",
-                    },
-                });
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: getVideoConstraints(),
+                    });
+                } catch (cameraError) {
+                    if (mode !== "qr") throw cameraError;
+
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                    });
+                }
 
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
@@ -281,13 +299,7 @@ export default function FaceVerify({ onSuccess, mode = "face" }: Props) {
                         setStatus("🎉 Đăng nhập thành công");
                         stopCamera();
                         clearInterval(interval);
-                        onSuccess?.({
-                            ...res.user,
-                            balance: 50000,
-                            avatar: avatar4,
-                            school: "THPT Gia Định",
-                            class: "12A4",
-                        });
+                        onSuccess?.(res.user);
 
                     } catch (err) {
                         setStatus("❌ Không nhận diện");
@@ -314,6 +326,8 @@ export default function FaceVerify({ onSuccess, mode = "face" }: Props) {
         };
     }, [loading, isLoggingIn, mode]);
     const scanQRFromVideo = (video: HTMLVideoElement) => {
+        if (!video.videoWidth || !video.videoHeight) return null;
+
         const tempCanvas = document.createElement("canvas");
 
         tempCanvas.width = video.videoWidth;

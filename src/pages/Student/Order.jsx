@@ -12,31 +12,10 @@ import {
   addCartItem,
   completeCart,
   deleteCartItem,
-  getMyCart,
   updateCartItem,
 } from "../../api/cart";
-import trasuaImg from "../../assets/trasua.jpg";
-import cocaImg from "../../assets/coca.jpg";
-import banhngotImg from "../../assets/banhngot.jpeg";
-import banhmiImg from "../../assets/banhmi.jpg";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
 
-
-import butChiImg from "../../assets/but_chi.jpg";
-import butQuatImg from "../../assets/but_quat.jpg";
-import butThuImg from "../../assets/but_thu.jpg";
-import ghimCaiAoImg from "../../assets/ghim_cai_ao.jpg";
-import keomutImg from "../../assets/keo_mut.jpg";
-import keovienImg from "../../assets/keo_vien.jpg";
-import mohinhLapRapImg from "../../assets/mo_hinh_lap_rap.jpg";
-import nuocSuoiImg from "../../assets/nuoc_suoi.jpg";
-import quatCamTayImg from "../../assets/quat_cam_tay.jpg";
-import snackImg from "../../assets/snack.jpg";
-import stickerImg from "../../assets/sticker.jpg";
-import suachuanoImg from "../../assets/sua_chua_nho.jpg";
-import tapImg from "../../assets/tap.jpg";
-import thachraucauImg from "../../assets/thach_rau_cau.jpg";
-import thuocConThuImg from "../../assets/thuoc_con_thu.jpg";
 export default function Order() {
   const location = useLocation();
 
@@ -85,155 +64,19 @@ export default function Order() {
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
 
-  const fallbackCategories = [
-  "Tất cả",
-  "Kẹo",
-  "Phụ kiện",
-  "Snack",
-  "Ăn vặt",
-  "Sữa",
-  "Nước",
-  "Học tập",
-  "Tiện ích",
-  "Đồ chơi",
-];
- const fallbackProducts = [
-  // ===== 5K =====
-  {
-    id: 1,
-    name: "Kẹo mút",
-    price: 5000,
-    category: "Kẹo",
-    image: keomutImg,
-  },
-  {
-    id: 2,
-    name: "Kẹo viên",
-    price: 5000,
-    category: "Kẹo",
-    image: keovienImg,
-  },
-  {
-    id: 3,
-    name: "Sticker",
-    price: 5000,
-    category: "Phụ kiện",
-    image: stickerImg,
-  },
-  {
-    id: 4,
-    name: "Ghim cài áo",
-    price: 5000,
-    category: "Phụ kiện",
-    image: ghimCaiAoImg,
-  },
+  const syncCartFromResponse = (nextCart) => {
+    if (!Array.isArray(nextCart?.items)) return false;
 
-  // ===== 10K =====
-  {
-    id: 5,
-    name: "Bánh snack",
-    price: 10000,
-    category: "Snack",
-    image: snackImg,
-  },
-  {
-    id: 6,
-    name: "Thạch rau câu",
-    price: 10000,
-    category: "Ăn vặt",
-    image: thachraucauImg,
-  },
-  {
-    id: 7,
-    name: "Sữa chua nhỏ",
-    price: 10000,
-    category: "Sữa",
-    image: suachuanoImg,
-  },
-  {
-    id: 8,
-    name: "Nước suối",
-    price: 10000,
-    category: "Nước",
-    image: nuocSuoiImg,
-  },
-
-  // ===== Học tập =====
-  {
-    id: 9,
-    name: "Tập",
-    price: 10000,
-    category: "Học tập",
-    image: tapImg,
-  },
-  {
-    id: 10,
-    name: "Bút chì",
-    price: 10000,
-    category: "Học tập",
-    image: butChiImg,
-  },
-  {
-    id: 11,
-    name: "Bút thú",
-    price: 10000,
-    category: "Học tập",
-    image: butThuImg,
-  },
-
-  // ===== Tiện ích / đồ chơi =====
-  {
-    id: 12,
-    name: "Quạt cầm tay",
-    price: 5000,
-    category: "Tiện ích",
-    image: quatCamTayImg,
-  },
-  {
-    id: 13,
-    name: "Bút quạt",
-    price: 10000,
-    category: "Tiện ích",
-    image: butQuatImg,
-  },
-  {
-    id: 14,
-    name: "Mô hình lắp ráp",
-    price: 10000,
-    category: "Đồ chơi",
-    image: mohinhLapRapImg,
-  },
-  {
-    id: 15,
-    name: "Thước con thú",
-    price: 5000,
-    category: "Học tập",
-    image: thuocConThuImg,
-  },
-];
-
-  const syncCart = (nextCart) => {
-    if (Array.isArray(nextCart?.items)) {
-      setCart(nextCart.items);
-    }
-  };
-
-  const reloadCart = async () => {
-    const nextCart = await getMyCart();
-    syncCart(nextCart);
-    return nextCart;
+    setCart(nextCart.items);
+    return true;
   };
 
   useEffect(() => {
     const loadOrderingData = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) return;
-
       try {
         const fullCategories = await getProductsFull();
         setApiCategories(fullCategories);
         setApiProducts(fullCategories.flatMap((category) => category.products || []));
-        await reloadCart();
       } catch (error) {
         console.error("Không tải được dữ liệu order từ API", error);
         alert(error?.message || "Không tải được danh sách sản phẩm");
@@ -243,11 +86,9 @@ export default function Order() {
     loadOrderingData();
   }, []);
 
-  const categories = apiCategories.length
-    ? ["Tất cả", ...apiCategories.map((category) => category.name)]
-    : fallbackCategories;
+  const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
-  const products = apiProducts.length ? apiProducts : fallbackProducts;
+  const products = apiProducts;
 
   //   useEffect(() => {
   //   const data = JSON.parse(localStorage.getItem("student") || "null");
@@ -291,12 +132,27 @@ export default function Order() {
     }
 
     try {
-      await addCartItem({
+      const nextCart = await addCartItem({
         productId: item.id,
         quantity: 1,
         note: item.note || "",
       });
-      await reloadCart();
+
+      if (!syncCartFromResponse(nextCart)) {
+        setCart((prev) => {
+          const existing = prev.find((cartItem) => cartItem.id === item.id);
+
+          if (existing) {
+            return prev.map((cartItem) =>
+              cartItem.id === item.id
+                ? { ...cartItem, qty: cartItem.qty + 1, quantity: cartItem.qty + 1 }
+                : cartItem
+            );
+          }
+
+          return [...prev, { ...item, qty: 1, quantity: 1 }];
+        });
+      }
 
       if (amount) {
         setRemaining((prev) => (prev ?? 0) - item.price);
@@ -381,8 +237,11 @@ export default function Order() {
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        await deleteCartItem(item.cartItemId);
-        await reloadCart();
+        const nextCart = await deleteCartItem(item.cartItemId);
+
+        if (!syncCartFromResponse(nextCart)) {
+          setCart((prev) => prev.filter((p) => p.id !== item.id));
+        }
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -405,12 +264,19 @@ export default function Order() {
 
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-        await reloadCart();
+        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+
+        if (!syncCartFromResponse(nextCart)) {
+          setCart((prev) =>
+            prev.map((p) =>
+              p.id === item.id ? { ...p, qty: p.qty + 1, quantity: p.qty + 1 } : p
+            )
+          );
+        }
       } else {
         setCart((prev) =>
           prev.map((p) =>
-            p.id === item.id ? { ...p, qty: p.qty + 1 } : p
+            p.id === item.id ? { ...p, qty: p.qty + 1, quantity: p.qty + 1 } : p
           )
         );
       }
@@ -426,13 +292,25 @@ export default function Order() {
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
-        await reloadCart();
+        const nextQuantity = item.qty - 1;
+        const nextCart = nextQuantity > 0
+          ? await updateCartItem(item.cartItemId, { quantity: nextQuantity })
+          : await deleteCartItem(item.cartItemId);
+
+        if (!syncCartFromResponse(nextCart)) {
+          setCart((prev) =>
+            prev
+              .map((p) =>
+                p.id === item.id ? { ...p, qty: nextQuantity, quantity: nextQuantity } : p
+              )
+              .filter((p) => p.qty > 0)
+          );
+        }
       } else {
         setCart((prev) =>
           prev
             .map((p) =>
-              p.id === item.id ? { ...p, qty: p.qty - 1 } : p
+              p.id === item.id ? { ...p, qty: p.qty - 1, quantity: p.qty - 1 } : p
             )
             .filter((p) => p.qty > 0)
         );
@@ -467,8 +345,6 @@ export default function Order() {
           setActiveCategory={setActiveCategory}
           products={filteredProducts}
           addToCart={addToCart}
-          amount={amount}           // 👈 thêm
-          remaining={remaining}
         />
 
         <Right
