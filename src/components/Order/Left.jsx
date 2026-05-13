@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -7,98 +6,23 @@ import React, {
 import banhmi from "../../assets/banhmi.jpg";
 import bg_left from "../../assets/left_order.png";
 
-import {
-  getFullCategories,
-  formatProducts,
-} from "../../api/category";
-
 export default function Left({
+  categories = [],
+  activeCategory,
+  setActiveCategory,
+  products = [],
   addToCart,
-  amount,
-  remaining,
 }) {
-
-  // CATEGORY
-  const [categories, setCategories] =
-    useState([]);
-
-  // ACTIVE CATEGORY
-  const [activeCategory, setActiveCategory] =
-    useState("Tất cả");
-
-  // ALL PRODUCTS
-  const [allProducts, setAllProducts] =
-    useState([]);
-
   // SEARCH
   const [search, setSearch] =
     useState("");
-
-  // FETCH API
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-
-    try {
-
-      const data =
-        await getFullCategories();
-
-      console.log(
-        "CATEGORY DATA:",
-        data
-      );
-
-      const apiData =
-        data?.data || [];
-
-      // CATEGORY
-      const categoryNames = [
-        "Tất cả",
-        ...apiData.map(
-          (item) => item.name
-        ),
-      ];
-
-      setCategories(categoryNames);
-
-      // DEFAULT CATEGORY
-      setActiveCategory("Tất cả");
-
-      // PRODUCTS
-      const formattedProducts =
-        formatProducts(apiData);
-
-      setAllProducts(
-        formattedProducts
-      );
-
-    } catch (error) {
-
-      console.log(
-        "FETCH CATEGORY ERROR:",
-        error
-      );
-
-    }
-  };
 
   // FILTER PRODUCTS
   const filteredProducts =
     useMemo(() => {
 
-      return allProducts.filter(
+      return products.filter(
         (item) => {
-
-          // 👇 CATEGORY
-          const matchCategory =
-            activeCategory ===
-              "Tất cả"
-              ? true
-              : item.category ===
-                activeCategory;
 
           // 👇 SEARCH
           const matchSearch =
@@ -109,15 +33,13 @@ export default function Left({
               );
 
           return (
-            matchCategory &&
             matchSearch
           );
         }
       );
 
     }, [
-      allProducts,
-      activeCategory,
+      products,
       search,
     ]);
 
@@ -321,6 +243,11 @@ export default function Left({
             h-full
           "
         >
+          {filteredProducts.length === 0 && (
+            <div className="col-span-4 flex h-full items-center justify-center text-gray-500 font-medium">
+              Không có món để hiển thị
+            </div>
+          )}
 
           {filteredProducts.map(
             (item) => (

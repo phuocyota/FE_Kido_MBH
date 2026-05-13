@@ -1,14 +1,27 @@
-import React, { useState } from "react";
-import mockExamData from "../../datas/mockExamData";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getProductsFull } from "../../api/products";
 
 export default function PriceTable() {
-  const data = mockExamData.products;
-
   const ITEMS_PER_PAGE = 22;
+  const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const categories = await getProductsFull();
+        setData(categories.flatMap((category) => category.products || []));
+      } catch (error) {
+        console.error("Không tải được bảng giá", error);
+        setData([]);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  const totalPages = Math.max(1, Math.ceil(data.length / ITEMS_PER_PAGE));
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -54,17 +67,25 @@ export default function PriceTable() {
 
             {/* BODY */}
             <tbody>
+              {currentData.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-gray-500">
+                    Không có bảng giá để hiển thị
+                  </td>
+                </tr>
+              )}
+
               {currentData.map((item, index) => (
                 <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
-                  <td className="p-4">{item.code}</td>
+                  <td className="p-4">{item.sku || item.id}</td>
                   <td className="p-4">{item.name}</td>
-                  <td className="p-4 text-center">{item.cost}</td>
-                  <td className="p-4 text-center">{item.cost}</td>
+                  <td className="p-4 text-center">-</td>
+                  <td className="p-4 text-center">-</td>
 
                   <td className="p-4 text-center">
                     <input
                       type="text"
-                      defaultValue={item.price}
+                      defaultValue={Number(item.price || 0).toLocaleString()}
                       className="border rounded-lg px-3 py-1 w-24 text-right"
                     />
                   </td>

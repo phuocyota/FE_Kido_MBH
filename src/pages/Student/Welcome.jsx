@@ -1,214 +1,180 @@
- 
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import bg from "../../assets/anh-can-tin-so-2.png";
 
-import avatar1 from "../../assets/avatar.png";
-import avatar2 from "../../assets/avatar2.png";
-import avatar3 from "../../assets/avatar3.png";
-import avatar4 from "../../assets/avatar4.png";
-
 import FaceVerify from "../../components/FaceId/FaceVerify";
-
-// ✅ IMPORT API
-import { loginStudent } from "../../api/student";
+import { loginByCard } from "../../api/auth";
 
 export default function Welcome() {
-
   const navigate = useNavigate();
+  const [tab, setTab] = useState("card");
+  const scanInFlightRef = useRef(false);
+  const qrInFlightRef = useRef(false);
+  const scanBufferRef = useRef([]);
 
-  const [tab, setTab] = useState("qr");
+  const saveAuthSession = (authData) => {
+    localStorage.setItem("accessToken", authData.accessToken);
+    localStorage.setItem("isLogin", "true");
 
-  const [student, setStudent] = useState(null);
-
-  // ================= MOCK STUDENT =================
-  const studentsMock = [
-    {
-      name: "Nguyễn Văn A",
-      balance: 50000,
-      avatar: avatar1,
-      school: "THPT Nguyễn Trãi",
-      class: "12A1",
-    },
-    {
-      name: "Trần Thị B",
-      balance: 50000,
-      avatar: avatar2,
-      school: "THPT Lê Quý Đôn",
-      class: "11A2",
-    },
-    {
-      name: "Lê Văn C",
-      balance: 50000,
-      avatar: avatar3,
-      school: "THPT Trần Hưng Đạo",
-      class: "10A3",
-    },
-    {
-      name: "Phạm Thị D",
-      balance: 50000,
-      avatar: avatar4,
-      school: "THPT Gia Định",
-      class: "12A4",
-    },
-  ];
-
-  // ================= QUÉT NFC / QR =================
-  useEffect(() => {
-
-    let buffer = "";
-
-    let timeout;
-
-    const handleKeyDown = (e) => {
-
-      // nhập số
-      if (e.key >= "0" && e.key <= "9") {
-
-        buffer += e.key;
-
-        clearTimeout(timeout);
-
-        timeout = setTimeout(() => {
-          buffer = "";
-        }, 500);
-      }
-
-      // enter = scan xong
-      if (e.key === "Enter") {
-
-        if (buffer.length > 0) {
-
-          handleScan(buffer);
-
-          buffer = "";
-        }
-      }
-    };
-
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-    return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-    };
-
-  }, []);
-
-  // ================= HANDLE SCAN =================
-  const handleScan = async (data) => {
-
-  console.log("SCAN:", data);
-
-  if (!data || !/^\d+$/.test(data)) {
-    alert("❌ QR không hợp lệ");
-    return;
-  }
-
-  localStorage.removeItem("student");
-  localStorage.removeItem("amount");
-  localStorage.removeItem("token");
-
-  const isQRMoney =
-    data === "5000" ||
-    data === "10000";
-
-  let user = {};
-
-  try {
-
-    const res = await loginStudent(data);
-
-    console.log("LOGIN SUCCESS:", res);
-
-    user = res?.data || {};
-
-  } catch (apiError) {
-
-    console.error("API ERROR:", apiError);
-
-    // QR vẫn cho vào menu
-    if (!isQRMoney) {
-
-      alert("❌ Đăng nhập thất bại");
-
-      return;
-    }
-  }
-
-  const studentData = {
-
-    cardId: data,
-
-    id:
-      user.userId ||
-      `QR_${data}`,
-
-    name:
-      user.fullName ||
-      `QR ${data}`,
-
-    avatar:
-      user.avatar
-        ? `https://be.kidocanteen.kidoedu.vn/${user.avatar}`
-        : avatar1,
-
-    balance:
-      isQRMoney
-        ? Number(data)
-        : Number(user.walletBalance || 0),
-
-    school:
-      user.school ||
-      "KIDO School",
-
-    class:
-      user.class ||
-      "N/A",
-
-    accessToken:
-      user.accessToken || "",
-
-    isQR: isQRMoney,
+    if (authData.userId) localStorage.setItem("userId", authData.userId);
+    if (authData.userType) localStorage.setItem("userType", authData.userType);
+    if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
   };
 
-  localStorage.setItem(
-    "student",
-    JSON.stringify(studentData)
-  );
+  const normalizeCardId = (value) => {
+    const raw = String(value || "").trim();
+    const numericValue = raw.replace(/\D/g, "");
 
-  localStorage.setItem(
-    "accessToken",
-    user.accessToken || ""
-  );
+    return numericValue;
+  };
 
-  if (isQRMoney) {
+  const handleCardScan = async (data) => {
+    const cardId = normalizeCardId(data);
 
-    localStorage.setItem(
-      "amount",
-      String(data)
-    );
-  }
+    if (cardId.length < 6 || scanInFlightRef.current) return;
 
-  navigate("/order", {
-    replace: true,
-    state: {
-      type: "student",
-      student: studentData,
-      amount:
-        isQRMoney
-          ? Number(data)
-          : null,
-    },
-  });
-};
+    try {
+      scanInFlightRef.current = true;
+      const authData = await loginByCard(cardId);
+
+      if (!authData?.accessToken) {
+        throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
+      }
+
+      saveAuthSession(authData);
+
+      const student = {
+        id: authData.userId,
+        cardId,
+        userType: authData.userType,
+        name: authData.studentFullName || authData.fullName,
+        avatar: authData.avatar,
+        school: authData.school,
+        class: authData.class,
+        balance: authData.walletBalance,
+      };
+
+      localStorage.setItem("student", JSON.stringify(student));
+
+      navigate("/order", {
+        state: {
+          type: "student",
+          student,
+        },
+      });
+    } catch (error) {
+      alert(
+        `Thẻ ${cardId}: ${
+          error?.message || "Thông tin đăng nhập không hợp lệ"
+        }`
+      );
+    } finally {
+      scanInFlightRef.current = false;
+    }
+  };
+
+  const handleQrPaymentScan = async (value) => {
+    const cardId = normalizeCardId(value);
+
+    if (!cardId) {
+      alert("QR không hợp lệ");
+      return;
+    }
+
+    if (qrInFlightRef.current) return;
+
+    try {
+      qrInFlightRef.current = true;
+      const authData = await loginByCard(cardId);
+
+      if (!authData?.accessToken) {
+        throw new Error("Dang nhap QR thanh cong nhung thieu accessToken");
+      }
+
+      saveAuthSession(authData);
+
+      const student = {
+        id: authData.userId,
+        cardId,
+        userType: authData.userType,
+        name: authData.studentFullName || authData.fullName,
+        avatar: authData.avatar,
+        school: authData.school,
+        class: authData.class,
+        balance: authData.walletBalance,
+      };
+
+      localStorage.setItem("student", JSON.stringify(student));
+      localStorage.removeItem("amount");
+
+      navigate("/order", {
+        state: {
+          type: "student",
+          student,
+        },
+      });
+    } catch (error) {
+      alert(error?.message || "QR thanh toán không hợp lệ");
+    } finally {
+      qrInFlightRef.current = false;
+    }
+  };
+
+  const handleFaceLoginSuccess = (student) => {
+    navigate("/order", {
+      state: {
+        type: "student",
+        student,
+      },
+    });
+  };
+
+  useEffect(() => {
+    const SCAN_RESET_MS = 500;
+    const MIN_CARD_LENGTH = 6;
+    const CARD_KEY_PATTERN = /^[0-9]$/;
+
+    const handleKeyDown = (e) => {
+      const target = e.target;
+      const isEditable =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+
+      if (isEditable || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+
+      if (CARD_KEY_PATTERN.test(e.key)) {
+        const now = Date.now();
+        const last = scanBufferRef.current[scanBufferRef.current.length - 1];
+
+        if (last && now - last.time > SCAN_RESET_MS) {
+          scanBufferRef.current = [];
+        }
+
+        scanBufferRef.current.push({ key: e.key, time: now });
+        return;
+      }
+
+      if (e.key === "Enter") {
+        const chars = scanBufferRef.current;
+        scanBufferRef.current = [];
+
+        if (chars.length < MIN_CARD_LENGTH) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        handleCardScan(chars.map((item) => item.key).join(""));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, []);
+
   return (
     <div
       className="
@@ -225,33 +191,23 @@ export default function Welcome() {
         backgroundImage: `url(${bg})`,
       }}
     >
-
-      {/* OVERLAY */}
       <div className="absolute inset-0 bg-black/40"></div>
 
-      {/* FORM */}
-      <div
-        className="
-          relative
-          bg-blue/10
-          backdrop-blur-2xl
-          border
-          border-blue20
-          p-10
-          rounded-3xl
-          text-center
-          text-white
-          w-[420px]
-          shadow-2xl
-        "
-      >
-
-        <div className="text-6xl mb-4">
-          🍔
-        </div>
+      <div className="relative bg-blue/10 backdrop-blur-2xl border border-blue20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
+        <div className="text-6xl mb-4">🍔</div>
 
         {/* TAB */}
         <div className="flex mb-5 border-b border-white/30">
+
+          <button
+            onClick={() => setTab("card")}
+            className={`flex-1 py-2 text-sm font-medium ${tab === "card"
+              ? "border-b-2 border-white text-white"
+              : "text-white/60"
+              }`}
+          >
+            🎫 Quẹt thẻ
+          </button>
 
           <button
             onClick={() => setTab("qr")}
@@ -266,7 +222,7 @@ export default function Welcome() {
               }
             `}
           >
-            🎫 Scan QR / NFC card
+            📷 QR
           </button>
 
           <button
@@ -287,38 +243,37 @@ export default function Welcome() {
 
         </div>
 
-        {/* FACE / QR */}
-        {(tab === "face" || tab === "qr") && (
+        {tab === "card" && (
+          <div className="mt-4 rounded-2xl bg-black/60 p-6">
+            <div className="text-5xl mb-4">💳</div>
+            <p className="text-lg font-semibold">Đưa thẻ vào máy đọc</p>
+            <p className="text-sm text-white/70 mt-2">
+              Hệ thống sẽ lấy chuỗi số đọc được làm cardId để đăng nhập.
+            </p>
+          </div>
+        )}
 
+        {tab === "qr" && (
           <div className="mt-4">
 
             <FaceVerify
-              mode={tab}
-
+              mode="qr"
               onSuccess={(data) => {
-
-                // QR
-                if (data?.type === "qr") {
-
-                  handleScan(data.value);
-
-                  return;
-                }
-
-                // FACE
-                navigate("/order", {
-                  replace: true,
-                  state: {
-                    type: "student",
-                    student: data,
-                  },
-                });
+                handleQrPaymentScan(data?.value);
               }}
             />
 
           </div>
         )}
 
+        {tab === "face" && (
+          <div className="mt-4">
+            <FaceVerify
+              mode="face"
+              onSuccess={handleFaceLoginSuccess}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

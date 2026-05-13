@@ -23,6 +23,7 @@ export default function Right({
   confirmModal,
   setConfirmModal,
   handleConfirmPayment,
+  isSubmitting,
   successModal,
   setSuccessModal,
   pickupType,
@@ -347,9 +348,10 @@ export default function Right({
 
                 <button
                   onClick={handleConfirmPayment}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded text-sm"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded text-sm disabled:opacity-60"
                 >
-                  Xác nhận
+                  {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
                 </button>
               </div>
 
