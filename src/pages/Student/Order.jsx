@@ -135,52 +135,77 @@ export default function Order() {
 
   useEffect(() => {
 
-  console.log(
-    "CART STATE:",
-    cart
-  );
-
-}, [cart]);
-
-  const addToCart = async (
-  item
-) => {
-
-  try {
-
     console.log(
-      "CLICK ITEM:",
-      item
+      "CART STATE:",
+      cart
     );
 
-    // 👇 ADD API
-    await addCartItem({
-      productId: item.id,
-      quantity: 1,
-      note: "",
-    });
+  }, [cart]);
 
-    // 👇 GET NEW ITEMS
-    const items =
-      await getMyCartItems();
+  const addToCart = async (item) => {
 
-    console.log(
-      "NEW ITEMS:",
-      items
-    );
+    try {
 
-    // 👇 UPDATE RIGHT NGAY
-    setCart(items);
+      console.log(
+        "CLICK ITEM:",
+        item
+      );
 
-  } catch (error) {
+      // 👇 ADD API
+      const res = await addCartItem({
+        productId: item.id,
+        quantity: 1,
+        note: "",
+      });
 
-    console.log(
-      "ADD CART ERROR:",
-      error
-    );
+      // 👇 UPDATE RIGHT NGAY
+      setCart((prev) => {
 
-  }
-};
+        // kiểm tra sản phẩm đã tồn tại chưa
+        const exist = prev.find(
+          (p) => p.id === item.id
+        );
+
+        // nếu đã có -> tăng qty
+        if (exist) {
+
+          return prev.map((p) =>
+            p.id === item.id
+              ? {
+                ...p,
+                qty: p.qty + 1,
+              }
+              : p
+          );
+        }
+
+        // nếu chưa có -> thêm mới
+        return [
+          ...prev,
+          {
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            qty: 1,
+            note: "",
+            cartItemId:
+              res?.data?.id ||
+              res?.id ||
+              null,
+          },
+        ];
+      });
+
+    } catch (error) {
+
+      console.log(
+        "ADD CART ERROR:",
+        error
+      );
+
+    }
+  };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
@@ -220,15 +245,16 @@ export default function Order() {
       }
 
       const result = await completeCart({
-        branchId: localStorage.getItem("branchId") || import.meta.env.VITE_BRANCH_ID || "branch-id",
-        posDeviceId:
-          localStorage.getItem("posDeviceId") ||
-          localStorage.getItem("deviceId") ||
-          import.meta.env.VITE_POS_DEVICE_ID ||
-          "student-app",
-        paymentMethod: paymentMethod === "cash" ? "CASH" : "WALLET",
+
+        paymentMethod:
+          paymentMethod === "cash"
+            ? "CASH"
+            : "WALLET",
+
         orderType: "TAKEAWAY",
+
         note: pickupType,
+
       });
 
       const payload = result?.data || result;
