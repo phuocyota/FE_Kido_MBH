@@ -323,20 +323,26 @@ export default function Order() {
     const oldOrders = JSON.parse(localStorage.getItem("orders")) || [];
 
     const newOrder = {
-      orderKey: Date.now() + Math.random(),
-      id: orderNumber,
-      items: cart | 0,
-      total,
-      studentId: String(student?.cardId),
-      studentName: student?.name | 0,
+  orderKey: Date.now() + Math.random(),
+  id: orderNumber,
 
-      status: paymentMethod === "cash" ? "cash" : "pending",
-      paymentMethod: paymentMethod,
+  items: cart,
 
-      isRefunded: false,
-      pickupType: pickupType,
-      createdAt: Date.now(),
-    };
+  total,
+
+  studentId: String(student?.cardId || ""),
+  studentName: student?.name || "",
+
+  status: paymentMethod === "cash"
+    ? "cash"
+    : "pending",
+
+  paymentMethod,
+
+  isRefunded: false,
+  pickupType,
+  createdAt: Date.now(),
+};
     console.log(newOrder)
     localStorage.setItem("orders", JSON.stringify([...oldOrders, newOrder]));
 

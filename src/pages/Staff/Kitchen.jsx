@@ -184,6 +184,7 @@ export default function Kitchen() {
 
   return (
     <div
+    
       className="h-screen flex bg-cover bg-center"
       style={{ backgroundImage: `url(${bgCantin})` }}
     >

@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "./client";
 
+ 
+
 export const API = {
   AUTH: {
     LOGIN_STUDENT: `${API_BASE_URL}/auth/login/student`,
@@ -21,6 +23,8 @@ export const API = {
     DETAIL: (id) => `${API_BASE_URL}/users/${id}`,
     UPDATE_AVATAR: (id) => `${API_BASE_URL}/users/${id}`,
     UPDATE_PROFILE: (id) => `${API_BASE_URL}/users/${id}`,
+    LOGIN:
+      `${API_BASE_URL}/auth/login/student`,
   },
   ATTEMPT: {
     START: `${API_BASE_URL}/attempt/start`,
@@ -32,4 +36,11 @@ export const API = {
      LIST: (questionBankId, examSetId, page = 1, size = 1000, status = "SUBMITTED") =>
   `${API_BASE_URL}/attempt?questionBankId=${questionBankId}&examSetId=${examSetId}&status=${status}&page=${page}&size=${size}`,
   },
+
+   // 👇 THÊM CATEGORY
+  CATEGORY: {
+    GET_FULL:
+      `${API_BASE_URL}/products/full`,
+  },
 };
+

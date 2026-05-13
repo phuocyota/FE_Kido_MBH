@@ -10,6 +10,7 @@ import avatar4 from "../../assets/avatar4.png";
 import { useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import RegisterFace from "../../components/FaceId/RegisterFace";
+import { loginStudent } from "../../api/student";
 import FaceVerify from "../../components/FaceId/FaceVerify";
 
 export default function Welcome() {
@@ -45,75 +46,146 @@ export default function Welcome() {
     };
   }, []);
 
-  const studentsMock = [
-    {
-      name: "Nguyễn Văn A",
-      balance: 50000,
-      avatar: avatar1,
-      school: "THPT Nguyễn Trãi",
-      class: "12A1",
-    },
-    {
-      name: "Trần Thị B",
-      balance: 50000,
-      avatar: avatar2,
-      school: "THPT Lê Quý Đôn",
-      class: "11A2",
-    },
-    {
-      name: "Lê Văn C",
-      balance: 50000,
-      avatar: avatar3,
-      school: "THPT Trần Hưng Đạo",
-      class: "10A3",
-    },
-    {
-      name: "Phạm Thị D",
-      balance: 50000,
-      avatar: avatar4,
-      school: "THPT Gia Định",
-      class: "12A4",
-    },
+  // const studentsMock = [
+  //   {
+  //     name: "Nguyễn Văn A",
+  //     balance: 50000,
+  //     avatar: avatar1,
+  //     school: "THPT Nguyễn Trãi",
+  //     class: "12A1",
+  //   },
+  //   {
+  //     name: "Trần Thị B",
+  //     balance: 50000,
+  //     avatar: avatar2,
+  //     school: "THPT Lê Quý Đôn",
+  //     class: "11A2",
+  //   },
+  //   {
+  //     name: "Lê Văn C",
+  //     balance: 50000,
+  //     avatar: avatar3,
+  //     school: "THPT Trần Hưng Đạo",
+  //     class: "10A3",
+  //   },
+  //   {
+  //     name: "Phạm Thị D",
+  //     balance: 50000,
+  //     avatar: avatar4,
+  //     school: "THPT Gia Định",
+  //     class: "12A4",
+  //   },
 
-  ];
+  // ];
 
   //  {name: "May mắn", balance: 5000, avatar: avatar1, school: "THPT Nguyễn Trãi",},
 
-  const handleScan = (data) => {
-    const randomStudent =
-      studentsMock[Math.floor(Math.random() * studentsMock.length)];
+ const handleScan = async (data) => {
 
-    setStudent({
-      ...randomStudent,
-      cardId: data,
+  console.log("SCAN:", data);
+
+  // ================= VALIDATE =================
+  if (!data || !/^\d+$/.test(data)) {
+    alert("❌ Mã không hợp lệ");
+    return;
+  }
+
+  // ================= RESET OLD DATA =================
+  localStorage.removeItem("student");
+  localStorage.removeItem("amount");
+  localStorage.removeItem("token");
+
+  // ================= QR TIỀN =================
+  if (data === "5000" || data === "10000") {
+
+    const qrAmount = Number(data);
+
+    localStorage.setItem(
+      "amount",
+      String(qrAmount)
+    );
+
+    navigate("/order", {
+      replace: true,
+      state: {
+        type: "qr",
+        amount: qrAmount,
+      },
     });
-    if (!data || !/^\d+$/.test(data)) {
-      alert("QR không hợp lệ");
+
+    return;
+  }
+
+  // ================= THẺ HỌC SINH =================
+  try {
+
+    const res = await loginStudent(data);
+
+    console.log("LOGIN:", res);
+
+    if (!res.success || !res.data) {
+      alert("❌ Không tìm thấy học sinh");
       return;
     }
 
-    const amount = Number(data);
+    const user = res.data;
 
-    // 👉 QR tiền
-    if (amount <= 20000) {
-      navigate("/order", {
-        state: {
-          type: "qr",
-          amount: amount,
-        },
-      });
-    } else {
-      // 👉 thẻ học sinh
+    const studentData = {
+      cardId: data,
 
+      id: user.userId,
 
-      navigate("/order", {
-        state: {
-          type: "student",
-          student: student,
-        },
-      });
-    }
-  };
+      name:
+        user.fullName ||
+        "Học sinh",
+
+      avatar:
+        user.avatar
+          ? `https://be.kidocanteen.kidocedu.vn/${user.avatar}`
+          : "/default-avatar.png",
+
+      balance:
+        user.walletBalance || 0,
+
+      school:
+        user.school ||
+        "KIDO School",
+
+      class:
+        user.class ||
+        user.className ||
+        "Chưa có lớp",
+
+      accessToken:
+        user.accessToken,
+    };
+
+    // 🔥 lưu mới hoàn toàn
+    localStorage.setItem(
+      "student",
+      JSON.stringify(studentData)
+    );
+
+    localStorage.setItem(
+      "token",
+      user.accessToken
+    );
+
+    navigate("/order", {
+      replace: true,
+      state: {
+        type: "student",
+        student: studentData,
+      },
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("❌ Đăng nhập thất bại");
+  }
+};
   // quét mã QR
   const [showQR, setShowQR] = useState(false);
   const [qrInstance, setQrInstance] = useState(null);

@@ -13,7 +13,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://160.250.132.143:3001',
+        target: 'https://be.kidocanteen.kidocedu.vn',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
