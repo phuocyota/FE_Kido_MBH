@@ -10,7 +10,7 @@ const unwrapAuthResponse = (response) => {
 };
 
 export const loginByCard = async (cardId) => {
-  const response = await apiRequest(API.AUTH.LOGIN, {
+  const response = await apiRequest(API.AUTH.LOGIN_STUDENT, {
     method: "POST",
     body: JSON.stringify({
       cardId: String(cardId || "").trim(),
@@ -24,7 +24,7 @@ export const loginStudent = ({ username, password, deviceId }) =>
   apiRequest(API.AUTH.LOGIN_STUDENT, {
     method: "POST",
     body: JSON.stringify({
-      username,
+      email: username,
       password,
       deviceId,
     }),

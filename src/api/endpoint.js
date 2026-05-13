@@ -5,6 +5,15 @@ export const API = {
     LOGIN: `${API_BASE_URL}/auth/login`,
     LOGIN_STUDENT: `${API_BASE_URL}/auth/login/student`,
   },
+  PRODUCTS: {
+    FULL: `${API_BASE_URL}/products/full`,
+  },
+  CART: {
+    ME: `${API_BASE_URL}/cart/me`,
+    ITEMS: `${API_BASE_URL}/cart/me/items`,
+    ITEM: (itemId) => `${API_BASE_URL}/cart/me/items/${itemId}`,
+    COMPLETE: `${API_BASE_URL}/cart/me/complete`,
+  },
   GRADE: {
     GET_ALL: `${API_BASE_URL}/grade?isGetAllDetail=true`,
 

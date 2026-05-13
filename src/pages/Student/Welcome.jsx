@@ -7,8 +7,9 @@ import { loginByCard } from "../../api/auth";
 
 export default function Welcome() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("qr");
+  const [tab, setTab] = useState("card");
   const scanInFlightRef = useRef(false);
+  const scanBufferRef = useRef([]);
 
   const saveAuthSession = (authData) => {
     localStorage.setItem("accessToken", authData.accessToken);
@@ -19,10 +20,17 @@ export default function Welcome() {
     if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
   };
 
-  const handleScan = async (data) => {
-    const cardId = String(data || "").trim();
+  const normalizeCardId = (value) => {
+    const raw = String(value || "").trim();
+    const numericValue = raw.replace(/\D/g, "");
 
-    if (!cardId || scanInFlightRef.current) return;
+    return numericValue;
+  };
+
+  const handleScan = async (data) => {
+    const cardId = normalizeCardId(data);
+
+    if (cardId.length < 6 || scanInFlightRef.current) return;
 
     try {
       scanInFlightRef.current = true;
@@ -34,51 +42,89 @@ export default function Welcome() {
 
       saveAuthSession(authData);
 
+      const student = {
+        id: authData.userId,
+        cardId,
+        userType: authData.userType,
+        name: authData.studentFullName || authData.fullName,
+        avatar: authData.avatar,
+        school: authData.school,
+        class: authData.class,
+        balance: authData.walletBalance,
+      };
+
+      localStorage.setItem("student", JSON.stringify(student));
+
       navigate("/order", {
         state: {
           type: "student",
-          student: {
-            id: authData.userId,
-            cardId: authData.deviceId || cardId,
-            userType: authData.userType,
-          },
+          student,
         },
       });
     } catch (error) {
-      alert(error?.message || "The chua duoc gan tai khoan");
+      alert(
+        `Thẻ ${cardId}: ${
+          error?.message || "Thông tin đăng nhập không hợp lệ"
+        }`
+      );
     } finally {
       scanInFlightRef.current = false;
     }
   };
 
+  const handleQrScan = (value) => {
+    const cardId = normalizeCardId(value);
+
+    if (!cardId) {
+      alert("QR không hợp lệ");
+      return;
+    }
+
+    handleScan(cardId);
+  };
+
   useEffect(() => {
-    let buffer = "";
-    let timeout;
-    const CARD_KEY_PATTERN = /^[a-z0-9]$/i;
+    const SCAN_RESET_MS = 500;
+    const MIN_CARD_LENGTH = 6;
+    const CARD_KEY_PATTERN = /^[0-9]$/;
 
     const handleKeyDown = (e) => {
-      if (CARD_KEY_PATTERN.test(e.key)) {
-        buffer += e.key;
+      const target = e.target;
+      const isEditable =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
 
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          buffer = "";
-        }, 500);
+      if (isEditable || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+
+      if (CARD_KEY_PATTERN.test(e.key)) {
+        const now = Date.now();
+        const last = scanBufferRef.current[scanBufferRef.current.length - 1];
+
+        if (last && now - last.time > SCAN_RESET_MS) {
+          scanBufferRef.current = [];
+        }
+
+        scanBufferRef.current.push({ key: e.key, time: now });
+        return;
       }
 
       if (e.key === "Enter") {
-        if (buffer.length > 0) {
-          handleScan(buffer);
-          buffer = "";
-        }
+        const chars = scanBufferRef.current;
+        scanBufferRef.current = [];
+
+        if (chars.length < MIN_CARD_LENGTH) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        handleScan(chars.map((item) => item.key).join(""));
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      clearTimeout(timeout);
+      window.removeEventListener("keydown", handleKeyDown, true);
     };
   }, []);
 
@@ -96,13 +142,23 @@ export default function Welcome() {
 
         <div className="flex mb-5 border-b border-white/30">
           <button
+            onClick={() => setTab("card")}
+            className={`flex-1 py-2 text-sm font-medium ${tab === "card"
+              ? "border-b-2 border-white text-white"
+              : "text-white/60"
+              }`}
+          >
+            🎫 Quẹt thẻ
+          </button>
+
+          <button
             onClick={() => setTab("qr")}
             className={`flex-1 py-2 text-sm font-medium ${tab === "qr"
               ? "border-b-2 border-white text-white"
               : "text-white/60"
               }`}
           >
-            🎫 Scan QR / NFC card
+            📷 QR
           </button>
 
           <button
@@ -116,13 +172,34 @@ export default function Welcome() {
           </button>
         </div>
 
-        {(tab === "face" || tab === "qr") && (
+        {tab === "card" && (
+          <div className="mt-4 rounded-2xl bg-black/60 p-6">
+            <div className="text-5xl mb-4">💳</div>
+            <p className="text-lg font-semibold">Đưa thẻ vào máy đọc</p>
+            <p className="text-sm text-white/70 mt-2">
+              Hệ thống sẽ lấy chuỗi số đọc được làm cardId để đăng nhập.
+            </p>
+          </div>
+        )}
+
+        {tab === "qr" && (
           <div className="mt-4">
             <FaceVerify
-              mode={tab}
+              mode="qr"
+              onSuccess={(data) => {
+                handleQrScan(data?.value);
+              }}
+            />
+          </div>
+        )}
+
+        {tab === "face" && (
+          <div className="mt-4">
+            <FaceVerify
+              mode="face"
               onSuccess={(data) => {
                 if (data?.type === "qr") {
-                  handleScan(data.value);
+                  handleQrScan(data.value);
                   return;
                 }
 
