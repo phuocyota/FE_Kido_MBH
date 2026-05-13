@@ -14,6 +14,7 @@ import {
   deleteCartItem,
   getMyCart,
   updateCartItem,
+  // getMyCartItems,
 } from "../../api/cart";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
 
@@ -132,31 +133,54 @@ export default function Order() {
     return matchCategory && matchPrice;
   });
 
+  useEffect(() => {
 
-  const addToCart = async (item) => {
-    // 👉 Nếu đang dùng QR
-    if (amount) {
-      if (remaining < item.price) {
-        alert("❌ Bạn không đủ tiền để mua món này");
-        return;
-      }
-    }
+  console.log(
+    "CART STATE:",
+    cart
+  );
 
-    try {
-      await addCartItem({
-        productId: item.id,
-        quantity: 1,
-        note: item.note || "",
-      });
-      await reloadCart();
+}, [cart]);
 
-      if (amount) {
-        setRemaining((prev) => (prev ?? 0) - item.price);
-      }
-    } catch (error) {
-      alert(error?.message || "Không thêm được sản phẩm vào giỏ");
-    }
-  };
+  const addToCart = async (
+  item
+) => {
+
+  try {
+
+    console.log(
+      "CLICK ITEM:",
+      item
+    );
+
+    // 👇 ADD API
+    await addCartItem({
+      productId: item.id,
+      quantity: 1,
+      note: "",
+    });
+
+    // 👇 GET NEW ITEMS
+    const items =
+      await getMyCartItems();
+
+    console.log(
+      "NEW ITEMS:",
+      items
+    );
+
+    // 👇 UPDATE RIGHT NGAY
+    setCart(items);
+
+  } catch (error) {
+
+    console.log(
+      "ADD CART ERROR:",
+      error
+    );
+
+  }
+};
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
