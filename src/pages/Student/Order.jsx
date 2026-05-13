@@ -12,6 +12,7 @@ import {
   addCartItem,
   completeCart,
   deleteCartItem,
+  getMyCart,
   updateCartItem,
 } from "../../api/cart";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
@@ -64,19 +65,29 @@ export default function Order() {
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
 
-  const syncCartFromResponse = (nextCart) => {
-    if (!Array.isArray(nextCart?.items)) return false;
+  const syncCart = (nextCart) => {
+    if (Array.isArray(nextCart?.items)) {
+      setCart(nextCart.items);
+    }
+  };
 
-    setCart(nextCart.items);
-    return true;
+  const reloadCart = async () => {
+    const nextCart = await getMyCart();
+    syncCart(nextCart);
+    return nextCart;
   };
 
   useEffect(() => {
     const loadOrderingData = async () => {
+      const token = localStorage.getItem("accessToken");
+
       try {
         const fullCategories = await getProductsFull();
         setApiCategories(fullCategories);
         setApiProducts(fullCategories.flatMap((category) => category.products || []));
+        if (token) {
+          await reloadCart();
+        }
       } catch (error) {
         console.error("Không tải được dữ liệu order từ API", error);
         alert(error?.message || "Không tải được danh sách sản phẩm");
@@ -132,27 +143,12 @@ export default function Order() {
     }
 
     try {
-      const nextCart = await addCartItem({
+      await addCartItem({
         productId: item.id,
         quantity: 1,
         note: item.note || "",
       });
-
-      if (!syncCartFromResponse(nextCart)) {
-        setCart((prev) => {
-          const existing = prev.find((cartItem) => cartItem.id === item.id);
-
-          if (existing) {
-            return prev.map((cartItem) =>
-              cartItem.id === item.id
-                ? { ...cartItem, qty: cartItem.qty + 1, quantity: cartItem.qty + 1 }
-                : cartItem
-            );
-          }
-
-          return [...prev, { ...item, qty: 1, quantity: 1 }];
-        });
-      }
+      await reloadCart();
 
       if (amount) {
         setRemaining((prev) => (prev ?? 0) - item.price);
@@ -237,11 +233,8 @@ export default function Order() {
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        const nextCart = await deleteCartItem(item.cartItemId);
-
-        if (!syncCartFromResponse(nextCart)) {
-          setCart((prev) => prev.filter((p) => p.id !== item.id));
-        }
+        await deleteCartItem(item.cartItemId);
+        await reloadCart();
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -264,19 +257,12 @@ export default function Order() {
 
     try {
       if (item.cartItemId) {
-        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-
-        if (!syncCartFromResponse(nextCart)) {
-          setCart((prev) =>
-            prev.map((p) =>
-              p.id === item.id ? { ...p, qty: p.qty + 1, quantity: p.qty + 1 } : p
-            )
-          );
-        }
+        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev.map((p) =>
-            p.id === item.id ? { ...p, qty: p.qty + 1, quantity: p.qty + 1 } : p
+            p.id === item.id ? { ...p, qty: p.qty + 1 } : p
           )
         );
       }
@@ -292,25 +278,13 @@ export default function Order() {
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        const nextQuantity = item.qty - 1;
-        const nextCart = nextQuantity > 0
-          ? await updateCartItem(item.cartItemId, { quantity: nextQuantity })
-          : await deleteCartItem(item.cartItemId);
-
-        if (!syncCartFromResponse(nextCart)) {
-          setCart((prev) =>
-            prev
-              .map((p) =>
-                p.id === item.id ? { ...p, qty: nextQuantity, quantity: nextQuantity } : p
-              )
-              .filter((p) => p.qty > 0)
-          );
-        }
+        await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev
             .map((p) =>
-              p.id === item.id ? { ...p, qty: p.qty - 1, quantity: p.qty - 1 } : p
+              p.id === item.id ? { ...p, qty: p.qty - 1 } : p
             )
             .filter((p) => p.qty > 0)
         );

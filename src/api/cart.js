@@ -42,6 +42,11 @@ export const normalizeCart = (response) => {
   };
 };
 
+export const getMyCart = async () => {
+  const response = await apiRequest(API.CART.ME);
+  return normalizeCart(response);
+};
+
 export const addCartItem = async ({ productId, quantity = 1, note = "" }) => {
   const response = await apiRequest(API.CART.ITEMS, {
     method: "POST",

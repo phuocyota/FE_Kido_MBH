@@ -9,6 +9,7 @@ export const API = {
     FULL: `${API_BASE_URL}/products/full`,
   },
   CART: {
+    ME: `${API_BASE_URL}/cart/me`,
     ITEMS: `${API_BASE_URL}/cart/me/items`,
     ITEM: (itemId) => `${API_BASE_URL}/cart/me/items/${itemId}`,
     COMPLETE: `${API_BASE_URL}/cart/me/complete`,
