@@ -17,6 +17,9 @@ import {
   // getMyCartItems,
 } from "../../api/cart";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
+import {
+  getProductsByPrice,
+} from "../../api/products";
 
 export default function Order() {
   const location = useLocation();
@@ -84,24 +87,62 @@ export default function Order() {
  
 
   useEffect(() => {
-    const loadOrderingData = async () => {
-      const token = localStorage.getItem("accessToken");
 
-      try {
-        const fullCategories = await getProductsFull();
-        setApiCategories(fullCategories);
-        setApiProducts(fullCategories.flatMap((category) => category.products || []));
-        if (token) {
-          await reloadCart();
-        }
-      } catch (error) {
-        console.error("Không tải được dữ liệu order từ API", error);
-        alert(error?.message || "Không tải được danh sách sản phẩm");
+  const loadOrderingData = async () => {
+
+    const token =
+      localStorage.getItem(
+        "accessToken"
+      );
+
+    try {
+
+      // 👇 MAX PRICE TỪ HEADER
+      const maxPrice =
+        Number(cardPrice);
+
+      // 👇 GỌI API FILTER
+      const fullCategories =
+        await getProductsByPrice(
+          0,
+          maxPrice
+        );
+
+      setApiCategories(
+        fullCategories
+      );
+
+      setApiProducts(
+        fullCategories.flatMap(
+          (category) =>
+            category.products || []
+        )
+      );
+
+      if (token) {
+        await reloadCart();
       }
-    };
 
+    } catch (error) {
+
+      console.error(
+        "Không tải được dữ liệu order từ API",
+        error
+      );
+
+      alert(
+        error?.message ||
+        "Không tải được danh sách sản phẩm"
+      );
+
+    }
+  };
+
+  if(cardPrice){
     loadOrderingData();
-  }, []);
+  }
+
+}, [cardPrice]);
 
   const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
