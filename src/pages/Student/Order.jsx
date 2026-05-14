@@ -7,7 +7,6 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Order/Header";
 import Left from "../../components/Order/Left";
 import Right from "../../components/Order/Right";
-import { getProductsFull } from "../../api/products";
 import {
   addCartItem,
   completeCart,
@@ -203,50 +202,13 @@ export default function Order() {
       );
 
       // 👇 ADD API
-      const res = await addCartItem({
+      await addCartItem({
         productId: item.id,
         quantity: 1,
         note: "",
       });
 
-      // 👇 UPDATE RIGHT NGAY
-      setCart((prev) => {
-
-        // kiểm tra sản phẩm đã tồn tại chưa
-        const exist = prev.find(
-          (p) => p.id === item.id
-        );
-
-        // nếu đã có -> tăng qty
-        if (exist) {
-
-          return prev.map((p) =>
-            p.id === item.id
-              ? {
-                ...p,
-                qty: p.qty + 1,
-              }
-              : p
-          );
-        }
-
-        // nếu chưa có -> thêm mới
-        return [
-          ...prev,
-          {
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            qty: 1,
-            note: "",
-            cartItemId:
-              res?.data?.id ||
-              res?.id ||
-              null,
-          },
-        ];
-      });
+      await reloadCart();
 
     } catch (error) {
 
@@ -379,7 +341,12 @@ export default function Order() {
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        if (item.qty <= 1) {
+          await deleteCartItem(item.cartItemId);
+        } else {
+          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        }
+
         await reloadCart();
       } else {
         setCart((prev) =>
