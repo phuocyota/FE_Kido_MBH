@@ -83,27 +83,54 @@ export default function Header({
   originalAmount,
   setCardPrice,
 }) {
-  React.useEffect(() => {
+//   React.useEffect(() => {
+
+
+//   // QR
+//   if(amount != null && !isNaN(amount)){
+
+//     if(Number(amount) <= 5000){
+//       setCardPrice?.(5000);
+//     }else{
+//       setCardPrice?.(10000);
+//     }
+
+//   }
+
+//   // THẺ HỌC SINH
+//   else if(student?.balance != null){
+
+//     if(Number(student.balance) <= 5000){
+//       setCardPrice?.(5000);
+//     }else{
+//       setCardPrice?.(10000);
+//     }
+
+//   }
+
+// },[
+//   amount,
+//   student,
+//   setCardPrice,
+// ]);
+
+React.useEffect(() => {
 
   // QR
   if(amount != null && !isNaN(amount)){
 
-    if(Number(amount) <= 5000){
-      setCardPrice?.(5000);
-    }else{
-      setCardPrice?.(10000);
-    }
+    setCardPrice?.(
+      Number(amount)
+    );
 
   }
 
   // THẺ HỌC SINH
   else if(student?.balance != null){
 
-    if(Number(student.balance) <= 5000){
-      setCardPrice?.(5000);
-    }else{
-      setCardPrice?.(10000);
-    }
+    setCardPrice?.(
+      Number(student.balance)
+    );
 
   }
 
