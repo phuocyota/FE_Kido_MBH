@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import bgXanhDuong from "../../assets/bg_XanhDuong.png";
 
-export default function PendingOrders({ orders, onSelect }) {
+export default function PendingOrders({ orders, onSelect, onDone }) {
 
   function OrderCard({ order }) {
 
@@ -23,18 +23,6 @@ export default function PendingOrders({ orders, onSelect }) {
       const m = Math.floor(totalSec / 60);
       const s = totalSec % 60;
       return `${m}:${s.toString().padStart(2, "0")}`;
-    };
-
-    const handleDone = () => {
-      const all = JSON.parse(localStorage.getItem("orders")) || [];
-
-      const updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "done" }
-          : o
-      );
-
-      localStorage.setItem("orders", JSON.stringify(updated));
     };
 
     return (
@@ -102,7 +90,7 @@ export default function PendingOrders({ orders, onSelect }) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handleDone();
+            onDone?.(order);
           }}
           className="mt-2 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
         >

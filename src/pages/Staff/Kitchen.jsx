@@ -3,33 +3,83 @@ import CashOrders from "../../components/Staff/CashOrders";
 import PendingOrders from "../../components/Staff/PendingOrders";
 import DoneOrders from "../../components/Staff/DoneOrders";
 import bgCantin from "../../assets/anh-can-tin-so-2.png";
-import { el } from "date-fns/locale";
+import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
+
+const KITCHEN_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RzdHVkZW50MTAwMDBAdGVzdC5sb2NhbCIsInVzZXJJZCI6IjVmOWJiNWNjLTk4ZDctNGI0My04MWQwLTE5ZjA4ZTM2Y2Q4OCIsInVzZXJUeXBlIjoiU1RVREVOVCIsImRldmljZUlkIjoiZGVmYXVsdC1kZXZpY2UiLCJpYXQiOjE3Nzg3MTU3NjksImV4cCI6MTc3ODgwMjE2OX0._xLC5U3SHbELjiFCrQv7_x33xyx1jM2ddON3mkT8Gb4";
 
 export default function Kitchen() {
-  // localStorage.removeItem("orders"); 
-
-
-
   const [orders, setOrders] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null);
   const [cashInput, setCashInput] = React.useState("");
   const [cancelModal, setCancelModal] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const bufferRef = useRef("");
+  const ordersRef = useRef([]);
+
+  useEffect(() => {
+    if (KITCHEN_ACCESS_TOKEN) {
+      localStorage.setItem("accessToken", KITCHEN_ACCESS_TOKEN);
+      localStorage.setItem("isLogin", "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
 
   // ================= LOAD DATA =================
   useEffect(() => {
-    const loadOrders = () => {
-      const data = JSON.parse(localStorage.getItem("orders")) || [];
-      console.log(data)
-      setOrders(data);
+    let isMounted = true;
+
+    const loadInitialOrders = async () => {
+      try {
+        const [activeData, readyPickupData] = await Promise.all([
+          getActiveKitchenOrders(),
+          getReadyToPickupOrders(),
+        ]);
+
+        if (isMounted) {
+          setOrders([...activeData, ...readyPickupData]);
+          setLoadError("");
+        }
+      } catch (error) {
+        console.error("Khong tai duoc danh sach order kitchen", error);
+
+        if (isMounted) {
+          setLoadError(error?.message || "Khong tai duoc danh sach don hang");
+        }
+      }
     };
 
-    loadOrders();
+    const refreshActiveOrders = async () => {
+      try {
+        const [activeData, readyPickupData] = await Promise.all([
+          getActiveKitchenOrders(),
+          getReadyToPickupOrders(),
+        ]);
 
-    const interval = setInterval(loadOrders, 1000);
-    return () => clearInterval(interval);
+        if (isMounted) {
+          setOrders([...activeData, ...readyPickupData]);
+          setLoadError("");
+        }
+      } catch (error) {
+        console.error("Khong tai duoc danh sach order kitchen", error);
+
+        if (isMounted) {
+          setLoadError(error?.message || "Khong tai duoc danh sach don hang");
+        }
+      }
+    };
+
+    loadInitialOrders();
+
+    const interval = setInterval(refreshActiveOrders, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // ================= SCAN THẺ =================
@@ -67,10 +117,9 @@ export default function Kitchen() {
   // ================= HANDLE SCAN =================
   const handleScan = (cardId) => {
 
-    const all = JSON.parse(localStorage.getItem("orders")) || [];
 
     // tìm đơn theo studentId
-    const foundOrder = all.find(
+    const foundOrder = ordersRef.current.find(
       o =>
         String(o.studentId) === String(cardId) &&
         o.status !== "cancelled"
@@ -84,66 +133,58 @@ export default function Kitchen() {
   };
 
   // ================= UPDATE ORDER =================
-  const updateOrder = (order, action, extra = {}) => {
-    const all = JSON.parse(localStorage.getItem("orders")) || [];
-
+  const updateOrder = async (order, action, extra = {}) => {
     let updated = [];
 
-    if (action === "pending") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "pending" }
-          : o
-      );
-    }
-
-    else if (action === "done") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "done" }
-          : o
-      );
-    }
-
-    else if (action === "cancel") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? {
-            ...o,
-            status: "cancelled",
-            isRefunded: true,
-            cancelReason: extra.reason || "Không có lý do"
-          }
-          : o
-      );
-    }
-
-    else if (action === "remove") {
-      updated = all.filter(o => o.orderKey !== order.orderKey);
-    }
-
-    localStorage.setItem("orders", JSON.stringify(updated));
-    setConfirmModal(null);
-  };
-
-   
-  // hoàn tiền vào thẻ
-  const refundToCard = (order) => {
-    const students = JSON.parse(localStorage.getItem("students")) || [];
-
-    const updated = students.map(s => {
-      if (String(s.cardId) === String(order.studentId)) {
-        return {
-          ...s,
-          balance: s.balance + order.total
-        };
+    try {
+      if (action === "pending") {
+        // Thanh toán tiền mặt - gọi API receive-cash
+        if (order.status === "cash") {
+          await receiveCashPayment(order.orderKey);
+        }
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? { ...o, status: "pending" }
+            : o
+        );
       }
-      return s;
-    });
 
-    localStorage.setItem("students", JSON.stringify(updated));
+      else if (action === "done") {
+        // Gọi API để chuyển sang READY_TO_PICKUP
+        await updateOrderToReadyToPickup(order.orderKey);
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? { ...o, status: "done" }
+            : o
+        );
+      }
+
+      else if (action === "remove") {
+        // Gọi API để chuyển sang DONE
+        await updateOrderToDone(order.orderKey);
+        updated = orders.filter(o => o.orderKey !== order.orderKey);
+      }
+
+      else if (action === "cancel") {
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? {
+              ...o,
+              status: "cancelled",
+              isRefunded: true,
+              cancelReason: extra.reason || "Không có lý do"
+            }
+            : o
+        );
+      }
+
+      setOrders(updated);
+      setConfirmModal(null);
+    } catch (error) {
+      console.error(`Lỗi cập nhật đơn hàng (${action}):`, error);
+      alert(`❌ Lỗi cập nhật trạng thái: ${error?.message || "Thử lại"}`);
+    }
   };
-
 
   return (
     <div
@@ -153,13 +194,21 @@ export default function Kitchen() {
     >
 
       {/* 3 CỘT */}
+      {loadError && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow">
+          {loadError}
+        </div>
+      )}
+
       <CashOrders
         orders={orders.filter(o => o.status === "cash")}
         onSelect={setConfirmModal}
+        onPaid={(order) => updateOrder(order, "pending")}
       />
       <PendingOrders
         orders={orders.filter(o => o.status === "pending")}
         onSelect={setConfirmModal}
+        onDone={(order) => updateOrder(order, "done")}
       />
 
       {/* <DoneOrders
@@ -446,15 +495,6 @@ export default function Kitchen() {
 
               <button
                 onClick={() => {
-                  // hoàn tiền trước
-                  if (cancelModal.paymentMethod === "card") {
-                    refundToCard(cancelModal);
-                    alert(`💳 Đã hoàn ${cancelModal.total.toLocaleString()}đ vào tài khoản`);
-                  } else {
-                    alert(`💰 Trả lại ${cancelModal.total.toLocaleString()}đ`);
-                  }
-
-                  // cập nhật trạng thái
                   updateOrder(cancelModal, "cancel", {
                     reason: cancelReason
 
