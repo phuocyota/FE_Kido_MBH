@@ -19,29 +19,26 @@ export default function Left({
 
   // FILTER PRODUCTS
   const filteredProducts =
-    useMemo(() => {
+  useMemo(() => {
 
-      return products.filter(
-        (item) => {
+    return products.filter(
+      (item) => {
 
-          // 👇 SEARCH
-          const matchSearch =
-            item.name
-              .toLowerCase()
-              .includes(
-                search.toLowerCase()
-              );
+        const matchSearch =
+          item.name
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            );
 
-          return (
-            matchSearch
-          );
-        }
-      );
+        return matchSearch;
+      }
+    );
 
-    }, [
-      products,
-      search,
-    ]);
+  }, [
+    products,
+    search,
+  ]);
 
   return (
     <div

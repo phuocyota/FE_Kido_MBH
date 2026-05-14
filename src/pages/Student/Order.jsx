@@ -65,6 +65,7 @@ export default function Order() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
+  const [cardPrice,setCardPrice]=useState(10000);
 
   const syncCart = (nextCart) => {
     if (Array.isArray(nextCart?.items)) {
@@ -72,11 +73,15 @@ export default function Order() {
     }
   };
 
+  const originalAmount =
+  Number(localStorage.getItem("amount")) || amount;
+
   const reloadCart = async () => {
     const nextCart = await getMyCart();
     syncCart(nextCart);
     return nextCart;
   };
+ 
 
   useEffect(() => {
     const loadOrderingData = async () => {
@@ -122,16 +127,21 @@ export default function Order() {
   // }, []);
 
   const filteredProducts = products.filter((p) => {
-    // 👉 lọc theo category
-    const matchCategory =
-      activeCategory === "Tất cả" || p.category === activeCategory;
 
-    // 👉 lọc theo tiền QR
-    const matchPrice =
-      !amount || p.price <= Number(amount);
+  const matchCategory =
+    activeCategory === "Tất cả" ||
+    p.category === activeCategory;
 
-    return matchCategory && matchPrice;
-  });
+  const matchPrice =
+    Number(cardPrice) === 5000
+      ? p.price <= 5000
+      : true;
+
+  return (
+    matchCategory &&
+    matchPrice
+  );
+});
 
   useEffect(() => {
 
@@ -358,7 +368,13 @@ export default function Order() {
       style={{ backgroundImage: `url(${bgImg})` }}
     >
 
-      <Header student={student} amount={remaining ?? amount} />
+      {/* <Header student={student} amount={remaining ?? amount} setCardPrice={setCardPrice}/> */}
+      <Header
+  student={student}
+  amount={remaining ?? amount}
+  originalAmount={originalAmount}
+  setCardPrice={setCardPrice}
+/>
 
 
       <div className="flex flex-1 overflow-hidden">
@@ -369,7 +385,7 @@ export default function Order() {
           setActiveCategory={setActiveCategory}
           products={filteredProducts}
           addToCart={addToCart}
-        />
+         />
 
         <Right
           cart={cart}

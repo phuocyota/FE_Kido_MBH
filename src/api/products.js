@@ -33,3 +33,27 @@ export const getProductsFull = async () => {
     ),
   }));
 };
+
+
+export const getProductsByPrice = async (
+  minPrice = 0,
+  maxPrice = 5000
+) => {
+
+  const response = await apiRequest(
+    `${API.PRODUCTS.FULL}?minPrice=${minPrice}&maxPrice=${maxPrice}`
+  );
+
+  const categories = unwrap(response);
+
+  return categories.map((category) => ({
+    ...category,
+    products: (category.products || []).map(
+      (product) =>
+        normalizeProduct(
+          product,
+          category.name
+        )
+    ),
+  }));
+};
