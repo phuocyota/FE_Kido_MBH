@@ -4,6 +4,12 @@ import bgXanhLa from "../../assets/bg_xanhla.png";
 export default function DoneOrders({ orders, onPickup, onSelect }) {
 
   function OrderDoneCard({ order }) {
+    const getPickupClassName = (pickupType) => {
+      if (pickupType === "Ra chơi lấy") return "bg-purple-100 text-purple-600";
+      if (pickupType === "Ra về lấy") return "bg-gray-200 text-gray-700";
+
+      return "bg-blue-100 text-blue-600";
+    };
 
     return (
   <div 
@@ -49,23 +55,9 @@ export default function DoneOrders({ orders, onPickup, onSelect }) {
     <div className="mt-2 text-xs">
       <span className="font-semibold">Nhận: </span>
 
-      {order.pickupType === "Lấy liền" && (
-        <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded ml-1">
-          Lấy liền
-        </span>
-      )}
-
-      {order.pickupType === "Ra chơi lấy" && (
-        <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded ml-1">
-          Ra chơi lấy
-        </span>
-      )}
-
-      {order.pickupType === "Ra về lấy" && (
-        <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded ml-1">
-          Ra về lấy
-        </span>
-      )}
+      <span className={`${getPickupClassName(order.pickupType)} px-2 py-1 rounded ml-1`}>
+        {order.pickupType || "Lấy liền"}
+      </span>
     </div>
 
     {/* TOTAL */}

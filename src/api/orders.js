@@ -30,6 +30,33 @@ const normalizeStatus = (status, fallbackStatus) => {
   return String(fallbackStatus || status || "").toLowerCase();
 };
 
+const normalizePickupType = (order) => {
+  const rawValue =
+    order?.pickupType ||
+    order?.pickup_type ||
+    order?.pickup ||
+    order?.note ||
+    order?.orderNote ||
+    order?.deliveryNote ||
+    "";
+
+  const value = String(rawValue || "").trim();
+  const normalized = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[_-]/g, " ")
+    .replace(/\s+/g, " ");
+
+  if (!normalized) return "Lấy liền";
+  if (normalized.includes("ra choi")) return "Ra chơi lấy";
+  if (normalized.includes("ra ve")) return "Ra về lấy";
+  if (normalized.includes("lay lien") || normalized.includes("lay ngay")) return "Lấy liền";
+  if (normalized === "takeaway" || normalized === "take away") return "Lấy liền";
+
+  return value;
+};
+
 const getOrderItems = (order) =>
   order?.items ||
   order?.orderItems ||
@@ -74,7 +101,7 @@ export const normalizeOrder = (order, fallbackStatus) => {
     status: normalizeStatus(order.status, fallbackStatus),
     paymentMethod:
       String(order.paymentMethod || "").toUpperCase() === "CASH" ? "cash" : "card",
-    pickupType: order.orderType || order.pickupType || order.note || "Lay lien",
+    pickupType: normalizePickupType(order),
     createdAt: createdAt ? new Date(createdAt).getTime() : Date.now(),
     total: toNumber(total),
     items,
