@@ -5,7 +5,7 @@ import DoneOrders from "../../components/Staff/DoneOrders";
 import bgCantin from "../../assets/anh-can-tin-so-2.png";
 import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
 
-const KITCHEN_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RzdHVkZW50MTAwMDBAdGVzdC5sb2NhbCIsInVzZXJJZCI6IjVmOWJiNWNjLTk4ZDctNGI0My04MWQwLTE5ZjA4ZTM2Y2Q4OCIsInVzZXJUeXBlIjoiU1RVREVOVCIsImRldmljZUlkIjoiZGVmYXVsdC1kZXZpY2UiLCJpYXQiOjE3Nzg3MTU3NjksImV4cCI6MTc3ODgwMjE2OX0._xLC5U3SHbELjiFCrQv7_x33xyx1jM2ddON3mkT8Gb4";
+const KITCHEN_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RzdHVkZW50QHRlc3QubG9jYWwiLCJ1c2VySWQiOiIxYzliOGVlNy0yYjVmLTRmZTgtODQ1MS1lMjZmNDY2NTJlOGUiLCJ1c2VyVHlwZSI6IlNUVURFTlQiLCJkZXZpY2VJZCI6ImRlZmF1bHQtZGV2aWNlIiwiaWF0IjoxNzc4ODg5ODI5LCJleHAiOjE3Nzg5NzYyMjl9.v_nxxZdIxFUqOVVTexBGFtagDfAM3tARx91PQliYcY8";
 
 export default function Kitchen() {
   const [orders, setOrders] = useState([]);
