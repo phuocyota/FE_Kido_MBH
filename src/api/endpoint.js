@@ -6,6 +6,7 @@ export const API = {
   AUTH: {
     LOGIN: `${API_BASE_URL}/auth/login`,
     LOGIN_STUDENT: `${API_BASE_URL}/auth/login/student`,
+    LOGIN_CASHIER: `${API_BASE_URL}/auth/login/cashier`,
   },
   PRODUCTS: {
     FULL: `${API_BASE_URL}/products/full`,

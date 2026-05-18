@@ -29,3 +29,23 @@ export const loginStudent = ({ username, password, deviceId }) =>
       deviceId,
     }),
   });
+
+
+  export const loginCashier = async ({
+  username,
+  password,
+}) => {
+
+  const response = await apiRequest(
+    API.AUTH.LOGIN_CASHIER,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email: username,
+        password,
+      }),
+    }
+  );
+
+  return unwrapAuthResponse(response);
+};

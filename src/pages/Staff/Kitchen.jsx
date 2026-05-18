@@ -4,10 +4,13 @@ import PendingOrders from "../../components/Staff/PendingOrders";
 import DoneOrders from "../../components/Staff/DoneOrders";
 import bgCantin from "../../assets/anh-can-tin-so-2.png";
 import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Order/Header";
+ 
 
-const KITCHEN_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RzdHVkZW50MTAwMDBAdGVzdC5sb2NhbCIsInVzZXJJZCI6IjVmOWJiNWNjLTk4ZDctNGI0My04MWQwLTE5ZjA4ZTM2Y2Q4OCIsInVzZXJUeXBlIjoiU1RVREVOVCIsImRldmljZUlkIjoiZGVmYXVsdC1kZXZpY2UiLCJpYXQiOjE3Nzg3MTU3NjksImV4cCI6MTc3ODgwMjE2OX0._xLC5U3SHbELjiFCrQv7_x33xyx1jM2ddON3mkT8Gb4";
 
 export default function Kitchen() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null);
   const [cashInput, setCashInput] = React.useState("");
@@ -18,12 +21,35 @@ export default function Kitchen() {
   const bufferRef = useRef("");
   const ordersRef = useRef([]);
 
-  useEffect(() => {
-    if (KITCHEN_ACCESS_TOKEN) {
-      localStorage.setItem("accessToken", KITCHEN_ACCESS_TOKEN);
-      localStorage.setItem("isLogin", "true");
-    }
-  }, []);
+
+const fullName =
+  localStorage.getItem("fullName") || "Nhân viên";
+
+const avatar =
+  localStorage.getItem("avatar") ||
+  "https://i.pravatar.cc/150";
+  // đăng xuất 
+  const handleLogout = () => {
+  localStorage.clear();
+  navigate("/login");
+};
+
+ 
+
+
+useEffect(() => {
+
+  const token =
+    localStorage.getItem("accessToken");
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+}, [navigate]);
+
+ 
 
   useEffect(() => {
     ordersRef.current = orders;
@@ -188,10 +214,16 @@ export default function Kitchen() {
 
   return (
     <div
-    
-      className="h-screen flex bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgCantin})` }}
-    >
+  className="h-screen flex flex-col bg-cover bg-center"
+  style={{ backgroundImage: `url(${bgCantin})` }}
+>
+<Header
+  student={{
+    fullName,
+    avatar,
+  }}
+  onLogout={handleLogout}
+/>
 
       {/* 3 CỘT */}
       {loadError && (
@@ -199,6 +231,8 @@ export default function Kitchen() {
           {loadError}
         </div>
       )}
+
+      <div className="flex flex-1"> 
 
       <CashOrders
         orders={orders.filter(o => o.status === "cash")}
@@ -220,6 +254,7 @@ export default function Kitchen() {
         onPickup={(order) => updateOrder(order, "remove")}
         onSelect={setConfirmModal}
       />
+      </div>
 
       {/* ================= MODAL ================= */}
       {confirmModal && (

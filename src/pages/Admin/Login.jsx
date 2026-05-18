@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, User, Lock, ScanFace } from "lucide-react";
+import { Mail } from "lucide-react";
 import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import RegisterFace from "../../components/FaceId/RegisterFace";
 import { loginByCard } from "../../api/auth";
+import bgImage from "../../assets/anh-can-tin-so-2.png";
+import { loginCashier } from "../../api/auth";
 
 // 👉 import component Face (bạn đã làm ở trên)
 
@@ -27,6 +30,29 @@ export default function Login() {
     if (authData.userType) localStorage.setItem("userType", authData.userType);
     if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
   };
+
+  // nhân viên login 
+  const handleLoginCashier = async () => {
+  try {
+
+    const authData = await loginCashier({ username, password });
+
+    localStorage.setItem("accessToken", authData.accessToken);
+    localStorage.setItem("isLogin", "true");
+    localStorage.setItem("userId", authData.userId);
+    localStorage.setItem("userType", authData.userType);
+    localStorage.setItem("deviceId", authData.deviceId);
+    localStorage.setItem("fullName", authData.fullName);
+localStorage.setItem("avatar", authData.avatar || "");
+
+    toast.success("Đăng nhập thành công");
+
+    navigate("/kitchen");
+
+  } catch (error) {
+    toast.error(error?.message || "Đăng nhập thất bại");
+  }
+};
 
   const handleCardLogin = async (cardId) => {
     const normalizedCardId = String(cardId || "").trim();
@@ -96,7 +122,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div
+  className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
+  style={{
+    backgroundImage: `url(${bgImage})`,
+  }}
+>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
 
         {/* LOGO */}
@@ -141,21 +172,22 @@ export default function Login() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleLogin();
+              handleLoginCashier();
             }}
             className="space-y-5"
           >
             {/* USERNAME */}
-            <div className="relative">
-              <User size={18} className="absolute left-0 top-2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tên đăng nhập hoặc Sđt"
-                className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
+<div className="relative">
+  <Mail size={18} className="absolute left-0 top-2 text-gray-400" />
+
+  <input
+    type="text"
+    placeholder="Email"
+    className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
+    value={username}
+    onChange={(e) => setUsername(e.target.value)}
+  />
+</div>
 
             {/* PASSWORD */}
             <div className="relative">

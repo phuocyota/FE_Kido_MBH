@@ -2,6 +2,7 @@ const RAW_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "";
+ 
 
 const RAW_API_PREFIX = import.meta.env.VITE_API_PREFIX || "/api";
 
@@ -63,12 +64,49 @@ export const fetch = async (
   });
 };
 
+// export const parseResponse = async (response) => {
+//   const contentType = response.headers.get("content-type") || "";
+//   const isJson = contentType.includes("application/json");
+//   const payload = isJson ? await response.json() : await response.text();
+
+//   if (!response.ok) {
+//     const message =
+//       payload?.message ||
+//       payload?.error ||
+//       (typeof payload === "string" && payload) ||
+//       "Request failed";
+
+//     throw new Error(message);
+//   }
+
+//   return payload;
+// };
+
+
 export const parseResponse = async (response) => {
-  const contentType = response.headers.get("content-type") || "";
-  const isJson = contentType.includes("application/json");
-  const payload = isJson ? await response.json() : await response.text();
+
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  const isJson =
+    contentType.includes("application/json");
+
+  const payload = isJson
+    ? await response.json()
+    : await response.text();
+
+  // 🔥 HANDLE 401
+  if (response.status === 401) {
+
+    localStorage.clear();
+
+    window.location.href = "/login";
+
+    return;
+  }
 
   if (!response.ok) {
+
     const message =
       payload?.message ||
       payload?.error ||
@@ -80,6 +118,7 @@ export const parseResponse = async (response) => {
 
   return payload;
 };
+
 
 const buildUrl = (path) => {
   if (/^https?:\/\//.test(path)) {
