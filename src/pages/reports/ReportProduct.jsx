@@ -28,7 +28,7 @@ export default function ReportProduct() {
     "Bán hàng",
     "Lợi nhuận",
     "Xuất nhập tồn",
-    "Xuất hủy",
+    // "Xuất hủy",
   ];
 
   // =========================

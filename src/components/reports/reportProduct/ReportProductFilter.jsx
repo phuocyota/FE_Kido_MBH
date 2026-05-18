@@ -83,7 +83,8 @@ export default function ReportProductFilter({
     >
 
 
-      {/* DISPLAY */}
+    
+{/* DISPLAY */}
 <div className="mb-8">
 
   <h2 className="font-semibold text-xl mb-5">
@@ -96,11 +97,7 @@ export default function ReportProductFilter({
     {interest === "Bán hàng" && (
 
       <label
-        className="
-          flex items-center gap-3
-          cursor-pointer
-          border rounded-2xl p-4
-        "
+        className="flex items-center gap-3 cursor-pointer border rounded-2xl p-4"
         style={{
           borderColor:
             viewType === "chart"
@@ -131,21 +128,17 @@ export default function ReportProductFilter({
 
     )}
 
-    {/* DỌC */}
+    {/* BÁO CÁO */}
     <label
-      className="
-        flex items-center gap-3
-        cursor-pointer
-        border rounded-2xl p-4
-      "
+      className="flex items-center gap-3 cursor-pointer border rounded-2xl p-4"
       style={{
         borderColor:
-          viewType === "portrait"
+          viewType === "report"
             ? "#2563eb"
             : "#e5e7eb",
 
         background:
-          viewType === "portrait"
+          viewType === "report"
             ? "#eff6ff"
             : "#ffffff",
       }}
@@ -153,52 +146,15 @@ export default function ReportProductFilter({
 
       <input
         type="radio"
-        checked={viewType === "portrait"}
+        checked={viewType === "report"}
         onChange={() =>
-          setViewType("portrait")
+          setViewType("report")
         }
         className="w-5 h-5"
       />
 
       <span className="text-lg font-medium">
-        Báo cáo dọc
-      </span>
-
-    </label>
-
-    {/* NGANG */}
-    <label
-      className="
-        flex items-center gap-3
-        cursor-pointer
-        border rounded-2xl p-4
-      "
-      style={{
-        borderColor:
-          viewType === "landscape"
-            ? "#2563eb"
-            : "#e5e7eb",
-
-        background:
-          viewType === "landscape"
-            ? "#eff6ff"
-            : "#ffffff",
-      }}
-    >
-
-      <input
-        type="radio"
-        checked={
-          viewType === "landscape"
-        }
-        onChange={() =>
-          setViewType("landscape")
-        }
-        className="w-5 h-5"
-      />
-
-      <span className="text-lg font-medium">
-        Báo cáo ngang
+        Báo cáo
       </span>
 
     </label>

@@ -7,53 +7,91 @@ import {
   Wallet,
 } from "lucide-react";
 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
 export default function ProductSaleChart() {
+
+  const topSelling = [
+    {
+      name: "BÁNH OREO",
+      value: 35,
+    },
+
+    {
+      name: "BÁNH NABATI",
+      value: 25,
+    },
+
+    {
+      name: "NƯỚC SUỐI",
+      value: 20,
+    },
+
+    {
+      name: "BÁNH OSTAR",
+      value: 20,
+    },
+  ];
+
+  const lowSelling = [
+    {
+      name: "KẸO DẺO",
+      value: 40,
+    },
+
+    {
+      name: "NƯỚC C2",
+      value: 30,
+    },
+
+    {
+      name: "SNACK BẮP",
+      value: 20,
+    },
+
+    {
+      name: "BÁNH QUE",
+      value: 10,
+    },
+  ];
+
+  const colors1 = [
+    "#2563EB",
+    "#10B981",
+    "#F59E0B",
+    "#EF4444",
+  ];
+
+  const colors2 = [
+    "#DC2626",
+    "#EA580C",
+    "#D97706",
+    "#CA8A04",
+  ];
 
   return (
 
-    <div className="bg-white">
+    <div className="bg-white min-w-[1600px]">
 
       {/* HEADER */}
-      <div
-        className="
-          border-b
-          border-gray-300
-          px-10
-          pt-10
-          pb-7
-        "
-      >
+      <div className="border-b border-gray-300 px-10 pt-10 pb-7">
 
-        <h1
-          className="
-            text-[34px]
-            font-bold
-            text-center
-            text-[#1E293B]
-          "
-        >
+        <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
           Biểu đồ bán hàng
         </h1>
 
-        <div
-          className="
-            text-center
-            mt-3
-            text-[18px]
-            text-gray-600
-          "
-        >
+        <div className="text-center mt-3 text-[18px] text-gray-600">
           Chi nhánh trung tâm
         </div>
 
-        <div
-          className="
-            text-center
-            mt-1
-            text-[16px]
-            text-gray-500
-          "
-        >
+        <div className="text-center mt-1 text-[16px] text-gray-500">
           Từ 07/05/2026 - Đến 07/05/2026
         </div>
 
@@ -63,15 +101,7 @@ export default function ProductSaleChart() {
       <div className="p-10">
 
         {/* KPI */}
-        <div
-          className="
-            grid
-            grid-cols-2
-            lg:grid-cols-4
-            gap-5
-            mb-10
-          "
-        >
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
 
           {[
             {
@@ -105,43 +135,16 @@ export default function ProductSaleChart() {
 
               <div
                 key={item.title}
-                className="
-                  rounded-3xl
-                  border
-                  border-gray-200
-                  p-6
-                "
+                className="rounded-3xl border border-gray-200 p-6 bg-white shadow-sm"
               >
 
-                <div
-                  className="
-                    flex
-                    items-center
-                    justify-between
-                    mb-5
-                  "
-                >
+                <div className="flex items-center justify-between mb-5">
 
-                  <div
-                    className="
-                      text-gray-500
-                      text-sm
-                    "
-                  >
+                  <div className="text-gray-500 text-sm">
                     {item.title}
                   </div>
 
-                  <div
-                    className="
-                      w-12
-                      h-12
-                      rounded-2xl
-                      bg-blue-50
-                      flex
-                      items-center
-                      justify-center
-                    "
-                  >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
 
                     <Icon
                       size={24}
@@ -152,13 +155,7 @@ export default function ProductSaleChart() {
 
                 </div>
 
-                <div
-                  className="
-                    text-3xl
-                    font-bold
-                    text-gray-800
-                  "
-                >
+                <div className="text-3xl font-bold text-gray-800">
                   {item.value}
                 </div>
 
@@ -169,49 +166,131 @@ export default function ProductSaleChart() {
 
         </div>
 
-        {/* CHART */}
-        <div
-          className="
-            h-[500px]
-            rounded-[32px]
-            border
-            border-gray-200
-            flex
-            items-center
-            justify-center
-            bg-[#F8FAFC]
-          "
-        >
+        {/* PIE CHARTS */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-          <div className="text-center">
+          {/* TOP SELLING */}
+          <div className="rounded-[32px] border border-gray-200 bg-white p-8 shadow-sm">
 
-            <BarChart3
-              size={80}
-              className="
-                mx-auto
-                mb-5
-                text-blue-500
-              "
-            />
+            <div className="flex items-center justify-between mb-8">
 
-            <div
-              className="
-                text-3xl
-                font-bold
-                text-gray-700
-                mb-3
-              "
-            >
-              Khu vực biểu đồ doanh thu
+              <div>
+
+                <h2 className="text-[28px] font-bold text-[#1E293B]">
+                  Món tiêu thụ nhiều
+                </h2>
+
+                <div className="text-gray-500 mt-2">
+                  Các sản phẩm bán chạy cần nhập thêm hàng
+                </div>
+
+              </div>
+
+              <div className="bg-green-100 text-green-700 px-5 py-2 rounded-2xl font-semibold">
+                Top Selling
+              </div>
+
             </div>
 
-            <div
-              className="
-                text-gray-500
-                text-lg
-              "
-            >
-              Hiển thị thống kê bán hàng theo thời gian
+            <div className="h-[420px]">
+
+              <ResponsiveContainer width="100%" height="100%">
+
+                <PieChart>
+
+                  <Pie
+                    data={topSelling}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={150}
+                    innerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, value }) => `${name} ${value}%`}
+                  >
+
+                    {topSelling.map((entry, index) => (
+
+                      <Cell
+                        key={index}
+                        fill={colors1[index % colors1.length]}
+                      />
+
+                    ))}
+
+                  </Pie>
+
+                  <Tooltip />
+
+                  <Legend />
+
+                </PieChart>
+
+              </ResponsiveContainer>
+
+            </div>
+
+          </div>
+
+          {/* LOW SELLING */}
+          <div className="rounded-[32px] border border-gray-200 bg-white p-8 shadow-sm">
+
+            <div className="flex items-center justify-between mb-8">
+
+              <div>
+
+                <h2 className="text-[28px] font-bold text-[#1E293B]">
+                  Món tiêu thụ ít
+                </h2>
+
+                <div className="text-gray-500 mt-2">
+                  Các sản phẩm tồn kho cao cần hạn chế nhập
+                </div>
+
+              </div>
+
+              <div className="bg-red-100 text-red-700 px-5 py-2 rounded-2xl font-semibold">
+                Low Selling
+              </div>
+
+            </div>
+
+            <div className="h-[420px]">
+
+              <ResponsiveContainer width="100%" height="100%">
+
+                <PieChart>
+
+                  <Pie
+                    data={lowSelling}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={150}
+                    innerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, value }) => `${name} ${value}%`}
+                  >
+
+                    {lowSelling.map((entry, index) => (
+
+                      <Cell
+                        key={index}
+                        fill={colors2[index % colors2.length]}
+                      />
+
+                    ))}
+
+                  </Pie>
+
+                  <Tooltip />
+
+                  <Legend />
+
+                </PieChart>
+
+              </ResponsiveContainer>
+
             </div>
 
           </div>

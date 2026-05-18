@@ -14,11 +14,15 @@
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.1",
+    "ag-grid-community": "^35.3.0",
+    "ag-grid-react": "^35.3.0",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.575.0",
+    "luckyexcel": "^1.0.1",
+    "luckysheet": "^2.1.13",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-date-range": "^2.0.1",
@@ -27,8 +31,9 @@
     "react-icons": "^5.6.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.1",
-    "recharts": "^3.7.0",
-    "tailwindcss": "^4.2.1"
+    "recharts": "^3.8.1",
+    "tailwindcss": "^4.2.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

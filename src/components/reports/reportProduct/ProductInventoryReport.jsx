@@ -2,78 +2,434 @@ import React from "react";
 
 export default function ProductInventoryReport() {
 
+  const rows = [
+    {
+      stt: 1,
+      group: "Hàng snack",
+      code: "0",
+      name: "BÁNH OREO",
+      unit: "GÓI",
+      value: "5,000",
+      stockStart: "50.0",
+      week1: "100",
+      week2: "100",
+      week3: "100",
+      week4: "100",
+      week5: "100",
+      week6: "0",
+      outside: "0",
+      totalImport: "500.0",
+      destroy1: "",
+      destroy2: "",
+      destroy3: "",
+      destroy4: "",
+      destroy5: "",
+      stockEnd: "50.0",
+      sale: "500.0",
+      totalCost: "2,500,000",
+      usagePer: "27.8",
+      min: "-",
+      max: "-",
+      warning: "Quá nhiều hàng tồn",
+      order: "",
+    },
+
+    {
+      stt: 2,
+      group: "Hàng snack",
+      code: "0",
+      name: "BÁNH NABATI",
+      unit: "GÓI",
+      value: "5,000",
+      stockStart: "50.0",
+      week1: "100",
+      week2: "100",
+      week3: "100",
+      week4: "100",
+      week5: "100",
+      week6: "0",
+      outside: "0",
+      totalImport: "500.0",
+      destroy1: "",
+      destroy2: "",
+      destroy3: "",
+      destroy4: "",
+      destroy5: "",
+      stockEnd: "50.0",
+      sale: "500.0",
+      totalCost: "2,500,000",
+      usagePer: "27.8",
+      min: "-",
+      max: "-",
+      warning: "Quá nhiều hàng tồn",
+      order: "",
+    },
+  ];
+
   return (
 
-    <div className="w-full h-full bg-white">
+    <div className="w-max bg-white">
 
-      {/* HEADER */}
-      <div
-        className="
-          border-b
-          border-gray-300
-          px-10
-          pt-10
-          pb-7
-        "
-      >
+      {/* TOP */}
+      <div className="grid grid-cols-12 border border-gray-400">
 
-        <h1
-          className="
-            text-[34px]
-            font-bold
-            text-center
-            text-[#1E293B]
-          "
-        >
-          Báo cáo xuất nhập tồn
-        </h1>
+        {/* LEFT */}
+        <div className="col-span-4 border-r border-gray-400">
 
-        <div
-          className="
-            text-center
-            mt-3
-            text-[18px]
-            text-gray-600
-          "
-        >
-          Chi nhánh trung tâm
+          <div className="grid grid-cols-2">
+
+            <div className="border-b border-r border-gray-400 p-2 font-semibold">
+              Số ngày doanh thu tính đến hiện tại :
+            </div>
+
+            <div className="border-b border-gray-400 p-2 text-right">
+              15
+            </div>
+
+            <div className="border-b border-r border-gray-400 p-2 text-red-600 font-bold">
+              DOANH THU HIỆN TẠI TRONG THÁNG
+            </div>
+
+            <div className="border-b border-gray-400 p-2 text-right text-[22px] font-bold bg-[#DCE6F1]">
+              18,000,000
+            </div>
+
+            <div className="border-b border-r border-gray-400 p-2 font-bold">
+              CHI PHÍ SỬ DỤNG HÀNG SNACK :
+            </div>
+
+            <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
+              30,000,000
+            </div>
+
+            <div className="border-b border-r border-gray-400 p-2 font-bold">
+              CHI PHÍ SỬ DỤNG HÀNG KẸO :
+            </div>
+
+            <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
+              5,000,000
+            </div>
+
+            <div className="border-b border-r border-gray-400 p-2 font-bold">
+              CHI PHÍ SỬ DỤNG HÀNG NƯỚC :
+            </div>
+
+            <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
+              22,500,000
+            </div>
+
+            <div className="border-r border-gray-400 p-2 font-bold">
+              CHI PHÍ SỬ DỤNG HÀNG KHÔ :
+            </div>
+
+            <div className="p-2 text-right font-bold text-[#1F4E79]">
+              15,000,000
+            </div>
+
+          </div>
+
         </div>
 
-        <div
-          className="
-            text-center
-            mt-1
-            text-[16px]
-            text-gray-500
-          "
-        >
-          Từ 07/05/2026 - Đến 07/05/2026
+        {/* CENTER */}
+        <div className="col-span-1 flex flex-col justify-end pb-2 gap-4">
+
+          <div className="text-red-600 text-center">
+            166.7%
+          </div>
+
+          <div className="text-red-600 text-center">
+            27.8%
+          </div>
+
+          <div className="text-red-600 text-center">
+            125.0%
+          </div>
+
+          <div className="text-red-600 text-center">
+            83.3%
+          </div>
+
+        </div>
+
+        {/* RIGHT */}
+        <div className="col-span-7 flex flex-col items-center justify-center">
+
+          <div className="text-[34px] font-bold">
+            CHI PHÍ SỬ DỤNG HÀNG HÓA TRONG THÁNG
+          </div>
+
+          <div className="flex items-center gap-5 mt-4">
+
+            <div className="text-[24px]">
+              THÁNG:
+            </div>
+
+            <div className="bg-[#8EAADB] px-8 py-2 text-[26px]">
+              May-26
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
-      {/* BODY */}
-      <div className="p-10">
+      {/* TABLE */}
+      <table className="border-collapse w-max">
 
-        <div
-          className="
-            h-[500px]
-            rounded-3xl
-            border
-            border-dashed
-            border-gray-300
-            flex
-            items-center
-            justify-center
-            text-gray-400
-            text-2xl
-            font-semibold
-          "
-        >
-          Nội dung báo cáo xuất nhập tồn
-        </div>
+        <thead>
 
-      </div>
+          {/* HEADER ROW 1 */}
+          <tr>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[60px] text-center font-bold">
+              STT
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[140px] text-center font-bold">
+              NHÓM
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[100px] text-center font-bold">
+              CODE
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[260px] text-center font-bold">
+              TÊN HÀNG
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
+              ĐVT
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[130px] text-center font-bold">
+              Giá trị hàng hóa
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#A9D18E] w-[120px] text-center font-bold">
+              Tồn Đầu
+            </th>
+
+            <th colSpan={6} className="border border-gray-500 bg-[#F4D35E] text-center font-bold">
+              Số lượng nhập từ NCC
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
+              Số lượng mua phía ngoài
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4CCCC] w-[120px] text-center text-red-600 font-bold">
+              Tổng nhập
+            </th>
+
+            <th colSpan={5} className="border border-gray-500 bg-[#F4CCCC] text-center font-bold">
+              Số lượng hủy hàng
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
+              Tồn Cuối (Kiểm Kê)
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#FFF200] w-[120px] text-center text-red-600 font-bold">
+              Xuất bán trong tháng
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#FCE5CD] w-[150px] text-center font-bold">
+              Tổng chi phí sử dụng trong tháng
+            </th>
+
+            <th colSpan={4} className="border border-gray-500 bg-[#F4D35E] text-center font-bold">
+              Plan Sales cho thời gian nhập hàng tới:
+            </th>
+
+            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[140px] text-center font-bold">
+              Số cần đặt thêm
+            </th>
+
+          </tr>
+
+          {/* HEADER ROW 2 */}
+          <tr>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 1
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 2
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 3
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 4
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 5
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[105px] text-center font-bold">
+              Tuần 6
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4CCCC] w-[105px] text-center font-bold">
+              Tuần 1
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4CCCC] w-[105px] text-center font-bold">
+              Tuần 2
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4CCCC] w-[105px] text-center font-bold">
+              Tuần 3
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4CCCC] w-[105px] text-center font-bold">
+              Tuần 4
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4CCCC] w-[105px] text-center font-bold">
+              Tuần 5
+            </th>
+
+            <th className="border border-gray-500 bg-[#E2EFDA] w-[120px] text-center text-red-600 font-bold">
+              Usage per Mil
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
+              Min
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
+              Max
+            </th>
+
+            <th className="border border-gray-500 bg-[#F4D35E] min-w-[220px] px-4 py-2 text-center text-black font-bold whitespace-nowrap">
+  Báo động
+</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {rows.map((item) => (
+
+            <tr key={item.stt} className="h-[38px]">
+
+              <td className="border border-gray-400 text-center">
+                {item.stt}
+              </td>
+
+              <td className="border border-gray-400 px-2">
+                {item.group}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.code}
+              </td>
+
+              <td className="border border-gray-400 px-2 font-semibold">
+                {item.name}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.unit}
+              </td>
+
+              <td className="border border-gray-400 text-right px-2 text-red-600">
+                {item.value}
+              </td>
+
+              <td className="border border-gray-400 bg-[#A9D18E] text-center">
+                {item.stockStart}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week1}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week2}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week3}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week4}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week5}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.week6}
+              </td>
+
+              <td className="border border-gray-400 bg-[#A9D18E] text-center">
+                {item.outside}
+              </td>
+
+              <td className="border border-gray-400 bg-[#FCE4D6] text-center text-red-600 font-bold">
+                {item.totalImport}
+              </td>
+
+              <td className="border border-gray-400"></td>
+
+              <td className="border border-gray-400"></td>
+
+              <td className="border border-gray-400"></td>
+
+              <td className="border border-gray-400"></td>
+
+              <td className="border border-gray-400"></td>
+
+              <td className="border border-gray-400 bg-[#D9EAD3] text-center">
+                {item.stockEnd}
+              </td>
+
+              <td className="border border-gray-400 bg-[#FFF200] text-center text-red-600">
+                {item.sale}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.totalCost}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.usagePer}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.min}
+              </td>
+
+              <td className="border border-gray-400 text-center">
+                {item.max}
+              </td>
+
+              <td className="border border-gray-400 bg-[#FF0000] min-w-[220px] px-4 text-white text-center font-bold whitespace-nowrap">
+  {item.warning}
+</td>
+
+              <td className="border border-gray-400 text-center">
+                {item.order}
+              </td>
+
+            </tr>
+
+          ))}
+
+        </tbody>
+
+      </table>
 
     </div>
 
