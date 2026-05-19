@@ -54,9 +54,11 @@ export default function ProductSaleReport() {
 
   return (
 
-    <div className="w-full min-h-screen bg-[#F3F4F6] p-6 overflow-x-auto">
+  <div className="w-full bg-white">
 
-  <div className="w-max min-w-full bg-white border border-gray-400">
+  <div className="inline-block border border-gray-400 " style={{
+  width: "1700px",
+}}>
 
     {/* HEADER */}
     <div className="grid grid-cols-12 border-b border-gray-400">
@@ -118,7 +120,7 @@ export default function ProductSaleReport() {
     </div>
 
     {/* TABLE */}
-    <table className="border-collapse table-fixed w-[1600px]">
+    <table className="border-collapse  w-[1600px]">
 
       <thead>
 
@@ -257,6 +259,7 @@ export default function ProductSaleReport() {
           border
           border-gray-400
           text-center
+
           font-semibold
 
           ${

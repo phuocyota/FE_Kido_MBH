@@ -70,460 +70,313 @@ export default function ReportContent({
   const isPortrait =
   reportType === "portrait";
 
-  return (
-    <div
-      className="
-        flex-1
-        min-w-0
-        rounded-3xl
-        shadow-sm
-        border
-        border-gray-300
-        overflow-hidden
-        bg-white
-      "
-    >
 
-      {/* TOOLBAR */}
+return (
+  <div className="flex-1 min-w-0 rounded-3xl shadow-sm border border-gray-300 overflow-hidden bg-white">
+
+    {/* TOOLBAR */}
+    <div className="h-16 px-4 flex items-center gap-2 overflow-x-auto bg-gray-600 text-white">
+
+      <button onClick={handleResetZoom} className="toolbar-btn">
+        <RotateCcw size={24} />
+      </button>
+
+      <button className="toolbar-btn">
+        <ChevronsLeft size={24} />
+      </button>
+
+      <button className="toolbar-btn">
+        <ChevronsRight size={24} />
+      </button>
+
+      <div className="flex-1"></div>
+
+      <button onClick={handleDownloadPDF} className="toolbar-btn">
+        <FileText size={24} />
+      </button>
+
+      <button onClick={handleDownloadExcel} className="toolbar-btn">
+        <FileSpreadsheet size={24} />
+      </button>
+
+      <button onClick={handlePrint} className="toolbar-btn">
+        <Printer size={24} />
+      </button>
+
+      <button onClick={handleZoomIn} className="toolbar-btn">
+        <ZoomIn size={24} />
+      </button>
+
+      <button onClick={handleZoomOut} className="toolbar-btn">
+        <ZoomOut size={24} />
+      </button>
+
+      <button onClick={handleFullscreen} className="toolbar-btn">
+        <Maximize size={24} />
+      </button>
+
+    </div>
+
+    {/* PREVIEW */}
+    <div className="h-[75vh] overflow-x-auto overflow-y-auto p-2 sm:p-5 flex justify-start lg:justify-center bg-gray-200">
+
       <div
-        className="
-          h-16
-          px-4
-          flex
-          items-center
-          gap-2
-          overflow-x-auto
-          bg-gray-600
-          text-white
-        "
+        ref={previewRef}
+        style={{
+          transform: window.innerWidth < 768 ? "scale(1)" : `scale(${zoom})`,
+          transformOrigin: "top center",
+        }}
+        className={`min-w-max transition-all duration-300 ${isPortrait ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"} shadow-xl border bg-white`}
       >
 
-        <button
-          onClick={handleResetZoom}
-          className="toolbar-btn"
-        >
-          <RotateCcw size={24} />
-        </button>
+        {/* HEADER */}
+        <div className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}>
 
-        <button className="toolbar-btn">
-          <ChevronsLeft size={24} />
-        </button>
+          <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
 
-        <button className="toolbar-btn">
-          <ChevronsRight size={24} />
-        </button>
+            {interest === "Hủy món"
+              ? "Báo cáo hủy món"
+              : "Báo cáo doanh thu bán hàng"}
 
-        <div className="flex-1"></div>
+          </h1>
 
-        <button
-          onClick={handleDownloadPDF}
-          className="toolbar-btn"
-        >
-          <FileText size={24} />
-        </button>
+          <div className="text-center mt-3 text-[20px] text-gray-700">
+            Trường tiểu học ABC
+          </div>
 
-        <button
-          onClick={handleDownloadExcel}
-          className="toolbar-btn"
-        >
-          <FileSpreadsheet size={24} />
-        </button>
+        </div>
 
-        <button
-          onClick={handlePrint}
-          className="toolbar-btn"
-        >
-          <Printer size={24} />
-        </button>
+        {/* TABLE */}
+        <div className={`${isPortrait ? "px-3 py-6" : "px-8 py-4"} overflow-x-auto`}>
 
-        <button
-          onClick={handleZoomIn}
-          className="toolbar-btn"
-        >
-          <ZoomIn size={24} />
-        </button>
+          <table className="w-full border-collapse">
 
-        <button
-          onClick={handleZoomOut}
-          className="toolbar-btn"
-        >
-          <ZoomOut size={24} />
-        </button>
+            <thead>
 
-        <button
-          onClick={handleFullscreen}
-          className="toolbar-btn"
-        >
-          <Maximize size={24} />
-        </button>
+              <tr className="bg-[#F3F4F6]">
+
+                <th className="report-th w-[120px]">Ngày</th>
+
+                <th className="report-th">Mã Hàng</th>
+
+                <th className="report-th">Tên sản phẩm</th>
+
+                <th className="report-th">Giá</th>
+
+                <th className="report-th">Số lượng</th>
+
+                <th className="report-th">Tổng</th>
+
+                <th className="report-th">
+                  Doanh thu
+                  <br />
+                  (Gross Sale)
+                </th>
+
+                <th className="report-th">
+                  Thuế GTGT
+                </th>
+
+                <th className="report-th">
+                  Doanh thu
+                  <br />
+                  (Net Sale)
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {data.length === 0 ? (
+
+                <tr>
+
+                  <td colSpan={9} className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]">
+                    Báo cáo không có dữ liệu
+                  </td>
+
+                </tr>
+
+              ) : (
+
+                data.map((item, index) => (
+
+                  <tr key={index}>
+
+                    <td className="report-td">{item.date}</td>
+
+                    <td className="report-td">{item.code}</td>
+
+                    <td className="report-td">{item.name}</td>
+
+                    <td className="report-td">{item.price}</td>
+
+                    <td className="report-td">{item.qty}</td>
+
+                    <td className="report-td">{item.total}</td>
+
+                    <td className="report-td">{item.gross}</td>
+
+                    <td className="report-td">{item.tax}</td>
+
+                    <td className="report-td">{item.net}</td>
+
+                  </tr>
+
+                ))
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
 
-    
-      {/* PREVIEW */}
-<div
-  className="
-  h-[75vh]
+      {/* EXPORT */}
+      <div className="fixed left-[-99999px] top-0">
 
-  overflow-x-auto
-  overflow-y-auto
+        <div
+          ref={exportRef}
+          style={{
+            width: reportType === "portrait" ? "210mm" : "297mm",
+            minHeight: reportType === "portrait" ? "297mm" : "210mm",
+          }}
+          className="bg-white"
+        >
 
-  p-2
-  sm:p-5
+           {/* HEADER */}
+        <div className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}>
 
-  flex
-  justify-start
-  lg:justify-center
+          <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
 
-  bg-gray-200
-"
->
-  <div
-    ref={previewRef}
-    style={{
-  transform:
-    window.innerWidth < 768
-      ? "scale(1)"
-      : `scale(${zoom})`,
+            {interest === "Hủy món"
+              ? "Báo cáo hủy món"
+              : "Báo cáo doanh thu bán hàng"}
 
-  transformOrigin: "top center",
-}}
-    className={`
-  min-w-max
+          </h1>
 
-  transition-all
-  duration-300
+          <div className="text-center mt-3 text-[20px] text-gray-700">
+            Trường tiểu học ABC
+          </div>
 
-  ${
-    isPortrait
-      ? `
-        w-[210mm]
-        min-h-[297mm]
-      `
-      : `
-        w-[297mm]
-        min-h-[210mm]
-      `
-  }
+        </div>
 
-  shadow-xl
-  border
-  bg-white
-`}
-  >
-    {/* HEADER */}
-    <div
-  className={`
-    border-b
-    border-gray-300
+        {/* TABLE */}
+<div className={isPortrait ? "px-6 py-6" : "px-8 py-4"}>
 
-    ${
-      isPortrait
-        ? "pb-4 pt-8 px-8"
-        : "pb-5 pt-6 px-12"
-    }
-  `}
->
-      <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+  <table className="w-full table-fixed border-collapse">
 
-  {interest === "Hủy món"
-    ? "Báo cáo hủy món"
-    : "Báo cáo doanh thu bán hàng"}
+    <thead>
 
-</h1>
+      <tr className="bg-[#F3F4F6]">
 
-      <div className="text-center mt-3 text-[20px] text-gray-700">
-        Trường tiểu học ABC
-      </div>
-    </div>
+        <th className="report-th w-[13%]">
+          Ngày
+        </th>
 
-    {/* TABLE */}
-    <div
-  className={`
-    overflow-x-auto
+        <th className="report-th w-[10%]">
+          Mã Hàng
+        </th>
 
-    ${
-      isPortrait
-        ? "px-3 py-6"
-        : "px-8 py-4"
-    }
-  `}
->
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-[#F3F4F6]">
-            <th className="report-th w-[120px]">
-              Ngày
-            </th>
+        <th className="report-th w-[20%]">
+          Tên sản phẩm
+        </th>
 
-            <th className="report-th">
-              Mã Hàng
-            </th>
+        <th className="report-th w-[10%]">
+          Giá
+        </th>
 
-            <th className="report-th">
-              Tên sản phẩm
-            </th>
+        <th className="report-th w-[9%]">
+          Số lượng
+        </th>
 
-            <th className="report-th">
-              Giá
-            </th>
+        <th className="report-th w-[10%]">
+          Tổng
+        </th>
 
-            <th className="report-th">
-              Số lượng
-            </th>
+        <th className="report-th w-[13%]">
+          Doanh thu
+          <br />
+          (Gross Sale)
+        </th>
 
-            <th className="report-th">
-              Tổng
-            </th>
+        <th className="report-th w-[10%]">
+          Thuế GTGT
+        </th>
 
-            <th className="report-th">
-              Doanh thu
-              <br />
-              (Gross Sale)
-            </th>
+        <th className="report-th w-[13%]">
+          Doanh thu
+          <br />
+          (Net Sale)
+        </th>
 
-            <th className="report-th">
-              Thuế GTGT
-            </th>
-
-            <th className="report-th">
-              Doanh thu
-              <br />
-              (Net Sale)
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-  {data.length === 0 ? (
-    <tr>
-      <td
-        colSpan={9}
-        className="
-          border
-          border-[#D6D3C4]
-          py-10
-          text-center
-          italic
-          text-gray-700
-          bg-[#F4EFD8]
-        "
-      >
-        Báo cáo không có dữ liệu
-      </td>
-    </tr>
-  ) : (
-    data.map((item, index) => (
-      <tr key={index}>
-        <td className="report-td">
-          {item.date}
-        </td>
-
-        <td className="report-td">
-          {item.code}
-        </td>
-
-        <td className="report-td">
-          {item.name}
-        </td>
-
-        <td className="report-td">
-          {item.price}
-        </td>
-
-        <td className="report-td">
-          {item.qty}
-        </td>
-
-        <td className="report-td">
-          {item.total}
-        </td>
-
-        <td className="report-td">
-          {item.gross}
-        </td>
-
-        <td className="report-td">
-          {item.tax}
-        </td>
-
-        <td className="report-td">
-          {item.net}
-        </td>
       </tr>
-    ))
-  )}
-</tbody>
-      </table>
-    </div>
-  </div>
 
-  {/* EXPORT */}
-<div className="fixed left-[-99999px] top-0">
+    </thead>
 
-  <div
-    ref={exportRef}
-    style={{
-      width:
-        reportType === "portrait"
-          ? "210mm"
-          : "297mm",
+    <tbody>
 
-      minHeight:
-        reportType === "portrait"
-          ? "297mm"
-          : "210mm",
-    }}
-    className="bg-white"
-  >
+      {data.map((item, index) => (
 
-    {/* HEADER */}
-    <div
-      className={`
-        border-b
-        border-gray-300
+        <tr key={index}>
 
-        ${
-          isPortrait
-            ? "pb-4 pt-8 px-8"
-            : "pb-5 pt-6 px-12"
-        }
-      `}
-    >
+          <td className="report-td break-words">
+            {item.date}
+          </td>
 
-      <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+          <td className="report-td break-words">
+            {item.code}
+          </td>
 
-        {interest === "Hủy món"
-          ? "Báo cáo hủy món"
-          : "Báo cáo doanh thu bán hàng"}
+          <td className="report-td break-words">
+            {item.name}
+          </td>
 
-      </h1>
+          <td className="report-td">
+            {item.price}
+          </td>
 
-      <div className="text-center mt-3 text-[20px] text-gray-700">
-        Trường tiểu học ABC
+          <td className="report-td">
+            {item.qty}
+          </td>
+
+          <td className="report-td">
+            {item.total}
+          </td>
+
+          <td className="report-td">
+            {item.gross}
+          </td>
+
+          <td className="report-td">
+            {item.tax}
+          </td>
+
+          <td className="report-td">
+            {item.net}
+          </td>
+
+        </tr>
+
+      ))}
+
+    </tbody>
+
+  </table>
+
+</div>
+
+        </div>
+
       </div>
 
     </div>
 
-    {/* TABLE */}
-    <div
-      className={`
-        overflow-x-auto
-
-        ${
-          isPortrait
-            ? "px-3 py-6"
-            : "px-8 py-4"
-        }
-      `}
-    >
-
-      <table className="w-full border-collapse">
-
-        <thead>
-
-          <tr className="bg-[#F3F4F6]">
-
-            <th className="report-th w-[120px]">
-              Ngày
-            </th>
-
-            <th className="report-th">
-              Mã Hàng
-            </th>
-
-            <th className="report-th">
-              Tên sản phẩm
-            </th>
-
-            <th className="report-th">
-              Giá
-            </th>
-
-            <th className="report-th">
-              Số lượng
-            </th>
-
-            <th className="report-th">
-              Tổng
-            </th>
-
-            <th className="report-th">
-              Doanh thu
-              <br />
-              (Gross Sale)
-            </th>
-
-            <th className="report-th">
-              Thuế GTGT
-            </th>
-
-            <th className="report-th">
-              Doanh thu
-              <br />
-              (Net Sale)
-            </th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          {data.map((item, index) => (
-
-            <tr key={index}>
-
-              <td className="report-td">
-                {item.date}
-              </td>
-
-              <td className="report-td">
-                {item.code}
-              </td>
-
-              <td className="report-td">
-                {item.name}
-              </td>
-
-              <td className="report-td">
-                {item.price}
-              </td>
-
-              <td className="report-td">
-                {item.qty}
-              </td>
-
-              <td className="report-td">
-                {item.total}
-              </td>
-
-              <td className="report-td">
-                {item.gross}
-              </td>
-
-              <td className="report-td">
-                {item.tax}
-              </td>
-
-              <td className="report-td">
-                {item.net}
-              </td>
-
-            </tr>
-
-          ))}
-
-        </tbody>
-
-      </table>
-
-    </div>
-
   </div>
-
-</div>
-</div>
-    </div>
-  );
+);
 }

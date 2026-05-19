@@ -71,6 +71,14 @@ export default function ReportProductContent({
           <FileSpreadsheet size={24} />
         </button>
 
+
+        <button
+          onClick={handlePrint}
+          className="toolbar-btn"
+        >
+          <Printer size={24} />
+        </button>
+
         
 
         <button onClick={handleZoomIn} className="toolbar-btn">

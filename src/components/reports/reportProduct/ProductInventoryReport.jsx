@@ -68,7 +68,12 @@ export default function ProductInventoryReport() {
 
   return (
 
-    <div className="w-max bg-white">
+    <div
+  className="bg-white inline-block"
+  style={{
+    width: "3200px",
+  }}
+>
 
       {/* TOP */}
       <div className="grid grid-cols-12 border border-gray-400">
@@ -175,58 +180,58 @@ export default function ProductInventoryReport() {
       </div>
 
       {/* TABLE */}
-      <table className="border-collapse w-max">
+      <table className="border-collapse  ">
 
         <thead>
 
           {/* HEADER ROW 1 */}
           <tr>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[60px] text-center font-bold">
+            <th rowSpan={2} className=" whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[60px] text-center font-bold">
               STT
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[140px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[140px] text-center font-bold">
               NHÓM
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[100px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[100px] text-center font-bold">
               CODE
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[260px] text-center font-bold">
+            <th rowSpan={2} className=" whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[260px] text-center font-bold">
               TÊN HÀNG
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
+            <th rowSpan={2} className=" whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
               ĐVT
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4D35E] w-[130px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[130px] text-center font-bold">
               Giá trị hàng hóa
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#A9D18E] w-[120px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#A9D18E] w-[120px] text-center font-bold">
               Tồn Đầu
             </th>
 
-            <th colSpan={6} className="border border-gray-500 bg-[#F4D35E] text-center font-bold">
+            <th colSpan={6} className="  whitespace-nowrap border border-gray-500 bg-[#F4D35E] text-center font-bold">
               Số lượng nhập từ NCC
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
               Số lượng mua phía ngoài
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#F4CCCC] w-[120px] text-center text-red-600 font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#F4CCCC] w-[120px] text-center text-red-600 font-bold">
               Tổng nhập
             </th>
 
-            <th colSpan={5} className="border border-gray-500 bg-[#F4CCCC] text-center font-bold">
+            <th colSpan={5} className="  whitespace-nowrap border border-gray-500 bg-[#F4CCCC] text-center font-bold">
               Số lượng hủy hàng
             </th>
 
-            <th rowSpan={2} className="border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
+            <th rowSpan={2} className="  whitespace-nowrap border border-gray-500 bg-[#D9EAD3] w-[120px] text-center font-bold">
               Tồn Cuối (Kiểm Kê)
             </th>
 
@@ -303,12 +308,11 @@ export default function ProductInventoryReport() {
               Min
             </th>
 
-            <th className="border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
+            <th className=" whitespace-nowrap border border-gray-500 bg-[#F4D35E] w-[90px] text-center font-bold">
               Max
             </th>
 
-            <th className="border border-gray-500 bg-[#F4D35E] min-w-[220px] px-4 py-2 text-center text-black font-bold whitespace-nowrap">
-  Báo động
+<th className="border border-gray-500 bg-[#F4D35E] w-[220px] px-4 py-2 text-center text-black font-bold whitespace-nowrap">  Báo động
 </th>
 
           </tr>
@@ -321,105 +325,104 @@ export default function ProductInventoryReport() {
 
             <tr key={item.stt} className="h-[38px]">
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.stt}
               </td>
 
-              <td className="border border-gray-400 px-2">
+              <td className=" whitespace-nowrap border border-gray-400 px-2">
                 {item.group}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.code}
               </td>
 
-              <td className="border border-gray-400 px-2 font-semibold">
+              <td className=" whitespace-nowrap border border-gray-400 px-2 font-semibold">
                 {item.name}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.unit}
               </td>
 
-              <td className="border border-gray-400 text-right px-2 text-red-600">
+              <td className=" whitespace-nowrap border border-gray-400 text-right px-2 text-red-600">
                 {item.value}
               </td>
 
-              <td className="border border-gray-400 bg-[#A9D18E] text-center">
+              <td className=" whitespace-nowrap border border-gray-400 bg-[#A9D18E] text-center">
                 {item.stockStart}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week1}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week2}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week3}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week4}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week5}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.week6}
               </td>
 
-              <td className="border border-gray-400 bg-[#A9D18E] text-center">
+              <td className=" whitespace-nowrap border border-gray-400 bg-[#A9D18E] text-center">
                 {item.outside}
               </td>
 
-              <td className="border border-gray-400 bg-[#FCE4D6] text-center text-red-600 font-bold">
+              <td className=" whitespace-nowrap border border-gray-400 bg-[#FCE4D6] text-center text-red-600 font-bold">
                 {item.totalImport}
               </td>
 
-              <td className="border border-gray-400"></td>
+              <td className=" whitespace-nowrap border border-gray-400"></td>
 
-              <td className="border border-gray-400"></td>
+              <td className=" whitespace-nowrap border border-gray-400"></td>
 
-              <td className="border border-gray-400"></td>
+              <td className=" whitespace-nowrap border border-gray-400"></td>
 
-              <td className="border border-gray-400"></td>
+              <td className=" whitespace-nowrap border border-gray-400"></td>
 
-              <td className="border border-gray-400"></td>
+              <td className=" whitespace-nowrap border border-gray-400"></td>
 
-              <td className="border border-gray-400 bg-[#D9EAD3] text-center">
+              <td className=" whitespace-nowrap border border-gray-400 bg-[#D9EAD3] text-center">
                 {item.stockEnd}
               </td>
 
-              <td className="border border-gray-400 bg-[#FFF200] text-center text-red-600">
+              <td className=" whitespace-nowrap border border-gray-400 bg-[#FFF200] text-center text-red-600">
                 {item.sale}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.totalCost}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.usagePer}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.min}
               </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.max}
               </td>
 
-              <td className="border border-gray-400 bg-[#FF0000] min-w-[220px] px-4 text-white text-center font-bold whitespace-nowrap">
-  {item.warning}
+<td className="border border-gray-400 bg-[#FF0000] w-[220px] px-4 text-white text-center font-bold whitespace-nowrap">  {item.warning}
 </td>
 
-              <td className="border border-gray-400 text-center">
+              <td className=" whitespace-nowrap border border-gray-400 text-center">
                 {item.order}
               </td>
 
