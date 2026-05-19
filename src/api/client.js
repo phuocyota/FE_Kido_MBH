@@ -100,7 +100,7 @@ export const parseResponse = async (response) => {
 
     localStorage.clear();
 
-    window.location.href = "/login";
+    window.location.href = "/kitchen/login";
 
     return;
   }

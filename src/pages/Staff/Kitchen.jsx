@@ -31,7 +31,7 @@ const avatar =
   // đăng xuất 
   const handleLogout = () => {
   localStorage.clear();
-  navigate("/login");
+  navigate("/kitchen/login");
 };
 
  
@@ -43,7 +43,7 @@ useEffect(() => {
     localStorage.getItem("accessToken");
 
   if (!token) {
-    navigate("/login");
+    navigate("/kitchen/login");
     return;
   }
 

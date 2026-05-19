@@ -136,7 +136,7 @@ localStorage.setItem("avatar", authData.avatar || "");
             <img src={logo} alt="kido" className="w-full h-full object-cover" />
           </div>
           <div className="text-lg font-semibold text-gray-800 mt-3">
-            Đăng nhập hệ thống
+            Đăng nhập hệ thống nhân viên căn tin
           </div>
         </div>
 
@@ -182,7 +182,7 @@ localStorage.setItem("avatar", authData.avatar || "");
 
   <input
     type="text"
-    placeholder="Email"
+    placeholder="Email nhân viên"
     className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
     value={username}
     onChange={(e) => setUsername(e.target.value)}

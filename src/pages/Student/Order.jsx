@@ -83,36 +83,106 @@ export default function Order() {
     syncCart(nextCart);
     return nextCart;
   };
+
+  // LOADING PRODUCTS
+  const [loadingProducts, setLoadingProducts] =
+  useState(false);
  
 
-  useEffect(() => {
+//   useEffect(() => {
+
+//   const loadOrderingData = async () => {
+
+//     const token =
+//       localStorage.getItem(
+//         "accessToken"
+//       );
+
+//     try {
+
+//       // 👇 MAX PRICE TỪ HEADER
+//       const maxPrice =
+//         Number(cardPrice);
+
+//       // 👇 GỌI API FILTER
+//       const fullCategories =
+//         await getProductsByPrice(
+//           0,
+//           maxPrice
+//         );
+
+//       setApiCategories(
+//         fullCategories
+//       );
+
+//       setApiProducts(
+//         fullCategories.flatMap(
+//           (category) =>
+//             category.products || []
+//         )
+//       );
+
+//       if (token) {
+//         await reloadCart();
+//       }
+
+//     } catch (error) {
+
+//       console.error(
+//         "Không tải được dữ liệu order từ API",
+//         error
+//       );
+
+//       alert(
+//         error?.message ||
+//         "Không tải được danh sách sản phẩm"
+//       );
+
+//     }
+//   };
+
+//   if(cardPrice){
+//     loadOrderingData();
+//   }
+
+// }, [cardPrice]);
+
+
+useEffect(() => {
+
+  if (!cardPrice) return;
+
+  if (loadingProducts) return;
 
   const loadOrderingData = async () => {
 
-    const token =
-      localStorage.getItem(
-        "accessToken"
-      );
-
     try {
 
-      // 👇 MAX PRICE TỪ HEADER
+      setLoadingProducts(true);
+
+      const token =
+        localStorage.getItem(
+          "accessToken"
+        );
+
       const maxPrice =
         Number(cardPrice);
 
-      // 👇 GỌI API FILTER
       const fullCategories =
         await getProductsByPrice(
           0,
           maxPrice
         );
 
-      setApiCategories(
-        fullCategories
-      );
+      const normalized =
+        Array.isArray(fullCategories)
+          ? fullCategories
+          : [];
+
+      setApiCategories(normalized);
 
       setApiProducts(
-        fullCategories.flatMap(
+        normalized.flatMap(
           (category) =>
             category.products || []
         )
@@ -125,24 +195,21 @@ export default function Order() {
     } catch (error) {
 
       console.error(
-        "Không tải được dữ liệu order từ API",
+        "LOAD PRODUCT ERROR:",
         error
       );
 
-      alert(
-        error?.message ||
-        "Không tải được danh sách sản phẩm"
-      );
+    } finally {
+
+      setLoadingProducts(false);
 
     }
+
   };
 
-  if(cardPrice){
-    loadOrderingData();
-  }
+  loadOrderingData();
 
 }, [cardPrice]);
-
   const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
   const products = apiProducts;
@@ -166,22 +233,46 @@ export default function Order() {
   //   }
   // }, []);
 
-  const filteredProducts = products.filter((p) => {
+//   const filteredProducts = products.filter((p) => {
 
-  const matchCategory =
-    activeCategory === "Tất cả" ||
-    p.category === activeCategory;
+//   const matchCategory =
+//     activeCategory === "Tất cả" ||
+//     p.category === activeCategory;
 
-  const matchPrice =
-    Number(cardPrice) === 5000
-      ? p.price <= 5000
-      : true;
+//   const matchPrice =
+//     Number(cardPrice) === 5000
+//       ? p.price <= 5000
+//       : true;
 
-  return (
-    matchCategory &&
-    matchPrice
-  );
-});
+//   return (
+//     matchCategory &&
+//     matchPrice
+//   );
+// });
+const filteredProducts =
+  products.filter((p) => {
+
+    const categoryName =
+      p.category?.name ||
+      p.categoryName ||
+      p.category ||
+      "";
+
+    const matchCategory =
+      activeCategory === "Tất cả" ||
+      categoryName === activeCategory;
+
+    const matchPrice =
+      Number(cardPrice) === 5000
+        ? Number(p.price) <= 5000
+        : true;
+
+    return (
+      matchCategory &&
+      matchPrice
+    );
+
+  });
 
   useEffect(() => {
 
@@ -388,6 +479,7 @@ export default function Order() {
       <div className="flex flex-1 overflow-hidden">
 
         <Left
+        key={cardPrice}
           categories={categories}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}

@@ -17,7 +17,7 @@ const App = () => {
 
       <Routes>
         {/* LOGIN (KHÔNG CÓ HEADER) */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/kitchen/login" element={<Login />} />
 
         {/* CÁC TRANG CÓ HEADER */}
         <Route
