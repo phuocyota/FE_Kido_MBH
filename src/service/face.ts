@@ -10,11 +10,18 @@ export const faceApi = {
     },
 
     // 📸 REGISTER FACE (cần token)
-    register: async (descriptor: number[], name: string) => {
-        const res = await api.post(`/face/register`, {
-            descriptor,
-            name
-        });
+    register: async (
+        data: {
+            name: string;
+            descriptors: number[][];
+        }
+    ) => {
+
+        const res = await api.post(
+            `/face/register`,
+            data,
+        );
+
         return res.data;
     },
 };

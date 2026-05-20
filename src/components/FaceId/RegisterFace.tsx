@@ -1,469 +1,758 @@
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
-import React from "react";
 import { faceApi } from "../../service/face";
 
-
 let modelsLoaded = false;
+const CAPTURE_STEPS = [
+  {
+    label: "🙂 Giữ chính diện",
+    type: "center",
+  },
 
+  {
+    label: "↩️ Quay nhẹ sang trái",
+    type: "left",
+  },
+
+  {
+    label: "↪️ Quay nhẹ sang phải",
+    type: "right",
+  },
+
+  {
+    label: "🔍 Đưa mặt lại gần",
+    type: "near",
+  },
+
+  {
+    label: "📏 Ra xa một chút",
+    type: "far",
+  },
+];
 const loadBaseModels = async () => {
-    if (modelsLoaded) return;
+  if (modelsLoaded) return;
 
-    const MODEL_URL = "/models";
+  const MODEL_URL = "/models";
 
-    await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-    ]);
+  await Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+  ]);
 
-    modelsLoaded = true;
+  modelsLoaded = true;
 };
 
 // 🎯 VẼ KHUNG GUIDE
 const drawGuideFrame = (
-    ctx: CanvasRenderingContext2D,
-    width: number,
-    height: number,
-    isValid: boolean
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  isValid: boolean,
 ) => {
-    const centerX = width / 2;
-    const centerY = height / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
 
-    const radiusX = width * 0.22;
-    const radiusY = height * 0.32;
+  const radiusX = width * 0.22;
+  const radiusY = height * 0.32;
 
-    // 🌑 overlay tối
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0, 0, width, height);
+  // 🌑 overlay tối
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(0, 0, width, height);
 
-    // 🧠 clear vùng oval (focus)
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.lineWidth = isValid ? 5 : 3;
-    // reset mode
-    ctx.globalCompositeOperation = "source-over";
+  // 🧠 clear vùng oval (focus)
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = isValid ? 5 : 3;
+  // reset mode
+  ctx.globalCompositeOperation = "source-over";
 
-    // 🎯 viền oval
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+  // 🎯 viền oval
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
 
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = isValid ? "#00ff88" : "#ff4444";
-    ctx.shadowBlur = isValid ? 20 : 0;
-    ctx.shadowColor = isValid ? "#00ff88" : "transparent";
-    ctx.stroke();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = isValid ? "#00ff88" : "#ff4444";
+  ctx.shadowBlur = isValid ? 20 : 0;
+  ctx.shadowColor = isValid ? "#00ff88" : "transparent";
+  ctx.stroke();
 
-    // ✨ text
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
+  // ✨ text
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
 
+  return {
+    x: centerX - radiusX,
+    y: centerY - radiusY,
+    frameWidth: radiusX * 2,
+    frameHeight: radiusY * 2,
+  };
+};
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const euclideanDistance = (a: number[], b: number[]) => {
+  let sum = 0;
 
-    return {
-        x: centerX - radiusX,
-        y: centerY - radiusY,
-        frameWidth: radiusX * 2,
-        frameHeight: radiusY * 2,
-    };
+  for (let i = 0; i < a.length; i++) {
+    const diff = a[i] - b[i];
+
+    sum += diff * diff;
+  }
+
+  return Math.sqrt(sum);
 };
 
 // 🎯 CHECK FACE TRONG KHUNG
 const isFaceInsideFrame = (faceBox: any, frame: any) => {
-    const faceCenterX = faceBox.x + faceBox.width / 2;
-    const faceCenterY = faceBox.y + faceBox.height / 2;
+  const faceCenterX = faceBox.x + faceBox.width / 2;
+  const faceCenterY = faceBox.y + faceBox.height / 2;
 
-    return (
-        faceCenterX > frame.x &&
-        faceCenterX < frame.x + frame.frameWidth &&
-        faceCenterY > frame.y &&
-        faceCenterY < frame.y + frame.frameHeight
-    );
+  return (
+    faceCenterX > frame.x &&
+    faceCenterX < frame.x + frame.frameWidth &&
+    faceCenterY > frame.y &&
+    faceCenterY < frame.y + frame.frameHeight
+  );
 };
 type Props = {
-    onSuccess?: () => void;
+  onSuccess?: () => void;
 };
 export default function RegisterFace({ onSuccess }: Props) {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState("⏳ Đang khởi tạo...");
-    const [name, setName] = useState("");
-    const validStartRef = useRef<number | null>(null);
-    const submittedRef = useRef(false);
-    const streamRef = useRef<MediaStream | null>(null);
-    const intervalRef = useRef<any>(null);
-    const statusRef = useRef("");
-    const statusTimeRef = useRef(0);
-    const descriptorsRef = useRef<number[][]>([]);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const lostFaceSinceRef = useRef<number | null>(null);
-    const isFrozenRef = useRef(false);
-    const updateStatus = (newStatus: string, minDuration = 800) => {
-        if (isFrozenRef.current) return; // 🔥 CHẶN TOÀN BỘ
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("⏳ Đang khởi tạo...");
+  const [name, setName] = useState("");
+  const validStartRef = useRef<number | null>(null);
+  const submittedRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const intervalRef = useRef<any>(null);
+  const statusRef = useRef("");
+  const statusTimeRef = useRef(0);
+  const descriptorsRef = useRef<number[][]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const lostFaceSinceRef = useRef<number | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const isFrozenRef = useRef(false);
+  const statusLockRef = useRef(false);
+  const isCapturingRef = useRef(false);
+  const currentStepRef = useRef("");
+  const stepStableCountRef = useRef(0);
+  const progressTimeoutRef = useRef<any>(null);
+  const [stepProgress, setStepProgress] = useState(0);
+  const updateStepProgressSmooth = (value: number, delay = 180) => {
+    if (progressTimeoutRef.current) {
+      clearTimeout(progressTimeoutRef.current);
+    }
 
-        const now = Date.now();
+    progressTimeoutRef.current = setTimeout(() => {
+      setStepProgress(value);
+    }, delay);
+  };
+  const updateStatus = (newStatus: string, duration = 1200) => {
+    if (statusLockRef.current) return;
 
-        if (statusRef.current === newStatus) return;
-        if (now - statusTimeRef.current < minDuration) return;
+    // 🔥 tránh render lại cùng text
+    if (statusRef.current === newStatus) {
+      return;
+    }
 
-        statusRef.current = newStatus;
-        statusTimeRef.current = now;
-        setStatus(newStatus);
+    statusRef.current = newStatus;
+
+    requestAnimationFrame(() => {
+      setStatus(newStatus);
+    });
+
+    statusLockRef.current = true;
+
+    setTimeout(() => {
+      statusLockRef.current = false;
+    }, duration);
+  };
+  // 🚀 INIT
+  const getFacePose = (detection: any) => {
+    const landmarks = detection.landmarks;
+
+    const nose = landmarks.getNose();
+
+    const jaw = landmarks.getJawOutline();
+
+    const leftJaw = jaw[0];
+    const rightJaw = jaw[16];
+
+    const centerX = (leftJaw.x + rightJaw.x) / 2;
+
+    const noseX = nose[3].x;
+
+    const yaw = noseX - centerX;
+
+    const box = detection.detection.box;
+
+    return {
+      yaw,
+      width: box.width,
+      height: box.height,
     };
-    // 🚀 INIT
+  };
+  const handleStartIfReady = async () => {
+    if (!name.trim()) {
+      updateStatus("⚠️ Vui lòng nhập tên");
+      return;
+    }
 
-    const handleStartIfReady = async () => {
+    if (!streamRef.current) {
+      isFrozenRef.current = false;
+
+      await startCamera();
+    }
+  };
+  // 🎥 DETECT
+  useEffect(() => {
+    if (loading) return;
+
+    const video = videoRef.current!;
+    const canvas = canvasRef.current!;
+
+    const handleLoaded = () => {
+      const video = videoRef.current!;
+      const canvas = canvasRef.current!;
+
+      if (!video.videoWidth || !video.videoHeight) return;
+
+      const displaySize = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      };
+
+      canvas.width = displaySize.width;
+      canvas.height = displaySize.height;
+
+      faceapi.matchDimensions(canvas, displaySize);
+
+      const lostFrameCountRef = { current: 0 };
+      const invalidFrameCountRef = { current: 0 };
+
+      const ctx = canvas.getContext("2d")!;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawGuideFrame(ctx, canvas.width, canvas.height, false);
+
+      intervalRef.current = setInterval(async () => {
+        // 🔥 đang capture thì bỏ qua realtime detect
+        if (isCapturingRef.current) return;
+
+        if (isFrozenRef.current) return;
+
+        if (!video || video.readyState !== 4) return;
+
         if (!name.trim()) {
-            setStatus("⚠️ Vui lòng nhập tên");
-            return;
+          updateStatus("⚠️ Vui lòng nhập tên trước");
+
+          return;
         }
 
-        if (!streamRef.current) {
-            isFrozenRef.current = false;
+        const detections = await faceapi
+          .detectAllFaces(
+            video,
+            new faceapi.TinyFaceDetectorOptions({
+              inputSize: 224,
+              scoreThreshold: 0.6,
+            }),
+          )
+          .withFaceLandmarks();
 
-            await startCamera();
-        }
-    };
-    // 🎥 DETECT
-    useEffect(() => {
-        if (loading) return;
+        const resized = faceapi.resizeResults(detections, displaySize);
 
-        const video = videoRef.current!;
-        const canvas = canvasRef.current!;
+        const ctx = canvas.getContext("2d")!;
 
-        const handleLoaded = () => {
-            const video = videoRef.current!;
-            const canvas = canvasRef.current!;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (!video.videoWidth || !video.videoHeight) return;
+        // 🎯 luôn vẽ frame trước
+        const frame = drawGuideFrame(ctx, canvas.width, canvas.height, false);
 
-            const displaySize = {
-                width: video.videoWidth,
-                height: video.videoHeight,
-            };
+        let isValid = false;
 
-            canvas.width = displaySize.width;
-            canvas.height = displaySize.height;
+        // =================================================
+        // CÓ KHUÔN MẶT
+        // =================================================
+        if (resized.length > 0) {
+          lostFaceSinceRef.current = null;
 
-            faceapi.matchDimensions(canvas, displaySize);
+          const box = resized[0].detection.box;
 
-            const lostFrameCountRef = { current: 0 };
-            const ctx = canvas.getContext("2d")!;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // check face trong khung
+          isValid = isFaceInsideFrame(box, frame);
 
-            drawGuideFrame(
-                ctx,
-                canvas.width,
-                canvas.height,
-                false
-            );
-            intervalRef.current = setInterval(async () => {
-                if (isFrozenRef.current) return;
+          // redraw frame theo trạng thái
+          drawGuideFrame(ctx, canvas.width, canvas.height, isValid);
 
-                if (!video || video.readyState !== 4) return;
+          // =============================================
+          // FACE VALID
+          // =============================================
+          if (isValid) {
+            lostFrameCountRef.current = 0;
+            invalidFrameCountRef.current = 0;
 
-
-                if (!name.trim()) {
-                    updateStatus("⚠️ Vui lòng nhập tên trước");
-                    return;
-                }
-
-                const detections = await faceapi
-                    .detectAllFaces(
-                        video,
-                        new faceapi.TinyFaceDetectorOptions({
-                            inputSize: 224,
-                            scoreThreshold: 0.6,
-                        })
-                    )
-                    .withFaceLandmarks();
-
-                const resized = faceapi.resizeResults(detections, displaySize);
-
-                const ctx = canvas.getContext("2d")!;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // 👉 LUÔN vẽ frame trước
-                const frame = drawGuideFrame(
-                    ctx,
-                    canvas.width,
-                    canvas.height,
-                    false
-                );
-
-                let isValid = false;
-
-                if (resized.length > 0) {
-                    lostFaceSinceRef.current = null;
-                    isFrozenRef.current = false;
-                    const box = resized[0].detection.box;
-
-                    // 👉 check sau khi đã có frame
-                    isValid = isFaceInsideFrame(box, frame);
-
-                    // 👉 vẽ lại frame theo trạng thái
-                    drawGuideFrame(
-                        ctx,
-                        canvas.width,
-                        canvas.height,
-                        isValid
-                    );
-
-                    if (isValid) {
-                        lostFrameCountRef.current = 0;
-
-                        if (!validStartRef.current) {
-                            validStartRef.current = Date.now();
-                        }
-
-                        const duration = Date.now() - validStartRef.current;
-                        const step = Math.min(5, Math.floor(duration / 300));
-
-                        updateStatus(`⏳ Đang xác nhận ${step}/5`);
-
-                        if (duration > 1500 && !submittedRef.current) {
-                            submittedRef.current = true;
-                            handleAutoSubmit();
-                        }
-
-                        const faces = await faceapi.extractFaces(video, [box]);
-
-                    } else {
-                        lostFrameCountRef.current++;
-
-                        if (lostFrameCountRef.current > 2) {
-                            updateStatus("📍 Đưa mặt vào khung");
-
-
-                            validStartRef.current = null;
-                            submittedRef.current = false;
-                        }
-                    }
-                } else {
-                    if (!lostFaceSinceRef.current) {
-                        lostFaceSinceRef.current = Date.now();
-                    }
-
-                    // chỉ reset nếu mất mặt > 1s
-                    if (Date.now() - lostFaceSinceRef.current > 1000) {
-                        updateStatus("❌ Không thấy khuôn mặt");
-                        validStartRef.current = null;
-                        submittedRef.current = false;
-                    }
-                }
-            }, 200);
-        };
-
-        const waitVideoReady = setInterval(() => {
-            const video = videoRef.current;
-            if (!video) return;
-
-            if (video.readyState === 4) {
-                clearInterval(waitVideoReady);
-                handleLoaded();
-            }
-        }, 100);
-
-        return () => {
-            video.removeEventListener("loadedmetadata", handleLoaded);
-            clearInterval(intervalRef.current);
-        };
-    }, [loading]);
-    const startCamera = async () => {
-        try {
-            setStatus("📷 Đang mở camera...");
-
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 320, height: 240 },
-            });
-
-            streamRef.current = stream;
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                await videoRef.current.play();
+            if (!validStartRef.current) {
+              validStartRef.current = Date.now();
             }
 
-            setStatus("⏳ Đang tải model...");
-            await loadBaseModels();
+            const duration = Date.now() - validStartRef.current;
 
-            setLoading(false);
-            setStatus("✅ Sẵn sàng");
-        } catch (err: any) {
-            setStatus("❌ Lỗi camera: " + err.message);
-        }
-    };
-    const stopCamera = () => {
-        // stop stream
-        streamRef.current?.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
+            const step = Math.min(5, Math.floor(duration / 300));
 
-        // clear interval
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+            updateStatus(`⏳ Đang xác nhận ${step}/5`, 500);
+
+            // ✅ giữ ổn định đủ lâu
+            if (duration > 1500 && !submittedRef.current) {
+              submittedRef.current = true;
+
+              // 🔥 tránh crash render loop
+              setTimeout(() => {
+                handleAutoSubmit();
+              }, 0);
+            }
+          }
+
+          // =============================================
+          // FACE INVALID
+          // =============================================
+          else {
+            lostFrameCountRef.current++;
+            invalidFrameCountRef.current++;
+
+            // ⚠️ chỉ reset sau nhiều frame fail
+            if (invalidFrameCountRef.current > 5) {
+              updateStatus("📍 Đưa mặt vào khung", 1200);
+
+              validStartRef.current = null;
+              submittedRef.current = false;
+            }
+          }
         }
+
+        // =================================================
+        // KHÔNG CÓ KHUÔN MẶT
+        // =================================================
+        else {
+          if (!lostFaceSinceRef.current) {
+            lostFaceSinceRef.current = Date.now();
+          }
+
+          const lostDuration = Date.now() - lostFaceSinceRef.current;
+
+          // chỉ báo lỗi nếu mất mặt > 1s
+          if (lostDuration > 1000) {
+            updateStatus("❌ Không thấy khuôn mặt", 1200);
+
+            validStartRef.current = null;
+            submittedRef.current = false;
+          }
+        }
+      }, 450);
     };
-    const resetAll = () => {
-        // 🛑 stop camera + loop
+
+    const waitVideoReady = setInterval(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      if (video.readyState === 4) {
+        clearInterval(waitVideoReady);
+        handleLoaded();
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(waitVideoReady);
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+
+      video.removeEventListener("loadedmetadata", handleLoaded);
+    };
+  }, [loading]);
+  const startCamera = async () => {
+    try {
+      updateStatus("📷 Đang mở camera...");
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240 },
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+
+      updateStatus("⏳ Đang tải model...");
+      await loadBaseModels();
+
+      setLoading(false);
+      updateStatus("✅ Sẵn sàng");
+    } catch (err: any) {
+      updateStatus("❌ Lỗi camera: " + err.message);
+    }
+  };
+  const stopCamera = () => {
+    // stop stream
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+
+    // clear interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+  const resetAll = () => {
+    // 🛑 stop camera + loop
+    stopCamera();
+
+    // 🧠 reset state logic
+    validStartRef.current = null;
+    submittedRef.current = false;
+    descriptorsRef.current = [];
+    lostFaceSinceRef.current = null;
+    isFrozenRef.current = false;
+
+    // 🧾 reset status control
+    statusRef.current = "";
+    statusTimeRef.current = 0;
+
+    // 🎯 reset UI
+    updateStatus("👉 Nhập tên để bắt đầu");
+    setCurrentStep(0);
+    // ⚙️ reset flags
+    setIsProcessing(false);
+    setLoading(true); // 🔥 cực quan trọng để re-init detect
+
+    // 📹 clear video
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+  // 📸 REGISTER
+  const handleAutoSubmit = async () => {
+    if (isProcessing) return;
+
+    isCapturingRef.current = true;
+    setIsProcessing(true);
+    try {
+      updateStatus("🧠 Đang phân tích khuôn mặt...");
+
+      const video = videoRef.current!;
+
+      // =================================================
+      // LOAD MODEL ONCE
+      // =================================================
+      if (!faceapi.nets.faceRecognitionNet.isLoaded) {
+        await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+      }
+
+      // =================================================
+      // RESET
+      // =================================================
+      descriptorsRef.current = [];
+
+      const collected: number[][] = [];
+
+      let failedFrames = 0;
+
+      // =================================================
+      // COLLECT MULTI FRAMES
+      // =================================================
+      let stepIndex = 0;
+
+      while (stepIndex < CAPTURE_STEPS.length) {
+        const step = CAPTURE_STEPS[stepIndex];
+
+        if (currentStepRef.current !== step.label) {
+          currentStepRef.current = step.label;
+
+          setCurrentStep(stepIndex);
+
+          updateStatus(step.label, 1500);
+        }
+
+        const detection = await faceapi
+          .detectSingleFace(
+            video,
+            new faceapi.TinyFaceDetectorOptions({
+              inputSize: 224,
+              scoreThreshold: 0.5,
+            }),
+          )
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          await sleep(400);
+
+          continue;
+        }
+
+        const pose = getFacePose(detection);
+
+        let passed = false;
+
+        // =================================================
+        // CHECK TỪNG STEP
+        // =================================================
+
+        switch (step.type) {
+          case "center":
+            passed = Math.abs(pose.yaw) < 18;
+
+            break;
+
+          case "left":
+            passed = pose.yaw > 18;
+            break;
+
+          case "right":
+            passed = pose.yaw < -18;
+            break;
+
+          case "near":
+            passed = pose.width > 170;
+
+            break;
+
+          case "far":
+            passed = pose.width < 140;
+
+            break;
+        }
+        if (!passed) {
+          stepStableCountRef.current = 0;
+
+          await sleep(300);
+
+          continue;
+        }
+
+        // phải giữ đúng liên tục
+        stepStableCountRef.current++;
+        updateStepProgressSmooth(stepStableCountRef.current);
+        if (stepStableCountRef.current < 3) {
+          await sleep(200);
+          continue;
+        }
+
+        stepStableCountRef.current = 3;
+        updateStepProgressSmooth(3, 250);
+        const descriptor = Array.from(detection.descriptor);
+        let isDuplicate = false;
+
+        for (const old of collected) {
+          const distance = euclideanDistance(descriptor, old);
+
+          if (distance < 0.08) {
+            isDuplicate = true;
+
+            break;
+          }
+        }
+
+        if (isDuplicate) {
+          updateStatus("🔄 Di chuyển nhẹ khuôn mặt");
+
+          await sleep(500);
+
+          continue;
+        }
+        collected.push(descriptor);
+
+        // 🎯 mỗi step lấy 3 frame
+        if (collected.length >= (stepIndex + 1) * 3) {
+          stepIndex++;
+
+          updateStatus("✅ OK");
+
+          await sleep(1200);
+          stepStableCountRef.current = 0;
+          setStepProgress(0);
+        }
+
+        await sleep(700);
+      }
+
+      // =================================================
+      // VALIDATE
+      // =================================================
+      if (collected.length < 10) {
+        submittedRef.current = false;
+
+        await showError("Không đủ dữ liệu khuôn mặt chất lượng cao");
+
+        submittedRef.current = false;
+
+        setIsProcessing(false);
+
+        return;
+      }
+
+      // =================================================
+      // SAVE
+      // =================================================
+      descriptorsRef.current = collected;
+
+      updateStatus("🚀 Đang mã hóa dữ liệu...");
+
+      const data = await faceApi.register({
+        name: name.trim(),
+
+        descriptors: descriptorsRef.current,
+      });
+
+      // =================================================
+      // TOKEN
+      // =================================================
+      localStorage.setItem("token", data.access_token);
+
+      // =================================================
+      // SUCCESS
+      // =================================================
+      setStatus("🎉 Đăng ký thành công");
+
+      setTimeout(() => {
         stopCamera();
 
-        // 🧠 reset state logic
-        validStartRef.current = null;
-        submittedRef.current = false;
-        descriptorsRef.current = [];
-        lostFaceSinceRef.current = null;
-        isFrozenRef.current = false;
+        resetAll();
 
-        // 🧾 reset status control
-        statusRef.current = "";
-        statusTimeRef.current = 0;
+        onSuccess?.();
+      }, 1200);
+    } catch (err: any) {
+      console.error(err);
 
-        // 🎯 reset UI
-        setStatus("👉 Nhập tên để bắt đầu");
+      const errorMsg =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err?.message ||
+        "Lỗi hệ thống";
 
-        // ⚙️ reset flags
-        setIsProcessing(false);
-        setLoading(true); // 🔥 cực quan trọng để re-init detect
+      await showError(errorMsg);
 
-        // 📹 clear video
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-    };
-    // 📸 REGISTER
-    const handleAutoSubmit = async () => {
-        try {
-            setStatus("⏳ Đang nhận diện...");
+      submittedRef.current = false;
+    } finally {
+      isCapturingRef.current = false;
 
-            const video = videoRef.current!;
+      setIsProcessing(false);
+    }
+  };
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!name.trim()) {
+        resetAll();
+      }
+    }, 300);
 
-            await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+    return () => clearTimeout(t);
+  }, [name]);
+  const showError = async (message: string, delay = 2500) => {
+    isFrozenRef.current = true;
 
-            const detection = await faceapi
-                .detectSingleFace(
-                    video,
-                    new faceapi.TinyFaceDetectorOptions({
-                        inputSize: 160,
-                        scoreThreshold: 0.5,
-                    })
-                )
-                .withFaceLandmarks()
-                .withFaceDescriptor();
+    setStatus("❌ " + message);
 
-            if (!detection) {
-                setStatus("❌ Không nhận diện được");
-                submittedRef.current = false;
-                return;
-            }
+    await sleep(delay);
 
-            const descriptor = Array.from(detection.descriptor);
+    isFrozenRef.current = false;
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 text-center relative">
+        {/* TITLE */}
+        <h1 className="text-xl font-bold mb-4">📸 Đăng ký khuôn mặt</h1>
 
-            // 🔥 CALL API
-            const data = await faceApi.register(descriptor, name);
+        {/* CAMERA */}
+        <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black">
+          {!streamRef.current && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white z-10">
+              👉 Nhập tên và bấm bắt đầu
+            </div>
+          )}
+          <video
+            ref={videoRef}
+            autoPlay
+            style={{ transform: "scaleX(-1)" }}
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
 
-            // 👉 lưu token
-            localStorage.setItem("token", data.access_token);
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            style={{ transform: "scaleX(-1)" }}
+          />
 
-            setStatus("🎉 Đăng ký thành công!");
+          {/* OVERLAY tối */}
+          <div className="absolute inset-0 bg-black/40" />
 
-            setTimeout(async () => {
-                stopCamera();
+          {/* KHUNG OVAL */}
 
-                resetAll();
-                /* setTimeout(() => {
-                    startCamera();
-                }, 300); */
+          {/* ICON trạng thái */}
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+            Quét khuôn mặt
+          </div>
+        </div>
 
-            }, 1000);
-        } catch (err: any) {
-            const errorMsg =
-                err?.response?.data?.message || // BE trả về message
-                err?.response?.data ||          // fallback nếu BE trả string
-                err.message ||                  // axios error
-                "Lỗi không xác định";
+        {/* STATUS */}
+        <div className="mt-4">
+          {/* STATUS TEXT */}
+          <div className="text-sm font-medium text-gray-700 min-h-[24px]">
+            {status}
+          </div>
 
-            setStatus("❌ " + errorMsg);
+          {/* STEP PROGRESS */}
+          {isProcessing && (
+            <div className="mt-3 bg-gray-100 rounded-2xl p-3">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-semibold text-gray-700">
+                  {CAPTURE_STEPS[currentStep]?.label}
+                </span>
 
-            setTimeout(() => {
-                setStatus("👉 Đặt khuôn mặt vào khung");
-                submittedRef.current = false;
-            }, 2000);
-        }
-    };
-    useEffect(() => {
-        const t = setTimeout(() => {
-            if (!name.trim()) {
-                resetAll();
-            }
-        }, 300);
+                <span className="text-blue-600 font-bold">
+                  {stepProgress}/3
+                </span>
+              </div>
 
-        return () => clearTimeout(t);
-    }, [name]);
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+              {/* PROGRESS BAR */}
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-700 ease-out"
+                  style={{
+                    width: `${(stepProgress / 3) * 100}%`,
+                  }}
+                />
+              </div>
 
-            {/* CARD */}
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 text-center relative">
+              {/* TOTAL STEP */}
+              <div className="text-xs text-gray-500 mt-2 text-right">
+                Bước {currentStep + 1}/{CAPTURE_STEPS.length}
+              </div>
+            </div>
+          )}
+        </div>
 
-                {/* TITLE */}
-                <h1 className="text-xl font-bold mb-4">
-                    📸 Đăng ký khuôn mặt
-                </h1>
-
-                {/* CAMERA */}
-                <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black">
-                    {!streamRef.current && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white z-10">
-                            👉 Nhập tên và bấm bắt đầu
-                        </div>
-                    )}
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover"
-                    />
-
-                    <canvas
-                        ref={canvasRef}
-                        className="absolute inset-0 w-full h-full"
-                    />
-
-                    {/* OVERLAY tối */}
-                    <div className="absolute inset-0 bg-black/40" />
-
-                    {/* KHUNG OVAL */}
-
-
-                    {/* ICON trạng thái */}
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-                        Quét khuôn mặt
-                    </div>
-                </div>
-
-                {/* STATUS */}
-                <div className="mt-4 text-sm font-medium text-gray-700 min-h-[24px]">
-                    {status}
-                </div>
-
-                {/* INPUT */}
-                <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onBlur={handleStartIfReady}
-                    placeholder="Nhập tên..."
-                    className="mt-3 border p-3 rounded-lg w-full 
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={handleStartIfReady}
+          placeholder="Nhập tên..."
+          className="mt-3 border p-3 rounded-lg w-full 
              text-gray-800 bg-white
              placeholder-gray-400
              focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-
-
-            </div>
-        </div>
-    );
+        />
+      </div>
+    </div>
+  );
 }
