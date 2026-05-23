@@ -5,6 +5,7 @@ import bg from "../../assets/anh-can-tin-so-2.png";
 
 import FaceVerify from "../../components/FaceId/FaceVerify";
 import { loginByCard } from "../../api/auth";
+import QRVerify from "../../components/FaceId/QRVerify";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -133,14 +134,85 @@ saveStudentSession(authData);
     }
   };
 
-  const handleFaceLoginSuccess = (student) => {
+const handleFaceLoginSuccess = async (student) => {
+
+  if (!student) {
+    alert("Không nhận diện được khuôn mặt");
+    return;
+  }
+
+  if (qrInFlightRef.current) return;
+
+  try {
+
+    qrInFlightRef.current = true;
+
+    const cardId = "0089615227";
+
+    // login thật bằng card
+    const authData = await loginByCard(cardId);
+
+    if (!authData?.accessToken) {
+      throw new Error("Đăng nhập thất bại");
+    }
+
+    saveAuthSession(authData);
+
+    // FE merge fake data
+    const studentData = {
+      id: authData.userId,
+
+      cardId,
+
+      // lấy thật từ DB
+      name:
+        student.name ||
+        authData.fullName,
+
+      // fake data
+      avatar:
+        "https://i.pravatar.cc/300",
+
+      school:
+        "THPT Demo",
+
+      class:
+        "12A1",
+
+      balance:
+        500000,
+
+      userType:
+        "student",
+    };
+
+    localStorage.setItem(
+      "student",
+      JSON.stringify(studentData)
+    );
+
+    localStorage.removeItem("amount");
+
     navigate("/order", {
       state: {
         type: "student",
-        student,
+        student: studentData,
       },
     });
-  };
+
+  } catch (error) {
+
+    alert(
+      error?.message ||
+      "Face ID không hợp lệ"
+    );
+
+  } finally {
+
+    qrInFlightRef.current = false;
+
+  }
+};
 
   useEffect(() => {
     const SCAN_RESET_MS = 500;
@@ -268,7 +340,7 @@ saveStudentSession(authData);
         {tab === "qr" && (
           <div className="mt-4">
 
-            <FaceVerify
+            <QRVerify
               mode="qr"
               onSuccess={(data) => {
                 handleQrPaymentScan(data?.value);
