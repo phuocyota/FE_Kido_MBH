@@ -13,14 +13,27 @@ export default function Welcome() {
   const qrInFlightRef = useRef(false);
   const scanBufferRef = useRef([]);
 
-  const saveAuthSession = (authData) => {
-    localStorage.setItem("accessToken", authData.accessToken);
-    localStorage.setItem("isLogin", "true");
+  const saveStudentSession = (authData) => {
+  sessionStorage.setItem(
+    "studentAccessToken",
+    authData.accessToken
+  );
 
-    if (authData.userId) localStorage.setItem("userId", authData.userId);
-    if (authData.userType) localStorage.setItem("userType", authData.userType);
-    if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
-  };
+  sessionStorage.setItem(
+    "studentUserId",
+    authData.userId
+  );
+
+  sessionStorage.setItem(
+    "studentUserType",
+    authData.userType
+  );
+
+  sessionStorage.setItem(
+    "studentDeviceId",
+    authData.deviceId
+  );
+};
 
   const normalizeCardId = (value) => {
     const raw = String(value || "").trim();
@@ -42,7 +55,7 @@ export default function Welcome() {
         throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
       }
 
-      saveAuthSession(authData);
+      saveStudentSession(authData);
 
       const student = {
         id: authData.userId,
@@ -92,8 +105,7 @@ export default function Welcome() {
         throw new Error("Dang nhap QR thanh cong nhung thieu accessToken");
       }
 
-      saveAuthSession(authData);
-
+saveStudentSession(authData);
       const student = {
         id: authData.userId,
         cardId,

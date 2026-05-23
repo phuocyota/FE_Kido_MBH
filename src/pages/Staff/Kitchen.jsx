@@ -5,8 +5,7 @@ import DoneOrders from "../../components/Staff/DoneOrders";
 import bgCantin from "../../assets/anh-can-tin-so-2.png";
 import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Order/Header";
- 
+import StaffHeader from "../../components/Staff/StaffHeader"; 
 
 
 export default function Kitchen() {
@@ -217,11 +216,9 @@ useEffect(() => {
   className="h-screen flex flex-col bg-cover bg-center"
   style={{ backgroundImage: `url(${bgCantin})` }}
 >
-<Header
-  student={{
-    fullName,
-    avatar,
-  }}
+<StaffHeader
+  fullName={fullName}
+  avatar={avatar}
   onLogout={handleLogout}
 />
 

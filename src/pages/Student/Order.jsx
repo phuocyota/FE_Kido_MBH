@@ -469,6 +469,7 @@ const filteredProducts =
 
       {/* <Header student={student} amount={remaining ?? amount} setCardPrice={setCardPrice}/> */}
       <Header
+  
   student={student}
   amount={remaining ?? amount}
   originalAmount={originalAmount}

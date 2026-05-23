@@ -67,6 +67,9 @@ localStorage.setItem("avatar", authData.avatar || "");
         throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
       }
 
+      console.log("CARD LOGIN AUTH:", authData);
+
+
       saveAuthSession(authData);
       toast.success("Dang nhap bang the thanh cong");
       navigate("/");
