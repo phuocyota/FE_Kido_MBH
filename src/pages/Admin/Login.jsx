@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, User, Lock, ScanFace } from "lucide-react";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { Mail } from "lucide-react";
 import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import RegisterFace from "../../components/FaceId/RegisterFace";
+// import RegisterFace from "../../components/FaceId/RegisterFace";
 import { loginByCard } from "../../api/auth";
 import bgImage from "../../assets/anh-can-tin-so-2.png";
 import { loginCashier } from "../../api/auth";
@@ -156,7 +156,8 @@ localStorage.setItem("avatar", authData.avatar || "");
             Tài khoản
           </button>
 
-          <button
+          {/* Face ID disabled: QR-only flow */}
+          {/* <button
             onClick={() => setTab("face")}
             className={`flex-1 py-2 text-sm font-medium ${tab === "face"
               ? "border-b-2 border-blue-600 text-blue-600"
@@ -165,7 +166,7 @@ localStorage.setItem("avatar", authData.avatar || "");
           >
             <ScanFace size={16} className="inline mr-1" />
             Face ID
-          </button>
+          </button> */}
         </div>
 
         {/* ================= TAB CONTENT ================= */}
@@ -227,15 +228,15 @@ localStorage.setItem("avatar", authData.avatar || "");
           </form>
         )}
 
-        {/* 😊 FACE ID */}
-        {tab === "face" && (
+        {/* 😊 FACE ID disabled: QR-only flow */}
+        {/* {tab === "face" && (
           <RegisterFace
             onSuccess={() => {
               toast.success("Login bằng Face thành công 🎉");
               navigate("/");
             }}
           />
-        )}
+        )} */}
       </div>
     </div>
   );

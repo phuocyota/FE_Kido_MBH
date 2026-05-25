@@ -8,7 +8,7 @@ import Login from "./pages/Admin/Login";
 
 import Welcome from "./pages/Student/Welcome";
 import Kitchen from "./pages/Staff/Kitchen";
-import RegisterFace from "./components/FaceId/RegisterFace";
+// import RegisterFace from "./components/FaceId/RegisterFace";
 
 const App = () => {
   return (
@@ -27,7 +27,8 @@ const App = () => {
               {/* <Header /> */}
               <Routes>
                 <Route path="/" element={<Welcome />} />
-                <Route path="/register" element={<RegisterFace />} />
+                {/* Face register disabled: QR-only flow */}
+                {/* <Route path="/register" element={<RegisterFace />} /> */}
                 <Route path="/order" element={<Home />} />
 
                 <Route path="/kitchen" element={<Kitchen />} />
