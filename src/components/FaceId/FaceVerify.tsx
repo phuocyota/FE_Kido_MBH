@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { RefreshCw } from "lucide-react";
 // Face verification disabled: QR-only flow.
 // import * as faceapi from "face-api.js";
 // import { faceApi } from "../../service/face";
@@ -50,12 +51,15 @@ export default function FaceVerify({ onSuccess, mode = "qr" }: Props) {
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("⏳ Đang khởi tạo...");
+    const [facingMode, setFacingMode] = useState<"environment" | "user">(
+        "environment"
+    );
     // const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     // const loggedRef = useRef(false);
     const getVideoConstraints = () => {
         return {
-            facingMode: { ideal: "environment" },
+            facingMode: { ideal: facingMode },
             width: { ideal: 1280 },
             height: { ideal: 720 },
         };
@@ -70,53 +74,60 @@ export default function FaceVerify({ onSuccess, mode = "qr" }: Props) {
         }
     };
 
+    const startCamera = useCallback(async () => {
+        try {
+            setStatus("⏳ Đang mở camera...");
+            setLoading(true);
+
+            // Face model loading disabled: QR-only flow.
+            // const MODEL_URL = "/models";
+            // await Promise.all([...]);
+
+            // 🔥 stop camera cũ trước
+            stopCamera();
+
+            let stream: MediaStream;
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: getVideoConstraints(),
+                });
+            } catch (cameraError) {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                });
+            }
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+
+                await videoRef.current.play();
+            }
+
+            setLoading(false);
+
+            setStatus("📷 Đưa QR vào khung");
+        } catch (err) {
+            console.error(err);
+            setStatus("❌ Không mở được camera");
+            setLoading(false);
+        }
+    }, [facingMode]);
+
+    const switchCamera = () => {
+        setFacingMode((current) =>
+            current === "environment" ? "user" : "environment"
+        );
+    };
+
     // 🚀 LOAD MODEL + CAMERA
     useEffect(() => {
-        let stream: MediaStream;
-
-        const init = async () => {
-            try {
-                setStatus("⏳ Đang mở camera...");
-                setLoading(true);
-
-                // Face model loading disabled: QR-only flow.
-                // const MODEL_URL = "/models";
-                // await Promise.all([...]);
-
-                // 🔥 stop camera cũ trước
-                stopCamera();
-
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: getVideoConstraints(),
-                    });
-                } catch (cameraError) {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: true,
-                    });
-                }
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-
-                    await videoRef.current.play();
-                }
-
-                setLoading(false);
-
-                setStatus("📷 Đưa QR vào khung");
-            } catch (err) {
-                console.error(err);
-                setStatus("❌ Không mở được camera");
-            }
-        };
-
-        init();
+        startCamera();
 
         return () => {
             stopCamera();
         };
-    }, [mode]);
+    }, [mode, startCamera]);
 
     // 🎥 DETECT + LOGIN
     useEffect(() => {
@@ -263,6 +274,25 @@ export default function FaceVerify({ onSuccess, mode = "qr" }: Props) {
                     ref={canvasRef}
                     className="absolute top-0 left-0 w-full h-full"
                 />
+
+                <button
+                    type="button"
+                    onClick={switchCamera}
+                    className="
+                        absolute right-3 top-3
+                        flex h-11 w-11 items-center justify-center
+                        rounded-full
+                        bg-black/60 text-white
+                        shadow-lg backdrop-blur
+                        transition
+                        hover:bg-black/75
+                        active:scale-95
+                    "
+                    aria-label="Xoay camera"
+                    title="Xoay camera"
+                >
+                    <RefreshCw size={20} />
+                </button>
             </div>
 
             {/* STATUS */}

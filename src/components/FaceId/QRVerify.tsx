@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import jsQR from "jsqr";
 
 type Props = {
@@ -37,6 +38,9 @@ export default function QRVerify({ onSuccess }: Props) {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("⏳ Đang khởi tạo...");
     const [cameraError, setCameraError] = useState(false);
+    const [facingMode, setFacingMode] = useState<"environment" | "user">(
+        "environment"
+    );
 
     const stopCamera = () => {
         const video = videoRef.current;
@@ -60,7 +64,7 @@ export default function QRVerify({ onSuccess }: Props) {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { ideal: "environment" },
+                        facingMode: { ideal: facingMode },
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
                     },
@@ -84,7 +88,13 @@ export default function QRVerify({ onSuccess }: Props) {
             setLoading(false);
             setStatus("Kiểm tra quyền camera");
         }
-    }, []);
+    }, [facingMode]);
+
+    const switchCamera = () => {
+        setFacingMode((current) =>
+            current === "environment" ? "user" : "environment"
+        );
+    };
 
     const scanQRFromVideo = (video: HTMLVideoElement) => {
         if (!video.videoWidth || !video.videoHeight) return null;
@@ -210,6 +220,25 @@ export default function QRVerify({ onSuccess }: Props) {
                     ref={canvasRef}
                     className="absolute top-0 left-0 w-full h-full"
                 />
+
+                <button
+                    type="button"
+                    onClick={switchCamera}
+                    className="
+                        absolute right-3 top-3
+                        flex h-11 w-11 items-center justify-center
+                        rounded-full
+                        bg-black/60 text-white
+                        shadow-lg backdrop-blur
+                        transition
+                        hover:bg-black/75
+                        active:scale-95
+                    "
+                    aria-label="Xoay camera"
+                    title="Xoay camera"
+                >
+                    <RefreshCw size={20} />
+                </button>
             </div>
 
             <div
