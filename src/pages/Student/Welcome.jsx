@@ -12,6 +12,7 @@ export default function Welcome() {
   const [tab, setTab] = useState("card");
   const scanInFlightRef = useRef(false);
   const qrInFlightRef = useRef(false);
+  const faceInFlightRef = useRef(false);
   const scanBufferRef = useRef([]);
 
   const saveStudentSession = (authData) => {
@@ -141,11 +142,11 @@ const handleFaceLoginSuccess = async (student) => {
     return;
   }
 
-  if (qrInFlightRef.current) return;
+  if (faceInFlightRef.current) return;
 
   try {
 
-    qrInFlightRef.current = true;
+    faceInFlightRef.current = true;
 
     const cardId = "0089615227";
 
@@ -156,7 +157,7 @@ const handleFaceLoginSuccess = async (student) => {
       throw new Error("Đăng nhập thất bại");
     }
 
-    saveAuthSession(authData);
+    saveStudentSession(authData);
 
     // FE merge fake data
     const studentData = {
@@ -209,7 +210,7 @@ const handleFaceLoginSuccess = async (student) => {
 
   } finally {
 
-    qrInFlightRef.current = false;
+    faceInFlightRef.current = false;
 
   }
 };
@@ -341,7 +342,6 @@ const handleFaceLoginSuccess = async (student) => {
           <div className="mt-4">
 
             <QRVerify
-              mode="qr"
               onSuccess={(data) => {
                 handleQrPaymentScan(data?.value);
               }}
@@ -353,7 +353,6 @@ const handleFaceLoginSuccess = async (student) => {
         {tab === "face" && (
           <div className="mt-4">
             <FaceVerify
-              mode="face"
               onSuccess={handleFaceLoginSuccess}
             />
           </div>

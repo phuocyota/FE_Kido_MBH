@@ -1,51 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import * as faceapi from "face-api.js";
-import { faceApi } from "../../service/face";
+import React, { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 
-import React from "react";
 type Props = {
-    onSuccess?: (user: any) => void;
-    mode?: "face" | "qr";
+    onSuccess?: (data: { type: "qr"; value: string }) => void;
 };
-// 🎯 VẼ KHUNG GUIDE
-const drawGuideFrame = (ctx, width, height, isValid) => {
-    const centerX = width / 2;
-    const centerY = height / 2;
 
-    const radiusX = width * 0.22;
-    const radiusY = height * 0.32;
-
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalCompositeOperation = "source-over";
-
-    ctx.beginPath();
-    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
-
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = isValid ? "#00ff88" : "#ff4444";
-    ctx.stroke();
-
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.fillText("Đặt khuôn mặt vào khung", centerX, centerY - radiusY - 20);
-
-    return {
-        x: centerX - radiusX,
-        y: centerY - radiusY,
-        frameWidth: radiusX * 2,
-        frameHeight: radiusY * 2,
-    };
-};
-const drawQRFrame = (ctx, width, height) => {
+const drawQRFrame = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number
+) => {
     const size = Math.min(width, height) * 0.6;
 
     const x = (width - size) / 2;
@@ -76,38 +40,21 @@ const drawQRFrame = (ctx, width, height) => {
         y - 20
     );
 };
-// 🎯 CHECK FACE TRONG KHUNG
-const isFaceInsideFrame = (faceBox: any, frame) => {
-    const faceCenterX = faceBox.x + faceBox.width / 2;
-    const faceCenterY = faceBox.y + faceBox.height / 2;
-
-    return (
-        faceCenterX > frame.x &&
-        faceCenterX < frame.x + frame.frameWidth &&
-        faceCenterY > frame.y &&
-        faceCenterY < frame.y + frame.frameHeight
-    );
-};
-export default function QRVerify({ onSuccess, mode = "face" }: Props) {
+export default function QRVerify({ onSuccess }: Props) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const scanIntervalRef = useRef<any>(null);
+    const isCompletedRef = useRef(false);
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("⏳ Đang khởi tạo...");
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-    const loggedRef = useRef(false);
     const getVideoConstraints = () => {
-        if (mode === "qr") {
-            return {
-                facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-            };
-        }
-
         return {
-            facingMode: "user",
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
         };
     };
 
@@ -118,79 +65,89 @@ export default function QRVerify({ onSuccess, mode = "face" }: Props) {
             stream.getTracks().forEach((track) => track.stop());
             video.srcObject = null;
         }
+
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+        }
     };
 
-    // 🚀 LOAD MODEL + CAMERA
     useEffect(() => {
-        let stream: MediaStream;
+        let isMounted = true;
 
         const init = async () => {
             try {
                 setStatus("⏳ Đang mở camera...");
                 setLoading(true);
+                isCompletedRef.current = false;
 
-                const MODEL_URL = "/models";
+                stopCamera();
 
-                if (mode === "face") {
-                    // 🔥 chỉ load model khi xác thực khuôn mặt
-                    await Promise.all([
-                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-                    ]);
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    throw new Error("Trình duyệt không hỗ trợ mở camera");
                 }
 
-                // 🔥 stop camera cũ trước
-                stopCamera();
+                let stream: MediaStream;
 
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: getVideoConstraints(),
                     });
                 } catch (cameraError) {
-                    if (mode !== "qr") throw cameraError;
-
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: true,
                     });
                 }
 
+                if (!isMounted) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
+
+                streamRef.current = stream;
+
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
 
-                    await videoRef.current.play();
+                    await videoRef.current.play().catch(() => undefined);
                 }
 
-                setLoading(false);
-
-                setStatus(
-                    mode === "face"
-                        ? "👀 Đưa mặt vào khung"
-                        : "📷 Đưa QR vào khung"
-                );
+                if (isMounted) {
+                    setLoading(false);
+                    setStatus("📷 Đưa QR vào khung");
+                }
             } catch (err) {
-                console.error(err);
-                setStatus("❌ Không mở được camera");
+                console.error("QR camera init error:", err);
+
+                if (isMounted) {
+                    setStatus("❌ Không mở được camera");
+                }
             }
         };
 
         init();
 
         return () => {
+            isMounted = false;
             stopCamera();
         };
-    }, [mode]);
+    }, []);
 
-    // 🎥 DETECT + LOGIN
     useEffect(() => {
         if (loading) return;
 
         const video = videoRef.current!;
         const canvas = canvasRef.current!;
 
-        let interval: any;
-
         const start = () => {
+            if (
+                !video.videoWidth ||
+                !video.videoHeight ||
+                scanIntervalRef.current
+            ) {
+                return;
+            }
+
             const displaySize = {
                 width: video.videoWidth,
                 height: video.videoHeight,
@@ -199,132 +156,66 @@ export default function QRVerify({ onSuccess, mode = "face" }: Props) {
             canvas.width = displaySize.width;
             canvas.height = displaySize.height;
 
-            faceapi.matchDimensions(canvas, displaySize);
             const ctx = canvas.getContext("2d")!;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawQRFrame(ctx, canvas.width, canvas.height);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            interval = setInterval(async () => {
-                if (isLoggingIn) return;
-                if (mode === "qr") {
-                    const ctx = canvas.getContext("2d")!;
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    // ✅ QR thì vẽ khung QR
-                    drawQRFrame(
-                        ctx,
-                        canvas.width,
-                        canvas.height
-                    );
-
-                    const qrData = scanQRFromVideo(video);
-
-                    if (qrData) {
-                        setStatus("🎫 QR detected");
-
-                        stopCamera();
-                        clearInterval(interval);
-
-                        onSuccess?.({
-                            type: "qr",
-                            value: qrData,
-                        });
-
-                        return;
-                    }
-
-                    setStatus("📷 Đưa QR vào khung");
-                    return;
-                }
-                const detections = await faceapi
-                    .detectAllFaces(
-                        video,
-                        new faceapi.TinyFaceDetectorOptions()
-                    )
-                    .withFaceLandmarks()
-                    .withFaceDescriptors();
-
-                const resized = faceapi.resizeResults(
-                    detections,
-                    displaySize
-                );
+            scanIntervalRef.current = setInterval(() => {
+                if (isCompletedRef.current) return;
 
                 const ctx = canvas.getContext("2d")!;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawQRFrame(ctx, canvas.width, canvas.height);
 
-                // 🎯 LUÔN vẽ khung trước
-                let frame = drawGuideFrame(
-                    ctx,
-                    canvas.width,
-                    canvas.height,
-                    false
-                );
+                const qrData = scanQRFromVideo(video);
 
-                if (resized.length === 0) {
-                    setStatus("👀 Đưa mặt vào khung");
+                if (qrData) {
+                    isCompletedRef.current = true;
+                    setStatus("🎫 QR detected");
+                    stopCamera();
+
+                    if (scanIntervalRef.current) {
+                        clearInterval(scanIntervalRef.current);
+                        scanIntervalRef.current = null;
+                    }
+
+                    onSuccess?.({
+                        type: "qr",
+                        value: qrData,
+                    });
                     return;
                 }
 
-                const box = resized[0].detection.box;
-
-                // 🎯 check trong khung
-                const isValid = isFaceInsideFrame(box, frame);
-
-                // 🎯 vẽ lại khung với trạng thái
-                drawGuideFrame(
-                    ctx,
-                    canvas.width,
-                    canvas.height,
-                    isValid
-                );
-
-                // vẽ detection
-                faceapi.draw.drawDetections(canvas, resized);
-
-                // 🎯 lấy descriptor
-                const descriptor = Array.from(resized[0].descriptor);
-
-                // 🚀 LOGIN
-                if (!loggedRef.current && isValid) {
-                    loggedRef.current = true;
-                    setIsLoggingIn(true);
-                    setStatus("🔐 Đang đăng nhập...");
-
-                    try {
-                        const res = await faceApi.login(descriptor);
-
-                        localStorage.setItem("access_token", res.access_token);
-
-                        setStatus("🎉 Đăng nhập thành công");
-                        stopCamera();
-                        clearInterval(interval);
-                        onSuccess?.(res.user);
-
-                    } catch (err) {
-                        setStatus("❌ Không nhận diện");
-
-                        // cho phép thử lại
-                        loggedRef.current = false;
-                    } finally {
-                        setIsLoggingIn(false);
-                    }
-                }
+                setStatus("📷 Đưa QR vào khung");
             }, 300);
         };
 
         const waitVideo = setInterval(() => {
-            if (video.readyState >= 2) {
+            if (video.readyState >= 2 && video.videoWidth && video.videoHeight) {
                 clearInterval(waitVideo);
                 start();
             }
         }, 100);
 
+        video.addEventListener("loadedmetadata", start);
+        video.addEventListener("play", start);
+        start();
+
         return () => {
+            video.removeEventListener("loadedmetadata", start);
+            video.removeEventListener("play", start);
+
             clearInterval(waitVideo);
-            clearInterval(interval);
+
+            if (scanIntervalRef.current) {
+                clearInterval(scanIntervalRef.current);
+                scanIntervalRef.current = null;
+            }
+
+            stopCamera();
         };
-    }, [loading, isLoggingIn, mode]);
+    }, [loading, onSuccess]);
+
     const scanQRFromVideo = (video: HTMLVideoElement) => {
         if (!video.videoWidth || !video.videoHeight) return null;
 
@@ -337,7 +228,6 @@ export default function QRVerify({ onSuccess, mode = "face" }: Props) {
 
         if (!ctx) return null;
 
-        // 🔥 copy frame camera
         ctx.drawImage(
             video,
             0,
@@ -372,9 +262,7 @@ export default function QRVerify({ onSuccess, mode = "face" }: Props) {
         >
             {/* TITLE */}
             <p className="text-white/80 mb-6">
-                {mode === "face"
-                    ? "Đưa khuôn mặt vào khung để đăng nhập"
-                    : "Đưa mã QR vào camera để tiếp tục"}
+                Đưa mã QR vào camera để tiếp tục
             </p>
 
             {/* CAMERA WRAPPER */}
@@ -422,7 +310,7 @@ export default function QRVerify({ onSuccess, mode = "face" }: Props) {
 
             {/* TIP (mobile only) */}
             <div className="mt-3 text-xs text-gray-400 text-center sm:hidden">
-                Giữ điện thoại ngang tầm mặt và đủ ánh sáng
+                Giữ mã QR trong khung và đủ ánh sáng
             </div>
         </div>
     );

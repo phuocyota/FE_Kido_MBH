@@ -70,7 +70,9 @@ const isFaceInsideFrame = (
 export default function FaceVerify({ onSuccess }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const noFaceTimeoutRef = useRef<any>(null);
+  const detectIntervalRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("⏳ Đang khởi tạo...");
   const isLoggingInRef = useRef(false);
@@ -88,31 +90,78 @@ export default function FaceVerify({ onSuccess }: Props) {
       stream.getTracks().forEach((track) => track.stop());
       video.srcObject = null;
     }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
   };
   // 🚀 LOAD MODEL + CAMERA
   useEffect(() => {
+    let isMounted = true;
+
     const init = async () => {
-      const MODEL_URL = "/models";
+      try {
+        const MODEL_URL = "/models";
 
-      await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      ]);
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("Trình duyệt không hỗ trợ mở camera");
+        }
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        let stream: MediaStream;
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "user" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+        }
+
+        if (!isMounted) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => undefined);
+        }
+
+        if (isMounted) {
+          setLoading(false);
+          updateStatus("👀 Đưa mặt vào khung");
+        }
+      } catch (err) {
+        console.error("Face camera init error:", err);
+
+        if (isMounted) {
+          setLoading(false);
+          updateStatus("❌ Không mở được camera");
+        }
       }
-
-      setLoading(false);
-      updateStatus("👀 Đưa mặt vào khung");
     };
 
     init();
+
+    return () => {
+      isMounted = false;
+      stopCamera();
+    };
   }, []);
 
   // 🎥 DETECT + LOGIN
@@ -122,12 +171,14 @@ export default function FaceVerify({ onSuccess }: Props) {
     const video = videoRef.current!;
     const canvas = canvasRef.current!;
 
-    let interval: any;
-
     // thời gian mất mặt
     let noFaceSince: number | null = null;
 
     const start = () => {
+      if (!video.videoWidth || !video.videoHeight || detectIntervalRef.current) {
+        return;
+      }
+
       const displaySize = {
         width: video.videoWidth,
         height: video.videoHeight,
@@ -144,7 +195,7 @@ export default function FaceVerify({ onSuccess }: Props) {
 
       drawGuideFrame(ctx, canvas.width, canvas.height, false);
 
-      interval = setInterval(async () => {
+      detectIntervalRef.current = setInterval(async () => {
         // đang login thì bỏ qua detect
         if (isLoggingInRef.current) return;
 
@@ -234,15 +285,23 @@ export default function FaceVerify({ onSuccess }: Props) {
     };
 
     video.addEventListener("play", start);
+    video.addEventListener("loadedmetadata", start);
+    start();
 
     return () => {
       video.removeEventListener("play", start);
+      video.removeEventListener("loadedmetadata", start);
 
-      clearInterval(interval);
+      if (detectIntervalRef.current) {
+        clearInterval(detectIntervalRef.current);
+        detectIntervalRef.current = null;
+      }
 
       if (noFaceTimeoutRef.current) {
         clearTimeout(noFaceTimeoutRef.current);
       }
+
+      stopCamera();
     };
   }, [loading]);
 
