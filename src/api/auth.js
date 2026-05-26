@@ -7,11 +7,7 @@ const unwrapAuthResponse = (response) => {
   }
 
   const data = response?.data || response;
-  const accessToken =
-    data?.accessToken ||
-    data?.token ||
-    data?.jwt ||
-    data?.access_token;
+  const accessToken = data?.accessToken;
 
   return {
     ...data,

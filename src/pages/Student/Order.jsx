@@ -1,7 +1,7 @@
 
 
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import Header from "../../components/Order/Header";
@@ -22,6 +22,7 @@ import {
 
 export default function Order() {
   const location = useLocation();
+  const didLoadCartRef = useRef(false);
 
   useEffect(() => {
     const state = location.state;
@@ -78,14 +79,14 @@ export default function Order() {
   //     setCart(nextCart.items);
   //   }
   // };
-  const syncCart = (nextCart) => {
+  const syncCart = useCallback((nextCart) => {
 
   console.log("SYNC CART:", nextCart);
 
   if (Array.isArray(nextCart?.items)) {
     setCart(nextCart.items);
   }
-};
+}, []);
 
   const originalAmount =
   Number(localStorage.getItem("amount")) || amount;
@@ -95,7 +96,7 @@ export default function Order() {
   //   syncCart(nextCart);
   //   return nextCart;
   // };
-  const reloadCart = async () => {
+  const reloadCart = useCallback(async () => {
 
   const nextCart = await getMyCart();
 
@@ -104,7 +105,16 @@ export default function Order() {
   syncCart(nextCart);
 
   return nextCart;
-};
+}, [syncCart]);
+
+  useEffect(() => {
+    if ((!student && !amount) || didLoadCartRef.current) return;
+
+    didLoadCartRef.current = true;
+    reloadCart().catch((error) => {
+      console.error("INITIAL GET CART ERROR:", error);
+    });
+  }, [student, amount, reloadCart]);
 
   // LOADING PRODUCTS
   const [loadingProducts, setLoadingProducts] =
@@ -319,8 +329,8 @@ const filteredProducts =
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        const nextCart = await deleteCartItem(item.cartItemId);
-        syncCart(nextCart);
+        await deleteCartItem(item.cartItemId);
+        await reloadCart();
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -343,8 +353,8 @@ const filteredProducts =
 
     try {
       if (item.cartItemId) {
-        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-        syncCart(nextCart);
+        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev.map((p) =>
@@ -364,14 +374,13 @@ const filteredProducts =
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        let nextCart;
         if (item.qty <= 1) {
-          nextCart = await deleteCartItem(item.cartItemId);
+          await deleteCartItem(item.cartItemId);
         } else {
-          nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
         }
 
-        syncCart(nextCart);
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev
@@ -423,10 +432,10 @@ const filteredProducts =
 
         <Right
           cart={cart}
-          setCart={setCart}
           removeFromCart={removeFromCart}     // 👈 thêm
           increaseQty={increaseQty}           // 👈 thêm
           decreaseQty={decreaseQty}
+          reloadCart={reloadCart}
 
           total={total}
 

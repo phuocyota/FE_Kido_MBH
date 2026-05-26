@@ -8,12 +8,12 @@ import {
 
 export default function Right({
   cart,
-  setCart,
   total,
 
   removeFromCart,     // 👈 thêm
   increaseQty,        // 👈 thêm
   decreaseQty,
+  reloadCart,
 
   student,
 
@@ -202,16 +202,7 @@ export default function Right({
                       }
                     );
 
-                    setCart((prev) =>
-                      prev.map((p) =>
-                        p.id === noteModal.id
-                          ? {
-                            ...p,
-                            note: noteValue,
-                          }
-                          : p
-                      )
-                    );
+                    await reloadCart();
 
                     setNoteModal(null);
 

@@ -31,10 +31,11 @@ const App = () => {
           }
         />
 
-        <Route
+        {/* Face register disabled */}
+        {/* <Route
           path="/register"
           element={<RegisterFace />}
-        />
+        /> */}
 
         {/* KITCHEN LOGIN */}
         <Route
