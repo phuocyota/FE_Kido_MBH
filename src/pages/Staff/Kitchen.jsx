@@ -6,6 +6,7 @@ import bgCantin from "../../assets/anh-can-tin-so-2.png";
 import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
 import { useNavigate } from "react-router-dom";
 import StaffHeader from "../../components/Staff/StaffHeader"; 
+import { clearAuthSession, getAccessToken } from "../../api/session";
 
 
 export default function Kitchen() {
@@ -44,7 +45,8 @@ const avatar =
 
 useEffect(() => {
 
-  const token = localStorage.getItem("kitchenToken");
+  const token =
+    localStorage.getItem("accessToken");
 
   if (!token) {
     navigate("/kitchen/login");

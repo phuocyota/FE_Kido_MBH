@@ -2,6 +2,7 @@ import React from "react";
 
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { clearAuthSession } from "../../api/session";
 
 import { FaBars, FaUserCircle } from "react-icons/fa";
 
@@ -195,7 +196,7 @@ export default function Header() {
                       </div>
                       <div
                         onClick={() => {
-                          localStorage.removeItem("isLogin");
+                          clearAuthSession();
                           navigate("/");
                         }}
                         className="px-4 py-2 text-red-500 cursor-pointer"
