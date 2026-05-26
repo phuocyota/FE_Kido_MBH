@@ -3,8 +3,7 @@ import React, {
   useState,
 } from "react";
 
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+ 
 
 import ReportProductFilter from "../../components/reports/reportProduct/ReportProductFilter";
 
@@ -26,7 +25,7 @@ export default function ReportProduct() {
 
   const interests = [
     "Bán hàng",
-    "Lợi nhuận",
+    // "Lợi nhuận",
     "Xuất nhập tồn",
     // "Xuất hủy",
   ];

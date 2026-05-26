@@ -1,57 +1,9 @@
 import React from "react";
+import { productSaleReportData } from "../../../datas/productSaleReportData";
 
 export default function ProductSaleReport() {
 
-  const rows = [
-    {
-      stt: 1,
-      group: "Snack",
-      code: "",
-      name: "BÁNH OREO",
-      unit: "BỊCH",
-      usage: "10.0",
-      stock: "3.0",
-      usagePer: "0.1",
-      min: "2.6",
-      max: "3.3",
-      warning: "",
-      order: "",
-      adjust: "",
-    },
-
-    {
-      stt: 2,
-      group: "Snack",
-      code: "",
-      name: "BÁNH NABATI",
-      unit: "BỊCH",
-      usage: "",
-      stock: "",
-      usagePer: "",
-      min: "",
-      max: "",
-      warning: "",
-      order: "",
-      adjust: "",
-    },
-
-    {
-      stt: 3,
-      group: "Snack",
-      code: "",
-      name: "BÁNH OSTAR",
-      unit: "BỊCH",
-      usage: "",
-      stock: "",
-      usagePer: "",
-      min: "",
-      max: "",
-      warning: "",
-      order: "",
-      adjust: "",
-    },
-  ];
-
+  const rows = productSaleReportData;
   return (
 
   <div className="w-full bg-white">

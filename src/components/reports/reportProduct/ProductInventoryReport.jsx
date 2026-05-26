@@ -1,70 +1,9 @@
 import React from "react";
+import { productInventoryData } from "../../../datas/productInventoryData";
 
 export default function ProductInventoryReport() {
 
-  const rows = [
-    {
-      stt: 1,
-      group: "Hàng snack",
-      code: "0",
-      name: "BÁNH OREO",
-      unit: "GÓI",
-      value: "5,000",
-      stockStart: "50.0",
-      week1: "100",
-      week2: "100",
-      week3: "100",
-      week4: "100",
-      week5: "100",
-      week6: "0",
-      outside: "0",
-      totalImport: "500.0",
-      destroy1: "",
-      destroy2: "",
-      destroy3: "",
-      destroy4: "",
-      destroy5: "",
-      stockEnd: "50.0",
-      sale: "500.0",
-      totalCost: "2,500,000",
-      usagePer: "27.8",
-      min: "-",
-      max: "-",
-      warning: "Quá nhiều hàng tồn",
-      order: "",
-    },
-
-    {
-      stt: 2,
-      group: "Hàng snack",
-      code: "0",
-      name: "BÁNH NABATI",
-      unit: "GÓI",
-      value: "5,000",
-      stockStart: "50.0",
-      week1: "100",
-      week2: "100",
-      week3: "100",
-      week4: "100",
-      week5: "100",
-      week6: "0",
-      outside: "0",
-      totalImport: "500.0",
-      destroy1: "",
-      destroy2: "",
-      destroy3: "",
-      destroy4: "",
-      destroy5: "",
-      stockEnd: "50.0",
-      sale: "500.0",
-      totalCost: "2,500,000",
-      usagePer: "27.8",
-      min: "-",
-      max: "-",
-      warning: "Quá nhiều hàng tồn",
-      order: "",
-    },
-  ];
+ const rows = productInventoryData;
 
   return (
 
