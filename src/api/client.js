@@ -40,31 +40,7 @@ export const buildAssetUrl = (path) => {
   return `${BASE_URL}${normalizedPath}`;
 };
 
-// export const buildAssetUrl = (path) => {
-//   if (!path) return "";
-
-//   // fix thiếu dấu /
-//   if (!path.startsWith("/")) {
-//     path = "/" + path;
-//   }
-
-//   return `${BASE_URL}${path}`;
-// };
-
-// export const fetch = async (
-//   url,
-//   options = {},
-//   token = localStorage.getItem("accessToken")
-// ) => {
-//   return window.fetch(url, {
-//     cache: options.cache || "no-store",
-//     ...options,
-//     headers: {
-//       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-//       ...(options.headers || {}),
-//     },
-//   });
-// };
+ 
 
 export const fetch = async (
   url,
@@ -109,25 +85,7 @@ export const kitchenFetch = async (
   });
 
 };
-
-// export const parseResponse = async (response) => {
-//   const contentType = response.headers.get("content-type") || "";
-//   const isJson = contentType.includes("application/json");
-//   const payload = isJson ? await response.json() : await response.text();
-
-//   if (!response.ok) {
-//     const message =
-//       payload?.message ||
-//       payload?.error ||
-//       (typeof payload === "string" && payload) ||
-//       "Request failed";
-
-//     throw new Error(message);
-//   }
-
-//   return payload;
-// };
-
+ 
 
 export const parseResponse = async (response) => {
 
@@ -143,12 +101,7 @@ export const parseResponse = async (response) => {
 
   // 🔥 HANDLE 401
   if (response.status === 401) {
-    
-  //   console.error("401 URL:", response.url);
-  // console.error("LOCAL TOKEN:", localStorage.getItem("accessToken"));
-  // console.error("SESSION TOKEN:", sessionStorage.getItem("studentAccessToken"));
-
-
+  
 
     localStorage.clear();
 
