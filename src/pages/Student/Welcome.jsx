@@ -30,10 +30,6 @@ export default function Welcome() {
       scanInFlightRef.current = true;
       const authData = await loginByCard(cardId);
 
-      if (!authData?.accessToken) {
-        throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
-      }
-
       saveAuthSession(authData);
 
       const student = {
@@ -67,7 +63,7 @@ export default function Welcome() {
   };
 
   const handleQrPaymentScan = async (value) => {
-    const cardId = normalizeCardId(value);
+    const cardId = String(value || "").trim();
 
     if (!cardId) {
       alert("QR không hợp lệ");
@@ -79,10 +75,6 @@ export default function Welcome() {
     try {
       qrInFlightRef.current = true;
       const authData = await loginByCard(cardId);
-
-      if (!authData?.accessToken) {
-        throw new Error("Dang nhap QR thanh cong nhung thieu accessToken");
-      }
 
       saveAuthSession(authData);
       const student = {

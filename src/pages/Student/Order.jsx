@@ -70,7 +70,6 @@ export default function Order() {
   const [cardPrice,setCardPrice]=useState(10000);
 
   // console.log("LOCAL TOKEN:", localStorage.getItem("accessToken"));
-  // console.log("SESSION TOKEN:", sessionStorage.getItem("studentAccessToken"));
   // console.log("STUDENT:", localStorage.getItem("student"));
 
   // const syncCart = (nextCart) => {
@@ -95,7 +94,7 @@ export default function Order() {
   //   syncCart(nextCart);
   //   return nextCart;
   // };
-  const reloadCart = async () => {
+const reloadCart = async () => {
 
   const nextCart = await getMyCart();
 
@@ -105,6 +104,14 @@ export default function Order() {
 
   return nextCart;
 };
+
+useEffect(() => {
+  if (!student) return;
+
+  reloadCart().catch((error) => {
+    console.error("LOAD CART ERROR:", error);
+  });
+}, [student]);
 
   // LOADING PRODUCTS
   const [loadingProducts, setLoadingProducts] =
@@ -319,8 +326,8 @@ const filteredProducts =
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        const nextCart = await deleteCartItem(item.cartItemId);
-        syncCart(nextCart);
+        await deleteCartItem(item.cartItemId);
+        await reloadCart();
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -343,8 +350,8 @@ const filteredProducts =
 
     try {
       if (item.cartItemId) {
-        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-        syncCart(nextCart);
+        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev.map((p) =>
@@ -364,14 +371,13 @@ const filteredProducts =
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        let nextCart;
         if (item.qty <= 1) {
-          nextCart = await deleteCartItem(item.cartItemId);
+          await deleteCartItem(item.cartItemId);
         } else {
-          nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
         }
 
-        syncCart(nextCart);
+        await reloadCart();
       } else {
         setCart((prev) =>
           prev

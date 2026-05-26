@@ -1,7 +1,5 @@
 import { API_BASE_URL } from "./client";
 
- 
-
 export const API = {
   AUTH: {
     LOGIN: `${API_BASE_URL}/auth/login`,
@@ -64,4 +62,3 @@ export const API = {
       `${API_BASE_URL}/products/full`,
   },
 };
-

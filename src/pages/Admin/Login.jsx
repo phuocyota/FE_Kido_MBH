@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { loginByCard } from "../../api/auth";
 import bgImage from "../../assets/anh-can-tin-so-2.png";
 import { loginCashier } from "../../api/auth";
-import { saveAuthSession } from "../../api/session";
+import { isKitchenToken, saveAuthSession } from "../../api/session";
 
 // 👉 import component Face (bạn đã làm ở trên)
 
@@ -29,10 +29,11 @@ export default function Login() {
 
     const authData = await loginCashier({ username, password });
 
-    localStorage.setItem(
-  "kitchenToken",
-  authData.accessToken
-);
+    if (!isKitchenToken(authData.accessToken)) {
+      throw new Error("Tài khoản không có quyền bếp");
+    }
+
+    saveAuthSession(authData);
     localStorage.setItem("isLogin", "true");
     localStorage.setItem("userId", authData.userId);
     localStorage.setItem("userType", authData.userType);

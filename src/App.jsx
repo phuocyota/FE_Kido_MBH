@@ -20,10 +20,10 @@ const App = () => {
       <Routes>
 
         {/* STUDENT */}
-        <Route path="/" element={<Welcome />} />
+        <Route path={"/"} element={<Welcome />} />
 
         <Route
-          path="/order"
+          path={"/order"}
           element={
             <StudentRoute>
               <Home />
@@ -32,19 +32,19 @@ const App = () => {
         />
 
         <Route
-          path="/register"
+          path={"/register"}
           element={<RegisterFace />}
         />
 
-        {/* KITCHEN LOGIN */}
+        {/* CASHIER LOGIN */}
         <Route
-          path="/kitchen/login"
+          path={"/cashier/login"}
           element={<Login />}
         />
 
         {/* KITCHEN */}
         <Route
-          path="/kitchen"
+          path={"/kitchen"}
           element={
             <KitchenRoute>
               <Kitchen />

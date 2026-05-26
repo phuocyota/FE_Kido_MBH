@@ -67,9 +67,7 @@ export const kitchenFetch = async (
 ) => {
 
   const token =
-    localStorage.getItem(
-      "kitchenToken"
-    );
+    getAccessToken();
 
   return window.fetch(url,{
     cache: options.cache || "no-store",
@@ -96,18 +94,20 @@ export const parseResponse = async (response) => {
     contentType.includes("application/json");
 
   const payload = isJson
-    ? await response.json()
+    ? await response.json().catch(() => null)
     : await response.text();
 
   // 🔥 HANDLE 401
   if (response.status === 401) {
-  
+    clearAuthSession();
 
-    localStorage.clear();
+    const message =
+      payload?.message ||
+      payload?.error ||
+      (typeof payload === "string" && payload) ||
+      "Phiên đăng nhập không hợp lệ";
 
-    window.location.href = "/kitchen/login";
-
-    return;
+    throw new Error(message);
   }
 
   if (!response.ok) {
@@ -165,7 +165,8 @@ export const apiRequest = async (
 ) => {
 
   const token =
-    sessionStorage.getItem("studentAccessToken");
+    options.skipAuth ? "" : getAccessToken();
+  const { skipAuth, ...requestOptions } = options;
 
   const response =
     await fetch(
@@ -173,9 +174,9 @@ export const apiRequest = async (
       {
         headers:{
           "Content-Type":"application/json",
-          ...(options.headers || {})
+          ...(requestOptions.headers || {})
         },
-        ...options
+        ...requestOptions
       },
       token
     );
@@ -189,7 +190,10 @@ export const kitchenRequest = async (
 ) => {
 
   const token =
-    localStorage.getItem("kitchenToken");
+    options.skipAuth
+      ? ""
+      : getAccessToken();
+  const { skipAuth, ...requestOptions } = options;
 
   const response =
     await fetch(
@@ -197,9 +201,9 @@ export const kitchenRequest = async (
       {
         headers:{
           "Content-Type":"application/json",
-          ...(options.headers || {})
+          ...(requestOptions.headers || {})
         },
-        ...options
+        ...requestOptions
       },
       token
     );
