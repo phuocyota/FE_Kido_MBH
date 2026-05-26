@@ -14,6 +14,30 @@ export default function Welcome() {
   const scanBufferRef = useRef([]);
 
   const saveStudentSession = (authData) => {
+  localStorage.setItem(
+    "accessToken",
+    authData.accessToken
+  );
+
+  localStorage.setItem(
+    "isLogin",
+    "true"
+  );
+
+  if (authData.userId) {
+    localStorage.setItem(
+      "userId",
+      authData.userId
+    );
+  }
+
+  if (authData.userType) {
+    localStorage.setItem(
+      "userType",
+      authData.userType
+    );
+  }
+
   sessionStorage.setItem(
     "studentAccessToken",
     authData.accessToken

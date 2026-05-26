@@ -6,7 +6,17 @@ const unwrapAuthResponse = (response) => {
     throw new Error(response.message || "Dang nhap that bai");
   }
 
-  return response?.data || response;
+  const data = response?.data || response;
+  const accessToken =
+    data?.accessToken ||
+    data?.token ||
+    data?.jwt ||
+    data?.access_token;
+
+  return {
+    ...data,
+    accessToken,
+  };
 };
 
 export const loginByCard = async (cardId) => {
