@@ -7,21 +7,18 @@ import {
 } from "./client";
 
 import { API } from "./endpoint";
+import { getAccessToken } from "./session";
 
 // GET FULL CATEGORY + PRODUCTS
 export const getFullCategories =
   async () => {
-
-    // 👇 lấy token
-    const token =
-      localStorage.getItem("accessToken");
 
     const res = await fetch(
       API.CATEGORY.GET_FULL,
       {
         method: "GET",
       },
-      token // 👈 truyền token vào đây
+      getAccessToken()
     );
 
     return parseResponse(res);

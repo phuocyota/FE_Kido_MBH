@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { loginByCard } from "../../api/auth";
 import bgImage from "../../assets/anh-can-tin-so-2.png";
 import { loginCashier } from "../../api/auth";
+import { saveAuthSession } from "../../api/session";
 
 // 👉 import component Face (bạn đã làm ở trên)
 
@@ -22,28 +23,13 @@ export default function Login() {
   const scanBufferRef = useRef([]);
   const cardLoginInFlightRef = useRef(false);
 
-  const saveAuthSession = (authData) => {
-    localStorage.setItem("accessToken", authData.accessToken);
-    localStorage.setItem("isLogin", "true");
-
-    if (authData.userId) localStorage.setItem("userId", authData.userId);
-    if (authData.userType) localStorage.setItem("userType", authData.userType);
-    if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
-  };
-
   // nhân viên login 
   const handleLoginCashier = async () => {
   try {
 
     const authData = await loginCashier({ username, password });
 
-    localStorage.setItem("accessToken", authData.accessToken);
-    localStorage.setItem("isLogin", "true");
-    localStorage.setItem("userId", authData.userId);
-    localStorage.setItem("userType", authData.userType);
-    localStorage.setItem("deviceId", authData.deviceId);
-    localStorage.setItem("fullName", authData.fullName);
-localStorage.setItem("avatar", authData.avatar || "");
+    saveAuthSession(authData);
 
     toast.success("Đăng nhập thành công");
 

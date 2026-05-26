@@ -6,6 +6,7 @@ import bgCantin from "../../assets/anh-can-tin-so-2.png";
 import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
 import { useNavigate } from "react-router-dom";
 import StaffHeader from "../../components/Staff/StaffHeader"; 
+import { clearAuthSession, getAccessToken } from "../../api/session";
 
 
 export default function Kitchen() {
@@ -29,7 +30,7 @@ const avatar =
   "https://i.pravatar.cc/150";
   // đăng xuất 
   const handleLogout = () => {
-  localStorage.clear();
+  clearAuthSession();
   navigate("/kitchen/login");
 };
 
@@ -39,7 +40,7 @@ const avatar =
 useEffect(() => {
 
   const token =
-    localStorage.getItem("accessToken");
+    getAccessToken();
 
   if (!token) {
     navigate("/kitchen/login");

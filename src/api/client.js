@@ -1,3 +1,5 @@
+import { clearAuthSession, getAccessToken } from "./session";
+
 const RAW_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
@@ -52,7 +54,7 @@ export const buildAssetUrl = (path) => {
 export const fetch = async (
   url,
   options = {},
-  token = localStorage.getItem("accessToken")
+  token = getAccessToken()
 ) => {
   return window.fetch(url, {
     cache: options.cache || "no-store",
@@ -98,9 +100,12 @@ export const parseResponse = async (response) => {
   // 🔥 HANDLE 401
   if (response.status === 401) {
 
-    localStorage.clear();
+    clearAuthSession();
 
-    window.location.href = "/kitchen/login";
+    const currentPath = window.location.pathname;
+    window.location.href = currentPath.startsWith("/kitchen")
+      ? "/kitchen/login"
+      : "/";
 
     return;
   }
