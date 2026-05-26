@@ -69,84 +69,48 @@ export default function Order() {
   const [remaining, setRemaining] = useState(null);
   const [cardPrice,setCardPrice]=useState(10000);
 
+  // console.log("LOCAL TOKEN:", localStorage.getItem("accessToken"));
+  // console.log("SESSION TOKEN:", sessionStorage.getItem("studentAccessToken"));
+  // console.log("STUDENT:", localStorage.getItem("student"));
+
+  // const syncCart = (nextCart) => {
+  //   if (Array.isArray(nextCart?.items)) {
+  //     setCart(nextCart.items);
+  //   }
+  // };
   const syncCart = (nextCart) => {
-    if (Array.isArray(nextCart?.items)) {
-      setCart(nextCart.items);
-    }
-  };
+
+  console.log("SYNC CART:", nextCart);
+
+  if (Array.isArray(nextCart?.items)) {
+    setCart(nextCart.items);
+  }
+};
 
   const originalAmount =
   Number(localStorage.getItem("amount")) || amount;
 
+  // const reloadCart = async () => {
+  //   const nextCart = await getMyCart();
+  //   syncCart(nextCart);
+  //   return nextCart;
+  // };
   const reloadCart = async () => {
-    const nextCart = await getMyCart();
-    syncCart(nextCart);
-    return nextCart;
-  };
+
+  const nextCart = await getMyCart();
+
+  console.log("GET MY CART:", nextCart);
+
+  syncCart(nextCart);
+
+  return nextCart;
+};
 
   // LOADING PRODUCTS
   const [loadingProducts, setLoadingProducts] =
   useState(false);
  
-
-//   useEffect(() => {
-
-//   const loadOrderingData = async () => {
-
-//     const token =
-//       localStorage.getItem(
-//         "accessToken"
-//       );
-
-//     try {
-
-//       // 👇 MAX PRICE TỪ HEADER
-//       const maxPrice =
-//         Number(cardPrice);
-
-//       // 👇 GỌI API FILTER
-//       const fullCategories =
-//         await getProductsByPrice(
-//           0,
-//           maxPrice
-//         );
-
-//       setApiCategories(
-//         fullCategories
-//       );
-
-//       setApiProducts(
-//         fullCategories.flatMap(
-//           (category) =>
-//             category.products || []
-//         )
-//       );
-
-//       if (token) {
-//         await reloadCart();
-//       }
-
-//     } catch (error) {
-
-//       console.error(
-//         "Không tải được dữ liệu order từ API",
-//         error
-//       );
-
-//       alert(
-//         error?.message ||
-//         "Không tải được danh sách sản phẩm"
-//       );
-
-//     }
-//   };
-
-//   if(cardPrice){
-//     loadOrderingData();
-//   }
-
-// }, [cardPrice]);
-
+ 
 
 useEffect(() => {
 
@@ -214,41 +178,9 @@ useEffect(() => {
 
   const products = apiProducts;
 
-  //   useEffect(() => {
-  //   const data = JSON.parse(localStorage.getItem("student") || "null");
-  //   const qrAmount = localStorage.getItem("amount");
+ 
 
-  //   if (qrAmount) {
-  //     const amountNumber = Number(qrAmount);
-
-  //     setAmount(amountNumber);        
-  //     setRemaining(amountNumber);    
-  //     setStudent(null);
-  //   } else if (data) {
-  //     setStudent(data);
-  //     setAmount(null);
-  //   } else {
-
-  //     console.warn("Không có dữ liệu từ scan");
-  //   }
-  // }, []);
-
-//   const filteredProducts = products.filter((p) => {
-
-//   const matchCategory =
-//     activeCategory === "Tất cả" ||
-//     p.category === activeCategory;
-
-//   const matchPrice =
-//     Number(cardPrice) === 5000
-//       ? p.price <= 5000
-//       : true;
-
-//   return (
-//     matchCategory &&
-//     matchPrice
-//   );
-// });
+// console.log("CARD PRICE:", cardPrice);
 const filteredProducts =
   products.filter((p) => {
 
@@ -283,33 +215,65 @@ const filteredProducts =
 
   }, [cart]);
 
+   
+
   const addToCart = async (item) => {
 
-    try {
+  try {
 
-      console.log(
-        "CLICK ITEM:",
-        item
-      );
+    console.log("CLICK ITEM:", item);
 
-      // 👇 ADD API
-      await addCartItem({
-        productId: item.id,
-        quantity: 1,
-        note: "",
-      });
+    const result = await addCartItem({
+      productId: item.id,
+      quantity: 1,
+      note: "",
+    });
 
-      await reloadCart();
+    console.log("ADD RESULT:", result);
 
-    } catch (error) {
+    setCart(prev => {
 
-      console.log(
-        "ADD CART ERROR:",
-        error
-      );
+      const newItem =
+        result?.items?.[0];
 
-    }
-  };
+      if (!newItem) return prev;
+
+      const existing =
+        prev.find(
+          x =>
+            x.productId === newItem.productId
+        );
+
+      if (existing) {
+
+        return prev.map(x =>
+          x.productId === newItem.productId
+            ? {
+                ...x,
+                qty:
+                  (x.qty || 0) + 1,
+              }
+            : x
+        );
+
+      }
+
+      return [
+        ...prev,
+        newItem,
+      ];
+
+    });
+
+  } catch (error) {
+
+    console.log(
+      "ADD CART ERROR:",
+      error
+    );
+
+  }
+};
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 

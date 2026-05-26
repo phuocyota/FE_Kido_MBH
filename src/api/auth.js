@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, kitchenRequest } from "./client";
 import { API } from "./endpoint";
 
 const unwrapAuthResponse = (response) => {
@@ -36,7 +36,7 @@ export const loginStudent = ({ username, password, deviceId }) =>
   password,
 }) => {
 
-  const response = await apiRequest(
+  const response = await kitchenRequest(
     API.AUTH.LOGIN_CASHIER,
     {
       method: "POST",

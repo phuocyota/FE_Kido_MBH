@@ -37,7 +37,10 @@ export default function Login() {
 
     const authData = await loginCashier({ username, password });
 
-    localStorage.setItem("accessToken", authData.accessToken);
+    localStorage.setItem(
+  "kitchenToken",
+  authData.accessToken
+);
     localStorage.setItem("isLogin", "true");
     localStorage.setItem("userId", authData.userId);
     localStorage.setItem("userType", authData.userType);

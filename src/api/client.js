@@ -49,19 +49,63 @@ export const buildAssetUrl = (path) => {
 //   return `${BASE_URL}${path}`;
 // };
 
+// export const fetch = async (
+//   url,
+//   options = {},
+//   token = localStorage.getItem("accessToken")
+// ) => {
+//   return window.fetch(url, {
+//     cache: options.cache || "no-store",
+//     ...options,
+//     headers: {
+//       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+//       ...(options.headers || {}),
+//     },
+//   });
+// };
+
 export const fetch = async (
   url,
   options = {},
-  token = localStorage.getItem("accessToken")
+  token
 ) => {
-  return window.fetch(url, {
+
+  return window.fetch(url,{
     cache: options.cache || "no-store",
     ...options,
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
+    headers:{
+      ...(token
+        ? { Authorization:`Bearer ${token}` }
+        : {}),
+      ...(options.headers || {})
+    }
   });
+
+};
+
+export const kitchenFetch = async (
+  url,
+  options = {}
+) => {
+
+  const token =
+    localStorage.getItem(
+      "kitchenToken"
+    );
+
+  return window.fetch(url,{
+    cache: options.cache || "no-store",
+    ...options,
+    headers:{
+      ...(token
+        ? {
+            Authorization:`Bearer ${token}`
+          }
+        : {}),
+      ...(options.headers || {})
+    }
+  });
+
 };
 
 // export const parseResponse = async (response) => {
@@ -97,6 +141,12 @@ export const parseResponse = async (response) => {
 
   // 🔥 HANDLE 401
   if (response.status === 401) {
+    
+  //   console.error("401 URL:", response.url);
+  // console.error("LOCAL TOKEN:", localStorage.getItem("accessToken"));
+  // console.error("SESSION TOKEN:", sessionStorage.getItem("studentAccessToken"));
+
+
 
     localStorage.clear();
 
@@ -106,6 +156,10 @@ export const parseResponse = async (response) => {
   }
 
   if (!response.ok) {
+
+  //    console.log("ERROR STATUS:", response.status);
+  // console.log("ERROR URL:", response.url);
+  // console.log("ERROR PAYLOAD:", payload);
 
     const message =
       payload?.message ||
@@ -132,14 +186,62 @@ const buildUrl = (path) => {
   return buildApiUrl(path);
 };
 
-export const apiRequest = async (path, options = {}) => {
-  const response = await fetch(buildUrl(path), {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+// export const apiRequest = async (path, options = {}) => {
+//   const response = await fetch(buildUrl(path), {
+//     headers: {
+//       "Content-Type": "application/json",
+//       ...(options.headers || {}),
+//     },
+//     ...options,
+//   });
+
+//   return parseResponse(response);
+// };
+
+export const apiRequest = async (
+  path,
+  options = {}
+) => {
+
+  const token =
+    sessionStorage.getItem("studentAccessToken");
+
+  const response =
+    await fetch(
+      buildUrl(path),
+      {
+        headers:{
+          "Content-Type":"application/json",
+          ...(options.headers || {})
+        },
+        ...options
+      },
+      token
+    );
+
+  return parseResponse(response);
+};
+
+export const kitchenRequest = async (
+  path,
+  options = {}
+) => {
+
+  const token =
+    localStorage.getItem("kitchenToken");
+
+  const response =
+    await fetch(
+      buildUrl(path),
+      {
+        headers:{
+          "Content-Type":"application/json",
+          ...(options.headers || {})
+        },
+        ...options
+      },
+      token
+    );
 
   return parseResponse(response);
 };

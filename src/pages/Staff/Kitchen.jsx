@@ -28,8 +28,14 @@ const avatar =
   localStorage.getItem("avatar") ||
   "https://i.pravatar.cc/150";
   // đăng xuất 
+  
+  
   const handleLogout = () => {
-  localStorage.clear();
+
+  localStorage.removeItem(
+    "kitchenToken"
+  );
+
   navigate("/kitchen/login");
 };
 
@@ -38,8 +44,7 @@ const avatar =
 
 useEffect(() => {
 
-  const token =
-    localStorage.getItem("accessToken");
+  const token = localStorage.getItem("kitchenToken");
 
   if (!token) {
     navigate("/kitchen/login");

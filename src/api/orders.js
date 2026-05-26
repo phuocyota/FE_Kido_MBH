@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { kitchenRequest } from "./client";
 import { API } from "./endpoint";
 
 const unwrapList = (response) => {
@@ -109,22 +109,22 @@ export const normalizeOrder = (order, fallbackStatus) => {
 };
 
 export const getPendingCashOrders = async () => {
-  const response = await apiRequest(API.ORDERS.PENDING_CASH);
+  const response = await kitchenRequest(API.ORDERS.PENDING_CASH);
   return unwrapList(response).map((order) => normalizeOrder(order, "PENDING_PAYMENT"));
 };
 
 export const getPreparingOrders = async () => {
-  const response = await apiRequest(API.ORDERS.PREPARING);
+  const response = await kitchenRequest(API.ORDERS.PREPARING);
   return unwrapList(response).map((order) => normalizeOrder(order, "PREPARING"));
 };
 
 export const getDoneOrders = async () => {
-  const response = await apiRequest(API.ORDERS.DONE);
+  const response = await kitchenRequest(API.ORDERS.DONE);
   return unwrapList(response).map((order) => normalizeOrder(order, "DONE"));
 };
 
 export const getReadyToPickupOrders = async () => {
-  const response = await apiRequest(API.ORDERS.READY_TO_PICKUP);
+  const response = await kitchenRequest(API.ORDERS.READY_TO_PICKUP);
   return unwrapList(response).map((order) => normalizeOrder(order, "READY_TO_PICKUP"));
 };
 
@@ -147,21 +147,21 @@ export const getKitchenOrders = async () => {
 };
 
 export const updateOrderToReadyToPickup = async (orderId) => {
-  const response = await apiRequest(API.ORDERS.UPDATE_READY_TO_PICKUP(orderId), {
+  const response = await kitchenRequest(API.ORDERS.UPDATE_READY_TO_PICKUP(orderId), {
     method: "PUT",
   });
   return normalizeOrder(response?.data || response, "READY_TO_PICKUP");
 };
 
 export const updateOrderToDone = async (orderId) => {
-  const response = await apiRequest(API.ORDERS.UPDATE_DONE(orderId), {
+  const response = await kitchenRequest(API.ORDERS.UPDATE_DONE(orderId), {
     method: "PUT",
   });
   return normalizeOrder(response?.data || response, "DONE");
 };
 
 export const receiveCashPayment = async (orderId) => {
-  const response = await apiRequest(API.ORDERS.RECEIVE_CASH(orderId), {
+  const response = await kitchenRequest(API.ORDERS.RECEIVE_CASH(orderId), {
     method: "POST",
   });
   return normalizeOrder(response?.data || response, "PREPARING");
