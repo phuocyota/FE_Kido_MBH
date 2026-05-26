@@ -160,11 +160,6 @@ useEffect(() => {
 
       setLoadingProducts(true);
 
-      const token =
-        localStorage.getItem(
-          "accessToken"
-        );
-
       const maxPrice =
         Number(cardPrice);
 
@@ -187,10 +182,6 @@ useEffect(() => {
             category.products || []
         )
       );
-
-      if (token) {
-        await reloadCart();
-      }
 
     } catch (error) {
 
@@ -292,20 +283,34 @@ const filteredProducts =
         item
       );
 
+      const productId =
+        item.productId ||
+        item.id;
+
+      if (!productId) {
+        alert("Không xác định được món cần thêm");
+        return;
+      }
+
       // 👇 ADD API
-      await addCartItem({
-        productId: item.id,
+      const nextCart = await addCartItem({
+        productId,
         quantity: 1,
         note: "",
       });
 
-      await reloadCart();
+      syncCart(nextCart);
 
     } catch (error) {
 
       console.log(
         "ADD CART ERROR:",
         error
+      );
+
+      alert(
+        error?.message ||
+        "Không thêm được món vào giỏ"
       );
 
     }
@@ -397,8 +402,8 @@ const filteredProducts =
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        await deleteCartItem(item.cartItemId);
-        await reloadCart();
+        const nextCart = await deleteCartItem(item.cartItemId);
+        syncCart(nextCart);
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -421,8 +426,8 @@ const filteredProducts =
 
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-        await reloadCart();
+        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+        syncCart(nextCart);
       } else {
         setCart((prev) =>
           prev.map((p) =>
@@ -442,13 +447,14 @@ const filteredProducts =
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
+        let nextCart;
         if (item.qty <= 1) {
-          await deleteCartItem(item.cartItemId);
+          nextCart = await deleteCartItem(item.cartItemId);
         } else {
-          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+          nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
         }
 
-        await reloadCart();
+        syncCart(nextCart);
       } else {
         setCart((prev) =>
           prev

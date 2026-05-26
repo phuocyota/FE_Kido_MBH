@@ -33,7 +33,14 @@ export const normalizeCartItem = (item) => {
 
 export const normalizeCart = (response) => {
   const cart = unwrap(response);
-  const items = getCartItems(cart).map(normalizeCartItem);
+  const cartItems = getCartItems(cart);
+  const items = (
+    cartItems.length > 0
+      ? cartItems
+      : cart?.product || cart?.productId || cart?.name
+        ? [cart]
+        : []
+  ).map(normalizeCartItem);
 
   return {
     ...cart,
