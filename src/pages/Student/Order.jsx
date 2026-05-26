@@ -124,11 +124,6 @@ useEffect(() => {
 
       setLoadingProducts(true);
 
-      const token =
-        localStorage.getItem(
-          "accessToken"
-        );
-
       const maxPrice =
         Number(cardPrice);
 
@@ -151,10 +146,6 @@ useEffect(() => {
             category.products || []
         )
       );
-
-      if (token) {
-        await reloadCart();
-      }
 
     } catch (error) {
 
@@ -223,47 +214,14 @@ const filteredProducts =
 
     console.log("CLICK ITEM:", item);
 
-    const result = await addCartItem({
-      productId: item.id,
-      quantity: 1,
-      note: "",
-    });
+      // 👇 ADD API
+      await addCartItem({
+        productId: item.id,
+        quantity: 1,
+        note: "",
+      });
 
-    console.log("ADD RESULT:", result);
-
-    setCart(prev => {
-
-      const newItem =
-        result?.items?.[0];
-
-      if (!newItem) return prev;
-
-      const existing =
-        prev.find(
-          x =>
-            x.productId === newItem.productId
-        );
-
-      if (existing) {
-
-        return prev.map(x =>
-          x.productId === newItem.productId
-            ? {
-                ...x,
-                qty:
-                  (x.qty || 0) + 1,
-              }
-            : x
-        );
-
-      }
-
-      return [
-        ...prev,
-        newItem,
-      ];
-
-    });
+      await reloadCart();
 
   } catch (error) {
 
@@ -272,14 +230,24 @@ const filteredProducts =
       error
     );
 
-  }
-};
+    }
+  };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const isWalletBalanceInsufficient = () =>
+    paymentMethod !== "cash" &&
+    !amount &&
+    student &&
+    total > Number(student.balance || 0);
 
   const handlePayment = () => {
     if (cart.length === 0) {
       alert("Chưa có món");
+      return;
+    }
+
+    if (isWalletBalanceInsufficient()) {
+      alert("Số dư ví không đủ");
       return;
     }
 
@@ -307,8 +275,8 @@ const filteredProducts =
     try {
       setIsSubmitting(true);
 
-      if (paymentMethod !== "cash" && !amount && student && total > Number(student.balance || 0)) {
-        alert("Không đủ tiền");
+      if (isWalletBalanceInsufficient()) {
+        alert("Số dư ví không đủ");
         return;
       }
 
@@ -351,8 +319,8 @@ const filteredProducts =
   const removeFromCart = async (item) => {
     try {
       if (item.cartItemId) {
-        await deleteCartItem(item.cartItemId);
-        await reloadCart();
+        const nextCart = await deleteCartItem(item.cartItemId);
+        syncCart(nextCart);
       } else {
         setCart((prev) => prev.filter((p) => p.id !== item.id));
       }
@@ -375,8 +343,8 @@ const filteredProducts =
 
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
-        await reloadCart();
+        const nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty + 1 });
+        syncCart(nextCart);
       } else {
         setCart((prev) =>
           prev.map((p) =>
@@ -396,13 +364,14 @@ const filteredProducts =
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
+        let nextCart;
         if (item.qty <= 1) {
-          await deleteCartItem(item.cartItemId);
+          nextCart = await deleteCartItem(item.cartItemId);
         } else {
-          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+          nextCart = await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
         }
 
-        await reloadCart();
+        syncCart(nextCart);
       } else {
         setCart((prev) =>
           prev

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import bg from "../../assets/anh-can-tin-so-2.png";
 
-import FaceVerify from "../../components/FaceId/FaceVerify";
+import QRVerify from "../../components/FaceId/QRVerify";
 import { loginByCard } from "../../api/auth";
 
 export default function Welcome() {
@@ -14,6 +14,30 @@ export default function Welcome() {
   const scanBufferRef = useRef([]);
 
   const saveStudentSession = (authData) => {
+  localStorage.setItem(
+    "accessToken",
+    authData.accessToken
+  );
+
+  localStorage.setItem(
+    "isLogin",
+    "true"
+  );
+
+  if (authData.userId) {
+    localStorage.setItem(
+      "userId",
+      authData.userId
+    );
+  }
+
+  if (authData.userType) {
+    localStorage.setItem(
+      "userType",
+      authData.userType
+    );
+  }
+
   sessionStorage.setItem(
     "studentAccessToken",
     authData.accessToken
@@ -133,14 +157,15 @@ saveStudentSession(authData);
     }
   };
 
-  const handleFaceLoginSuccess = (student) => {
-    navigate("/order", {
-      state: {
-        type: "student",
-        student,
-      },
-    });
-  };
+  // Face login disabled: QR-only flow.
+  // const handleFaceLoginSuccess = (student) => {
+  //   navigate("/order", {
+  //     state: {
+  //       type: "student",
+  //       student,
+  //     },
+  //   });
+  // };
 
   useEffect(() => {
     const SCAN_RESET_MS = 500;
@@ -237,7 +262,8 @@ saveStudentSession(authData);
             📷 QR
           </button>
 
-          <button
+          {/* Face ID disabled: QR-only flow */}
+          {/* <button
             onClick={() => setTab("face")}
             className={`
               flex-1
@@ -251,7 +277,7 @@ saveStudentSession(authData);
             `}
           >
             😊 Face ID
-          </button>
+          </button> */}
 
         </div>
 
@@ -268,8 +294,7 @@ saveStudentSession(authData);
         {tab === "qr" && (
           <div className="mt-4">
 
-            <FaceVerify
-              mode="qr"
+            <QRVerify
               onSuccess={(data) => {
                 handleQrPaymentScan(data?.value);
               }}
@@ -278,14 +303,15 @@ saveStudentSession(authData);
           </div>
         )}
 
-        {tab === "face" && (
+        {/* Face ID disabled: QR-only flow */}
+        {/* {tab === "face" && (
           <div className="mt-4">
             <FaceVerify
               mode="face"
               onSuccess={handleFaceLoginSuccess}
             />
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

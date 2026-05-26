@@ -6,7 +6,7 @@ import Home from "./pages/Student/Order";
 import Login from "./pages/Admin/Login";
 import Welcome from "./pages/Student/Welcome";
 import Kitchen from "./pages/Staff/Kitchen";
-import RegisterFace from "./components/FaceId/RegisterFace";
+// import RegisterFace from "./components/FaceId/RegisterFace";
 
 import KitchenRoute from "./routes/KitchenRoute";
 import StudentRoute from "./routes/StudentRoute";
