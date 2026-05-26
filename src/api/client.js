@@ -107,11 +107,17 @@ export const parseResponse = async (response) => {
 
   if (!response.ok) {
 
-    const message =
+    const errorCode = payload?.errorCode || payload?.code;
+    const rawMessage =
       payload?.message ||
       payload?.error ||
       (typeof payload === "string" && payload) ||
       "Request failed";
+    const message =
+      errorCode === "INSUFFICIENT_BALANCE" ||
+      rawMessage === "Insufficient wallet balance"
+        ? "Số dư ví không đủ"
+        : rawMessage;
 
     throw new Error(message);
   }
