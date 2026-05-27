@@ -10,7 +10,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://be.kidocanteen.kidoedu.vn',
+        target: 'https://be.kidocanteen.kidoedu.vn',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
