@@ -13,6 +13,7 @@ import StoreInfo from "./pages/StoreInfo";
 import ReportEndDay from "./pages/reports/ReportEndDay";
 import ReportProduct from "./pages/reports/ReportProduct";
 import ListEmployee from "./pages/Employee/ListEmployee";
+import TimeSheet from "./pages/Employee/TimeSheet";
 
 
 const App = () => {
@@ -40,6 +41,7 @@ const App = () => {
                 <Route path="/report-end-day" element={<ReportEndDay />} />
                 <Route path="/report-product" element={<ReportProduct />} />
                 <Route path="/employees" element={<ListEmployee />} />
+                <Route path="/time-sheet" element={<TimeSheet />} />
 
               </Routes>
             </>

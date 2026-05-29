@@ -5,8 +5,7 @@ import {
   UserX,
   Smartphone,
 } from "lucide-react";
-import workScheduleData from "../../datas/workScheduleData";
-
+ 
 export default function EmployeeDetail({
   employee,
    onUpdate,
@@ -42,23 +41,51 @@ export default function EmployeeDetail({
    SCHEDULE STATES
    ========================= */}
 
+const [currentDate, setCurrentDate] = useState(new Date());
 
-// thêm month + week state
-const [currentMonth, setCurrentMonth] = useState(1);
+const getWeekDays = (date) => {
+  const current = new Date(date);
 
-const [scheduleWeek, setScheduleWeek] = useState(1);
+  const day =
+    current.getDay() === 0
+      ? 7
+      : current.getDay();
 
- 
-// lấy data tháng hiện tại
-const currentScheduleData =
-  workScheduleData[currentMonth];
+  const monday = new Date(current);
 
- 
-// lấy week hiện tại
-const currentWeekData =
-  currentScheduleData?.weeks?.find(
-    (w) => w.week === scheduleWeek
+  monday.setDate(
+    current.getDate() - day + 1
   );
+
+  return Array.from(
+    { length: 7 },
+    (_, index) => {
+      const d = new Date(monday);
+
+      d.setDate(
+        monday.getDate() + index
+      );
+
+      return d;
+    }
+  );
+};
+
+const weekDays =
+  getWeekDays(currentDate);
+
+const month =
+  weekDays[0].getMonth() + 1;
+
+const year =
+  weekDays[0].getFullYear();
+
+const weekNumber =
+  Math.ceil(
+    weekDays[0].getDate() / 7
+  );
+
+ 
 
   return (
     <div className="border border-blue-500 border-t-0 bg-white">
@@ -213,94 +240,53 @@ const currentWeekData =
 
       <div className="flex items-center gap-3">
 
-        {/* =========================
-            MONTH
-           ========================= */}
+  {/* MONTH */}
+  {/* <div className="h-[40px] px-4 rounded-xl border border-gray-300 bg-white flex items-center text-sm font-medium">
+    Th. {month}/{year}
+  </div> */}
 
-        {/*  
-            chọn tháng */}
-        <select
-          value={currentMonth}
-          onChange={(e) => {
+  {/* WEEK */}
+  <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white">
 
-            // reset week khi đổi tháng
-            setCurrentMonth(
-              Number(e.target.value)
-            );
+    <button
+      onClick={() => {
+        const prev =
+          new Date(currentDate);
 
-            setScheduleWeek(1);
-          }}
-          className="h-[38px] rounded-xl border border-gray-300 px-4 text-sm bg-white"
-        >
+        prev.setDate(
+          prev.getDate() - 7
+        );
 
-          {/* 
-              render month động */}
-          {Object.keys(workScheduleData).map(
-            (month) => (
-              <option
-                key={month}
-                value={month}
-              >
-                {
-                  workScheduleData[month]
-                    .month
-                }
-              </option>
-            )
-          )}
-        </select>
+        setCurrentDate(prev);
+      }}
+      className="w-10 h-10 flex items-center justify-center hover:bg-gray-50"
+    >
+      ❮
+    </button>
 
-        {/* =========================
-            WEEK
-           ========================= */}
+    <div className="px-4 font-medium whitespace-nowrap">
+      Tuần {weekNumber} - Th. {month}/{year}
+    </div>
 
-        <div className="h-[38px] rounded-xl border border-gray-300 bg-white flex items-center overflow-hidden">
+    <button
+      onClick={() => {
+        const next =
+          new Date(currentDate);
 
-          {/* PREV */}
-          <button
-            onClick={() =>
-              setScheduleWeek((prev) =>
-                prev > 1
-                  ? prev - 1
-                  : prev
-              )
-            }
-            className="w-[36px] h-full hover:bg-gray-50"
-          >
-            ❮
-          </button>
+        next.setDate(
+          next.getDate() + 7
+        );
 
-          {/*  
-              hiện month động */}
-          <div className="px-4 text-sm font-medium whitespace-nowrap">
-            Tuần {scheduleWeek} -{" "}
-            {
-              currentScheduleData?.month
-            }
-          </div>
+        setCurrentDate(next);
+      }}
+      className="w-10 h-10 flex items-center justify-center hover:bg-gray-50"
+    >
+      ❯
+    </button>
 
-          {/* NEXT */}
-          <button
-            onClick={() =>
-              setScheduleWeek((prev) =>
+  </div>
 
-                
-                // tránh lỗi undefined
-                prev <
-                (
-                  currentScheduleData
-                    ?.weeks?.length || 1
-                )
-                  ? prev + 1
-                  : prev
-              )
-            }
-            className="w-[36px] h-full hover:bg-gray-50"
-          >
-            ❯
-          </button>
-        </div>
-      </div>
+</div>
     </div>
 
     {/* =========================
@@ -324,53 +310,34 @@ const currentWeekData =
 
             {/*  
                 thêm fallback [] tránh map undefined */}
-            {(currentWeekData?.days || []).map(
-              (item) => (
+            {weekDays.map((date) => (
+  <th
+    key={date.toISOString()}
+    className="min-w-[110px] border-b border-r border-gray-200 px-3 py-4 text-center"
+  >
+    <div className="flex flex-col items-center">
 
-                <th
-                  key={item.date}
-                  className="min-w-[110px] border-b border-r border-gray-200 px-3 py-4 text-center"
-                >
+      <span className="text-sm text-gray-700">
+        {
+          [
+            "Chủ nhật",
+            "Thứ hai",
+            "Thứ ba",
+            "Thứ tư",
+            "Thứ năm",
+            "Thứ sáu",
+            "Thứ bảy",
+          ][date.getDay()]
+        }
+      </span>
 
-                  <div className="flex flex-col items-center">
+      <div className="mt-1 w-7 h-7 rounded-full flex items-center justify-center text-sm">
+        {date.getDate()}
+      </div>
 
-                    {/* DAY */}
-                    <span
-                      className={`text-sm ${
-                        Number(
-                          item.date
-                        ) === 28
-                          ? "text-blue-600 font-semibold"
-                          : "text-gray-700"
-                      }`}
-                    >
-
-                      {/*  
-                          CN -> Chủ nhật */}
-                      {item.day === "CN"
-                        ? "Chủ nhật"
-                        : item.day.replace(
-                            "Th.",
-                            "Thứ"
-                          )}
-                    </span>
-
-                    {/* DATE */}
-                    <div
-                      className={`mt-1 w-7 h-7 rounded-full flex items-center justify-center text-sm ${
-                        Number(
-                          item.date
-                        ) === 28
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-800"
-                      }`}
-                    >
-                      {item.date}
-                    </div>
-                  </div>
-                </th>
-              )
-            )}
+    </div>
+  </th>
+))}
           </tr>
         </thead>
 
@@ -399,27 +366,12 @@ const currentWeekData =
 
             {/*  
                 thêm fallback [] */}
-            {(currentWeekData?.days || []).map(
-              (item) => (
-
-                <td
-                  key={item.date}
-                  className="border-r border-b border-gray-200 h-[48px] text-center"
-                >
-
-                  {/*  
-                      full hiện cả sáng */}
-                  {(item.shift ===
-                    "morning" ||
-                    item.shift ===
-                      "full") && (
-                    <span className="text-blue-600 text-[22px] font-bold">
-                      ✓
-                    </span>
-                  )}
-                </td>
-              )
-            )}
+            {weekDays.map((date) => (
+  <td
+    key={date.toISOString()}
+    className="border-r border-b border-gray-200 h-[48px] text-center"
+  />
+))}
           </tr>
 
           {/* =========================
@@ -441,27 +393,12 @@ const currentWeekData =
 
             {/*  
                 thêm fallback [] */}
-            {(currentWeekData?.days || []).map(
-              (item) => (
-
-                <td
-                  key={item.date}
-                  className="border-r border-gray-200 h-[48px] text-center"
-                >
-
-                  {/*  
-                      full hiện cả chiều */}
-                  {(item.shift ===
-                    "afternoon" ||
-                    item.shift ===
-                      "full") && (
-                    <span className="text-blue-600 text-[22px] font-bold">
-                      ✓
-                    </span>
-                  )}
-                </td>
-              )
-            )}
+            {weekDays.map((date) => (
+  <td
+    key={date.toISOString()}
+    className="border-r border-gray-200 h-[48px] text-center"
+  />
+))}
           </tr>
 
           {/* =========================
@@ -481,23 +418,12 @@ const currentWeekData =
     </div>
   </td>
 
-  {(currentWeekData?.days || []).map(
-    (item) => (
-
-      <td
-        key={item.date}
-        className="border-r border-gray-200 h-[48px] text-center border-t border-gray-200"
-      >
-
-        {/* HIỆN KHI FULL */}
-        {item.shift === "full" && (
-          <span className="text-blue-600 text-[22px] font-bold">
-            ✓
-          </span>
-        )}
-      </td>
-    )
-  )}
+  {weekDays.map((date) => (
+  <td
+    key={date.toISOString()}
+    className="border-r border-gray-200 h-[48px] text-center border-t border-gray-200"
+  />
+))}
 </tr>
         </tbody>
       </table>
