@@ -36,7 +36,7 @@ const menu = [
   {
     name: "Nhân viên",
     children: [
-      { name: "Danh sách nhân viên", path: "/nhan-vien" },
+      { name: "Danh sách nhân viên", path: "/employees" },
       { name: "Lịch làm việc", path: "/lich-lam-viec" },
       { name: "Bảng chấm công", path: "/cham-cong" },
       { name: "Bảng lương", path: "/bang-luong" },
