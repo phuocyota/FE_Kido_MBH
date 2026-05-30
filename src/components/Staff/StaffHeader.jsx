@@ -10,7 +10,7 @@ export default function StaffHeader({
   onLogout,
 }) {
   return (
-    <div className="bg-blue-700 text-white flex items-center justify-between overflow-hidden">
+    <div className="h-[70px] shrink-0 bg-blue-700 text-white flex items-center justify-between overflow-hidden">
 
       {/* Banner */}
       <div className="flex-1 overflow-hidden relative h-[70px]">
