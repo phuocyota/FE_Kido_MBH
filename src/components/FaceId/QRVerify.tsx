@@ -6,6 +6,12 @@ type Props = {
     onSuccess?: (data: { type: "qr"; value: string }) => void;
 };
 
+let cachedStream: MediaStream | null = null;
+let cachedFacingMode: "environment" | "user" | null = null;
+
+const isStreamActive = (stream: MediaStream | null) =>
+    Boolean(stream?.getVideoTracks().some((track) => track.readyState === "live"));
+
 const drawQRFrame = (
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -35,6 +41,8 @@ const drawQRFrame = (
 export default function QRVerify({ onSuccess }: Props) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const scanCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const lastStatusRef = useRef("");
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("⏳ Đang khởi tạo...");
     const [cameraError, setCameraError] = useState(false);
@@ -42,37 +50,49 @@ export default function QRVerify({ onSuccess }: Props) {
         "environment"
     );
 
-    const stopCamera = () => {
+    const updateStatus = useCallback((nextStatus: string) => {
+        if (lastStatusRef.current === nextStatus) return;
+
+        lastStatusRef.current = nextStatus;
+        setStatus(nextStatus);
+    }, []);
+
+    const detachCamera = useCallback(() => {
         const video = videoRef.current;
 
         if (video && video.srcObject) {
-            const stream = video.srcObject as MediaStream;
-            stream.getTracks().forEach((track) => track.stop());
             video.srcObject = null;
         }
-    };
+    }, []);
 
     const startCamera = useCallback(async () => {
         try {
             setCameraError(false);
-            setStatus("⏳ Đang mở camera...");
+            updateStatus("⏳ Đang mở camera...");
             setLoading(true);
-            stopCamera();
+            detachCamera();
 
             let stream: MediaStream;
 
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: facingMode },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                    },
-                });
-            } catch (cameraError) {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                });
+            if (isStreamActive(cachedStream) && cachedFacingMode === facingMode) {
+                stream = cachedStream as MediaStream;
+            } else {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: { ideal: facingMode },
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                        },
+                    });
+                } catch (cameraError) {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                    });
+                }
+
+                cachedStream = stream;
+                cachedFacingMode = facingMode;
             }
 
             if (videoRef.current) {
@@ -81,14 +101,14 @@ export default function QRVerify({ onSuccess }: Props) {
             }
 
             setLoading(false);
-            setStatus("📷 Đưa QR vào khung");
+            updateStatus("📷 Đưa QR vào khung");
         } catch (err) {
             console.error(err);
             setCameraError(true);
             setLoading(false);
-            setStatus("Kiểm tra quyền camera");
+            updateStatus("Kiểm tra quyền camera");
         }
-    }, [facingMode]);
+    }, [detachCamera, facingMode, updateStatus]);
 
     const switchCamera = () => {
         setFacingMode((current) =>
@@ -96,10 +116,14 @@ export default function QRVerify({ onSuccess }: Props) {
         );
     };
 
-    const scanQRFromVideo = (video: HTMLVideoElement) => {
+    const scanQRFromVideo = useCallback((video: HTMLVideoElement) => {
         if (!video.videoWidth || !video.videoHeight) return null;
 
-        const tempCanvas = document.createElement("canvas");
+        if (!scanCanvasRef.current) {
+            scanCanvasRef.current = document.createElement("canvas");
+        }
+
+        const tempCanvas = scanCanvasRef.current;
         tempCanvas.width = video.videoWidth;
         tempCanvas.height = video.videoHeight;
 
@@ -117,15 +141,15 @@ export default function QRVerify({ onSuccess }: Props) {
 
         const code = jsQR(imageData.data, imageData.width, imageData.height);
         return code?.data || null;
-    };
+    }, []);
 
     useEffect(() => {
         startCamera();
 
         return () => {
-            stopCamera();
+            detachCamera();
         };
-    }, [startCamera]);
+    }, [detachCamera, startCamera]);
 
     useEffect(() => {
         if (loading) return;
@@ -151,8 +175,8 @@ export default function QRVerify({ onSuccess }: Props) {
                 const qrData = scanQRFromVideo(video);
 
                 if (qrData) {
-                    setStatus("🎫 QR detected");
-                    stopCamera();
+                    updateStatus("🎫 QR detected");
+                    detachCamera();
 
                     if (interval) {
                         clearInterval(interval);
@@ -163,7 +187,7 @@ export default function QRVerify({ onSuccess }: Props) {
                         value: qrData,
                     });
                 } else {
-                    setStatus("📷 Đưa QR vào khung");
+                    updateStatus("📷 Đưa QR vào khung");
                 }
             }, 300);
         };
@@ -182,7 +206,7 @@ export default function QRVerify({ onSuccess }: Props) {
                 clearInterval(interval);
             }
         };
-    }, [loading, onSuccess]);
+    }, [detachCamera, loading, onSuccess, scanQRFromVideo, updateStatus]);
 
     return (
         <div
