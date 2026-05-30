@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import bg from "../../assets/anh-can-tin-so-2.png";
 
 import QRVerify from "../../components/FaceId/QRVerify";
+import { warmCameraStream } from "../../components/FaceId/cameraStream";
 import { loginByCard } from "../../api/auth";
 import { saveAuthSession } from "../../api/session";
 
@@ -115,6 +116,10 @@ export default function Welcome() {
   // };
 
   useEffect(() => {
+    warmCameraStream("environment");
+  }, []);
+
+  useEffect(() => {
     const SCAN_RESET_MS = 500;
     const MIN_CARD_LENGTH = 6;
     const CARD_KEY_PATTERN = /^[0-9]$/;
@@ -177,7 +182,7 @@ export default function Welcome() {
     >
       <div className="absolute inset-0 bg-black/40"></div>
 
-      <div className="relative bg-blue/10 backdrop-blur-2xl border border-blue20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
+      <div className="relative bg-black/35 backdrop-blur-2xl border border-white/20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
         <div className="text-6xl mb-4">🍔</div>
 
         {/* TAB */}

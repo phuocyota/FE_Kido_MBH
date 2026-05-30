@@ -1,16 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import jsQR from "jsqr";
+import { getCameraStream } from "./cameraStream";
 
 type Props = {
     onSuccess?: (data: { type: "qr"; value: string }) => void;
 };
-
-let cachedStream: MediaStream | null = null;
-let cachedFacingMode: "environment" | "user" | null = null;
-
-const isStreamActive = (stream: MediaStream | null) =>
-    Boolean(stream?.getVideoTracks().some((track) => track.readyState === "live"));
 
 const drawQRFrame = (
     ctx: CanvasRenderingContext2D,
@@ -72,36 +67,15 @@ export default function QRVerify({ onSuccess }: Props) {
             setLoading(true);
             detachCamera();
 
-            let stream: MediaStream;
-
-            if (isStreamActive(cachedStream) && cachedFacingMode === facingMode) {
-                stream = cachedStream as MediaStream;
-            } else {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: { ideal: facingMode },
-                            width: { ideal: 640 },
-                            height: { ideal: 480 },
-                        },
-                    });
-                } catch (cameraError) {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: true,
-                    });
-                }
-
-                cachedStream = stream;
-                cachedFacingMode = facingMode;
-            }
+            const stream = await getCameraStream(facingMode);
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                await videoRef.current.play();
+                const playPromise = videoRef.current.play();
+                setLoading(false);
+                updateStatus("📷 Đưa QR vào khung");
+                await playPromise;
             }
-
-            setLoading(false);
-            updateStatus("📷 Đưa QR vào khung");
         } catch (err) {
             console.error(err);
             setCameraError(true);
