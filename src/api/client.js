@@ -1,7 +1,10 @@
+import { clearAuthSession, getAccessToken } from "./session";
+
 const RAW_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "";
+ 
 
 const RAW_API_PREFIX = import.meta.env.VITE_API_PREFIX || "/api";
 
@@ -37,49 +40,100 @@ export const buildAssetUrl = (path) => {
   return `${BASE_URL}${normalizedPath}`;
 };
 
-// export const buildAssetUrl = (path) => {
-//   if (!path) return "";
-
-//   // fix thiếu dấu /
-//   if (!path.startsWith("/")) {
-//     path = "/" + path;
-//   }
-
-//   return `${BASE_URL}${path}`;
-// };
+ 
 
 export const fetch = async (
   url,
   options = {},
-  token = localStorage.getItem("accessToken")
+  token
 ) => {
-  return window.fetch(url, {
+
+  return window.fetch(url,{
     cache: options.cache || "no-store",
     ...options,
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
+    headers:{
+      ...(token
+        ? { Authorization:`Bearer ${token}` }
+        : {}),
+      ...(options.headers || {})
+    }
   });
+
 };
 
-export const parseResponse = async (response) => {
-  const contentType = response.headers.get("content-type") || "";
-  const isJson = contentType.includes("application/json");
-  const payload = isJson ? await response.json() : await response.text();
+export const kitchenFetch = async (
+  url,
+  options = {}
+) => {
 
-  if (!response.ok) {
+  const token =
+    getAccessToken();
+
+  return window.fetch(url,{
+    cache: options.cache || "no-store",
+    ...options,
+    headers:{
+      ...(token
+        ? {
+            Authorization:`Bearer ${token}`
+          }
+        : {}),
+      ...(options.headers || {})
+    }
+  });
+
+};
+ 
+
+export const parseResponse = async (response) => {
+
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  const isJson =
+    contentType.includes("application/json");
+
+  const payload = isJson
+    ? await response.json().catch(() => null)
+    : await response.text();
+
+  // 🔥 HANDLE 401
+  if (response.status === 401) {
+    clearAuthSession();
+
     const message =
       payload?.message ||
       payload?.error ||
       (typeof payload === "string" && payload) ||
+      "Phiên đăng nhập không hợp lệ";
+
+    throw new Error(message);
+  }
+
+  if (!response.ok) {
+
+  //    console.log("ERROR STATUS:", response.status);
+  // console.log("ERROR URL:", response.url);
+  // console.log("ERROR PAYLOAD:", payload);
+
+    const errorCode = payload?.errorCode || payload?.code;
+    const rawMessage =
+      payload?.message ||
+      payload?.error ||
+      (typeof payload === "string" && payload) ||
       "Request failed";
+    const message =
+      errorCode === "INSUFFICIENT_BALANCE" ||
+      rawMessage === "Insufficient wallet balance"
+        ? "Số dư ví không đủ"
+        : rawMessage;
 
     throw new Error(message);
   }
 
   return payload;
 };
+
 
 const buildUrl = (path) => {
   if (/^https?:\/\//.test(path)) {
@@ -93,14 +147,66 @@ const buildUrl = (path) => {
   return buildApiUrl(path);
 };
 
-export const apiRequest = async (path, options = {}) => {
-  const response = await fetch(buildUrl(path), {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+// export const apiRequest = async (path, options = {}) => {
+//   const response = await fetch(buildUrl(path), {
+//     headers: {
+//       "Content-Type": "application/json",
+//       ...(options.headers || {}),
+//     },
+//     ...options,
+//   });
+
+//   return parseResponse(response);
+// };
+
+export const apiRequest = async (
+  path,
+  options = {}
+) => {
+
+  const token =
+    options.skipAuth ? "" : getAccessToken();
+  const { skipAuth, ...requestOptions } = options;
+
+  const response =
+    await fetch(
+      buildUrl(path),
+      {
+        headers:{
+          "Content-Type":"application/json",
+          ...(requestOptions.headers || {})
+        },
+        ...requestOptions
+      },
+      token
+    );
+
+  return parseResponse(response);
+};
+
+export const kitchenRequest = async (
+  path,
+  options = {}
+) => {
+
+  const token =
+    options.skipAuth
+      ? ""
+      : getAccessToken();
+  const { skipAuth, ...requestOptions } = options;
+
+  const response =
+    await fetch(
+      buildUrl(path),
+      {
+        headers:{
+          "Content-Type":"application/json",
+          ...(requestOptions.headers || {})
+        },
+        ...requestOptions
+      },
+      token
+    );
 
   return parseResponse(response);
 };

@@ -2,15 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.jpg";
 import bg_right from "../../assets/right_order.png";
+import {
+  updateCartItem,
+} from "../../api/cart";
 
 export default function Right({
   cart,
   setCart,
   total,
 
-   removeFromCart,     // 👈 thêm
+  removeFromCart,     // 👈 thêm
   increaseQty,        // 👈 thêm
-  decreaseQty,  
+  decreaseQty,
 
   student,
 
@@ -187,16 +190,39 @@ export default function Right({
               </button>
 
               <button
-                onClick={() => {
-                  setCart((prev) =>
-                    prev.map((p) =>
-                      p.id === noteModal.id
-                        ? { ...p, note: noteValue }
-                        : p
-                    )
-                  );
+                onClick={async () => {
 
-                  setNoteModal(null);
+                  try {
+
+                    await updateCartItem(
+                      noteModal.cartItemId,
+                      {
+                        quantity: noteModal.qty,
+                        note: noteValue,
+                      }
+                    );
+
+                    setCart((prev) =>
+                      prev.map((p) =>
+                        p.id === noteModal.id
+                          ? {
+                            ...p,
+                            note: noteValue,
+                          }
+                          : p
+                      )
+                    );
+
+                    setNoteModal(null);
+
+                  } catch (error) {
+
+                    alert(
+                      error?.message ||
+                      "Không cập nhật được ghi chú"
+                    );
+
+                  }
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer"
               >
@@ -300,8 +326,8 @@ export default function Right({
                       key={type}
                       onClick={() => setPickupType(type)}
                       className={`px-3 py-1 rounded-lg border border-gray-300 ${pickupType === type
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100"
                         }`}
                     >
                       {type}
@@ -318,8 +344,8 @@ export default function Right({
                   <button
                     onClick={() => setPaymentMethod("card")}
                     className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "card"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100"
                       }`}
                   >
                     Quẹt thẻ
@@ -328,8 +354,8 @@ export default function Right({
                   <button
                     onClick={() => setPaymentMethod("cash")}
                     className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "cash"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100"
                       }`}
                   >
                     Tiền mặt
