@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import mockExamData from "../../datas/mockExamData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import AddProductModal from "./AddProductModal";
 
 export default function TableProduct() {
   const data = mockExamData.products;
@@ -21,6 +22,8 @@ export default function TableProduct() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  const [openAddModal, setOpenAddModal] = useState(false);
+
   return (
     <div>
       {/* HEADER */}
@@ -28,13 +31,16 @@ export default function TableProduct() {
         <h1 className="text-xl font-semibold">Hàng hóa</h1>
 
         <div className="flex gap-2">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button
+            onClick={() => setOpenAddModal(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer  "
+          >
             + Thêm mới
           </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
             Import
           </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
             Xuất file
           </button>
         </div>
@@ -43,40 +49,40 @@ export default function TableProduct() {
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <div className="max-h-[900px] overflow-y-auto">
-    <table className="w-full text-sm">
-      
-      {/* HEADER */}
-      <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
-        <tr>
-          <th className="p-2"><input type="checkbox" /></th>
-          <th className="p-2 text-left">Mã hàng</th>
-          <th className="p-2 text-left">Tên hàng</th>
-          <th className="p-2 text-center">Loại</th>
-          <th className="p-2 text-center">Giá bán</th>
-          <th className="p-2 text-center">Giá vốn</th>
-          <th className="p-2 text-center">Tồn kho</th>
-          <th className="p-2 text-center">Đặt hàng</th>
-        </tr>
-      </thead>
+          <table className="w-full text-sm">
 
-      {/* BODY */}
-      <tbody>
-        {currentData.map((item, index) => (
-          <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
-            <td className="p-4 text-center"><input type="checkbox" /></td>
-            <td className="p-4">{item.code}</td>
-            <td className="p-4">{item.name}</td>
-            <td className="p-4 text-center">{item.category}</td>
-            <td className="p-4 text-center">{item.price}</td>
-            <td className="p-4 text-center">{item.cost}</td>
-            <td className="p-4 text-center">{item.stock}</td>
-            <td className="p-4 text-center">0</td>
-          </tr>
-        ))}
-      </tbody>
+            {/* HEADER */}
+            <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
+              <tr>
+                <th className="p-2"><input type="checkbox" /></th>
+                <th className="p-2 text-left">Mã hàng</th>
+                <th className="p-2 text-left">Tên hàng</th>
+                <th className="p-2 text-center">Loại</th>
+                <th className="p-2 text-center">Giá bán</th>
+                <th className="p-2 text-center">Giá vốn</th>
+                <th className="p-2 text-center">Tồn kho</th>
+                <th className="p-2 text-center">Đặt hàng</th>
+              </tr>
+            </thead>
 
-    </table>
-  </div>
+            {/* BODY */}
+            <tbody>
+              {currentData.map((item, index) => (
+                <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
+                  <td className="p-4 text-center"><input type="checkbox" /></td>
+                  <td className="p-4">{item.code}</td>
+                  <td className="p-4">{item.name}</td>
+                  <td className="p-4 text-center">{item.category}</td>
+                  <td className="p-4 text-center">{item.price}</td>
+                  <td className="p-4 text-center">{item.cost}</td>
+                  <td className="p-4 text-center">{item.stock}</td>
+                  <td className="p-4 text-center">0</td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
 
         {/* PAGINATION */}
         <div className="flex justify-between items-center p-4 border-t">
@@ -103,6 +109,18 @@ export default function TableProduct() {
           </div>
         </div>
       </div>
+
+
+      <AddProductModal
+  open={openAddModal}
+  onClose={() => setOpenAddModal(false)}
+  onSave={(data) => {
+    console.log("PRODUCT:", data);
+
+    // sau này gọi API tạo sản phẩm
+    // createProduct(data)
+  }}
+/>
     </div>
   );
 }
