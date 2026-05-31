@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "ag-grid-community": "^35.3.0",
     "ag-grid-react": "^35.3.0",
+    "axios": "^1.16.1",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "html2canvas": "^1.4.1",
