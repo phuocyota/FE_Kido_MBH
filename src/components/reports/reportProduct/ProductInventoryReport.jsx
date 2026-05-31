@@ -1,9 +1,57 @@
-import React from "react";
-import { productInventoryData } from "../../../datas/productInventoryData";
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { reportApi } from "../../../api";
 
 export default function ProductInventoryReport() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
- const rows = productInventoryData;
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  const fetchInventory = async () => {
+    setLoading(true);
+    try {
+      const result = await reportApi.getInventory();
+      // Map BE data to FE format
+      const mappedData = result.data?.map((item, index) => ({
+        stt: index + 1,
+        group: "Hàng hóa", // Default group since not provided by API
+        code: "",
+        name: item.name,
+        unit: item.unit,
+        value: "0",
+        stockStart: "0",
+        week1: "0",
+        week2: "0",
+        week3: "0",
+        week4: "0",
+        week5: "0",
+        week6: "0",
+        outside: "0",
+        totalImport: "0",
+        destroy1: "",
+        destroy2: "",
+        destroy3: "",
+        destroy4: "",
+        destroy5: "",
+        stockEnd: String(item.quantity || 0),
+        sale: "0",
+        totalCost: "0",
+        usagePer: "0",
+        min: "-",
+        max: "-",
+        warning: item.quantity < 10 ? "Sắp hết hàng" : "",
+        order: "",
+      })) || [];
+      setRows(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải báo cáo tồn kho");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
 
@@ -259,8 +307,20 @@ export default function ProductInventoryReport() {
         </thead>
 
         <tbody>
-
-          {rows.map((item) => (
+          {loading ? (
+            <tr>
+              <td colSpan={30} className="text-center py-10">
+                Đang tải dữ liệu...
+              </td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={30} className="text-center py-10">
+                Không có dữ liệu
+              </td>
+            </tr>
+          ) : (
+          rows.map((item) => (
 
             <tr key={item.stt} className="h-[38px]">
 
@@ -367,7 +427,8 @@ export default function ProductInventoryReport() {
 
             </tr>
 
-          ))}
+          ))
+          )}
 
         </tbody>
 

@@ -1,9 +1,43 @@
-import React from "react";
-import { productSaleReportData } from "../../../datas/productSaleReportData";
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { reportApi } from "../../../api";
 
 export default function ProductSaleReport() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const rows = productSaleReportData;
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Get top products as mock data for sale report
+      const result = await reportApi.getTopProducts();
+      // Map to FE format
+      const mappedData = result.map((item, index) => ({
+        stt: index + 1,
+        group: "Snack",
+        code: "",
+        name: item.productName,
+        unit: "BỊCH",
+        usage: String(item.totalQuantity),
+        stock: String(Math.floor(item.totalQuantity / 10)),
+        usagePer: "0.1",
+        min: "2.6",
+        max: "3.3",
+        warning: "",
+        order: "",
+        adjust: "",
+      }));
+      setRows(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải báo cáo");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
 
   <div className="w-full bg-white">
@@ -158,8 +192,20 @@ export default function ProductSaleReport() {
       </thead>
 
       <tbody>
-
-  {rows.map((item) => (
+        {loading ? (
+          <tr>
+            <td colSpan={13} className="text-center py-10">
+              Đang tải dữ liệu...
+            </td>
+          </tr>
+        ) : rows.length === 0 ? (
+          <tr>
+            <td colSpan={13} className="text-center py-10">
+              Không có dữ liệu
+            </td>
+          </tr>
+        ) : (
+        rows.map((item) => (
 
     <tr
       key={item.stt}
@@ -234,7 +280,8 @@ export default function ProductSaleReport() {
 
     </tr>
 
-  ))}
+  ))
+  )}
 
 </tbody>
 

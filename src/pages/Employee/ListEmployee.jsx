@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -6,19 +6,47 @@ import {
   LayoutGrid,
   UserCircle2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
-import employeeData from "../../datas/employeeData";
+import { employeeApi } from "../../api";
 import AddEmployeeModal from "../../components/Employee/AddEmployeeModal";
 import EmployeeDetail from "../../components/Employee/EmployeeDetail";
 
 export default function ListEmployee() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [modalTab, setModalTab] = useState("info");
   const [isEdit, setIsEdit] = useState(false);
+  
+  // API data state
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch employees on mount and when status changes
+  useEffect(() => {
+    fetchEmployees();
+  }, [status]);
+
+  const fetchEmployees = async () => {
+    setLoading(true);
+    try {
+      const statusParam = status === "all" ? undefined : status;
+      const data = await employeeApi.getAll(statusParam);
+      // Map BE fields to FE fields
+      const mappedData = data.map(emp => ({
+        ...emp,
+        name: emp.fullName, // Map fullName to name for FE compatibility
+      }));
+      setEmployees(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải danh sách nhân viên");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleToggleEmployee = (item) => {
 
@@ -33,21 +61,18 @@ export default function ListEmployee() {
 };
 
   const filteredEmployees = useMemo(() => {
-    return employeeData.filter((item) => {
+    if (!employees.length) return [];
+    
+    return employees.filter((item) => {
       const keyword = search.toLowerCase();
 
       const matchSearch =
-        item.name.toLowerCase().includes(keyword) ||
-        item.code.toLowerCase().includes(keyword);
+        item.name?.toLowerCase().includes(keyword) ||
+        item.code?.toLowerCase().includes(keyword);
 
-      const matchStatus =
-        status === "all"
-          ? true
-          : item.status === status;
-
-      return matchSearch && matchStatus;
+      return matchSearch;
     });
-  }, [search, status]);
+  }, [search, employees]);
 
   return (
     <div className="w-full min-h-screen bg-[#f5f6f8] p-3 md:p-5">
@@ -167,7 +192,13 @@ export default function ListEmployee() {
             </thead>
 
             <tbody>
-  {filteredEmployees.length > 0 ? (
+  {loading ? (
+    <tr>
+      <td colSpan={9} className="text-center py-14 text-gray-400">
+        Đang tải dữ liệu...
+      </td>
+    </tr>
+  ) : filteredEmployees.length > 0 ? (
     filteredEmployees.map((item) => (
       <React.Fragment key={item.id}>
 
@@ -266,6 +297,11 @@ export default function ListEmployee() {
   onClose={() => setOpenAddModal(false)}
   defaultTab={modalTab}
   isEdit={isEdit}
+  employee={isEdit ? selectedEmployee : null}
+  onSuccess={() => {
+    fetchEmployees();
+    setOpenAddModal(false);
+  }}
 />
     </div>
   );

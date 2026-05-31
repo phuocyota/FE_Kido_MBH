@@ -1,6 +1,4 @@
-import React from "react";
-import { reportData } from "../../../datas/reportDataEndDay";
-
+import React, { useState, useEffect } from "react";
 import {
   RotateCcw,
   Printer,
@@ -12,6 +10,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { reportApi } from "../../../api";
 
 export default function ReportContent({
   reportType,
@@ -27,9 +27,40 @@ export default function ReportContent({
   previewRef,
   exportRef,
 }) {
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch end of day report
+  useEffect(() => {
+    fetchReport();
+  }, []);
 
-  // ✅ DATA MẪU
+  const fetchReport = async () => {
+    setLoading(true);
+    try {
+      // Get today's date
+      const today = new Date().toISOString().split('T')[0];
+      const result = await reportApi.getEndOfDay(today, today);
+      // Map BE data to FE format
+      const mappedData = result.data?.map(item => ({
+        date: item.date,
+        code: item.code,
+        name: item.name,
+        price: item.price.toLocaleString(),
+        qty: item.qty,
+        total: item.total.toLocaleString(),
+        gross: item.gross.toLocaleString(),
+        tax: item.tax.toLocaleString(),
+        net: item.net.toLocaleString(),
+      })) || [];
+      setReportData(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải báo cáo");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const data = reportData;
 
   const isPortrait =
@@ -154,7 +185,13 @@ return (
 
             <tbody>
 
-              {data.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
 
                 <tr>
 

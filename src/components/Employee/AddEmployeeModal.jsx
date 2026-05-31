@@ -10,56 +10,164 @@ import {
   CalendarDays,
   Upload,
 } from "lucide-react";
-import workScheduleData from "../../datas/workScheduleData";
+import toast from "react-hot-toast";
+import { workScheduleApi, employeeApi } from "../../api";
 
+const MONTH_NAMES = [
+  "Th. 1", "Th. 2", "Th. 3", "Th. 4", "Th. 5", "Th. 6",
+  "Th. 7", "Th. 8", "Th. 9", "Th. 10", "Th. 11", "Th. 12"
+];
 
+const generateWeeksFromScheduleData = (scheduleData, month, year) => {
+  // Group schedule data by week
+  const weeks = {};
+  
+  scheduleData.forEach(item => {
+    const date = new Date(item.workDate);
+    const weekNum = Math.ceil(date.getDate() / 7);
+    
+    if (!weeks[weekNum]) {
+      weeks[weekNum] = [];
+    }
+    
+    const dayNames = ["CN", "Th. 2", "Th. 3", "Th. 4", "Th. 5", "Th. 6", "Th. 7"];
+    
+    weeks[weekNum].push({
+      day: dayNames[date.getDay()],
+      date: String(date.getDate()).padStart(2, '0'),
+      shift: item.shift,
+    });
+  });
+  
+  // Convert to array format expected by UI
+  return Object.keys(weeks).map(weekNum => ({
+    week: parseInt(weekNum),
+    days: weeks[weekNum]
+  }));
+};
 
 export default function AddEmployeeModal({
   open,
   onClose,
   defaultTab = "info",
   isEdit = false,
+  employee = null,
+  onSuccess,
 }) {
   const [openJob, setOpenJob] = useState(false);
-
   const [openPersonal, setOpenPersonal] = useState(true);
+  const [preview, setPreview] = useState(null);
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    code: "",
+    timekeepingCode: "",
+    fullName: "",
+    phone: "",
+    cccd: "",
+    debt: 0,
+    note: "",
+    status: "working",
+  });
 
-    const [preview, setPreview] = useState(null);
-   const [activeTab, setActiveTab] = useState(defaultTab);
+  const fileRef = useRef();
+  const [currentWeek, setCurrentWeek] = useState(1);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-const fileRef = useRef();
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab, open]);
 
+  // Load employee data when editing
+  useEffect(() => {
+    if (isEdit && employee) {
+      setFormData({
+        code: employee.code || "",
+        timekeepingCode: employee.timekeepingCode || "",
+        fullName: employee.fullName || employee.name || "",
+        phone: employee.phone || "",
+        cccd: employee.cccd || "",
+        debt: employee.debt || 0,
+        note: employee.note || "",
+        status: employee.status || "working",
+      });
+    } else {
+      setFormData({
+        code: "",
+        timekeepingCode: "",
+        fullName: "",
+        phone: "",
+        cccd: "",
+        debt: 0,
+        note: "",
+        status: "working",
+      });
+    }
+  }, [isEdit, employee, open]);
 
-useEffect(() => {
-  setActiveTab(defaultTab);
-}, [defaultTab, open]);
+  // Fetch schedule data when month changes
+  useEffect(() => {
+    if (open && isEdit && employee) {
+      fetchScheduleData();
+    }
+  }, [open, currentMonth, currentYear, isEdit, employee]);
 
+  const fetchScheduleData = async () => {
+    if (!employee) return;
+    
+    setLoadingSchedule(true);
+    try {
+      const data = await workScheduleApi.getMonthly(currentYear, currentMonth, employee.id);
+      setScheduleData(data);
+    } catch (error) {
+      // Silently fail - schedule may not exist yet
+      setScheduleData([]);
+    } finally {
+      setLoadingSchedule(false);
+    }
+  };
 
   // chọn ảnh 
   const handleChooseImage = (e) => {
-  const file = e.target.files[0];
+    const file = e.target.files[0];
+    if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
+  };
 
-  if (!file) return;
+  const handleSave = async () => {
+    if (!formData.fullName) {
+      toast.error("Vui lòng nhập tên nhân viên");
+      return;
+    }
 
-  const imageUrl = URL.createObjectURL(file);
+    setSaving(true);
+    try {
+      if (isEdit && employee) {
+        await employeeApi.update(employee.id, formData);
+        toast.success("Cập nhật nhân viên thành công");
+      } else {
+        await employeeApi.create(formData);
+        toast.success("Thêm nhân viên thành công");
+      }
+      onSuccess?.();
+    } catch (error) {
+      const message = error.response?.data?.message || "Có lỗi xảy ra";
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  setPreview(imageUrl);
-};
+  if (!open) return null;
 
-const [currentWeek, setCurrentWeek] = useState(4);
-
-  const [currentMonth, setCurrentMonth] = useState(1);
-
- 
-
-    if (!open) return null;
-
-
-const currentData = workScheduleData[currentMonth];
-
-const currentWeekData = currentData.weeks.find(
-    (w) => w.week === currentWeek
-  );
+  const weeks = generateWeeksFromScheduleData(scheduleData, currentMonth, currentYear);
+  const currentWeekData = weeks.find(w => w.week === currentWeek) || { days: [] };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-2 md:p-4">
@@ -135,6 +243,8 @@ const currentWeekData = currentData.weeks.find(
                   <input
                     type="text"
                     placeholder="Bắt buộc"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="w-full h-[44px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-500"
                   />
                 </div>
@@ -147,6 +257,8 @@ const currentWeekData = currentData.weeks.find(
                   <input
                     type="text"
                     placeholder="Tự động"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                     className="w-full h-[44px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-500"
                   />
                 </div>
@@ -159,6 +271,8 @@ const currentWeekData = currentData.weeks.find(
                   <input
                     type="text"
                     placeholder="Bắt buộc"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full h-[44px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-500"
                   />
                 </div>
@@ -240,19 +354,11 @@ const currentWeekData = currentData.weeks.find(
         }}
         className="h-[38px] rounded-xl border border-gray-300 px-3 text-sm bg-white"
       >
-        {Object.keys(workScheduleData).map(
-          (month) => (
-            <option
-              key={month}
-              value={month}
-            >
-              {
-                workScheduleData[month]
-                  .month
-              }
-            </option>
-          )
-        )}
+        {MONTH_NAMES.map((monthName, index) => (
+          <option key={index + 1} value={index + 1}>
+            {monthName} {currentYear}
+          </option>
+        ))}
       </select>
 
       {/* WEEK */}
@@ -290,12 +396,19 @@ const currentWeekData = currentData.weeks.find(
   {/* BODY */}
   <div className="p-5 overflow-x-auto">
 
+    {loadingSchedule && (
+      <div className="text-center py-8 text-gray-400">
+        Đang tải lịch làm việc...
+      </div>
+    )}
+
+    {!loadingSchedule && (
     <div className="min-w-[980px] grid grid-cols-7 gap-4">
 
-      {currentWeekData?.days?.map((item) => (
+      {currentWeekData?.days?.map((item, index) => (
 
         <div
-          key={item.day}
+          key={`${item.day}-${item.date}-${index}`}
           className="rounded-2xl border border-gray-200 p-4"
         >
 
@@ -389,6 +502,7 @@ const currentWeekData = currentData.weeks.find(
         </div>
       ))}
     </div>
+    )}
   </div>
 </div>
 
@@ -719,13 +833,18 @@ const currentWeekData = currentData.weeks.find(
 
           <button
             onClick={onClose}
-            className="h-[40px] px-5 rounded-xl border border-gray-300 text-sm font-medium hover:bg-gray-50 cursor-pointer"
+            disabled={saving}
+            className="h-[40px] px-5 rounded-xl border border-gray-300 text-sm font-medium hover:bg-gray-50 cursor-pointer disabled:opacity-50"
           >
             Bỏ qua
           </button>
 
-          <button className="h-[40px] px-5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 cursor-pointer">
-            Lưu
+          <button 
+            onClick={handleSave}
+            disabled={saving}
+            className="h-[40px] px-5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 cursor-pointer disabled:opacity-50"
+          >
+            {saving ? "Đang lưu..." : "Lưu"}
           </button>
         </div>
       </div>

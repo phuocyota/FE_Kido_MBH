@@ -1,17 +1,42 @@
-import React, { useState } from "react";
-import mockExamData from "../../datas/mockExamData";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import toast from "react-hot-toast";
+import { productApi } from "../../api";
 
 export default function PriceTable() {
-  const data = mockExamData.products;
-
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const ITEMS_PER_PAGE = 22;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const data = await productApi.getAll();
+      // Map BE fields to FE format
+      const mappedData = data.map(p => ({
+        id: p.id,
+        code: p.sku,
+        name: p.name,
+        price: parseFloat(p.price),
+        cost: parseFloat(p.costPrice),
+      }));
+      setProducts(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải danh sách sản phẩm");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentData = products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -54,7 +79,20 @@ export default function PriceTable() {
 
             {/* BODY */}
             <tbody>
-              {currentData.map((item, index) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-14 text-gray-400">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : currentData.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-14 text-gray-400">
+                    Không có dữ liệu sản phẩm
+                  </td>
+                </tr>
+              ) : (
+                currentData.map((item, index) => (
                 <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
                   <td className="p-4">{item.code}</td>
                   <td className="p-4">{item.name}</td>
@@ -69,7 +107,8 @@ export default function PriceTable() {
                     />
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
 
           </table>
