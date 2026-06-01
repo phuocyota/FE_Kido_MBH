@@ -2,12 +2,12 @@ import axiosInstance from "./axiosConfig";
 
 export const authApi = {
   login: async (email, password) => {
-    const response = await axiosInstance.post("/auth/login", { email, password });
-    const { accessToken, userId, role } = response.data;
+    const response = await axiosInstance.post("/auth/login/admin", { email, password });
+    const { accessToken, userId, userType } = response.data;
     
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("userId", userId);
-    localStorage.setItem("role", role);
+    localStorage.setItem("role", userType);
     
     return response.data;
   },

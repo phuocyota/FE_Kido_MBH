@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import AddProductModal from "./AddProductModal";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
 
@@ -48,6 +49,8 @@ export default function TableProduct() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  const [openAddModal, setOpenAddModal] = useState(false);
+
   return (
     <div>
       {/* HEADER */}
@@ -55,13 +58,16 @@ export default function TableProduct() {
         <h1 className="text-xl font-semibold">Hàng hóa</h1>
 
         <div className="flex gap-2">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button
+            onClick={() => setOpenAddModal(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer  "
+          >
             + Thêm mới
           </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
             Import
           </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
             Xuất file
           </button>
         </div>
@@ -144,6 +150,18 @@ export default function TableProduct() {
           </div>
         </div>
       </div>
+
+
+      <AddProductModal
+  open={openAddModal}
+  onClose={() => setOpenAddModal(false)}
+  onSave={(data) => {
+    console.log("PRODUCT:", data);
+
+    // sau này gọi API tạo sản phẩm
+    // createProduct(data)
+  }}
+/>
     </div>
   );
 }
