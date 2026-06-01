@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { FaBars, FaUserCircle } from "react-icons/fa";
+import { authApi } from "../../api";
 
 const menu = [
   { name: "Tổng quan", path: "/" },
@@ -401,8 +402,9 @@ export default function Header() {
                       </div>
                       <div
                         onClick={() => {
+                          authApi.logout();
                           localStorage.removeItem("isLogin");
-                          navigate("/");
+                          navigate("/login");
                         }}
                         className="px-4 py-2 text-red-500 cursor-pointer"
                       >

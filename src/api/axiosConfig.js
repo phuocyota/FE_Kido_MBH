@@ -31,6 +31,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       localStorage.removeItem("role");
+      localStorage.removeItem("isLogin");
       window.location.href = "/login";
     }
     return Promise.reject(error);

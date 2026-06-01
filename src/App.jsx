@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/layout/Header";
@@ -14,7 +14,18 @@ import ReportEndDay from "./pages/reports/ReportEndDay";
 import ReportProduct from "./pages/reports/ReportProduct";
 import ListEmployee from "./pages/Employee/ListEmployee";
 import TimeSheet from "./pages/Employee/TimeSheet";
+import { authApi } from "./api";
 
+const PrivateRoute = ({ children }) => {
+  if (!authApi.isAuthenticated()) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("isLogin");
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 const App = () => {
   return (
@@ -29,22 +40,23 @@ const App = () => {
         <Route
           path="/*"
           element={
-            <>
-              <Header />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/price-book" element={<PriceBook />} />
-                <Route path="/stock-takes" element={<StockTakes />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/store-info" element={<StoreInfo />} />
-                <Route path="/report-end-day" element={<ReportEndDay />} />
-                <Route path="/report-product" element={<ReportProduct />} />
-                <Route path="/employees" element={<ListEmployee />} />
-                <Route path="/time-sheet" element={<TimeSheet />} />
-
-              </Routes>
-            </>
+            <PrivateRoute>
+              <>
+                <Header />
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/price-book" element={<PriceBook />} />
+                  <Route path="/stock-takes" element={<StockTakes />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/store-info" element={<StoreInfo />} />
+                  <Route path="/report-end-day" element={<ReportEndDay />} />
+                  <Route path="/report-product" element={<ReportProduct />} />
+                  <Route path="/employees" element={<ListEmployee />} />
+                  <Route path="/time-sheet" element={<TimeSheet />} />
+                </Routes>
+              </>
+            </PrivateRoute>
           }
         />
       </Routes>
