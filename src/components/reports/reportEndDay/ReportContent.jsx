@@ -10,12 +10,14 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import toast from "react-hot-toast";
 import { reportApi } from "../../../api";
 
 export default function ReportContent({
   reportType,
   interest,
+  dateType,
+  fromDate,
+  toDate,
   zoom,
   handleZoomIn,
   handleZoomOut,
@@ -33,14 +35,14 @@ export default function ReportContent({
   // Fetch end of day report
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [dateType, fromDate, toDate]);
 
   const fetchReport = async () => {
     setLoading(true);
     try {
-      // Get today's date
-      const today = new Date().toISOString().split('T')[0];
-      const result = await reportApi.getEndOfDay(today, today);
+      const effectiveFromDate = fromDate || new Date().toISOString().split("T")[0];
+      const effectiveToDate = dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
+      const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate);
       // Map BE data to FE format
       const mappedData = result.data?.map(item => ({
         date: item.date,
@@ -54,8 +56,8 @@ export default function ReportContent({
         net: item.net.toLocaleString(),
       })) || [];
       setReportData(mappedData);
-    } catch (error) {
-      toast.error("Không thể tải báo cáo");
+    } catch {
+      setReportData([]);
     } finally {
       setLoading(false);
     }
