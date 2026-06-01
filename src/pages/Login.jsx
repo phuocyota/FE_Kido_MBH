@@ -4,22 +4,34 @@ import logo from "../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import bgLogin from "../assets/can-tin-so.png";
+import { authApi } from "../api";
 
 export default function Login() {
-      const navigate = useNavigate();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
-const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-const handleLogin = () => {
-  if (username === "123" && password === "123") {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Vui lòng nhập email và mật khẩu");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authApi.login(email, password);
       localStorage.setItem("isLogin", "true");
-    toast.success("Đăng nhập thành công 🎉");
-    navigate("/");
-  } else {
-    toast.error("Sai tài khoản hoặc mật khẩu ❌");
-  }
-};
+      toast.success("Đăng nhập thành công 🎉");
+      navigate("/");
+    } catch (error) {
+      const message = error.response?.data?.message || "Sai tài khoản hoặc mật khẩu ❌";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
 <div
@@ -79,18 +91,18 @@ const handleLogin = () => {
   className="space-y-5"
 >
 
-          {/* USERNAME */}
+          {/* EMAIL */}
           <div className="relative">
             <User
               size={18}
               className="absolute left-0 top-2 text-gray-400"
             />
             <input
-              type="text"
-              placeholder="Tên đăng nhập hoặc Sđt"
+              type="email"
+              placeholder="Email đăng nhập"
               className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
-                  value={username}
-  onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -130,9 +142,10 @@ const handleLogin = () => {
 
   <button
     type="submit"
-    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition"
+    disabled={loading}
+    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
   >
-    Đăng nhập
+    {loading ? "Đang đăng nhập..." : "Đăng nhập"}
   </button>
 </form>
 

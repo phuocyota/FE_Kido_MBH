@@ -1,11 +1,11 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
 import {
   BarChart3,
   TrendingUp,
   ShoppingBag,
   Wallet,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
   PieChart,
@@ -16,14 +16,59 @@ import {
   Legend,
 } from "recharts";
 
-import {
-  topSelling,
-  lowSelling,
-  colors1,
-  colors2,
-} from "../../../datas/productSaleData";
+import { reportApi } from "../../../api";
 
-export default function ProductSaleChart() {   
+const colors1 = [
+  "#2563EB",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+];
+
+const colors2 = [
+  "#DC2626",
+  "#EA580C",
+  "#D97706",
+  "#CA8A04",
+];
+
+export default function ProductSaleChart() {
+  const [topSelling, setTopSelling] = useState([]);
+  const [lowSelling, setLowSelling] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // Fetch top and bottom products in parallel
+      const [topData, bottomData] = await Promise.all([
+        reportApi.getTopProducts(),
+        reportApi.getBottomProducts(),
+      ]);
+
+      // Map to chart format
+      const mappedTop = topData.map(item => ({
+        name: item.productName,
+        value: item.totalQuantity,
+      }));
+
+      const mappedBottom = bottomData.map(item => ({
+        name: item.productName,
+        value: item.totalQuantity,
+      }));
+
+      setTopSelling(mappedTop);
+      setLowSelling(mappedBottom);
+    } catch (error) {
+      toast.error("Không thể tải dữ liệu biểu đồ");
+    } finally {
+      setLoading(false);
+    }
+  };   
 
   return (
 
@@ -116,6 +161,11 @@ export default function ProductSaleChart() {
         </div>
 
         {/* PIE CHARTS */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-400">
+            Đang tải dữ liệu biểu đồ...
+          </div>
+        ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
           {/* TOP SELLING */}
@@ -245,6 +295,7 @@ export default function ProductSaleChart() {
           </div>
 
         </div>
+        )}
 
       </div>
 

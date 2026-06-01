@@ -1,0 +1,42 @@
+import axiosInstance from "./axiosConfig";
+
+export const workScheduleApi = {
+  // Get timesheet by date range
+  getTimeSheet: async (from, to, employeeId) => {
+    const params = { from, to };
+    if (employeeId) params.employeeId = employeeId;
+    const response = await axiosInstance.get("/work-schedules/timesheet", { params });
+    return response.data;
+  },
+
+  // Get monthly schedule
+  getMonthly: async (year, month, employeeId) => {
+    const params = { year, month };
+    if (employeeId) params.employeeId = employeeId;
+    const response = await axiosInstance.get("/work-schedules/monthly", { params });
+    return response.data;
+  },
+
+  // Get schedule by ID
+  getById: async (id) => {
+    const response = await axiosInstance.get(`/work-schedules/${id}`);
+    return response.data;
+  },
+
+  // Create schedule
+  create: async (data) => {
+    const response = await axiosInstance.post("/work-schedules", data);
+    return response.data;
+  },
+
+  // Update schedule
+  update: async (id, data) => {
+    const response = await axiosInstance.put(`/work-schedules/${id}`, data);
+    return response.data;
+  },
+
+  // Delete schedule
+  delete: async (id) => {
+    await axiosInstance.delete(`/work-schedules/${id}`);
+  },
+};

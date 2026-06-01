@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   ChevronLeft,
@@ -6,8 +6,9 @@ import {
   Upload,
   Download,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
-import timeSheetData from "../../datas/timeSheetData";
+import { workScheduleApi } from "../../api";
 import ShiftCell from "../../components/Employee/ShiftCell";
 import AddScheduleModal from "../../components/Employee/AddScheduleModal";
 
@@ -16,14 +17,51 @@ export default function TimeSheet() {
 
   const [openSchedule, setOpenSchedule] = useState(false);
 
-const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-const [selectedDate, setSelectedDate] = useState("");
-const [openDelete, setOpenDelete] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [openDelete, setOpenDelete] = useState(false);
 
-const [selectedShift, setSelectedShift] = useState("");
+  const [selectedShift, setSelectedShift] = useState("");
 
-const [deleteInfo, setDeleteInfo] = useState(null);
+  const [deleteInfo, setDeleteInfo] = useState(null);
+  
+  // API data state
+  const [timeSheetData, setTimeSheetData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch timesheet when week changes
+  useEffect(() => {
+    fetchTimeSheet();
+  }, [currentDate]);
+
+  const fetchTimeSheet = async () => {
+    const weekDays = getWeekDays(currentDate);
+    const from = formatDateISO(weekDays[0]);
+    const to = formatDateISO(weekDays[6]);
+    
+    setLoading(true);
+    try {
+      const data = await workScheduleApi.getTimeSheet(from, to);
+      // Map BE fields to FE format
+      const mappedData = data.map(emp => ({
+        id: emp.id,
+        code: emp.code,
+        name: emp.name,
+        debt: emp.debt || 0,
+        shifts: emp.shifts || {},
+      }));
+      setTimeSheetData(mappedData);
+    } catch (error) {
+      toast.error("Không thể tải bảng chấm công");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDateISO = (date) => {
+    return date.toISOString().split('T')[0];
+  };
 
   const getWeekDays = (date) => {
     const current = new Date(date);
@@ -243,7 +281,20 @@ const [deleteInfo, setDeleteInfo] = useState(null);
 
             <tbody>
 
-              {timeSheetData.map((employee) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-14 text-gray-400">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : timeSheetData.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-14 text-gray-400">
+                    Không có dữ liệu chấm công
+                  </td>
+                </tr>
+              ) : (
+                timeSheetData.map((employee) => (
 
                 <tr
                   key={employee.id}
@@ -313,14 +364,15 @@ const [deleteInfo, setDeleteInfo] = useState(null);
                   <td className="border border-gray-300 px-4 py-4 text-right">
 
                     <div className="font-semibold">
-                      {employee.salary.toLocaleString()}
+                      {(employee.salary || 0).toLocaleString()}
                     </div>
 
                   </td>
 
                 </tr>
 
-              ))}
+              ))
+              )}
 
             </tbody>
 
@@ -332,13 +384,15 @@ const [deleteInfo, setDeleteInfo] = useState(null);
 
 
       <AddScheduleModal
-  open={openSchedule}
-  onClose={() =>
-    setOpenSchedule(false)
-  }
-  employee={selectedEmployee}
-  date={selectedDate}
-/>
+        open={openSchedule}
+        onClose={() => setOpenSchedule(false)}
+        employee={selectedEmployee}
+        date={selectedDate}
+        onSuccess={() => {
+          fetchTimeSheet();
+          setOpenSchedule(false);
+        }}
+      />
 
 
             {/* Xác nhận xóa ca làm việc */}
