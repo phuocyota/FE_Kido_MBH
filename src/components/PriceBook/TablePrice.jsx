@@ -64,11 +64,9 @@ export default function PriceTable() {
   const handleSaveAll = async () => {
     setSaving(true);
     try {
-      const updates = Object.entries(editedPrices).map(([id, price]) => 
-        productApi.update(id, { price })
-      );
-      await Promise.all(updates);
-      toast.success("Cập nhật giá thành công");
+      const items = Object.entries(editedPrices).map(([id, price]) => ({ id, price }));
+      await productApi.updateBulk(items);
+      toast.success(`Cập nhật ${items.length} sản phẩm thành công`);
       setEditedPrices({});
       fetchProducts();
     } catch (error) {
