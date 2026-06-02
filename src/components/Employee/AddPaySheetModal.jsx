@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { CalendarDays } from "lucide-react";
 
@@ -14,14 +14,36 @@ export default function AddPaySheetModal({
     );
 
   const [scope, setScope] = useState("all");
+    
+  const currentYear =
+  new Date().getFullYear();
 
-  
+const currentMonth =
+  new Date().getMonth() + 1;
 
-const [monthPeriod, setMonthPeriod] = useState("01/06/2026 - 30/06/2026");
+const currentLastDay =
+  new Date(
+    currentYear,
+    currentMonth,
+    0
+  ).getDate();
+
+const [monthPeriod, setMonthPeriod] =
+  useState(
+    `01/${String(
+      currentMonth
+    ).padStart(2, "0")}/${currentYear} - ${String(
+      currentLastDay
+    ).padStart(2, "0")}/${String(
+      currentMonth
+    ).padStart(2, "0")}/${currentYear}`
+  );
 
 const [fromDate, setFromDate] = useState("2026-06-02");
 
 const [toDate, setToDate] = useState("2026-06-02");
+
+
 
 const generateMonthPeriods = (
   year = new Date().getFullYear()
@@ -66,6 +88,15 @@ const [selectedYear, setSelectedYear] = useState(
   const monthPeriods = generateMonthPeriods(
     selectedYear
   );
+
+  useEffect(() => {
+  setMonthPeriod(
+    generateMonthPeriods(
+      selectedYear
+    )[0].value
+    
+  );
+}, [selectedYear]);
 
   if (!open) return null;
 
@@ -121,6 +152,37 @@ const [selectedYear, setSelectedYear] = useState(
 
           </div>
 
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+
+  <label className="w-full md:w-[160px] font-medium text-gray-700">
+    Năm
+  </label>
+
+  <select
+    value={selectedYear}
+    onChange={(e) =>
+      setSelectedYear(
+        Number(e.target.value)
+      )
+    }
+    className="flex-1 h-11 px-4 border border-gray-300 rounded-xl"
+  >
+    {Array.from(
+      { length: 10 },
+      (_, i) =>
+        currentYear - 5 + i
+    ).map((year) => (
+      <option
+        key={year}
+        value={year}
+      >
+        {year}
+      </option>
+    ))}
+  </select>
+
+</div>
+
           {/* Kỳ làm việc */}
 
          <div className="flex flex-col md:flex-row gap-3">
@@ -144,25 +206,14 @@ const [selectedYear, setSelectedYear] = useState(
         }
         className="w-full h-11 px-4 border border-gray-300 rounded-xl"
       >
-        <option>
-          01/08/2026 - 31/08/2026
-        </option>
-
-        <option>
-          01/07/2026 - 31/07/2026
-        </option>
-
-        <option>
-          01/06/2026 - 30/06/2026
-        </option>
-
-        <option>
-          01/05/2026 - 31/05/2026
-        </option>
-
-        <option>
-          01/04/2026 - 30/04/2026
-        </option>
+        {monthPeriods.map((item) => (
+  <option
+    key={item.value}
+    value={item.value}
+  >
+    {item.value}
+  </option>
+))}
 
       </select>
 

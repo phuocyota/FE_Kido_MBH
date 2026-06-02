@@ -19,7 +19,7 @@ const menu = [
   },
 
   {
-    name: "Nhà cung cấp", path: "/nha-cung-cap",
+    name: "Nhà cung cấp", path: "/suppliers",
   },
 
   // {
