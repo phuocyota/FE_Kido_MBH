@@ -1,0 +1,173 @@
+const suppliersData = [
+  {
+    id: 1,
+    code: "NCC001",
+    name: "Công ty TNHH Thực Phẩm ABC",
+    phone: "0901234567",
+    email: "abc@gmail.com",
+    debt: 2500000,
+    totalPurchase: 15000000,
+    group: "Thực phẩm",
+    status: "active",
+  },
+
+  {
+    id: 2,
+    code: "NCC002",
+    name: "Công ty Nước Giải Khát XYZ",
+    phone: "0912345678",
+    email: "xyz@gmail.com",
+    debt: 1200000,
+    totalPurchase: 9800000,
+    group: "Đồ uống",
+    status: "active",
+  },
+
+  {
+    id: 3,
+    code: "NCC003",
+    name: "Nhà phân phối Minh Phát",
+    phone: "0934567890",
+    email: "minhphat@gmail.com",
+    debt: 0,
+    totalPurchase: 7200000,
+    group: "Gia vị",
+    status: "inactive",
+  },
+
+  {
+    id: 4,
+    code: "NCC004",
+    name: "Công ty Bao Bì Việt",
+    phone: "0978123456",
+    email: "baobiviet@gmail.com",
+    debt: 450000,
+    totalPurchase: 5600000,
+    group: "Bao bì",
+    status: "active",
+  },
+
+  {
+    id: 5,
+    code: "NCC005",
+    name: "Công ty TNHH Green Farm",
+    phone: "0987654321",
+    email: "greenfarm@gmail.com",
+    debt: 800000,
+    totalPurchase: 11200000,
+    group: "Rau củ",
+    status: "active",
+  },
+
+  {
+    id: 6,
+    code: "NCC006",
+    name: "Nhà cung cấp Hải Sản Biển Đông",
+    phone: "0966333444",
+    email: "biendong@gmail.com",
+    debt: 3250000,
+    totalPurchase: 24000000,
+    group: "Hải sản",
+    status: "active",
+  },
+
+  {
+    id: 7,
+    code: "NCC007",
+    name: "Công ty Sữa Việt Milk",
+    phone: "0944555666",
+    email: "vietmilk@gmail.com",
+    debt: 1500000,
+    totalPurchase: 18700000,
+    group: "Sữa",
+    status: "inactive",
+  },
+
+  {
+    id: 8,
+    code: "NCC008",
+    name: "Nhà phân phối Kim Long",
+    phone: "0922111222",
+    email: "kimlong@gmail.com",
+    debt: 0,
+    totalPurchase: 6800000,
+    group: "Đồ khô",
+    status: "active",
+  },
+
+  {
+    id: 9,
+    code: "NCC009",
+    name: "Công ty TNHH Fresh Food",
+    phone: "0911222333",
+    email: "freshfood@gmail.com",
+    debt: 900000,
+    totalPurchase: 9500000,
+    group: "Thực phẩm",
+    status: "active",
+  },
+
+  {
+    id: 10,
+    code: "NCC010",
+    name: "Công ty An Phát",
+    phone: "0909999888",
+    email: "anphat@gmail.com",
+    debt: 2100000,
+    totalPurchase: 13500000,
+    group: "Gia vị",
+    status: "active",
+  },
+
+   {
+    id: 7,
+    code: "NCC007",
+    name: "Công ty Sữa Việt Milk",
+    phone: "0944555666",
+    email: "vietmilk@gmail.com",
+    debt: 1500000,
+    totalPurchase: 18700000,
+    group: "Sữa",
+    status: "inactive",
+  },
+
+  {
+    id: 8,
+    code: "NCC008",
+    name: "Nhà phân phối Kim Long",
+    phone: "0922111222",
+    email: "kimlong@gmail.com",
+    debt: 0,
+    totalPurchase: 6800000,
+    group: "Đồ khô",
+    status: "active",
+  },
+
+  {
+    id: 9,
+    code: "NCC009",
+    name: "Công ty TNHH Fresh Food",
+    phone: "0911222333",
+    email: "freshfood@gmail.com",
+    debt: 900000,
+    totalPurchase: 9500000,
+    group: "Thực phẩm",
+    status: "active",
+  },
+
+  {
+    id: 10,
+    code: "NCC010",
+    name: "Công ty An Phát",
+    phone: "0909999888",
+    email: "anphat@gmail.com",
+    debt: 2100000,
+    totalPurchase: 13500000,
+    group: "Gia vị",
+    status: "active",
+  },
+
+  
+];
+
+export default suppliersData;
