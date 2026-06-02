@@ -181,6 +181,9 @@ export default function ReportEndDay() {
             <ReportContent
               reportType={reportType}
               interest={interest}
+              dateType={dateType}
+              fromDate={fromDate}
+              toDate={toDate}
               zoom={zoom}
               handleZoomIn={handleZoomIn}
               handleZoomOut={handleZoomOut}
