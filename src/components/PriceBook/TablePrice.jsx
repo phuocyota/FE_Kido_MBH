@@ -6,6 +6,8 @@ import { productApi } from "../../api";
 export default function PriceTable() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editedPrices, setEditedPrices] = useState({});
   const ITEMS_PER_PAGE = 22;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -46,6 +48,36 @@ export default function PriceTable() {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
+  const handlePriceChange = (id, value) => {
+    const originalPrice = products.find(p => p.id === id)?.price;
+    const newPrice = parseFloat(value);
+    
+    if (newPrice === originalPrice || isNaN(newPrice)) {
+      const newEdited = { ...editedPrices };
+      delete newEdited[id];
+      setEditedPrices(newEdited);
+    } else {
+      setEditedPrices({ ...editedPrices, [id]: newPrice });
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      const updates = Object.entries(editedPrices).map(([id, price]) => 
+        productApi.update(id, { price })
+      );
+      await Promise.all(updates);
+      toast.success("Cập nhật giá thành công");
+      setEditedPrices({});
+      fetchProducts();
+    } catch (error) {
+      toast.error("Không thể cập nhật giá");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="flex-1">
 
@@ -54,6 +86,13 @@ export default function PriceTable() {
         <h1 className="text-xl font-semibold">Bảng giá chung</h1>
 
         <div className="flex gap-2">
+          <button
+            onClick={handleSaveAll}
+            disabled={saving || Object.keys(editedPrices).length === 0}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? "Đang lưu..." : "Lưu thay đổi"}
+          </button>
           <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
             Xuất file
           </button>
@@ -101,9 +140,10 @@ export default function PriceTable() {
 
                   <td className="p-4 text-center">
                     <input
-                      type="text"
+                      type="number"
                       defaultValue={item.price}
-                      className="border rounded-lg px-3 py-1 w-24 text-right"
+                      onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                      className={`border rounded-lg px-3 py-1 w-24 text-right ${editedPrices[item.id] !== undefined ? 'border-blue-500 bg-blue-50' : ''}`}
                     />
                   </td>
                 </tr>

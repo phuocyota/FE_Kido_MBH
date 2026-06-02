@@ -9,7 +9,7 @@ export const productApi = {
     if (filters.maxPrice) params.maxPrice = filters.maxPrice;
     
     const response = await axiosInstance.get("/products", { params });
-    return response.data;
+    return response.data.data;
   },
 
   // Get products with categories (for POS)
@@ -21,6 +21,12 @@ export const productApi = {
   // Get all categories
   getCategories: async () => {
     const response = await axiosInstance.get("/products/categories");
-    return response.data;
+    return response.data.data || response.data;
+  },
+
+  // Update product
+  update: async (id, data) => {
+    const response = await axiosInstance.put(`/products/${id}`, data);
+    return response.data.data || response.data;
   },
 };

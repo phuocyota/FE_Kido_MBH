@@ -3,7 +3,7 @@ import axiosInstance from "./axiosConfig";
 export const authApi = {
   login: async (email, password) => {
     const response = await axiosInstance.post("/auth/login/admin", { email, password });
-    const { accessToken, userId, userType } = response.data;
+    const { accessToken, userId, userType } = response.data.data;
     
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("userId", userId);
