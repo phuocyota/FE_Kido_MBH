@@ -45,16 +45,6 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-<<<<<<< HEAD
-=======
-    const status = error.response?.status;
-    const requestUrl = error.config?.url || "";
-
-    if (status === 401 && import.meta.env.DEV) {
-      console.warn("Unauthorized request:", requestUrl);
-    }
-
->>>>>>> 57781e6161c7eeda0ef5a3bd372575c204a76ac8
     return Promise.reject(error);
   }
 );

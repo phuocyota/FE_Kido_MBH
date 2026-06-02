@@ -19,20 +19,7 @@ const findAuthValue = (source, keys) => {
 export const authApi = {
   login: async (email, password) => {
     const response = await axiosInstance.post("/auth/login/admin", { email, password });
-<<<<<<< HEAD
     const { accessToken, userId, userType } = response.data.data;
-=======
-    const payload = response.data || {};
-    const accessToken = findAuthValue(payload, [
-      "accessToken",
-      "access_token",
-      "access-token",
-      "token",
-      "jwt",
-    ]);
-    const userId = findAuthValue(payload, ["userId", "user_id", "id"]);
-    const userType = findAuthValue(payload, ["userType", "user_type", "role"]);
->>>>>>> 57781e6161c7eeda0ef5a3bd372575c204a76ac8
     
     saveAuthSession({ accessToken, userId, role: userType });
 
