@@ -29,4 +29,10 @@ export const productApi = {
     const response = await axiosInstance.put(`/products/${id}`, data);
     return response.data.data || response.data;
   },
+
+  // Bulk update products
+  updateBulk: async (items) => {
+    const response = await axiosInstance.put("/products/bulk/update", items);
+    return response.data.data || response.data;
+  },
 };
