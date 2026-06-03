@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import StockTakeModal from "./StockTakeModal";
 
 export default function TableStock() {
   const data = []; // hiện đang trống như UI mẫu
+  const [openStockTake, setOpenStockTake] = useState(false);
 
   return (
     <div className="bg-white rounded-xl shadow p-4 flex-1">
@@ -10,11 +12,14 @@ export default function TableStock() {
         <h2 className="text-xl font-semibold">Phiếu kiểm kho</h2>
 
         <div className="flex gap-2">
-          <button className="bg-green-500 text-white px-4 py-2 rounded-lg">
+          <button
+            onClick={() => setOpenStockTake(true)}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
+          >
             + Kiểm kho
           </button>
 
-          <button className="bg-green-500 text-white px-4 py-2 rounded-lg">
+          <button className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer">
             Xuất file
           </button>
           
@@ -90,6 +95,9 @@ export default function TableStock() {
 
   </div>
 </div>
+
+<StockTakeModal open={openStockTake} onClose={() => setOpenStockTake(false)} />
+
     </div>
   );
 }
