@@ -26,12 +26,6 @@ axiosInstance.interceptors.request.use(
           authorization,
         };
       }
-
-      if (import.meta.env.DEV) {
-        console.log("Authorization header attached:", config.url);
-      }
-    } else if (import.meta.env.DEV) {
-      console.warn("No access token found for request:", config.url);
     }
 
     return config;

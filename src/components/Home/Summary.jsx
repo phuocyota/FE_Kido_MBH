@@ -21,29 +21,20 @@ export default function Summary() {
         // Extract data from API response wrapper { success, message, data }
         const revenue = revenueRes.data || revenueRes;
 
-        console.log("📊 Revenue API response:", revenueRes);
-        console.log("👥 Customers API response:", customers);
-        console.log("📈 Extracted revenue data:", revenue);
-
         const stats = {
           revenue: revenue.netRevenue || revenue.totalRevenue || 0,
           orders: revenue.orderCount || 0,
           customers: customers.totalCustomers || 0,
         };
-        console.log("✅ Setting todayStats:", stats);
         setTodayStats(stats);
       } catch (error) {
-        console.error("Failed to fetch today stats:", error);
+        // Silent fail
       } finally {
         setLoading(false);
       }
     };
 
     fetchTodayStats();
-
-    // Auto-refresh every 10 seconds for today stats
-    const interval = setInterval(fetchTodayStats, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const formatCurrency = (value) => {

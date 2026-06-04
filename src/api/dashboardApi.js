@@ -34,7 +34,22 @@ export const dashboardApi = {
     if (to) {
       params.to = to;
     }
-    const response = await axiosInstance.get("/api/reports/menu-performance", { params });
-    return response.data;
+    const response = await axiosInstance.get("/reports/menu-performance", { params });
+    return response.data?.data || response.data;
+  },
+
+  getCancellations: async ({ filter = "7days", branchId, from, to } = {}) => {
+    const params = { filter };
+    if (branchId) {
+      params.branchId = branchId;
+    }
+    if (from) {
+      params.from = from;
+    }
+    if (to) {
+      params.to = to;
+    }
+    const response = await axiosInstance.get("/reports/cancellations", { params });
+    return response.data?.data || response.data;
   },
 };

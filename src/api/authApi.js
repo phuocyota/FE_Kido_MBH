@@ -23,10 +23,6 @@ export const authApi = {
     
     saveAuthSession({ accessToken, userId, role: userType });
 
-    if (import.meta.env.DEV) {
-      console.log("Login token saved:", Boolean(accessToken));
-    }
-    
     return response.data;
   },
 

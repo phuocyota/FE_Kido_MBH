@@ -1,10 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
   Info,
 } from "lucide-react";
+import { dashboardApi } from "../../api/dashboardApi";
+import { workScheduleApi } from "../../api/workScheduleApi";
+
+const filterOptions = [
+  { label: "Hôm nay", value: "today" },
+  { label: "Hôm qua", value: "yesterday" },
+  { label: "7 ngày qua", value: "7days" },
+  { label: "Tháng này", value: "thisMonth" },
+  { label: "Tháng trước", value: "lastMonth" },
+];
+
+const stageFallbacks = {
+  afterKitchen: { name: "Hủy sau báo bếp", color: "#ff2d55" },
+  afterCheckout: { name: "Hủy sau tạm tính", color: "#ff7a00" },
+  afterInspection: { name: "Hủy khi kiểm đồ", color: "#ffc400" },
+};
+
+const getStage = (stages, key) => {
+  const fallback = stageFallbacks[key];
+  return stages.find((stage) => stage.key === key) || {
+    key,
+    name: fallback.name,
+    color: fallback.color,
+    itemCount: 0,
+    amount: 0,
+    percentage: 0,
+    items: [],
+  };
+};
 
 export default function StaffAndCancelReport() {
 
@@ -17,36 +46,142 @@ export default function StaffAndCancelReport() {
 
 const [expanded3, setExpanded3] = useState(false);
 
-  const filters = [
-    "Hôm nay",
-    "Hôm qua",
-    "7 ngày qua",
-    "Tháng này",
-    "Tháng trước",
-  ];
+  const [cancellations, setCancellations] = useState(null);
 
-  const topStaffs = [
-    {
-      name: "Lê Thị Bảo Trân",
-      hours: "9 giờ 30 phút",
-    },
-    {
-      name: "Nguyễn Thị Hồng Thảo Vân",
-      hours: "7 giờ 45 phút",
-    },
-    {
-      name: "Nguyễn Minh Loan",
-      hours: "6 giờ 33 phút",
-    },
-    {
-      name: "Lã Ngọc Anh",
-      hours: "6 giờ 15 phút",
-    },
-    {
-      name: "Trần Quốc Khánh",
-      hours: "5 giờ 50 phút",
-    },
-  ];
+  const [cancelLoading, setCancelLoading] = useState(false);
+
+  const [cancelError, setCancelError] = useState("");
+
+  // Employee stats state
+  const [employeeStats, setEmployeeStats] = useState({
+    working: 0,
+    absent: 0,
+    pendingRequests: 0,
+    late: 0,
+    earlyLeave: 0,
+    overtime: 0,
+  });
+  const [topStaffs, setTopStaffs] = useState([]);
+  const [empLoading, setEmpLoading] = useState(false);
+
+  const filterValue = useMemo(() => {
+    return filterOptions.find((item) => item.label === filter)?.value || "7days";
+  }, [filter]);
+
+  const cancelSummary = cancellations?.summary || {};
+
+  const cancelStages = cancellations?.stages || [];
+
+  const afterKitchenStage = getStage(cancelStages, "afterKitchen");
+
+  const afterCheckoutStage = getStage(cancelStages, "afterCheckout");
+
+  const afterInspectionStage = getStage(cancelStages, "afterInspection");
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchCancellations = async () => {
+      try {
+        setCancelLoading(true);
+        setCancelError("");
+
+        const data = await dashboardApi.getCancellations({ filter: filterValue });
+
+        if (active) {
+          setCancellations(data);
+        }
+      } catch (err) {
+        if (active) {
+          setCancelError(err?.response?.data?.message || "Không thể tải dữ liệu hủy món");
+          setCancellations(null);
+        }
+      } finally {
+        if (active) {
+          setCancelLoading(false);
+        }
+      }
+    };
+
+    const fetchEmployeeStats = async () => {
+      try {
+        setEmpLoading(true);
+        
+        // Get today's date range
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + mondayOffset);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        
+        const response = await workScheduleApi.getTimeSheet(formatDate(monday), formatDate(sunday));
+        const timesheetData = response?.data || response || [];
+        
+        if (!Array.isArray(timesheetData)) {
+          setEmployeeStats({ working: 0, absent: 0, pendingRequests: 0, late: 0, earlyLeave: 0, overtime: 0 });
+          setTopStaffs([]);
+          return;
+        }
+        
+        // Count employees working today
+        const todayDay = today.getDate();
+        const workingEmployees = timesheetData.filter(emp => emp.shifts && emp.shifts[todayDay]).length;
+        
+        // Calculate hours for each employee (mock calculation based on shift type)
+        const staffHours = timesheetData.map(emp => {
+          let totalHours = 0;
+          if (emp.shifts) {
+            Object.values(emp.shifts).forEach(shift => {
+              if (shift === 'morning') totalHours += 4;
+              else if (shift === 'afternoon') totalHours += 4;
+              else if (shift === 'full') totalHours += 8;
+            });
+          }
+          return {
+            name: emp.name || 'Nhân viên',
+            hours: totalHours,
+            hoursFormatted: `${Math.floor(totalHours)} giờ ${(totalHours % 1) * 60 > 0 ? Math.round((totalHours % 1) * 60) + ' phút' : ''}`.trim()
+          };
+        }).filter(s => s.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 5);
+        
+        if (active) {
+          setEmployeeStats({
+            working: workingEmployees,
+            absent: 0, // Not available from timesheet data
+            pendingRequests: 0, // Not available from timesheet data
+            late: 0, // Not available from timesheet data
+            earlyLeave: 0, // Not available from timesheet data
+            overtime: timesheetData.filter(emp => {
+              // Count employees with full shifts (8h) as overtime candidates
+              const shifts = emp.shifts || {};
+              return Object.values(shifts).includes('full');
+            }).length,
+          });
+          setTopStaffs(staffHours);
+        }
+      } catch (err) {
+        // Silently fail - keep default values
+      } finally {
+        if (active) {
+          setEmpLoading(false);
+        }
+      }
+    };
+
+    fetchCancellations();
+    fetchEmployeeStats();
+
+    return () => {
+      active = false;
+    };
+  }, [filterValue]);
+
 
   return (
     <div className="
@@ -129,12 +264,12 @@ const [expanded3, setExpanded3] = useState(false);
                   z-50
                 ">
 
-                  {filters.map((item) => (
+                  {filterOptions.map((item) => (
 
                     <button
-                      key={item}
+                      key={item.value}
                       onClick={() => {
-                        setFilter(item);
+                        setFilter(item.label);
                         setOpen(false);
                       }}
                       className={`
@@ -145,13 +280,13 @@ const [expanded3, setExpanded3] = useState(false);
                         text-sm
                         transition
 
-                        ${filter === item
+                        ${filter === item.label
                           ? "bg-blue-50 text-blue-600 font-medium"
                           : "hover:bg-gray-50 text-gray-700"
                         }
                       `}
                     >
-                      {item}
+                      {item.label}
                     </button>
 
                   ))}
@@ -175,7 +310,7 @@ const [expanded3, setExpanded3] = useState(false);
               </div>
 
               <div className="text-[36px] font-bold text-black">
-                0
+                {cancelLoading ? "..." : cancelSummary.cancelledItems || 0}
               </div>
             </div>
 
@@ -185,7 +320,7 @@ const [expanded3, setExpanded3] = useState(false);
               </div>
 
               <div className="text-[36px] font-bold text-black">
-                0
+                {cancelLoading ? "..." : cancelSummary.cancelledInvoices || 0}
               </div>
             </div>
 
@@ -229,7 +364,7 @@ const [expanded3, setExpanded3] = useState(false);
                 " />
 
                 <span className="font-medium text-gray-800">
-                  Hủy sau báo bếp
+                  {afterKitchenStage.name}
                 </span>
 
                 {/* PROGRESS */}
@@ -242,9 +377,10 @@ const [expanded3, setExpanded3] = useState(false);
                 ">
                   <div className="
                     h-full
-                    w-0
                     bg-red-500
-                  " />
+                  "
+                    style={{ width: `${afterKitchenStage.percentage || 0}%` }}
+                  />
                 </div>
               </div>
 
@@ -255,7 +391,7 @@ const [expanded3, setExpanded3] = useState(false);
               ">
 
                 <span className="font-semibold text-black">
-                  0 Món
+                  {afterKitchenStage.itemCount || 0} Món
                 </span>
 
                 {expanded ? (
@@ -298,7 +434,7 @@ const [expanded3, setExpanded3] = useState(false);
                 </div>
 
                 <p className="text-gray-600 text-center text-[16px]">
-                  Chưa có món nào bị hủy
+                  {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
                 </p>
 
               </div>
@@ -344,7 +480,7 @@ const [expanded3, setExpanded3] = useState(false);
       " />
 
       <span className="font-medium text-gray-800">
-        Hủy sau tạm tính
+        {afterCheckoutStage.name}
       </span>
 
       {/* PROGRESS */}
@@ -357,9 +493,10 @@ const [expanded3, setExpanded3] = useState(false);
       ">
         <div className="
           h-full
-          w-0
           bg-orange-500
-        " />
+        "
+          style={{ width: `${afterCheckoutStage.percentage || 0}%` }}
+        />
       </div>
     </div>
 
@@ -370,7 +507,7 @@ const [expanded3, setExpanded3] = useState(false);
     ">
 
       <span className="font-semibold text-black">
-        0 Món
+        {afterCheckoutStage.itemCount || 0} Món
       </span>
 
       {expanded2 ? (
@@ -412,7 +549,7 @@ const [expanded3, setExpanded3] = useState(false);
       </div>
 
       <p className="text-gray-600 text-center text-[16px]">
-        Chưa có món nào bị hủy
+        {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
       </p>
 
     </div>
@@ -457,7 +594,7 @@ const [expanded3, setExpanded3] = useState(false);
       " />
 
       <span className="font-medium text-gray-800">
-        Hủy khi kiểm đồ
+        {afterInspectionStage.name}
       </span>
 
       {/* PROGRESS */}
@@ -470,9 +607,10 @@ const [expanded3, setExpanded3] = useState(false);
       ">
         <div className="
           h-full
-          w-0
           bg-yellow-400
-        " />
+        "
+          style={{ width: `${afterInspectionStage.percentage || 0}%` }}
+        />
       </div>
     </div>
 
@@ -483,7 +621,7 @@ const [expanded3, setExpanded3] = useState(false);
     ">
 
       <span className="font-semibold text-black">
-        0 Món
+        {afterInspectionStage.itemCount || 0} Món
       </span>
 
       {expanded3 ? (
@@ -525,7 +663,7 @@ const [expanded3, setExpanded3] = useState(false);
       </div>
 
       <p className="text-gray-600 text-center text-[16px]">
-        Chưa có món nào bị hủy
+        {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
       </p>
 
     </div>
@@ -566,18 +704,6 @@ const [expanded3, setExpanded3] = useState(false);
               <h2 className="text-[22px] font-bold text-gray-900">
                 Theo dõi nhân viên
               </h2>
-
-              <span className="
-                px-3
-                py-1
-                rounded-xl
-                bg-blue-50
-                text-blue-600
-                text-sm
-                font-medium
-              ">
-                Dữ liệu mẫu
-              </span>
             </div>
 
             <button className="
@@ -609,27 +735,27 @@ const [expanded3, setExpanded3] = useState(false);
             {[
               {
                 title: "Nhân viên đi làm",
-                value: 7,
+                value: employeeStats.working,
               },
               {
                 title: "Nhân viên nghỉ làm",
-                value: 0,
+                value: employeeStats.absent,
               },
               {
                 title: "Yêu cầu chờ duyệt",
-                value: 1,
+                value: employeeStats.pendingRequests,
               },
               {
                 title: "Nhân viên đi muộn",
-                value: 1,
+                value: employeeStats.late,
               },
               {
                 title: "Nhân viên về sớm",
-                value: 1,
+                value: employeeStats.earlyLeave,
               },
               {
                 title: "Nhân viên làm thêm",
-                value: 2,
+                value: employeeStats.overtime,
               },
             ].map((item, index) => (
 
@@ -662,7 +788,7 @@ const [expanded3, setExpanded3] = useState(false);
                   font-bold
                   text-black
                 ">
-                  {item.value}
+                  {empLoading ? "..." : item.value}
                 </div>
 
               </div>
@@ -727,44 +853,58 @@ const [expanded3, setExpanded3] = useState(false);
 
               <tbody>
 
-                {topStaffs.map((staff, index) => (
-
-                  <tr
-                    key={index}
-                    className="
-                      border-t
-                      border-gray-100
-                      hover:bg-gray-50
-                      transition
-                    "
-                  >
-
-                    <td className="px-4 py-4">
-                      {index + 1}
+                {empLoading ? (
+                  <tr>
+                    <td colSpan={3} className="text-center py-8 text-gray-400">
+                      Đang tải dữ liệu...
                     </td>
-
-                    <td className="
-                      px-4
-                      py-4
-                      font-medium
-                      text-gray-900
-                    ">
-                      {staff.name}
-                    </td>
-
-                    <td className="
-                      px-4
-                      py-4
-                      text-right
-                      font-semibold
-                      text-blue-600
-                    ">
-                      {staff.hours}
-                    </td>
-
                   </tr>
+                ) : topStaffs.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="text-center py-8 text-gray-400">
+                      Chưa có dữ liệu nhân viên
+                    </td>
+                  </tr>
+                ) : (
+                  topStaffs.map((staff, index) => (
 
-                ))}
+                    <tr
+                      key={index}
+                      className="
+                        border-t
+                        border-gray-100
+                        hover:bg-gray-50
+                        transition
+                      "
+                    >
+
+                      <td className="px-4 py-4">
+                        {index + 1}
+                      </td>
+
+                      <td className="
+                        px-4
+                        py-4
+                        font-medium
+                        text-gray-900
+                      ">
+                        {staff.name}
+                      </td>
+
+                      <td className="
+                        px-4
+                        py-4
+                        text-right
+                        font-semibold
+                        text-blue-600
+                      ">
+                        {staff.hoursFormatted || `${staff.hours} giờ`}
+                      </td>
+
+                    </tr>
+
+                  ))
+                )}
 
               </tbody>
             </table>

@@ -436,12 +436,6 @@ export default function TimeSheet() {
 
         <button
           onClick={() => {
-
-            console.log(
-              "delete",
-              deleteInfo
-            );
-
             setOpenDelete(false);
           }}
           className="h-[40px] px-6 bg-blue-600 text-white rounded-xl"
