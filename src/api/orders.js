@@ -1,5 +1,6 @@
 import { kitchenRequest } from "./client";
 import { API } from "./endpoint";
+import { normalizeOrderStatus } from "../constants/orderStatus";
 
 const unwrapList = (response) => {
   const payload = response?.data ?? response;
@@ -16,18 +17,6 @@ const unwrapList = (response) => {
 const toNumber = (value) => {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
-};
-
-const normalizeStatus = (status, fallbackStatus) => {
-  const nextStatus = String(status || fallbackStatus || "").toUpperCase();
-
-  if (nextStatus === "PENDING_PAYMENT" || nextStatus === "CASH") return "cash";
-  if (nextStatus === "PREPARING" || nextStatus === "PENDING") return "pending";
-  if (nextStatus === "READY_TO_PICKUP") return "done";
-  if (nextStatus === "DONE") return "done";
-  if (nextStatus === "CANCELLED" || nextStatus === "CANCELED") return "cancelled";
-
-  return String(fallbackStatus || status || "").toLowerCase();
 };
 
 const normalizePickupType = (order) => {
@@ -98,7 +87,7 @@ export const normalizeOrder = (order, fallbackStatus) => {
     orderKey: order.id || order.orderId || order.orderNumber || order.code,
     studentId: order.studentId || student.id || student.cardId,
     studentName: customer.fullName || student.name || student.fullName || order.studentName || order.customerName,
-    status: normalizeStatus(order.status, fallbackStatus),
+    status: normalizeOrderStatus(order.status, fallbackStatus),
     paymentMethod:
       String(order.paymentMethod || "").toUpperCase() === "CASH" ? "cash" : "card",
     pickupType: normalizePickupType(order),
