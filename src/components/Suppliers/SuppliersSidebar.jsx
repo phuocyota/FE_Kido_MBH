@@ -143,17 +143,14 @@ useEffect(() => {
             </label>
 
             {showTimeFilter && (
-              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-[9999]">
-                <TimeFilterPopup
-                  selectedTime={selectedTime}
-                  setSelectedTime={setSelectedTime}
-                  onClose={() =>
-                    setShowTimeFilter(false)
-                  }
-                />
-              </div>
-            )}
-
+  <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
+    <TimeFilterPopup
+      selectedTime={selectedTime}
+      setSelectedTime={setSelectedTime}
+      onClose={() => setShowTimeFilter(false)}
+    />
+  </div>
+)}
           </div>
 
           {/* Lựa chọn khác */}
@@ -188,11 +185,9 @@ useEffect(() => {
             </label>
 
             {showCustomDate && (
-  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 z-[9999]">
+  <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
     <CustomDatePopup
-      onClose={() =>
-        setShowCustomDate(false)
-      }
+      onClose={() => setShowCustomDate(false)}
     />
   </div>
 )}
