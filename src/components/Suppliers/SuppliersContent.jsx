@@ -10,9 +10,10 @@ export default function SuppliersContent({
   itemsPerPage,
 }) {
   return (
-    <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-visible">
+    <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
-      <table className="w-full">
+      <div className="overflow-x-auto">
+  <table className="w-full min-w-[900px]">
         <thead>
           <tr className="bg-[#eaf2ff] border-b">
             <th className="p-3">
@@ -86,9 +87,9 @@ export default function SuppliersContent({
           ))}
         </tbody>
       </table>
+      </div>
 
-      {/* Pagination */}
-      {/* Pagination */}
+       {/* Pagination */}
 <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white">
 
   <div className="text-sm text-gray-500">

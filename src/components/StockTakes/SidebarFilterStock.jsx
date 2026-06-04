@@ -43,7 +43,7 @@ export default function SidebarFilterStock() {
   const [openStatus, setOpenStatus] = useState(true);
 
   return (
-    <div className="w-72 space-y-4 relative" ref={popupRef}>
+    <div className="w-full md:w-72 space-y-4" ref={popupRef}>
 
       {/* ===== TÌM KIẾM ===== */}
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-300">
@@ -174,9 +174,7 @@ export default function SidebarFilterStock() {
 
         {/* ===== QUICK POPUP ===== */}
         {openTimePopup && (
-          <div className="absolute left-[300px] top-0 w-[520px] bg-white rounded-xl shadow-lg p-4 grid grid-cols-3 gap-4 z-50">
-
-            <div>
+<div className="fixed inset-x-2 top-24 z-[9999] bg-white rounded-xl shadow-xl p-4 max-h-[80vh] overflow-auto lg:absolute lg:inset-auto lg:left-full lg:top-0 lg:ml-3 lg:w-[520px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">            <div>
               <p className="font-semibold mb-3 text-sm">Theo ngày & tuần</p>
               {["Hôm nay", "Hôm qua", "Tuần này", "Tuần trước", "7 ngày qua"].map((item) => (
                 <p key={item} onClick={() => handleSelect(item)} className="text-blue-600 mt-2 cursor-pointer hover:underline">
@@ -208,9 +206,8 @@ export default function SidebarFilterStock() {
 
         {/* ===== DATE RANGE POPUP ===== */}
         {openDatePopup && (
-          <div className="absolute left-[300px] top-[80px] bg-white rounded-xl shadow-lg p-4 z-50">
-
-            <DateRange
+<div className="fixed inset-x-2 top-24 z-[9999] bg-white rounded-xl shadow-xl p-2 sm:p-4 max-h-[80vh] overflow-auto lg:absolute lg:inset-auto lg:left-full lg:top-0 lg:ml-3 lg:w-[800px]">
+             <DateRange
               editableDateInputs={true}
               onChange={(item) => setRange([item.selection])}
               moveRangeOnFirstSelection={false}

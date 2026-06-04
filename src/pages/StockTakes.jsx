@@ -49,16 +49,7 @@ export default function StockTakes() {
           <div className="flex h-full">
 
             {/* SIDEBAR */}
-            <div
-              className="
-                w-[85vw]
-                max-w-[340px]
-                bg-white
-                h-full
-                shadow-2xl
-                overflow-y-auto
-              "
-            >
+            <div className="w-[85vw] max-w-[340px] bg-white h-full shadow-2xl overflow-visible">
               {/* HEADER */}
               <div className="flex items-center justify-between p-4 border-b border-gray-300">
                 <div className="font-semibold text-lg ">
@@ -74,9 +65,9 @@ export default function StockTakes() {
               </div>
 
               {/* CONTENT */}
-              <div className="p-4">
-                <SidebarFilterStock />
-              </div>
+              <div className="p-4 h-[calc(100vh-70px)] overflow-y-auto">
+  <SidebarFilterStock />
+</div>
             </div>
 
             {/* OVERLAY */}
