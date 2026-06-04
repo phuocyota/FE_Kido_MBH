@@ -55,3 +55,20 @@ export const hasValidAuthSession = () => {
 
   return true;
 };
+
+export const getBranchNameFromToken = () => {
+  const token = getAccessToken();
+  if (!token) return null;
+
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+
+    const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decodedPayload = JSON.parse(atob(normalizedPayload));
+
+    return decodedPayload.branchName || null;
+  } catch {
+    return null;
+  }
+};

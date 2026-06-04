@@ -2,35 +2,44 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { reportApi } from "../../../api";
 
-export default function ProductSaleReport() {
+export default function ProductSaleReport({ fromDate, toDate }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reportData, setReportData] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fromDate, toDate]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Get top products as mock data for sale report
-      const result = await reportApi.getTopProducts();
-      // Map to FE format
-      const mappedData = result.map((item, index) => ({
-        stt: index + 1,
-        group: "Snack",
-        code: "",
-        name: item.productName,
-        unit: "BỊCH",
-        usage: String(item.totalQuantity),
-        stock: String(Math.floor(item.totalQuantity / 10)),
-        usagePer: "0.1",
-        min: "2.6",
-        max: "3.3",
-        warning: "",
-        order: "",
+      // Format dates to ISO datetime for backend
+      const from = fromDate ? new Date(fromDate).toISOString() : undefined;
+      const to = toDate ? new Date(toDate).toISOString() : undefined;
+      // Get monthly order plan report with date range
+      const response = await reportApi.getMonthlyOrderPlan(null, from, to);
+      // response.data = { success, message, data }, so actual report is in response.data.data
+      const result = response.data?.data || response.data || response;
+      
+      setReportData(result);
+      
+      // Map to FE format according to FE_HANDOFF.md
+      const mappedData = result.data?.map((item) => ({
+        stt: item.stt,
+        group: item.group,
+        code: item.code,
+        name: item.name,
+        unit: item.unit,
+        usage: String(item.monthlyUsage || 0),
+        stock: item.stockOnHand === null ? "" : String(item.stockOnHand),
+        usagePer: item.usagePerMil === null ? "" : String(item.usagePerMil),
+        min: String(item.planSales?.min || 0),
+        max: String(item.planSales?.max || 0),
+        warning: item.warningQuantity === null ? "" : String(item.warningQuantity),
+        order: String(item.suggestedOrderQuantity || 0),
         adjust: "",
-      }));
+      })) || [];
       setRows(mappedData);
     } catch (error) {
       toast.error("Không thể tải báo cáo");
@@ -79,7 +88,7 @@ export default function ProductSaleReport() {
 
           {/* VALUE */}
           <div className="flex-1 border-t border-r border-b border-gray-400 bg-[#DCE6F1] flex items-center justify-end px-8 text-[26px] font-bold">
-            150,000,000
+            {reportData?.revenueMonth?.toLocaleString("vi-VN") || "150,000,000"}
           </div>
 
         </div>
@@ -90,15 +99,15 @@ export default function ProductSaleReport() {
       <div className="col-span-8 p-6">
 
         <div className="text-[28px] font-bold">
-          CÔNG TY TNHH KIDO EDU
+          {reportData?.companyName || "CÔNG TY TNHH KIDO EDU"}
         </div>
 
         <div className="mt-6 text-[22px] font-bold">
-          Trường : KIDO
+          Trường : {reportData?.schoolName || "KIDO"}
         </div>
 
-        <div className="mt-8   text-[38px] font-bold">
-          Kế hoạch đặt hàng hóa trong Tháng
+        <div className="mt-8 text-[38px] font-bold">
+          {reportData?.title || "Kế hoạch đặt hàng hóa trong Tháng"}
         </div>
 
       </div>

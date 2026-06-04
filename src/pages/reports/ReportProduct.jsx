@@ -314,6 +314,10 @@ export default function ReportProduct() {
             // INTEREST
             interest={interest}
 
+            // TIME
+            fromDate={fromDate}
+            toDate={toDate}
+
             // ZOOM
             zoom={zoom}
 

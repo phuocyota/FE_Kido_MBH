@@ -12,9 +12,10 @@ export default function ReportEndDay() {
 
   const [dateType, setDateType] = useState("range");
 
-  const [fromDate, setFromDate] = useState("2026-05-07");
+  const today = new Date().toISOString().split("T")[0];
+  const [fromDate, setFromDate] = useState(today);
 
-  const [toDate, setToDate] = useState("2026-05-07");
+  const [toDate, setToDate] = useState(today);
 
   const [zoom, setZoom] = useState(1);
 

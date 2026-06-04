@@ -76,4 +76,18 @@ export const reportApi = {
     const response = await axiosInstance.get(`/reports/shifts/${shiftId}/summary`);
     return response.data;
   },
+
+  // Monthly order plan (Ke hoach dat hang hoa trong Thang)
+  getMonthlyOrderPlan: async (month, from, to, branchId, minRate, maxRate) => {
+    const params = {};
+    if (month) params.month = month;
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (branchId) params.branchId = branchId;
+    if (minRate !== undefined) params.minRate = minRate;
+    if (maxRate !== undefined) params.maxRate = maxRate;
+
+    const response = await axiosInstance.get("/reports/monthly-order-plan", { params });
+    return response.data;
+  },
 };
