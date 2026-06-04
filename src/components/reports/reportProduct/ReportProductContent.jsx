@@ -26,6 +26,10 @@ export default function ReportProductContent({
   // INTEREST
   interest,
 
+  // TIME
+  fromDate,
+  toDate,
+
   // ZOOM
   zoom,
 
@@ -118,7 +122,7 @@ export default function ReportProductContent({
 
               ? <ProductSaleChart />
 
-              : <ProductSaleReport />
+              : <ProductSaleReport fromDate={fromDate} toDate={toDate} />
 
           )}
 
@@ -150,7 +154,7 @@ export default function ReportProductContent({
 
                 ? <ProductSaleChart />
 
-                : <ProductSaleReport />
+                : <ProductSaleReport fromDate={fromDate} toDate={toDate} />
 
             )}
 

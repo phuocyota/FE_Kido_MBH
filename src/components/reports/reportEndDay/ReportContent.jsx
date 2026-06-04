@@ -11,6 +11,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { reportApi } from "../../../api";
+import { getBranchNameFromToken } from "../../../api/authSession";
 
 export default function ReportContent({
   reportType,
@@ -31,6 +32,7 @@ export default function ReportContent({
 }) {
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const branchName = getBranchNameFromToken() || "Trường tiểu học ABC";
 
   // Fetch end of day report
   useEffect(() => {
@@ -42,10 +44,11 @@ export default function ReportContent({
     try {
       const effectiveFromDate = fromDate || new Date().toISOString().split("T")[0];
       const effectiveToDate = dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
-      const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate);
-      // Map BE data to FE format
-      const mappedData = result.data?.map(item => ({
-        date: item.date,
+      const branchId = "11111111-1111-4111-8111-111111111111";
+      const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate, branchId);
+      // Map BE data to FE format - result.data.data contains the items array
+      const mappedData = result.data?.data?.map(item => ({
+        date: new Date(item.date).toLocaleDateString("vi-VN"),
         code: item.code,
         name: item.name,
         price: item.price.toLocaleString(),
@@ -139,7 +142,7 @@ return (
           </h1>
 
           <div className="text-center mt-3 text-[20px] text-gray-700">
-            Trường tiểu học ABC
+            {branchName}
           </div>
 
         </div>
@@ -265,7 +268,7 @@ return (
           </h1>
 
           <div className="text-center mt-3 text-[20px] text-gray-700">
-            Trường tiểu học ABC
+            {branchName}
           </div>
 
         </div>
