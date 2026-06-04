@@ -12,11 +12,7 @@ export default function TimeFilterPopup({
     },
     {
       title: "Theo tuần",
-      items: [
-        "Tuần này",
-        "Tuần trước",
-        "7 ngày qua",
-      ],
+      items: ["Tuần này", "Tuần trước", "7 ngày qua"],
     },
     {
       title: "Theo tháng",
@@ -45,43 +41,39 @@ export default function TimeFilterPopup({
   ];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] min-w-[900px]">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] w-full max-w-[95vw] lg:w-[860px] overflow-hidden">
+      <div className="p-4 lg:p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 lg:gap-8">
+          {groups.map((group) => (
+            <div key={group.title}>
+              <h4 className="font-semibold text-base lg:text-lg mb-3 lg:mb-4 whitespace-nowrap">
+                {group.title}
+              </h4>
 
-      <div className="flex gap-10 p-5">
-
-        {groups.map((group) => (
-          <div key={group.title} className="min-w-[120px]">
-            <h4 className="font-semibold text-lg mb-4 whitespace-nowrap">
-              {group.title}
-            </h4>
-
-            <div className="flex flex-wrap gap-2">
-
-              {group.items.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    setSelectedTime(item);
-                    onClose();
-                  }}
-                  className={`px-4 py-2 rounded-full border text-sm transition
-                  ${
-                    selectedTime === item
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-
+              <div className="flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => {
+                      setSelectedTime(item);
+                      onClose();
+                    }}
+                    className={`px-3 lg:px-4 py-2 rounded-full border text-sm transition ${
+                      selectedTime === item
+                        ? "bg-blue-600 border-blue-600 text-white"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-
+          ))}
+        </div>
       </div>
 
-      <div className="border-t px-5 py-3">
+      <div className="border-t px-4 lg:px-5 py-3">
         <button
           onClick={() => {
             setSelectedTime("Toàn thời gian");
@@ -92,7 +84,6 @@ export default function TimeFilterPopup({
           Đặt về mặc định
         </button>
       </div>
-
     </div>
   );
 }

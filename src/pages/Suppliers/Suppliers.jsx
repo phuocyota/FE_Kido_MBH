@@ -4,10 +4,7 @@ import {
   Plus,
   Upload,
   Download,
-  Calendar,
-  ChevronRight,
-  HelpCircle,
-  LayoutGrid,
+  
 } from "lucide-react";
 
 import suppliersData from "../../datas/suppliersData";
@@ -62,7 +59,7 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
             Nhà cung cấp
           </h1>
 
-          <div className="flex items-center gap-3 flex-1 justify-end">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 flex-1 lg:justify-end">
 
             <div className="relative w-full max-w-xl">
               <Search
@@ -76,8 +73,7 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
                 className="w-full h-11 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               />
             </div>
-
-            <button
+<button
   onClick={() => setOpenAddSupplier(true)}
   className="h-11 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 font-medium cursor-pointer"
 >
@@ -85,23 +81,17 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
   Nhà cung cấp
 </button>
 
-            <button className="h-11 px-4 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 cursor-pointer">
-              <Upload size={18} />
-              Import
-            </button>
+<button className="h-11 px-4 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 cursor-pointer">
+  <Upload size={18} />
+  Import
+</button>
 
-            <button className="h-11 px-4 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 cursor-pointer">
-              <Download size={18} />
-              Xuất file
-            </button>
+<button className="h-11 px-4 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 cursor-pointer">
+  <Download size={18} />
+  Xuất file
+</button>
 
-            {/* <button className="h-11 w-11 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50">
-              <LayoutGrid size={18} />
-            </button>
-
-            <button className="h-11 w-11 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50">
-              <HelpCircle size={18} />
-            </button> */}
+             
           </div>
         </div>
 
