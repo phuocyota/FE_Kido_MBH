@@ -1,6 +1,70 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { reportApi } from "../../api/reportApi";
 
 export default function Summary() {
+  const [todayStats, setTodayStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTodayStats = async () => {
+      try {
+        // Get today's date range
+        const today = new Date();
+        const from = today.toISOString().split('T')[0];
+        const to = from;
+
+        const [revenueRes, customers] = await Promise.all([
+          reportApi.getRevenue(from, to),
+          reportApi.getCustomerStats("today"),
+        ]);
+
+        // Extract data from API response wrapper { success, message, data }
+        const revenue = revenueRes.data || revenueRes;
+
+        console.log("📊 Revenue API response:", revenueRes);
+        console.log("👥 Customers API response:", customers);
+        console.log("📈 Extracted revenue data:", revenue);
+
+        const stats = {
+          revenue: revenue.netRevenue || revenue.totalRevenue || 0,
+          orders: revenue.orderCount || 0,
+          customers: customers.totalCustomers || 0,
+        };
+        console.log("✅ Setting todayStats:", stats);
+        setTodayStats(stats);
+      } catch (error) {
+        console.error("Failed to fetch today stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodayStats();
+
+    // Auto-refresh every 10 seconds for today stats
+    const interval = setInterval(fetchTodayStats, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("vi-VN").format(value || 0);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4 md:p-5">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-gray-100 rounded-2xl"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4 md:p-5">
 
@@ -35,11 +99,11 @@ export default function Summary() {
               </div>
 
               <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                0
+                {formatCurrency(todayStats?.revenue)}
               </div>
 
               <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                Không phát sinh doanh thu
+                {todayStats?.revenue > 0 ? "Phát sinh doanh thu" : "Không phát sinh doanh thu"}
               </div>
 
               <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
@@ -92,11 +156,11 @@ export default function Summary() {
               </div>
 
               <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                0
+                {todayStats?.orders || 0}
               </div>
 
               <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                Không phát sinh đơn
+                {todayStats?.orders > 0 ? "Đơn hàng phát sinh" : "Không phát sinh đơn"}
               </div>
 
               <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
@@ -107,7 +171,9 @@ export default function Summary() {
                   </span>
 
                   <span className="font-semibold text-gray-900">
-                    0
+                    {todayStats?.orders > 0 && todayStats?.revenue > 0
+                      ? formatCurrency(Math.round(todayStats.revenue / todayStats.orders))
+                      : 0}
                   </span>
                 </div>
 
@@ -117,7 +183,9 @@ export default function Summary() {
                   </span>
 
                   <span className="font-semibold text-gray-900">
-                    0
+                    {todayStats?.orders > 0 && todayStats?.customers > 0
+                      ? Math.round((todayStats.customers / todayStats.orders) * 10) / 10
+                      : 0}
                   </span>
                 </div>
 
@@ -149,11 +217,11 @@ export default function Summary() {
               </div>
 
               <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                0%
+                {todayStats?.customers || 0}
               </div>
 
               <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                0/1 bàn đang sử dụng
+                {todayStats?.customers > 0 ? "Khách hàng hôm nay" : "Chưa có khách hàng"}
               </div>
 
               <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
@@ -164,7 +232,7 @@ export default function Summary() {
                   </span>
 
                   <span className="font-semibold text-gray-900">
-                    0
+                    {todayStats?.orders || 0}
                   </span>
                 </div>
 
@@ -174,7 +242,7 @@ export default function Summary() {
                   </span>
 
                   <span className="font-semibold text-gray-900">
-                    0
+                    {todayStats?.customers || 0}
                   </span>
                 </div>
 

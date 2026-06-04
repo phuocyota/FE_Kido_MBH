@@ -23,6 +23,14 @@ export const reportApi = {
     return response.data;
   },
 
+  getCustomerStats: async (filter = "7days", branchId) => {
+    const params = { filter };
+    if (branchId) params.branchId = branchId;
+
+    const response = await axiosInstance.get("/reports/customer", { params });
+    return response.data;
+  },
+
   // Top selling products
   getTopProducts: async (from, to, branchId, limit = 10) => {
     const params = { limit };

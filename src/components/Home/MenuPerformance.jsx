@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   Info,
@@ -12,12 +12,42 @@ import {
 } from "chart.js";
 
 import { Doughnut } from "react-chartjs-2";
+import { dashboardApi } from "../../api/dashboardApi";
 
 ChartJS.register(
   ArcElement,
   Tooltip,
   Legend
 );
+
+const filterOptions = [
+  { label: "Hôm nay", value: "today" },
+  { label: "Hôm qua", value: "yesterday" },
+  { label: "7 ngày qua", value: "7days" },
+  { label: "Tháng này", value: "thisMonth" },
+  { label: "Tháng trước", value: "lastMonth" },
+];
+
+const viewTypeOptions = {
+  "Theo nhóm": "category",
+  "Theo loại": "type",
+};
+
+const formatCompactCurrency = (value) => {
+  const amount = Number(value) || 0;
+
+  if (amount >= 1000000) {
+    return `${Math.round(amount / 1000000)}M`;
+  }
+
+  if (amount >= 1000) {
+    return `${Math.round(amount / 1000)}K`;
+  }
+
+  return `${amount}`;
+};
+
+const formatCurrency = (value) => new Intl.NumberFormat("vi-VN").format(Number(value) || 0);
 
 export default function MenuPerformance() {
 
@@ -27,56 +57,56 @@ export default function MenuPerformance() {
 
   const [open, setOpen] = useState(false);
 
-  const filters = [
-    "Hôm nay",
-    "Hôm qua",
-    "7 ngày qua",
-    "Tháng này",
-    "Tháng trước",
-  ];
+  const [menuPerformance, setMenuPerformance] = useState(null);
 
-  const categoryData = [
-    {
-      name: "Món chính",
-      value: 45,
-    },
-    {
-      name: "Đồ uống",
-      value: 25,
-    },
-    {
-      name: "Ăn vặt",
-      value: 18,
-    },
-    {
-      name: "Tráng miệng",
-      value: 12,
-    },
-  ];
+  const [loading, setLoading] = useState(false);
 
-  const topProducts = [
-    {
-      name: "Mì gói omachi",
-      sold: 124,
-      revenue: "8,450,000",
-    },
-    {
-      name: "Nước suối",
-      sold: 98,
-      revenue: "5,620,000",
-    },
-    {
-      name: "Sữa Milo",
-      sold: 86,
-      revenue: "3,910,000",
-    },
-    {
-      name: "Kẹo dẻo",
-      sold: 74,
-      revenue: "6,100,000",
-    },
-    
-  ];
+  const [error, setError] = useState("");
+
+  const filterValue = useMemo(() => {
+    return filterOptions.find((item) => item.label === filter)?.value || "7days";
+  }, [filter]);
+
+  const groupBy = viewTypeOptions[viewType] || "type";
+
+  const categoryData = menuPerformance?.groups || [];
+
+  const summary = menuPerformance?.summary || {};
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchMenuPerformance = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await dashboardApi.getMenuPerformance({
+          filter: filterValue,
+          groupBy,
+        });
+
+        if (active) {
+          setMenuPerformance(data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err?.response?.data?.message || "Không thể tải dữ liệu hiệu quả thực đơn");
+          setMenuPerformance(null);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchMenuPerformance();
+
+    return () => {
+      active = false;
+    };
+  }, [filterValue, groupBy]);
 
   return (
     <div className="
@@ -214,12 +244,12 @@ export default function MenuPerformance() {
                   z-50
                 ">
 
-                  {filters.map((item) => (
+                  {filterOptions.map((item) => (
 
                     <button
-                      key={item}
+                      key={item.value}
                       onClick={() => {
-                        setFilter(item);
+                        setFilter(item.label);
                         setOpen(false);
                       }}
                       className={`
@@ -230,13 +260,13 @@ export default function MenuPerformance() {
                         text-sm
                         transition
 
-                        ${filter === item
+                        ${filter === item.label
                           ? "bg-blue-50 text-blue-600 font-medium"
                           : "hover:bg-gray-50 text-gray-700"
                         }
                       `}
                     >
-                      {item}
+                      {item.label}
                     </button>
 
                   ))}
@@ -270,7 +300,7 @@ export default function MenuPerformance() {
               </div>
 
               <div className="text-[34px] font-bold text-black mt-1">
-                85K
+                {formatCompactCurrency(summary.averagePerItem)}
               </div>
             </div>
           </div>
@@ -289,7 +319,7 @@ export default function MenuPerformance() {
               </div>
 
               <div className="text-[34px] font-bold text-black mt-1">
-                120K
+                {formatCompactCurrency(summary.averageFood)}
               </div>
             </div>
           </div>
@@ -308,7 +338,7 @@ export default function MenuPerformance() {
               </div>
 
               <div className="text-[34px] font-bold text-black mt-1">
-                45K
+                {formatCompactCurrency(summary.averageDrink)}
               </div>
             </div>
           </div>
@@ -333,7 +363,7 @@ export default function MenuPerformance() {
         ">
 
           <h3 className="text-[20px] font-semibold text-gray-900 mb-5">
-            Loại thực đơn
+            {viewType === "Theo nhóm" ? "Nhóm thực đơn" : "Loại thực đơn"}
           </h3>
 
           <div className="
@@ -352,7 +382,7 @@ export default function MenuPerformance() {
 
                   datasets: [
                     {
-                      data: categoryData.map((item) => item.value),
+                      data: categoryData.map((item) => item.percentage || 0),
 
                       backgroundColor: [
                         "#1677ff",
@@ -378,7 +408,7 @@ export default function MenuPerformance() {
             </div>
 
             <p className="mt-6 text-gray-600 text-center">
-              Doanh thu theo nhóm món
+              {loading ? "Đang tải dữ liệu..." : error || "Doanh thu theo nhóm món"}
             </p>
 
           </div>
@@ -396,7 +426,7 @@ export default function MenuPerformance() {
           ">
 
             <h3 className="text-[20px] font-semibold text-gray-900">
-              Chi tiết từng loại thực đơn
+              {viewType === "Theo nhóm" ? "Chi tiết từng nhóm thực đơn" : "Chi tiết từng loại thực đơn"}
             </h3>
 
             <button className="
@@ -436,15 +466,15 @@ export default function MenuPerformance() {
                   </th>
 
                   <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">
-                    Top món bán chạy
+                    Tên nhóm/loại
                   </th>
 
                   <th className="px-4 py-4 text-center text-sm font-semibold text-gray-700">
-                    Số lượng bán
+                    Số lượng
                   </th>
 
                   <th className="px-4 py-4 text-right text-sm font-semibold text-gray-700">
-                    Doanh thu thuần
+                    Doanh thu
                   </th>
 
                 </tr>
@@ -453,10 +483,10 @@ export default function MenuPerformance() {
 
               <tbody>
 
-                {topProducts.map((item, index) => (
+                {categoryData.map((item, index) => (
 
                   <tr
-                    key={index}
+                    key={item.id || item.name || index}
                     className="border-t border-gray-100 hover:bg-gray-50 transition"
                   >
 
@@ -473,11 +503,11 @@ export default function MenuPerformance() {
                     </td>
 
                     <td className="px-4 py-4 text-center font-medium text-blue-600">
-                      {item.sold}
+                      {item.quantity || 0}
                     </td>
 
                     <td className="px-4 py-4 text-right font-semibold text-green-600">
-                      {item.revenue}đ
+                      {formatCurrency(item.revenue)}đ
                     </td>
 
                   </tr>
