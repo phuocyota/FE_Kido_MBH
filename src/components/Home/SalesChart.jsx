@@ -1,6 +1,7 @@
 
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { reportApi } from "../../api/reportApi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,17 +31,16 @@ ChartJS.register(
 );
 
 export default function DashboardCharts() {
-
-
   const tabs = ["Theo giờ", "Theo ngày", "Theo thứ"];
 
-
-  // LEFT 
+  // LEFT
   const [activeTab, setActiveTab] = useState("Theo thứ");
-
   const [filter, setFilter] = useState("7 ngày qua");
-
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [revenueData, setRevenueData] = useState(null);
+  const [customerStats, setCustomerStats] = useState(null);
+
   const filters = [
     "Hôm nay",
     "Hôm qua",
@@ -49,112 +49,124 @@ export default function DashboardCharts() {
     "Tháng trước",
   ];
 
-  const mockData = {
+  // Helper to get date range from filter
+  const getDateRange = () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let from = new Date(today);
+    let to = new Date(today);
 
-    "Hôm nay": {
-      revenue: "2,450,000",
-      orders: 12,
+    switch (filter) {
+      case "Hôm nay":
+        break;
+      case "Hôm qua":
+        from.setDate(from.getDate() - 1);
+        to.setDate(to.getDate() - 1);
+        break;
+      case "7 ngày qua":
+        from.setDate(from.getDate() - 6);
+        break;
+      case "Tháng này":
+        from = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case "Tháng trước":
+        from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        to = new Date(now.getFullYear(), now.getMonth(), 0);
+        break;
+      default:
+        from.setDate(from.getDate() - 6);
+    }
 
-      hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [1, 2, 4, 3, 5],
-      },
-
-      day: {
-        labels: ["Hôm nay"],
-        values: [24],
-      },
-
-      week: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [5, 9, 6, 12, 8, 15, 10],
-      },
-    },
-
-    "Hôm qua": {
-      revenue: "1,820,000",
-      orders: 9,
-
-      hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [1, 1.5, 2, 3, 2],
-      },
-
-      day: {
-        labels: ["Hôm qua"],
-        values: [18],
-      },
-
-      week: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [4, 7, 5, 10, 7, 11, 8],
-      },
-    },
-
-    "7 ngày qua": {
-      revenue: "8,031,000",
-      orders: 35,
-
-      hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [2, 4, 5, 3, 6],
-      },
-
-      day: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [8, 12, 9, 15, 11, 18, 13],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [45, 58, 62, 77],
-      },
-    },
-
-    "Tháng này": {
-      revenue: "32,550,000",
-      orders: 148,
-
-      hour: {
-        labels: ["06h", "08h", "10h", "12h", "14h"],
-        values: [5, 8, 12, 18, 15],
-      },
-
-      day: {
-        labels: ["1", "5", "10", "15", "20", "25", "30"],
-        values: [12, 18, 25, 22, 28, 30, 26],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [68, 74, 91, 103],
-      },
-    },
-
-    "Tháng trước": {
-      revenue: "28,740,000",
-      orders: 132,
-
-      hour: {
-        labels: ["06h", "08h", "10h", "12h", "14h"],
-        values: [4, 7, 10, 15, 13],
-      },
-
-      day: {
-        labels: ["1", "5", "10", "15", "20", "25", "30"],
-        values: [10, 15, 20, 19, 25, 28, 24],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [55, 67, 83, 95],
-      },
-    },
-
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    return { from: formatDate(from), to: formatDate(to) };
   };
 
+  // Fetch data from API when filter changes
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { from, to } = getDateRange();
+        const [revenueRes, customers] = await Promise.all([
+          reportApi.getDailyRevenue(from, to),
+          reportApi.getCustomerStats("today"),
+        ]);
+        // Extract data from API response wrapper
+        const revenue = revenueRes.data || revenueRes;
+        setRevenueData(revenue);
+        setCustomerStats(customers);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const currentData = mockData[filter];
+    fetchData();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [filter]);
+
+  // Transform API data to chart format
+  const transformRevenueData = () => {
+    if (!revenueData) {
+      return {
+        revenue: "0",
+        orders: 0,
+        hour: { labels: [], values: [] },
+        day: { labels: [], values: [] },
+        week: { labels: [], values: [] },
+      };
+    }
+
+    // Handle reportApi.getDailyRevenue response format
+    // Response: { from, to, data: [{ date, orderCount, revenue }, ...] }
+    let dailyData = [];
+    if (Array.isArray(revenueData)) {
+      dailyData = revenueData;
+    } else if (revenueData?.data && Array.isArray(revenueData.data)) {
+      dailyData = revenueData.data;
+    } else if (revenueData?.daily && Array.isArray(revenueData.daily)) {
+      dailyData = revenueData.daily;
+    }
+
+    // Format currency
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat("vi-VN").format(value || 0);
+    };
+
+    // Get day of week in Vietnamese
+    const getDayLabel = (dateStr) => {
+      const date = new Date(dateStr);
+      const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+      return days[date.getDay()];
+    };
+
+    // Calculate totals from daily data
+    const totalRevenue = dailyData.reduce((sum, d) => sum + (d.revenue || 0), 0);
+    const totalOrders = dailyData.reduce((sum, d) => sum + (d.orderCount || d.orders || 0), 0);
+
+    return {
+      revenue: formatCurrency(totalRevenue),
+      orders: totalOrders,
+      hour: {
+        labels: ["06h", "07h", "08h", "09h", "10h"],
+        values: dailyData.length > 0 ? dailyData.map(() => totalRevenue / 5 / 1000000) : [0, 0, 0, 0, 0],
+      },
+      day: {
+        labels: dailyData.map((d) => getDayLabel(d.date)),
+        values: dailyData.map((d) => (d.revenue || 0) / 1000000),
+      },
+      week: {
+        labels: dailyData.map((d) => getDayLabel(d.date)),
+        values: dailyData.map((d) => (d.revenue || 0) / 1000000),
+      },
+    };
+  };
+
+  const currentData = transformRevenueData();
   const chartData = useMemo(() => {
 
     if (activeTab === "Theo giờ") {
@@ -210,111 +222,52 @@ export default function DashboardCharts() {
 
   // RIGHT
   const [activeTab2, setActiveTab2] = useState("Theo thứ");
-
-  const [filter2, setFilter2] = useState("7 ngày qua");
-
   const [open2, setOpen2] = useState(false);
+  // Use same filter for both charts
 
-  const customerData = {
+  // Transform API customer data to chart format
+  const transformCustomerData = () => {
+    if (!customerStats) {
+      return {
+        total: 0,
+        hour: { labels: [], values: [] },
+        day: { labels: [], values: [] },
+        week: { labels: [], values: [] },
+      };
+    }
 
-    "Hôm nay": {
-      total: 48,
+    const daily = customerStats.daily || [];
 
+    // Get day of week in Vietnamese
+    const getDayLabel = (dateStr) => {
+      const date = new Date(dateStr);
+      const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+      return days[date.getDay()];
+    };
+
+    // Aggregate hourly data from daily (simplified)
+    const hourlyValues = daily.length > 0 
+      ? daily.map((d) => Math.round(d.customers / 8)) // Estimate per hour
+      : [];
+
+    return {
+      total: customerStats.totalCustomers || 0,
       hour: {
         labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [2, 5, 8, 12, 9],
+        values: hourlyValues.length >= 5 ? hourlyValues.slice(0, 5) : [0, 0, 0, 0, 0],
       },
-
       day: {
-        labels: ["Hôm nay"],
-        values: [48],
+        labels: daily.map((d) => getDayLabel(d.date)),
+        values: daily.map((d) => d.customers),
       },
-
       week: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [12, 18, 15, 20, 17, 25, 21],
+        labels: daily.map((d) => getDayLabel(d.date)),
+        values: daily.map((d) => d.customers),
       },
-    },
-
-    "Hôm qua": {
-      total: 36,
-
-      hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [1, 3, 6, 9, 7],
-      },
-
-      day: {
-        labels: ["Hôm qua"],
-        values: [36],
-      },
-
-      week: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [10, 14, 12, 17, 15, 20, 18],
-      },
-    },
-
-    "7 ngày qua": {
-      total: 214,
-
-      hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: [5, 9, 15, 22, 18],
-      },
-
-      day: {
-        labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
-        values: [28, 35, 31, 40, 37, 45, 39],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [120, 158, 174, 214],
-      },
-    },
-
-    "Tháng này": {
-      total: 856,
-
-      hour: {
-        labels: ["06h", "08h", "10h", "12h", "14h"],
-        values: [18, 25, 32, 40, 37],
-      },
-
-      day: {
-        labels: ["1", "5", "10", "15", "20", "25", "30"],
-        values: [45, 52, 68, 74, 81, 90, 86],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [220, 315, 428, 512],
-      },
-    },
-
-    "Tháng trước": {
-      total: 721,
-
-      hour: {
-        labels: ["06h", "08h", "10h", "12h", "14h"],
-        values: [15, 20, 28, 35, 31],
-      },
-
-      day: {
-        labels: ["1", "5", "10", "15", "20", "25", "30"],
-        values: [40, 48, 59, 66, 72, 78, 74],
-      },
-
-      week: {
-        labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-        values: [180, 264, 358, 441],
-      },
-    },
-
+    };
   };
 
-  const currentCustomerData = customerData[filter2];
+  const currentCustomerData = transformCustomerData();
 
   const customerChartData = useMemo(() => {
 
@@ -348,7 +301,11 @@ export default function DashboardCharts() {
                 Doanh thu thuần
               </h2>
 
-              <p className="mt-3 text-[18px] font-semibold text-gray-900">
+              <p className="mt-3 text-[22px] font-bold text-blue-600">
+                {currentData.revenue}đ
+              </p>
+
+              <p className="mt-1 text-[14px] font-medium text-gray-500">
                 ({currentData.orders} hóa đơn)
               </p>
             </div>
@@ -540,7 +497,7 @@ export default function DashboardCharts() {
       text-gray-700
     "
               >
-                <span>{filter2}</span>
+                <span>{filter}</span>
 
                 <ChevronDown
                   size={18}
@@ -571,7 +528,7 @@ export default function DashboardCharts() {
                     <button
                       key={item}
                       onClick={() => {
-                        setFilter2(item);
+                        setFilter(item);
                         setOpen2(false);
                       }}
                       className={`
@@ -581,7 +538,7 @@ export default function DashboardCharts() {
             text-left
             hover:bg-gray-50
 
-            ${filter2 === item
+            ${filter === item
                           ? "bg-blue-50 text-blue-600"
                           : ""
                         }
