@@ -10,7 +10,6 @@ export default function EmployeeDetail({
   employee,
    onUpdate,
 }) {
-      console.log(onUpdate)
   const [tab, setTab] =
     useState("info");
 

@@ -1,8 +1,86 @@
-import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Edit2, Save, X } from "lucide-react";
 import AddProductModal from "./AddProductModal";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
+
+// Inline editable cell component
+function EditableCell({ value, onSave, type = "text", align = "left" }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  const handleSave = () => {
+    if (editValue !== value) {
+      onSave(editValue);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="relative w-full h-full">
+        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 bg-white shadow-md border border-blue-500 rounded px-2 py-1 min-w-[120px]">
+          <input
+            ref={inputRef}
+            type={type}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            className={`flex-1 min-w-0 px-0 py-0 text-sm border-0 outline-none text-${align}`}
+          />
+          <button
+            onClick={handleSave}
+            className="p-0.5 text-green-600 hover:bg-green-50 rounded shrink-0"
+          >
+            <Save size={12} />
+          </button>
+          <button
+            onClick={handleCancel}
+            className="p-0.5 text-red-600 hover:bg-red-50 rounded shrink-0"
+          >
+            <X size={12} />
+          </button>
+        </div>
+        <span className="invisible">{value}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      className={`cursor-pointer hover:bg-blue-50 px-2 py-1 rounded text-${align} group flex items-center justify-between overflow-hidden`}
+    >
+      <span className="truncate">{value}</span>
+      <Edit2 size={14} className="opacity-0 group-hover:opacity-50 text-gray-400 shrink-0 ml-1" />
+    </div>
+  );
+}
 
 export default function TableProduct() {
   const [products, setProducts] = useState([]);
@@ -41,6 +119,17 @@ export default function TableProduct() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentData = products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
+  const handleUpdateProduct = async (productId, field, value) => {
+    try {
+      const updateData = { [field]: value };
+      await productApi.update(productId, updateData);
+      toast.success("Cập nhật thành công");
+      fetchProducts();
+    } catch (error) {
+      toast.error("Không thể cập nhật");
+    }
+  };
+
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
@@ -50,6 +139,7 @@ export default function TableProduct() {
   };
 
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   return (
     <div>
@@ -59,7 +149,10 @@ export default function TableProduct() {
 
         <div className="flex gap-2">
           <button
-            onClick={() => setOpenAddModal(true)}
+            onClick={() => {
+              setSelectedProduct(null);
+              setOpenAddModal(true);
+            }}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer  "
           >
             + Thêm mới
@@ -110,13 +203,48 @@ export default function TableProduct() {
           currentData.map((item, index) => (
           <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
             <td className="p-4 text-center"><input type="checkbox" /></td>
-            <td className="p-4">{item.code}</td>
-            <td className="p-4">{item.name}</td>
-            <td className="p-4 text-center">{item.category}</td>
-            <td className="p-4 text-center">{item.price}</td>
-            <td className="p-4 text-center">{item.cost}</td>
+            <td className="p-2">
+              <EditableCell
+                value={item.code}
+                onSave={(val) => handleUpdateProduct(item.id, "sku", val)}
+              />
+            </td>
+            <td className="p-2">
+              <EditableCell
+                value={item.name}
+                onSave={(val) => handleUpdateProduct(item.id, "name", val)}
+              />
+            </td>
+            <td className="p-2 text-center">{item.category}</td>
+            <td className="p-2">
+              <EditableCell
+                value={item.price}
+                onSave={(val) => handleUpdateProduct(item.id, "price", parseFloat(val))}
+                type="number"
+                align="center"
+              />
+            </td>
+            <td className="p-2">
+              <EditableCell
+                value={item.cost}
+                onSave={(val) => handleUpdateProduct(item.id, "costPrice", parseFloat(val))}
+                type="number"
+                align="center"
+              />
+            </td>
             <td className="p-4 text-center">{item.stock}</td>
-            <td className="p-4 text-center">0</td>
+            <td className="p-4 text-center">
+              <button
+                onClick={() => {
+                  setSelectedProduct(item);
+                  setOpenAddModal(true);
+                }}
+                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                title="Sửa chi tiết"
+              >
+                <Edit2 size={16} />
+              </button>
+            </td>
           </tr>
         ))
         )}
@@ -153,15 +281,34 @@ export default function TableProduct() {
 
 
       <AddProductModal
-  open={openAddModal}
-  onClose={() => setOpenAddModal(false)}
-  onSave={(data) => {
-    console.log("PRODUCT:", data);
-
-    // sau này gọi API tạo sản phẩm
-    // createProduct(data)
-  }}
-/>
+        open={openAddModal}
+        onClose={() => {
+          setOpenAddModal(false);
+          setSelectedProduct(null);
+        }}
+        initialData={selectedProduct}
+        onSave={async (data, isEdit, productId) => {
+          try {
+            if (isEdit && productId) {
+              await productApi.update(productId, {
+                name: data.name,
+                price: parseFloat(data.price),
+                costPrice: parseFloat(data.cost),
+                sku: data.code,
+              });
+              toast.success("Cập nhật sản phẩm thành công");
+            } else {
+              // TODO: create product API
+              toast.success("Thêm sản phẩm thành công");
+            }
+            fetchProducts();
+            setOpenAddModal(false);
+            setSelectedProduct(null);
+          } catch (error) {
+            toast.error(isEdit ? "Không thể cập nhật sản phẩm" : "Không thể tạo sản phẩm");
+          }
+        }}
+      />
     </div>
   );
 }

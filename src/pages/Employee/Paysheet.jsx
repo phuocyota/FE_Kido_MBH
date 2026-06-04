@@ -265,8 +265,6 @@ export default function PaySheet() {
     setOpenAddModal(false)
   }
   onSave={(data) => {
-    console.log(data);
-
     setOpenAddModal(false);
   }}
 />

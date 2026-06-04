@@ -10,21 +10,24 @@ export default function AddProductModal({
   open,
   onClose,
   onSave,
+  initialData = null,
 }) {
+  const isEditMode = !!initialData;
+  
   const [imagePreview, setImagePreview] =
-    useState(null);
+    useState(initialData?.imageUrl || null);
 
   const [form, setForm] = useState({
-    name: "",
-    category: "",
-    tag: "",
-    type: "Đồ ăn",
-    code: "",
-    cost: "",
-    price: "",
-    location: "",
-    weight: "",
-    active: true,
+    name: initialData?.name || "",
+    category: initialData?.category || "",
+    tag: initialData?.tag || "",
+    type: initialData?.type || "Đồ ăn",
+    code: initialData?.sku || initialData?.code || "",
+    cost: initialData?.costPrice || initialData?.cost || "",
+    price: initialData?.price || "",
+    location: initialData?.location || "",
+    weight: initialData?.weight || "",
+    active: initialData?.active !== false,
   });
 
   if (!open) return null;
@@ -51,7 +54,7 @@ export default function AddProductModal({
 <div className="bg-white w-full max-w-[1100px] h-screen md:h-auto md:max-h-[95vh] rounded-none md:rounded-2xl shadow-xl overflow-hidden flex flex-col">        {/* HEADER */}
 <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-300">
           <h2 className="text-xl font-semibold">
-            Thêm sản phẩm
+            {isEditMode ? "Cập nhật sản phẩm" : "Thêm sản phẩm"}
           </h2>
 
           <button onClick={onClose}>
@@ -298,10 +301,10 @@ export default function AddProductModal({
     </button>
 
     <button
-      onClick={() => onSave(form)}
+      onClick={() => onSave(form, isEditMode, initialData?.id)}
       className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl"
     >
-      Lưu
+      {isEditMode ? "Cập nhật" : "Lưu"}
     </button>
 
   </div>
