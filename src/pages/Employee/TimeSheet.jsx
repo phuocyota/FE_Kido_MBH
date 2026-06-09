@@ -43,6 +43,9 @@ export default function TimeSheet() {
     setLoading(true);
     try {
       const data = await workScheduleApi.getTimeSheet(from, to);
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid timesheet data");
+      }
       // Map BE fields to FE format
       const mappedData = data.map(emp => ({
         id: emp.id,

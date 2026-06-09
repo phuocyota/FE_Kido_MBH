@@ -1,12 +1,22 @@
 import axiosInstance from "./axiosConfig";
 
+const unwrapRequiredData = (response) => {
+  const payload = response.data;
+
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "data")) {
+    return payload.data;
+  }
+
+  throw new Error("Invalid API response: missing data field");
+};
+
 export const workScheduleApi = {
   // Get timesheet by date range
   getTimeSheet: async (from, to, employeeId) => {
     const params = { from, to };
     if (employeeId) params.employeeId = employeeId;
     const response = await axiosInstance.get("/work-schedules/timesheet", { params });
-    return response.data;
+    return unwrapRequiredData(response);
   },
 
   // Get monthly schedule
