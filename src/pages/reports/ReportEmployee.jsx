@@ -86,6 +86,11 @@ export default function ReportEmployee() {
     const printContents =
       exportRef.current?.innerHTML || "";
 
+      const pageOrientation =
+  viewType === "horizontal"
+    ? "landscape"
+    : "portrait";
+
     const originalContents =
       document.body.innerHTML;
 
@@ -175,10 +180,7 @@ export default function ReportEmployee() {
     setTimeout(() => {
       window.print();
 
-    const pageOrientation =
-  viewType === "horizontal"
-    ? "landscape"
-    : "portrait";
+    
 
       document.body.innerHTML =
         originalContents;
