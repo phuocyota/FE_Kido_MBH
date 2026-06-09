@@ -85,7 +85,7 @@ export default function SuppliersContent({
               </td>
             </tr>
           ))}
-        </tbody>
+        </tbody> 
       </table>
       </div>
 
