@@ -11,7 +11,7 @@ import {
   Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { workScheduleApi, employeeApi } from "../../api";
+import { workScheduleApi, employeeApi, branchApi } from "../../api";
 
 const MONTH_NAMES = [
   "Th. 1", "Th. 2", "Th. 3", "Th. 4", "Th. 5", "Th. 6",
@@ -78,10 +78,26 @@ export default function AddEmployeeModal({
   const [scheduleData, setScheduleData] = useState([]);
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     setActiveTab(defaultTab);
   }, [defaultTab, open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const loadBranches = async () => {
+      try {
+        const data = await branchApi.getAll();
+        setBranches(Array.isArray(data) ? data : []);
+      } catch {
+        setBranches([]);
+      }
+    };
+
+    loadBranches();
+  }, [open]);
 
   // Load employee data when editing
   useEffect(() => {
@@ -537,9 +553,14 @@ export default function AddEmployeeModal({
                     </label>
 
                     <select className="w-full h-[44px] rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-blue-500 bg-white">
-                      <option>
-                        Chi nhánh trung tâm
+                      <option value="">
+                        Chọn chi nhánh
                       </option>
+                      {branches.map((branch) => (
+                        <option key={branch.id} value={branch.id}>
+                          {branch.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -811,7 +832,7 @@ export default function AddEmployeeModal({
 
         <input
           type="text"
-          defaultValue="400,000"
+          placeholder="Nhập mức lương"
           className="w-full h-[44px] rounded-xl border border-gray-300 pl-4 pr-16 text-sm outline-none focus:border-blue-500"
         />         
       </div>

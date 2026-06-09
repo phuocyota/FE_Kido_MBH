@@ -1,13 +1,18 @@
 import React, {
+  useEffect,
   useRef,
   useState,
 } from "react";
 
  
 
+import { branchApi } from "../../api";
+import { getBranchNameFromToken } from "../../api/authSession";
 import ReportProductFilter from "../../components/reports/reportProduct/ReportProductFilter";
 
 import ReportProductContent from "../../components/reports/reportProduct/ReportProductContent";
+
+const todayInput = () => new Date().toISOString().split("T")[0];
 
 export default function ReportProduct() {
 
@@ -34,7 +39,30 @@ export default function ReportProduct() {
   // BRANCH
   // =========================
   const [branch, setBranch] =
-    useState("Chi nhánh trung tâm");
+    useState(getBranchNameFromToken() || "");
+
+  const [branchId, setBranchId] =
+    useState("");
+
+  useEffect(() => {
+    const loadDefaultBranch = async () => {
+      try {
+        const data = await branchApi.getAll();
+        const branches = Array.isArray(data) ? data : [];
+        const defaultBranch = branches[0];
+
+        if (defaultBranch) {
+          setBranch(defaultBranch.name || "");
+          setBranchId(defaultBranch.id || "");
+        }
+      } catch {
+        setBranch(getBranchNameFromToken() || "");
+        setBranchId("");
+      }
+    };
+
+    loadDefaultBranch();
+  }, []);
 
   // =========================
   // TIME
@@ -46,10 +74,10 @@ export default function ReportProduct() {
     useState("Hôm nay");
 
   const [fromDate, setFromDate] =
-    useState("2026-05-07");
+    useState(todayInput());
 
   const [toDate, setToDate] =
-    useState("2026-05-07");
+    useState(todayInput());
 
   // =========================
   // FILTER
@@ -317,6 +345,8 @@ export default function ReportProduct() {
             // TIME
             fromDate={fromDate}
             toDate={toDate}
+            branch={branch}
+            branchId={branchId}
 
             // ZOOM
             zoom={zoom}

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ChevronDown, Plus, Pencil } from "lucide-react";
 import { useState } from "react";
+import { productApi } from "../../api";
 
 export default function SidebarFilter() {
 
@@ -12,14 +13,25 @@ export default function SidebarFilter() {
       const [openModal, setOpenModal] = useState(false);
       const [isEdit, setIsEdit] = useState(false);
       const [selectedItem, setSelectedItem] = useState(null);
+      const [groupData, setGroupData] = useState([]);
+      const [loadingGroups, setLoadingGroups] = useState(false);
 
-      const groupData = [
-            { id: 1, name: "BIA & THUỐC LÁ" },
-            { id: 2, name: "CLASSIC COCKTAILS" },
-            { id: 3, name: "MÓN KHAI VỊ" },
-            { id: 4, name: "SÚP" },
-            { id: 5, name: "TEA" },
-      ];
+      useEffect(() => {
+            const loadCategories = async () => {
+                  try {
+                        setLoadingGroups(true);
+                        const data = await productApi.getCategories();
+                        setGroupData(Array.isArray(data) ? data : []);
+                  } catch {
+                        setGroupData([]);
+                  } finally {
+                        setLoadingGroups(false);
+                  }
+            };
+
+            loadCategories();
+      }, []);
+
       return (
             <div className="w-72 space-y-4">
 
@@ -187,7 +199,19 @@ export default function SidebarFilter() {
 
                                           <p className="font-semibold px-2 py-1">Tất cả</p>
 
-                                          {groupData.map((item) => (
+                                          {loadingGroups && (
+                                                <div className="px-2 py-1 text-gray-400">
+                                                      Đang tải nhóm hàng...
+                                                </div>
+                                          )}
+
+                                          {!loadingGroups && groupData.length === 0 && (
+                                                <div className="px-2 py-1 text-gray-400">
+                                                      Chưa có nhóm hàng
+                                                </div>
+                                          )}
+
+                                          {!loadingGroups && groupData.map((item) => (
                                                 <div
                                                       key={item.id}
                                                       className="flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group"

@@ -20,7 +20,7 @@ export const productApi = {
 
   // Get all categories
   getCategories: async () => {
-    const response = await axiosInstance.get("/products/categories");
+    const response = await axiosInstance.get("/categories");
     return response.data.data || response.data;
   },
 

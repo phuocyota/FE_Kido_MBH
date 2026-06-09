@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   User,
   Lock,
@@ -13,11 +14,102 @@ import {
   Ban,
   Pencil,
 } from "lucide-react";
+import { userApi } from "../api";
+
+const emptyProfile = {
+  fullName: "",
+  email: "",
+  phone: "",
+  role: "",
+  address: "",
+  province: "",
+  district: "",
+  birthday: "",
+  note: "",
+  branchName: "",
+};
+
+const unwrapData = (response) => response?.data?.data || response?.data || response || {};
+
+const toDateInput = (value) => {
+  if (!value) return "";
+  return String(value).split("T")[0];
+};
 
 export default function Account() {
   const [showPass, setShowPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState(emptyProfile);
+  const [form, setForm] = useState(emptyProfile);
+
+  const setField = (field, value) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const data = unwrapData(await userApi.getMe());
+      const nextProfile = {
+        ...emptyProfile,
+        ...data,
+        birthday: toDateInput(data.birthday),
+      };
+      setProfile(nextProfile);
+      setForm(nextProfile);
+    } catch {
+      toast.error("Không thể tải thông tin tài khoản");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const handleCancel = () => {
+    setForm(profile);
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await userApi.updateProfile({
+        fullName: form.fullName,
+        phone: form.phone,
+        address: form.address,
+        province: form.province,
+        district: form.district,
+        birthday: form.birthday || null,
+        note: form.note,
+      });
+      toast.success("Đã cập nhật thông tin tài khoản");
+      setIsEditing(false);
+      await loadProfile();
+    } catch {
+      toast.error("Không thể cập nhật thông tin tài khoản");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen p-4 lg:p-6">
+        <div className="max-w-[1600px] mx-auto bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-gray-500">
+          Đang tải thông tin tài khoản...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 lg:p-6">
@@ -65,7 +157,8 @@ export default function Account() {
 
                   <input
                     type="text"
-                    defaultValue="Nguyen"
+                    value={form.fullName}
+                    onChange={(event) => setField("fullName", event.target.value)}
                     disabled={!isEditing}
                     className="
                       w-full
@@ -102,7 +195,8 @@ export default function Account() {
                   <input
                     type="text"
                     disabled
-                    defaultValue="0776142018"
+                    value={form.email || form.phone || form.userId || ""}
+                    readOnly
                     className="
                       w-full
                       border
@@ -135,7 +229,8 @@ export default function Account() {
                   <input
                     type="text"
                     disabled
-                    defaultValue="Admin"
+                    value={form.role || ""}
+                    readOnly
                     className="
                       w-full
                       border
@@ -288,8 +383,9 @@ export default function Account() {
 
                   <input
                     type="text"
-                    disabled
-                    defaultValue="+84776142018"
+                    disabled={!isEditing}
+                    value={form.phone || ""}
+                    onChange={(event) => setField("phone", event.target.value)}
                     className="
                       w-full
                       border
@@ -298,10 +394,13 @@ export default function Account() {
                       h-12
                       pl-12
                       pr-4
-                      bg-gray-100
-                      text-gray-500
-                      cursor-not-allowed
-                      opacity-80
+                      outline-none
+                      focus:border-blue-500
+                      focus:ring-4
+                      focus:ring-blue-100
+                      disabled:bg-gray-100
+                      disabled:text-gray-500
+                      disabled:cursor-not-allowed
                     "
                   />
                 </div>
@@ -321,8 +420,9 @@ export default function Account() {
 
                   <input
                     type="email"
-                    disabled={!isEditing}
-                    placeholder="Nhập email"
+                    disabled
+                    value={form.email || ""}
+                    readOnly
                     className="
                       w-full
                       border
@@ -362,6 +462,8 @@ export default function Account() {
                   <input
                     type="text"
                     disabled={!isEditing}
+                    value={form.address || ""}
+                    onChange={(event) => setField("address", event.target.value)}
                     placeholder="Nhập địa chỉ"
                     className="
                       w-full
@@ -392,6 +494,8 @@ export default function Account() {
                 <input
                   type="text"
                   disabled={!isEditing}
+                  value={form.province || ""}
+                  onChange={(event) => setField("province", event.target.value)}
                   placeholder="Tỉnh / Thành phố"
                   className="
                     w-full
@@ -420,6 +524,8 @@ export default function Account() {
                 <input
                   type="text"
                   disabled={!isEditing}
+                  value={form.district || ""}
+                  onChange={(event) => setField("district", event.target.value)}
                   placeholder="Quận / Huyện"
                   className="
                     w-full
@@ -454,6 +560,8 @@ export default function Account() {
                   <input
                     type="date"
                     disabled={!isEditing}
+                    value={form.birthday || ""}
+                    onChange={(event) => setField("birthday", event.target.value)}
                     className="
                       w-full
                       border
@@ -483,6 +591,8 @@ export default function Account() {
                 <textarea
                   rows="6"
                   disabled={!isEditing}
+                  value={form.note || ""}
+                  onChange={(event) => setField("note", event.target.value)}
                   placeholder="Nhập ghi chú..."
                   className="
                     w-full
@@ -527,7 +637,7 @@ export default function Account() {
             ) : (
               <>
                 <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCancel}
                   className="
                     h-12
                     px-6
@@ -544,6 +654,8 @@ export default function Account() {
                 </button>
 
                 <button
+                  onClick={handleSave}
+                  disabled={saving}
                   className="
                     h-12
                     px-6
@@ -554,10 +666,12 @@ export default function Account() {
                     transition-all
                     font-medium
                     flex items-center gap-2
+                    disabled:opacity-60
+                    disabled:cursor-not-allowed
                   "
                 >
                   <Save size={18} />
-                  Lưu thay đổi
+                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>
               </>
             )}

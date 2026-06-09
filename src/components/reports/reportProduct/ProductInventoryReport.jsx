@@ -2,50 +2,81 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { reportApi } from "../../../api";
 
-export default function ProductInventoryReport() {
+const formatMoney = (value) => Number(value || 0).toLocaleString("vi-VN");
+
+const getMonthLabel = (value) => {
+  const date = value ? new Date(value) : new Date();
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    year: "2-digit",
+  });
+};
+
+const unwrapData = (response) => response?.data?.data || response?.data || response || {};
+
+export default function ProductInventoryReport({ fromDate, toDate, branchId }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    elapsedDays: 0,
+    revenue: 0,
+  });
 
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [fromDate, toDate, branchId]);
 
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const result = await reportApi.getInventory();
+      const [inventoryResponse, revenueResponse] = await Promise.all([
+        reportApi.getInventory(branchId),
+        reportApi.getRevenue(fromDate, toDate, branchId),
+      ]);
+      const result = unwrapData(inventoryResponse);
+      const revenue = unwrapData(revenueResponse);
+      const inventoryItems = Array.isArray(result.data) ? result.data : [];
       // Map BE data to FE format
-      const mappedData = result.data?.map((item, index) => ({
+      const mappedData = inventoryItems.map((item, index) => ({
         stt: index + 1,
-        group: "Hàng hóa", // Default group since not provided by API
-        code: "",
+        group: item.group || "",
+        code: item.code || item.sku || item.inventoryItemId || "",
         name: item.name,
         unit: item.unit,
-        value: "0",
-        stockStart: "0",
-        week1: "0",
-        week2: "0",
-        week3: "0",
-        week4: "0",
-        week5: "0",
-        week6: "0",
-        outside: "0",
-        totalImport: "0",
+        value: formatMoney(item.value || item.totalValue || 0),
+        stockStart: item.stockStart != null ? String(item.stockStart) : "",
+        week1: item.week1 != null ? String(item.week1) : "",
+        week2: item.week2 != null ? String(item.week2) : "",
+        week3: item.week3 != null ? String(item.week3) : "",
+        week4: item.week4 != null ? String(item.week4) : "",
+        week5: item.week5 != null ? String(item.week5) : "",
+        week6: item.week6 != null ? String(item.week6) : "",
+        outside: item.outside != null ? String(item.outside) : "",
+        totalImport: item.totalImport != null ? String(item.totalImport) : "",
         destroy1: "",
         destroy2: "",
         destroy3: "",
         destroy4: "",
         destroy5: "",
         stockEnd: String(item.quantity || 0),
-        sale: "0",
-        totalCost: "0",
-        usagePer: "0",
-        min: "-",
-        max: "-",
+        sale: item.sale != null ? String(item.sale) : "",
+        totalCost: formatMoney(item.totalCost || 0),
+        usagePer: item.usagePerMil != null ? String(item.usagePerMil) : "",
+        min: item.planSales?.min != null ? String(item.planSales.min) : "",
+        max: item.planSales?.max != null ? String(item.planSales.max) : "",
         warning: item.quantity < 10 ? "Sắp hết hàng" : "",
-        order: "",
-      })) || [];
+        order: item.suggestedOrderQuantity != null ? String(item.suggestedOrderQuantity) : "",
+      }));
       setRows(mappedData);
+      setSummary({
+        elapsedDays: fromDate && toDate
+          ? Math.max(
+              1,
+              Math.round((new Date(toDate) - new Date(fromDate)) / 86400000) + 1
+            )
+          : 0,
+        revenue: revenue.totalRevenue || revenue.netRevenue || 0,
+      });
     } catch (error) {
       toast.error("Không thể tải báo cáo tồn kho");
     } finally {
@@ -75,7 +106,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right">
-              15
+              {summary.elapsedDays}
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 text-red-600 font-bold">
@@ -83,7 +114,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right text-[22px] font-bold bg-[#DCE6F1]">
-              18,000,000
+              {formatMoney(summary.revenue)}
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 font-bold">
@@ -91,7 +122,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              30,000,000
+              0
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 font-bold">
@@ -99,7 +130,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              5,000,000
+              0
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 font-bold">
@@ -107,7 +138,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              22,500,000
+              0
             </div>
 
             <div className="border-r border-gray-400 p-2 font-bold">
@@ -115,7 +146,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="p-2 text-right font-bold text-[#1F4E79]">
-              15,000,000
+              0
             </div>
 
           </div>
@@ -126,19 +157,19 @@ export default function ProductInventoryReport() {
         <div className="col-span-1 flex flex-col justify-end pb-2 gap-4">
 
           <div className="text-red-600 text-center">
-            166.7%
+            0%
           </div>
 
           <div className="text-red-600 text-center">
-            27.8%
+            0%
           </div>
 
           <div className="text-red-600 text-center">
-            125.0%
+            0%
           </div>
 
           <div className="text-red-600 text-center">
-            83.3%
+            0%
           </div>
 
         </div>
@@ -157,7 +188,7 @@ export default function ProductInventoryReport() {
             </div>
 
             <div className="bg-[#8EAADB] px-8 py-2 text-[26px]">
-              May-26
+              {getMonthLabel(fromDate)}
             </div>
 
           </div>

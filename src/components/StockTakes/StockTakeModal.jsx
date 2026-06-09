@@ -1,13 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, X, ChevronRight, Upload } from "lucide-react";
-import stockTakeData from "../../datas/stockTakeData";
+import { inventoryItemApi } from "../../api";
 
 export default function StockTakeModal({ open, onClose }) {
 
       const [activeTab, setActiveTab] = useState("all");
+      const [products, setProducts] = useState([]);
+      const [search, setSearch] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState("");
 
-      const products =  stockTakeData;
+      useEffect(() => {
+        if (!open) return;
+
+        const loadProducts = async () => {
+          try {
+            setLoading(true);
+            setError("");
+            const data = await inventoryItemApi.getAll();
+            const items = Array.isArray(data) ? data : [];
+            setProducts(
+              items.map((item) => ({
+                id: item.id,
+                code: item.sku,
+                name: item.name,
+                stock: Number(item.quantity || 0),
+                actual: null,
+                price: Number(item.costPerUnit || 0),
+              }))
+            );
+            setCurrentPage(1);
+          } catch (err) {
+            setProducts([]);
+            setError("Không thể tải danh sách hàng hóa");
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        loadProducts();
+      }, [open]);
+
       const filteredProducts = products.filter((item) => {
+  const keyword = search.trim().toLowerCase();
+
+  if (
+    keyword &&
+    !item.code?.toLowerCase().includes(keyword) &&
+    !item.name?.toLowerCase().includes(keyword)
+  ) {
+    return false;
+  }
 
   switch (activeTab) {
     case "match":
@@ -48,8 +91,9 @@ const uncheckedCount = products.filter(
 const [currentPage, setCurrentPage] = useState(1);
 
 const itemsPerPage = 10;
-const totalPages = Math.ceil(
-  filteredProducts.length / itemsPerPage
+const totalPages = Math.max(
+  1,
+  Math.ceil(filteredProducts.length / itemsPerPage)
 );
 const startIndex =
   (currentPage - 1) * itemsPerPage;
@@ -87,6 +131,11 @@ const currentProducts =
               <input
                 type="text"
                 placeholder="Tìm hàng hóa theo mã hoặc tên"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -173,7 +222,29 @@ const currentProducts =
   
 
   {/* Danh sách sản phẩm */}
-  {currentProducts.map((item, index) => (
+  {loading && (
+    <tr>
+      <td
+        colSpan="7"
+        className="text-center py-10 text-gray-400"
+      >
+        Đang tải danh sách hàng hóa...
+      </td>
+    </tr>
+  )}
+
+  {!loading && error && (
+    <tr>
+      <td
+        colSpan="7"
+        className="text-center py-10 text-red-500"
+      >
+        {error}
+      </td>
+    </tr>
+  )}
+
+  {!loading && !error && currentProducts.map((item, index) => (
     <tr
       key={item.id}
       className="border-b border-gray-300 hover:bg-gray-50"
@@ -210,7 +281,7 @@ const currentProducts =
     </tr>
   ))}
 
-  {filteredProducts.length === 0 && (
+  {!loading && !error && filteredProducts.length === 0 && (
     <tr>
       <td
         colSpan="7"

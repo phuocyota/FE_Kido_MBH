@@ -29,6 +29,8 @@ export default function ReportProductContent({
   // TIME
   fromDate,
   toDate,
+  branch,
+  branchId,
 
   // ZOOM
   zoom,
@@ -120,22 +122,22 @@ export default function ReportProductContent({
 
             viewType === "chart"
 
-              ? <ProductSaleChart />
+              ? <ProductSaleChart fromDate={fromDate} toDate={toDate} branch={branch} branchId={branchId} />
 
-              : <ProductSaleReport fromDate={fromDate} toDate={toDate} />
+              : <ProductSaleReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
 
           )}
 
           {interest === "Lợi nhuận" && (
-            <ProductProfitReport />
+            <ProductProfitReport fromDate={fromDate} toDate={toDate} branch={branch} />
           )}
 
           {interest === "Xuất nhập tồn" && (
-            <ProductInventoryReport />
+            <ProductInventoryReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
           )}
 
           {interest === "Xuất hủy" && (
-            <ProductCancelReport />
+            <ProductCancelReport fromDate={fromDate} toDate={toDate} branch={branch} />
           )}
 
         </div>
@@ -152,22 +154,22 @@ export default function ReportProductContent({
 
               viewType === "chart"
 
-                ? <ProductSaleChart />
+                ? <ProductSaleChart fromDate={fromDate} toDate={toDate} branch={branch} branchId={branchId} />
 
-                : <ProductSaleReport fromDate={fromDate} toDate={toDate} />
+                : <ProductSaleReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
 
             )}
 
             {interest === "Lợi nhuận" && (
-              <ProductProfitReport />
+              <ProductProfitReport fromDate={fromDate} toDate={toDate} branch={branch} />
             )}
 
             {interest === "Xuất nhập tồn" && (
-              <ProductInventoryReport />
+              <ProductInventoryReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
             )}
 
             {interest === "Xuất hủy" && (
-              <ProductCancelReport />
+              <ProductCancelReport fromDate={fromDate} toDate={toDate} branch={branch} />
             )}
 
           </div>
