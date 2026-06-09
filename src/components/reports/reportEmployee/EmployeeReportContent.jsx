@@ -10,6 +10,7 @@ import EmployeeReportChart from "./EmployeeReportChart";
  
 import EmployeeReportTableTime from "./EmployeeReportTableTime";
 import EmployeeProfitReport from "./EmployeeProfitReport";
+import EmployeeCashierReport from "./EmployeeCashierReport";
 
 export default function EmployeeReportContent({
   viewType,
@@ -100,12 +101,20 @@ export default function EmployeeReportContent({
           }
 
           {
-  focusType === "profit" && (
-    <EmployeeProfitReport
-      viewType={viewType}
-    />
-  )
-}
+            focusType === "profit" && (
+              <EmployeeProfitReport
+                viewType={viewType}
+              />
+            )
+          }
+
+          {
+            focusType === "cashier" && (
+              <EmployeeCashierReport
+                viewType={viewType}
+              />
+            )
+          }
         </div>
 
          
