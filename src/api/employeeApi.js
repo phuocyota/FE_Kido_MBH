@@ -5,7 +5,7 @@ export const employeeApi = {
   getAll: async (status) => {
     const params = status && status !== "all" ? { status } : {};
     const response = await axiosInstance.get("/employees", { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Get employee by ID
