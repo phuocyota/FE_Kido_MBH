@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { reportApi } from "../../../api";
 
-export default function ProductSaleReport({ fromDate, toDate }) {
+export default function ProductSaleReport({ fromDate, toDate, branchId }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, branchId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -18,7 +18,7 @@ export default function ProductSaleReport({ fromDate, toDate }) {
       const from = fromDate ? new Date(fromDate).toISOString() : undefined;
       const to = toDate ? new Date(toDate).toISOString() : undefined;
       // Get monthly order plan report with date range
-      const response = await reportApi.getMonthlyOrderPlan(null, from, to);
+      const response = await reportApi.getMonthlyOrderPlan(null, from, to, branchId);
       // response.data = { success, message, data }, so actual report is in response.data.data
       const result = response.data?.data || response.data || response;
       
@@ -88,7 +88,7 @@ export default function ProductSaleReport({ fromDate, toDate }) {
 
           {/* VALUE */}
           <div className="flex-1 border-t border-r border-b border-gray-400 bg-[#DCE6F1] flex items-center justify-end px-8 text-[26px] font-bold">
-            {reportData?.revenueMonth?.toLocaleString("vi-VN") || "150,000,000"}
+            {(reportData?.revenueMonth || 0).toLocaleString("vi-VN")}
           </div>
 
         </div>
@@ -99,11 +99,11 @@ export default function ProductSaleReport({ fromDate, toDate }) {
       <div className="col-span-8 p-6">
 
         <div className="text-[28px] font-bold">
-          {reportData?.companyName || "CÔNG TY TNHH KIDO EDU"}
+          {reportData?.companyName || ""}
         </div>
 
         <div className="mt-6 text-[22px] font-bold">
-          Trường : {reportData?.schoolName || "KIDO"}
+          {reportData?.schoolName ? `Trường : ${reportData.schoolName}` : ""}
         </div>
 
         <div className="mt-8 text-[38px] font-bold">

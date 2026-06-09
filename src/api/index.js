@@ -5,6 +5,8 @@ export { productApi } from "./productApi";
 export { reportApi } from "./reportApi";
 export { supplierApi } from "./supplierApi";
 export { payrollApi } from "./payrollApi";
+export { inventoryItemApi } from "./inventoryItemApi";
+export { branchApi } from "./branchApi";
 export { dashboardApi } from "./dashboardApi";
 export { userApi } from "./userApi";
 export * from "./socketClient";

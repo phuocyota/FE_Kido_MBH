@@ -163,9 +163,9 @@ const weekNumber =
 
       <InfoItem label="Số điện thoại" value={employee.phone} />
 
-      <InfoItem label="Chi nhánh trả lương" value="Chi nhánh trung tâm" />
+      <InfoItem label="Chi nhánh trả lương" value={employee.payrollBranchName || employee.branchName || ""} />
 
-      <InfoItem label="Chi nhánh làm việc" value="Chi nhánh trung tâm" />
+      <InfoItem label="Chi nhánh làm việc" value={employee.workBranchName || employee.branchName || ""} />
 
       <InfoItem label="Phòng ban" value="" />
 
@@ -471,7 +471,7 @@ onClick={() => onUpdate("info")}
         </span>
 
         <span className="text-gray-700">
-          400,000/ca
+          {employee.salary ? `${Number(employee.salary).toLocaleString("vi-VN")}/ca` : ""}
         </span>
       </div>
     </div>

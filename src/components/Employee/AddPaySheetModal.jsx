@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { CalendarDays } from "lucide-react";
 
+const formatDateInput = (date = new Date()) => date.toISOString().split("T")[0];
+
 export default function AddPaySheetModal({
   open,
   onClose,
@@ -9,9 +11,7 @@ export default function AddPaySheetModal({
 }) {
   const [salaryCycle, setSalaryCycle] = useState("Hàng tháng");
 
-  const [workPeriod, setWorkPeriod] = useState(
-      "01/06/2026 - 30/06/2026"
-    );
+  const [workPeriod, setWorkPeriod] = useState("");
 
   const [scope, setScope] = useState("all");
     
@@ -39,9 +39,9 @@ const [monthPeriod, setMonthPeriod] =
     ).padStart(2, "0")}/${currentYear}`
   );
 
-const [fromDate, setFromDate] = useState("2026-06-02");
+const [fromDate, setFromDate] = useState(formatDateInput());
 
-const [toDate, setToDate] = useState("2026-06-02");
+const [toDate, setToDate] = useState(formatDateInput());
 
 
 

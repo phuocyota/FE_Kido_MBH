@@ -10,7 +10,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { reportApi } from "../../../api";
+import { branchApi, reportApi } from "../../../api";
 import { getBranchNameFromToken } from "../../../api/authSession";
 
 export default function ReportContent({
@@ -32,19 +32,35 @@ export default function ReportContent({
 }) {
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const branchName = getBranchNameFromToken() || "Trường tiểu học ABC";
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const branchName = selectedBranch?.name || getBranchNameFromToken() || "";
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const data = await branchApi.getAll();
+        const branches = Array.isArray(data) ? data : [];
+        setSelectedBranch(branches[0] || null);
+      } catch {
+        setSelectedBranch(null);
+      }
+    };
+
+    fetchBranches();
+  }, []);
 
   // Fetch end of day report
   useEffect(() => {
+    if (!selectedBranch?.id) return;
     fetchReport();
-  }, [dateType, fromDate, toDate]);
+  }, [dateType, fromDate, toDate, selectedBranch?.id]);
 
   const fetchReport = async () => {
     setLoading(true);
     try {
       const effectiveFromDate = fromDate || new Date().toISOString().split("T")[0];
       const effectiveToDate = dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
-      const branchId = "11111111-1111-4111-8111-111111111111";
+      const branchId = selectedBranch.id;
       const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate, branchId);
       // Map BE data to FE format - result.data.data contains the items array
       const mappedData = result.data?.data?.map(item => ({

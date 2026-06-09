@@ -32,43 +32,62 @@ const colors2 = [
   "#CA8A04",
 ];
 
-export default function ProductSaleChart() {
+const formatDate = (value) => {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("vi-VN");
+};
+
+const formatMoney = (value) =>
+  `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+
+const unwrapData = (response) => response?.data?.data || response?.data || response || {};
+
+export default function ProductSaleChart({ fromDate, toDate, branch, branchId }) {
   const [topSelling, setTopSelling] = useState([]);
   const [lowSelling, setLowSelling] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fromDate, toDate, branchId]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       // Fetch top and bottom products in parallel
-      const [topData, bottomData] = await Promise.all([
-        reportApi.getTopProducts(),
-        reportApi.getBottomProducts(),
+      const [topData, bottomData, revenueData] = await Promise.all([
+        reportApi.getTopProducts(fromDate, toDate, branchId),
+        reportApi.getBottomProducts(fromDate, toDate, branchId),
+        reportApi.getRevenue(fromDate, toDate, branchId),
       ]);
 
       // Map to chart format
-      const mappedTop = topData.map(item => ({
+      const topItems = unwrapData(topData);
+      const bottomItems = unwrapData(bottomData);
+
+      const mappedTop = (Array.isArray(topItems) ? topItems : []).map(item => ({
         name: item.productName,
         value: item.totalQuantity,
       }));
 
-      const mappedBottom = bottomData.map(item => ({
+      const mappedBottom = (Array.isArray(bottomItems) ? bottomItems : []).map(item => ({
         name: item.productName,
         value: item.totalQuantity,
       }));
 
       setTopSelling(mappedTop);
       setLowSelling(mappedBottom);
+      setSummary(unwrapData(revenueData));
     } catch (error) {
       toast.error("Không thể tải dữ liệu biểu đồ");
+      setSummary(null);
     } finally {
       setLoading(false);
     }
   };   
+
+  const soldQuantity = topSelling.reduce((sum, item) => sum + Number(item.value || 0), 0);
 
   return (
 
@@ -82,11 +101,11 @@ export default function ProductSaleChart() {
         </h1>
 
         <div className="text-center mt-3 text-[18px] text-gray-600">
-          Chi nhánh trung tâm
+          {branch || ""}
         </div>
 
         <div className="text-center mt-1 text-[16px] text-gray-500">
-          Từ 07/05/2026 - Đến 07/05/2026
+          Từ {formatDate(fromDate)} - Đến {formatDate(toDate)}
         </div>
 
       </div>
@@ -100,25 +119,25 @@ export default function ProductSaleChart() {
           {[
             {
               title: "Doanh thu",
-              value: "25.500.000đ",
+              value: formatMoney(summary?.totalRevenue || summary?.netRevenue),
               icon: Wallet,
             },
 
             {
               title: "Đơn hàng",
-              value: "245",
+              value: Number(summary?.orderCount || 0).toLocaleString("vi-VN"),
               icon: ShoppingBag,
             },
 
             {
               title: "Sản phẩm bán",
-              value: "1.250",
+              value: soldQuantity.toLocaleString("vi-VN"),
               icon: BarChart3,
             },
 
             {
               title: "Tăng trưởng",
-              value: "+15%",
+              value: "N/A",
               icon: TrendingUp,
             },
           ].map((item) => {

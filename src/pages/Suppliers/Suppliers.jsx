@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -7,16 +7,38 @@ import {
   
 } from "lucide-react";
 
-import suppliersData from "../../datas/suppliersData";
+import { supplierApi } from "../../api";
 import AddSupplierModal from "../../components/Suppliers/AddSupplierModal";
 import SuppliersSidebar from "../../components/Suppliers/SuppliersSidebar";
 import SuppliersContent from "../../components/Suppliers/SuppliersContent";
 
 export default function Suppliers() {
   const [status, setStatus] = useState("active");
-  const [suppliers, setSuppliers] = useState(suppliersData);
+  const [suppliers, setSuppliers] = useState([]);
 const [openAddSupplier, setOpenAddSupplier] =
   useState(false);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadSuppliers = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await supplierApi.getAll(status, search);
+      setSuppliers(Array.isArray(data) ? data : []);
+      setCurrentPage(1);
+    } catch (err) {
+      setSuppliers([]);
+      setError("Không thể tải danh sách nhà cung cấp");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [status, search]);
 
   // phân trang 
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,6 +92,8 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
               <input
                 type="text"
                 placeholder="Theo mã, tên, số điện thoại"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
                 className="w-full h-11 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -109,7 +133,15 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
   setSelectedTime={setSelectedTime}
 />
 
-{suppliers.length > 0 ? (
+{loading ? (
+  <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[650px] flex items-center justify-center text-gray-500">
+    Đang tải danh sách nhà cung cấp...
+  </div>
+) : error ? (
+  <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[650px] flex items-center justify-center text-red-500">
+    {error}
+  </div>
+) : suppliers.length > 0 ? (
   <SuppliersContent
     suppliers={suppliers}
     currentSuppliers={currentSuppliers}
@@ -158,6 +190,7 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
   onClose={() =>
     setOpenAddSupplier(false)
   }
+  onSaved={loadSuppliers}
 />
     </div>
   );

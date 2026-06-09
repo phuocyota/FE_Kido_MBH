@@ -1,6 +1,8 @@
 import React from "react";
 
-export default function ProductProfitReport() {
+const formatDate = (value) => value ? new Date(value).toLocaleDateString("vi-VN") : "";
+
+export default function ProductProfitReport({ fromDate, toDate, branch }) {
 
   return (
 
@@ -36,7 +38,7 @@ export default function ProductProfitReport() {
             text-gray-600
           "
         >
-          Chi nhánh trung tâm
+          {branch || ""}
         </div>
 
         <div
@@ -47,7 +49,7 @@ export default function ProductProfitReport() {
             text-gray-500
           "
         >
-          Từ 07/05/2026 - Đến 07/05/2026
+          Từ {formatDate(fromDate)} - Đến {formatDate(toDate)}
         </div>
 
       </div>

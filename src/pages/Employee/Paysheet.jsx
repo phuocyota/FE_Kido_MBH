@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Filter,
@@ -7,7 +7,40 @@ import {
   List,
 } from "lucide-react";
 import AddPaySheetModal from "../../components/Employee/AddPaySheetModal";
-import payrollData from "../../datas/payrollData";
+import { payrollApi } from "../../api";
+
+const statusLabels = {
+  DRAFT: "Đang tạo",
+  ESTIMATED: "Tạm tính",
+  FINALIZED: "Đã chốt lương",
+  CANCELLED: "Đã hủy",
+};
+
+const cycleLabels = {
+  monthly: "Hàng tháng",
+  custom: "Tùy chọn",
+};
+
+const formatMoney = (value) =>
+  Number(value || 0).toLocaleString("vi-VN");
+
+const toDateString = (value) => {
+  if (!value) return "";
+  const [year, month, day] = value.split("-");
+  return `${day}/${month}/${year}`;
+};
+
+const getPayrollPeriod = (workPeriod) => {
+  if (typeof workPeriod === "string") {
+    const [periodStart, periodEnd] = workPeriod.split(" - ");
+    return { periodStart, periodEnd };
+  }
+
+  return {
+    periodStart: toDateString(workPeriod?.fromDate),
+    periodEnd: toDateString(workPeriod?.toDate),
+  };
+};
 
 export default function PaySheet() {
   const [selectedStatus, setSelectedStatus] =
@@ -18,8 +51,42 @@ export default function PaySheet() {
     ]);
 
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [payrolls, setPayrolls] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const payrolls = payrollData;
+  const loadPayrolls = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await payrollApi.getAll();
+      setPayrolls(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setPayrolls([]);
+      setError("Không thể tải danh sách bảng lương");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPayrolls();
+  }, []);
+
+  const handleSavePayroll = async (data) => {
+    const { periodStart, periodEnd } = getPayrollPeriod(data.workPeriod);
+
+    await payrollApi.create({
+      name: `Bảng lương ${periodStart} - ${periodEnd}`,
+      cycle: data.salaryCycle === "Hàng tháng" ? "monthly" : "custom",
+      periodStart,
+      periodEnd,
+      status: "DRAFT",
+    });
+
+    setOpenAddModal(false);
+    loadPayrolls();
+  };
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] p-3 sm:p-4 md:p-5">
@@ -190,7 +257,29 @@ export default function PaySheet() {
 
                 <tbody>
 
-                  {payrolls.map((item) => (
+                  {loading && (
+                    <tr>
+                      <td
+                        colSpan="9"
+                        className="text-center p-6 text-gray-500"
+                      >
+                        Đang tải danh sách bảng lương...
+                      </td>
+                    </tr>
+                  )}
+
+                  {!loading && error && (
+                    <tr>
+                      <td
+                        colSpan="9"
+                        className="text-center p-6 text-red-500"
+                      >
+                        {error}
+                      </td>
+                    </tr>
+                  )}
+
+                  {!loading && !error && payrolls.map((item) => (
                     <tr
                       key={item.id}
                       className="border-t"
@@ -208,31 +297,42 @@ export default function PaySheet() {
                       </td>
 
                       <td className="p-3">
-                        {item.cycle}
+                        {cycleLabels[item.cycle] || item.cycle}
                       </td>
 
                       <td className="p-3">
-                        {item.period}
+                        {item.periodStart} - {item.periodEnd}
                       </td>
 
                       <td className="text-right p-3">
-                        {item.totalSalary}
+                        {formatMoney(item.totalSalary)}
                       </td>
 
                       <td className="text-right p-3">
-                        {item.paid}
+                        {formatMoney(item.paid)}
                       </td>
 
                       <td className="text-right p-3">
-                        {item.remaining}
+                        {formatMoney(item.remaining)}
                       </td>
 
                       <td className="p-3">
-                        {item.status}
+                        {statusLabels[item.status] || item.status}
                       </td>
 
                     </tr>
                   ))}
+
+                  {!loading && !error && payrolls.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="9"
+                        className="text-center p-6 text-gray-500"
+                      >
+                        Chưa có bảng lương nào
+                      </td>
+                    </tr>
+                  )}
 
                 </tbody>
 
@@ -264,9 +364,7 @@ export default function PaySheet() {
   onClose={() =>
     setOpenAddModal(false)
   }
-  onSave={(data) => {
-    setOpenAddModal(false);
-  }}
+  onSave={handleSavePayroll}
 />
 
     </div>
