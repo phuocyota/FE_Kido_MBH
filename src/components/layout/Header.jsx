@@ -59,7 +59,7 @@ const menu = [
     children: [
       { name: "Cuối ngày", path: "/report-end-day" },
       { name: "Hàng hóa", path: "/report-product" },
-      { name: "Nhân viên", path: "/bao-cao/nhan-vien" },
+      { name: "Nhân viên", path: "/report-employee" },
       { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
 
     ],

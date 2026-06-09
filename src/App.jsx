@@ -17,6 +17,7 @@ import TimeSheet from "./pages/Employee/TimeSheet";
 import TimeKeeping from "./pages/Employee/TimeKeeping";
 import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
+import ReportEmployee from "./pages/reports/ReportEmployee";
 import { authApi } from "./api";
 
 const PrivateRoute = ({ children }) => {
@@ -60,6 +61,7 @@ const App = () => {
                   <Route path="/time-keeping" element={<TimeKeeping />} />
                   <Route path="/pay-sheet" element={<PaySheet />} />
                   <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/report-employee" element={<ReportEmployee />} />
                 </Routes>
               </>
             </PrivateRoute>

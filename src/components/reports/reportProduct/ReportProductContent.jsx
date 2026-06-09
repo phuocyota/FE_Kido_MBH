@@ -51,17 +51,7 @@ export default function ReportProductContent({
       {/* TOOLBAR */}
       <div className="h-16 px-4 flex items-center gap-2 overflow-x-auto bg-gray-600 text-white">
 
-        {/* <button onClick={handleResetZoom} className="toolbar-btn">
-          <RotateCcw size={24} />
-        </button>
-
-        <button className="toolbar-btn">
-          <ChevronsLeft size={24} />
-        </button>
-
-        <button className="toolbar-btn">
-          <ChevronsRight size={24} />
-        </button> */}
+       
 
         <div className="flex-1" />
 
