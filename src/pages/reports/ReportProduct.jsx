@@ -7,7 +7,7 @@ import React, {
  
 
 import { branchApi } from "../../api";
-import { getBranchNameFromToken } from "../../api/authSession";
+import { getBranchIdFromToken, getBranchNameFromToken } from "../../api/authSession";
 import ReportProductFilter from "../../components/reports/reportProduct/ReportProductFilter";
 
 import ReportProductContent from "../../components/reports/reportProduct/ReportProductContent";
@@ -42,14 +42,15 @@ export default function ReportProduct() {
     useState(getBranchNameFromToken() || "");
 
   const [branchId, setBranchId] =
-    useState("");
+    useState(getBranchIdFromToken() || "");
 
   useEffect(() => {
     const loadDefaultBranch = async () => {
       try {
         const data = await branchApi.getAll();
         const branches = Array.isArray(data) ? data : [];
-        const defaultBranch = branches[0];
+        const savedBranchId = getBranchIdFromToken();
+        const defaultBranch = branches.find((item) => item.id === savedBranchId) || branches[0];
 
         if (defaultBranch) {
           setBranch(defaultBranch.name || "");
@@ -57,7 +58,7 @@ export default function ReportProduct() {
         }
       } catch {
         setBranch(getBranchNameFromToken() || "");
-        setBranchId("");
+        setBranchId(getBranchIdFromToken() || "");
       }
     };
 
@@ -98,7 +99,6 @@ export default function ReportProduct() {
     useState(1);
 
   const previewRef = useRef();
-  const exportRef = useRef();
 
   // =========================
   // DATE FORMAT
@@ -161,7 +161,7 @@ export default function ReportProduct() {
  const handlePrint = () => {
 
   const printContents =
-    exportRef.current.innerHTML;
+    previewRef.current.innerHTML;
 
   const originalContents =
     document.body.innerHTML;
@@ -366,7 +366,6 @@ export default function ReportProduct() {
 
             // REFS
             previewRef={previewRef}
-            exportRef={exportRef}
           />
 
         </div>

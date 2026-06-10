@@ -40,7 +40,11 @@ const formatDate = (value) => {
 const formatMoney = (value) =>
   `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
-const unwrapData = (response) => response?.data?.data || response?.data || response || {};
+const unwrapData = (response) => {
+  if (response?.success !== undefined) return response.data;
+  if (response?.data?.success !== undefined) return response.data.data;
+  return response?.data || response || {};
+};
 
 export default function ProductSaleChart({ fromDate, toDate, branch, branchId }) {
   const [topSelling, setTopSelling] = useState([]);
