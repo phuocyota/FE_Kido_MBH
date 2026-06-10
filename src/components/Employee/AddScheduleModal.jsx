@@ -16,6 +16,13 @@ export default function AddScheduleModal({
 
 const [repeatWeeks, setRepeatWeeks] = useState(4);
 
+
+// ca làm theo khung giờ 
+const [customShift, setCustomShift] = useState(false);
+
+const [startTime, setStartTime] = useState("08:00");
+const [endTime, setEndTime] = useState("17:00");
+
   if (!open) return null;
 
   return (
@@ -59,6 +66,8 @@ const [repeatWeeks, setRepeatWeeks] = useState(4);
           <h3 className="font-semibold text-lg mb-4">
             Chọn ca làm việc
           </h3>
+
+          {/* Ca làm việc */}
 
           <div className="bg-gray-50 rounded-2xl p-5">
 
@@ -168,7 +177,115 @@ const [repeatWeeks, setRepeatWeeks] = useState(4);
 
 </div>
 
-{/* LẶP LẠI HÀNG TUẦN */}
+{/* CA THEO KHUNG GIỜ */}
+<div className="mt-5 bg-gray-50 rounded-2xl p-5">
+
+  <label className="flex items-center gap-3 cursor-pointer">
+
+    <input
+      type="checkbox"
+      checked={customShift}
+      onChange={() => {
+        const value = !customShift;
+
+        setCustomShift(value);
+
+        if (value) {
+          setMorning(false);
+          setAfternoon(false);
+          setFullDay(false);
+        }
+      }}
+    />
+
+    <span className="font-medium text-[16px]">
+      Ca làm theo khung giờ
+    </span>
+
+  </label>
+
+  {customShift && (
+
+    <div className="mt-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* GIỜ BẮT ĐẦU */}
+        <div>
+
+          <label className="block text-sm text-gray-600 mb-2">
+            Từ giờ
+          </label>
+
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e) =>
+              setStartTime(e.target.value)
+            }
+            className="
+              w-full
+              border
+              border-gray-300
+              rounded-xl
+              px-4
+              py-3
+              outline-none
+              focus:ring-2
+              focus:ring-blue-500
+            "
+          />
+
+        </div>
+
+        {/* GIỜ KẾT THÚC */}
+        <div>
+
+          <label className="block text-sm text-gray-600 mb-2">
+            Đến giờ
+          </label>
+
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e) =>
+              setEndTime(e.target.value)
+            }
+            className="
+              w-full
+              border
+              border-gray-300
+              rounded-xl
+              px-4
+              py-3
+              outline-none
+              focus:ring-2
+              focus:ring-blue-500
+            "
+          />
+
+        </div>
+
+      </div>
+
+      <div className="mt-4 text-sm text-blue-600 bg-blue-50 rounded-xl p-3">
+
+        Thời gian làm việc:
+        <span className="font-semibold ml-2">
+          {startTime} - {endTime}
+        </span>
+
+      </div>
+
+    </div>
+
+  )}
+
+</div>
+
+
+
+
 <div className="mt-6">
 
   <h3 className="font-semibold text-lg mb-4">

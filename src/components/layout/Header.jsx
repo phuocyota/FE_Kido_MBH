@@ -15,6 +15,7 @@ const menu = [
       { name: "Danh mục", path: "/products" },
       { name: "Thiết lập giá", path: "/price-book" },
       { name: "Kiểm kho", path: "/stock-takes" },
+      { name: "Nhập kho", path: "/stock-in/create" },
     ],
   },
 
