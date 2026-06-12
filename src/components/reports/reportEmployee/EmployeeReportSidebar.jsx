@@ -23,6 +23,27 @@ const [selectedTime, setSelectedTime] = useState("Tuần trước");
 const timePopupRef = useRef(null);
 const customPopupRef = useRef(null);
 
+const [groupKeyword, setGroupKeyword] = useState("");
+
+const [selectedGroups, setSelectedGroups] = useState([]);
+
+const productGroups = [
+  "Đồ Ăn Nhanh",
+  "Đồ Uống",
+  "Bánh",  
+  "Kẹo",
+  "Phụ kiện",
+   
+];
+
+const handleGroupChange = (group) => {
+  setSelectedGroups((prev) =>
+    prev.includes(group)
+      ? prev.filter((item) => item !== group)
+      : [...prev, group]
+  );
+};
+
 useEffect(() => {
   if (focusType === "time") {
     setViewType("chart");
@@ -203,6 +224,77 @@ useEffect(() => {
       />
       <span className="text-lg text-gray-800">Lợi nhuận</span>
     </label>
+  </div>
+</div>
+
+
+{/* Nhóm hàng */}
+<div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+  <h3 className="text-lg font-semibold mb-4">
+    Nhóm hàng
+  </h3>
+
+  {/* Search */}
+  <input
+    type="text"
+    placeholder="Tìm kiếm nhóm hàng"
+    value={groupKeyword}
+    onChange={(e) =>
+      setGroupKeyword(e.target.value)
+    }
+    className="w-full h-11 rounded-xl border border-gray-300 px-4 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+  />
+
+  <div className="max-h-[320px] overflow-y-auto space-y-3">
+    {/* Tất cả */}
+    <label className="flex items-center gap-3 cursor-pointer font-semibold">
+      <input
+        type="checkbox"
+        checked={
+          selectedGroups.length ===
+          productGroups.length
+        }
+        onChange={(e) =>
+          setSelectedGroups(
+            e.target.checked
+              ? [...productGroups]
+              : []
+          )
+        }
+        className="w-5 h-5 accent-purple-600"
+      />
+      <span>Tất cả</span>
+    </label>
+
+    {productGroups
+      .filter((item) =>
+        item
+          .toLowerCase()
+          .includes(
+            groupKeyword.toLowerCase()
+          )
+      )
+      .map((group) => (
+        <label
+          key={group}
+          className="flex items-center gap-3 cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            checked={selectedGroups.includes(
+              group
+            )}
+            onChange={() =>
+              handleGroupChange(group)
+            }
+            className="w-5 h-5 accent-purple-600"
+          />
+
+          <span className="text-gray-800">
+            {group}
+          </span>
+        </label>
+      ))}
   </div>
 </div>
 

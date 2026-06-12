@@ -33,6 +33,7 @@ const employeeProfitReportData = [
     id: 4,
     employee: "Phạm Văn D",
     totalPurchase: 48000000,
+    
     discount: 1200000,
     revenue: 46800000,
     cost: 29500000,

@@ -4,7 +4,15 @@ import {
   Plus,
 } from "lucide-react";
 
+import { useState } from "react";
+import AddSupplierModal from "../Suppliers/AddSupplierModal";
+
 export default function PaymentVoucherPurchaseInfo() {
+
+
+  const [openAddSupplier, setOpenAddSupplier] = useState(false);
+
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 py-4">
       {/* LEFT */}
@@ -41,9 +49,12 @@ export default function PaymentVoucherPurchaseInfo() {
           <option />
         </select>
 
-        <button className="w-10 border border-gray-300 border-l-0 rounded-r-md flex justify-center items-center">
-          <Plus size={16} />
-        </button>
+        <button
+  onClick={() => setOpenAddSupplier(true)}
+  className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center hover:bg-gray-50"
+>
+  <Plus size={16} />
+</button>
       </div>
 
       <div className="flex items-center text-gray-600 italic whitespace-nowrap">
@@ -142,6 +153,11 @@ export default function PaymentVoucherPurchaseInfo() {
   </div>
 
 </div>
+
+<AddSupplierModal
+  open={openAddSupplier}
+  onClose={() => setOpenAddSupplier(false)}
+/>
     </div>
   );
 }

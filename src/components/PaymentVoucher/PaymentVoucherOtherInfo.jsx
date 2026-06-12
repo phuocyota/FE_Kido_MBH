@@ -1,7 +1,11 @@
 import React from "react";
 import { Calendar, Plus } from "lucide-react";
+import { useState } from "react";
+import AddSupplierModal from "../Suppliers/AddSupplierModal";
 
 export default function PaymentVoucherOtherInfo() {
+  const [openAddSupplier, setOpenAddSupplier] = useState(false);
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 py-4">
 
@@ -38,7 +42,10 @@ export default function PaymentVoucherOtherInfo() {
               <option />
             </select>
 
-            <button className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center">
+             <button
+              onClick={() => setOpenAddSupplier(true)}
+              className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center hover:bg-gray-50"
+            >
               <Plus size={16} />
             </button>
           </div>
@@ -114,6 +121,11 @@ export default function PaymentVoucherOtherInfo() {
         </div>
 
       </div>
+
+      <AddSupplierModal
+  open={openAddSupplier}
+  onClose={() => setOpenAddSupplier(false)}
+/>
 
     </div>
   );
