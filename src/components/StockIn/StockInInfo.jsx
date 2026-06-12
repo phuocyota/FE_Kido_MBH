@@ -1,6 +1,14 @@
 import React from "react";
 
+import {
+   Plus,
+} from "lucide-react";
+import { useState } from "react";
+import AddSupplierModal from "../Suppliers/AddSupplierModal";
+
 export default function StockInInfo() {
+  const [openAddSupplier, setOpenAddSupplier] = useState(false);
+
   return (
     <div className="p-3 md:p-4 border-b border-gray-300">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
@@ -17,9 +25,12 @@ export default function StockInInfo() {
               placeholder="Chọn nhà cung cấp"
             />
 
-            <button className="w-12 border border-gray-300 rounded-r hover:bg-gray-50 shrink-0">
-              +
-            </button>
+            <button
+  onClick={() => setOpenAddSupplier(true)}
+  className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center hover:bg-gray-50"
+>
+  <Plus size={16} />
+</button>
           </div>
         </div>
 
@@ -98,6 +109,12 @@ export default function StockInInfo() {
         </div>
 
       </div>
+
+
+      <AddSupplierModal
+  open={openAddSupplier}
+  onClose={() => setOpenAddSupplier(false)}
+/>
     </div>
   );
 }
