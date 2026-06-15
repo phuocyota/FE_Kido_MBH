@@ -60,6 +60,22 @@ export default function ListEmployee() {
 
 };
 
+  const handleDeleteEmployee = async (employee) => {
+    if (!window.confirm(`Xoa nhan vien "${employee.name || employee.fullName}"?`)) {
+      return;
+    }
+
+    try {
+      await employeeApi.delete(employee.id);
+      toast.success("Xoa nhan vien thanh cong");
+      setSelectedEmployeeId(null);
+      setSelectedEmployee(null);
+      fetchEmployees();
+    } catch (error) {
+      toast.error("Khong the xoa nhan vien");
+    }
+  };
+
   const filteredEmployees = useMemo(() => {
     if (!employees.length) return [];
     
@@ -264,6 +280,7 @@ export default function ListEmployee() {
     setModalTab(tab);
     setOpenAddModal(true);
   }}
+  onDelete={handleDeleteEmployee}
 />
             </td>
           </tr>
