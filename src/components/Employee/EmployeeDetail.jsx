@@ -9,6 +9,7 @@ import {
 export default function EmployeeDetail({
   employee,
    onUpdate,
+   onDelete,
 }) {
   const [tab, setTab] =
     useState("info");
@@ -207,7 +208,10 @@ const weekNumber =
      {/* FOOTER */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
 
-          <button className="flex items-center gap-2 text-red-600 font-medium hover:opacity-80 cursor-pointer">
+          <button
+            onClick={() => onDelete?.(employee)}
+            className="flex items-center gap-2 text-red-600 font-medium hover:opacity-80 cursor-pointer"
+          >
             <UserX size={18} />
             Ngừng làm việc
           </button>

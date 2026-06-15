@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Save, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Save, Trash2, X } from "lucide-react";
 import AddProductModal from "./AddProductModal";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
@@ -99,11 +99,14 @@ export default function TableProduct() {
       // Map BE fields to FE format
       const mappedData = data.map(p => ({
         id: p.id,
+        categoryId: p.categoryId,
         code: p.sku,
         name: p.name,
         category: p.category?.name || "",
         price: parseFloat(p.price),
         cost: parseFloat(p.costPrice),
+        unit: p.unit || "",
+        isActive: p.isActive,
         stock: 0, // Stock not available in products table, use inventory API if needed
       }));
       setProducts(mappedData);
@@ -114,7 +117,7 @@ export default function TableProduct() {
     }
   };
 
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(products.length / ITEMS_PER_PAGE));
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentData = products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -127,6 +130,18 @@ export default function TableProduct() {
       fetchProducts();
     } catch (error) {
       toast.error("Không thể cập nhật");
+    }
+  };
+
+  const handleDeleteProduct = async (product) => {
+    if (!window.confirm(`Xoa san pham "${product.name}"?`)) return;
+
+    try {
+      await productApi.delete(product.id);
+      toast.success("Xoa san pham thanh cong");
+      fetchProducts();
+    } catch (error) {
+      toast.error("Khong the xoa san pham");
     }
   };
 
@@ -244,6 +259,13 @@ export default function TableProduct() {
               >
                 <Edit2 size={16} />
               </button>
+              <button
+                onClick={() => handleDeleteProduct(item)}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                title="Xoa san pham"
+              >
+                <Trash2 size={16} />
+              </button>
             </td>
           </tr>
         ))
@@ -287,23 +309,31 @@ export default function TableProduct() {
           setSelectedProduct(null);
         }}
         initialData={selectedProduct}
-        onSave={async (data, isEdit, productId) => {
+        onSave={async (data, isEdit, productId, keepOpen = false) => {
           try {
+            const payload = {
+              name: data.name.trim(),
+              price: Number(data.price || 0),
+              costPrice: Number(data.cost || 0),
+              sku: data.code || undefined,
+              categoryId: data.categoryId || undefined,
+              unit: data.unit || undefined,
+              isActive: data.active,
+            };
+
             if (isEdit && productId) {
-              await productApi.update(productId, {
-                name: data.name,
-                price: parseFloat(data.price),
-                costPrice: parseFloat(data.cost),
-                sku: data.code,
-              });
+              await productApi.update(productId, payload);
               toast.success("Cập nhật sản phẩm thành công");
             } else {
-              // TODO: create product API
+              await productApi.create(payload);
               toast.success("Thêm sản phẩm thành công");
             }
             fetchProducts();
-            setOpenAddModal(false);
-            setSelectedProduct(null);
+            if (!keepOpen) {
+              setOpenAddModal(false);
+              setSelectedProduct(null);
+            }
+            return true;
           } catch (error) {
             toast.error(isEdit ? "Không thể cập nhật sản phẩm" : "Không thể tạo sản phẩm");
           }
