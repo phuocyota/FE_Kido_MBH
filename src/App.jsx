@@ -19,8 +19,9 @@ import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import ReportEmployee from "./pages/reports/ReportEmployee";
 import StockInCreate from "./pages/StockInCreate";
-import PaymentVoucher from "./pages/PaymentVoucher";
-import StockTransfer from "./pages/StockTransfer";
+ import StockTransfer from "./pages/StockTransfer";
+ import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
+ import CashManagement from "./pages/CashManagement/CashManagement";
 import { authApi } from "./api";
 
 const PrivateRoute = ({ children }) => {
@@ -66,8 +67,9 @@ const App = () => {
                   <Route path="/suppliers" element={<Suppliers />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />
-                  <Route path="/payment-voucher" element={<PaymentVoucher />} />
+                  <Route path="/cash-management/payment-vouchers" element={<PaymentVoucher />} />
                   <Route path="/stock-transfer" element={<StockTransfer />} />
+                  <Route path="/cash-management" element={<CashManagement />} />
                 </Routes>
               </>
             </PrivateRoute>

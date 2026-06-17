@@ -39,72 +39,97 @@ const currentData =
 
         <div className="overflow-x-auto">
 
-          <table className="w-full min-w-[1100px] border-collapse">
+         <table className="w-full min-w-[1100px] border-collapse text-sm">
+  <thead>
+    <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Mã hàng hóa
+      </th>
 
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-300 p-2 text-left">Mã hàng hóa</th>
-                <th className="border border-gray-300 p-2 text-left">Tên hàng hóa</th>
-                <th className="border border-gray-300 p-2 text-left">Đơn vị tính</th>
-                <th className="border border-gray-300 p-2 text-left">Kho xuất</th>
-                <th className="border border-gray-300 p-2 text-left">Vị trí xuất kho</th>
-                <th className="border border-gray-300 p-2 text-left">Kho nhập</th>
-                <th className="border border-gray-300 p-2 text-left">Vị trí nhập kho</th>
-                <th className="border border-gray-300 p-2 text-right">Số lượng</th>
-              </tr>
-            </thead>
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Tên hàng hóa
+      </th>
 
-            <tbody>
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Đơn vị tính
+      </th>
 
-              {currentData.map((item) => (
-                <tr key={item.id} className="hover:bg-blue-50">
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Kho xuất
+      </th>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.code}
-                  </td>
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Vị trí xuất kho
+      </th>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.name}
-                  </td>
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Kho nhập
+      </th>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.unit}
-                  </td>
+      <th className="border-b border-indigo-200 p-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Vị trí nhập kho
+      </th>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.fromWarehouse}
-                  </td>
+      <th className="border-b border-indigo-200 p-3 text-right text-xs font-semibold uppercase tracking-wide text-indigo-900">
+        Số lượng
+      </th>
+    </tr>
+  </thead>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.fromLocation}
-                  </td>
+  <tbody>
+    {currentData.map((item) => (
+      <tr
+        key={item.id}
+        className="border-b border-gray-300 hover:bg-indigo-50/60 transition-colors"
+      >
+        <td className="p-3">
+          <button className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+            {item.code}
+          </button>
+        </td>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.toWarehouse}
-                  </td>
+        <td className="p-3 text-gray-700">
+          {item.name}
+        </td>
 
-                  <td className="border border-gray-300 p-2">
-                    {item.toLocation}
-                  </td>
+        <td className="p-3 text-gray-700">
+          {item.unit}
+        </td>
 
-                  <td className="border border-gray-300 p-2 text-right">
-                    {item.quantity}
-                  </td>
+        <td className="p-3 text-gray-700">
+          {item.fromWarehouse}
+        </td>
 
-                </tr>
-              ))}
+        <td className="p-3 text-gray-700">
+          {item.fromLocation}
+        </td>
 
-              {stockTransferItemsData.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="border border-gray-300 p-4 text-center text-gray-500">
-                    Chưa có hàng hóa
-                  </td>
-                </tr>
-              )}
+        <td className="p-3 text-gray-700">
+          {item.toWarehouse}
+        </td>
 
-            </tbody>
+        <td className="p-3 text-gray-700">
+          {item.toLocation}
+        </td>
 
-          </table>
+        <td className="p-3 text-right font-semibold text-indigo-700">
+          {item.quantity}
+        </td>
+      </tr>
+    ))}
+
+    {stockTransferItemsData.length === 0 && (
+      <tr>
+        <td
+          colSpan={8}
+          className="py-16 text-center text-gray-500"
+        >
+          Chưa có hàng hóa
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
 
           {/* phân trang */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">

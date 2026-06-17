@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 export default function PaymentVoucherHeader({
   expenseType,
   setExpenseType,
+  onClose,
 }) {
   return (
     <div className="bg-white border-b border-gray-300 px-3 lg:px-4 py-3">
@@ -30,6 +31,15 @@ export default function PaymentVoucherHeader({
           </select>
         </div>
 
+
+ <button
+          type="button"
+          onClick={onClose}
+          className="self-end lg:self-auto p-2 rounded-md hover:bg-gray-100 transition-colors"
+          title="Đóng"
+        >
+          <X size={20} />
+        </button>
        
       </div>
     </div>
