@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 
-import PaymentVoucherHeader from "../components/PaymentVoucher/PaymentVoucherHeader";
-import PaymentVoucherPurchaseInfo from "../components/PaymentVoucher/PaymentVoucherPurchaseInfo";
-import PaymentVoucherOtherInfo from "../components/PaymentVoucher/PaymentVoucherOtherInfo";
-import PaymentVoucherDetailTable from "../components/PaymentVoucher/PaymentVoucherDetailTable";
-import PaymentVoucherFooter from "../components/PaymentVoucher/PaymentVoucherFooter";
+import PaymentVoucherHeader from "../../components/PaymentVoucher/PaymentVoucherHeader";
+import PaymentVoucherPurchaseInfo from "../../components/PaymentVoucher/PaymentVoucherPurchaseInfo";
+import PaymentVoucherOtherInfo from "../../components/PaymentVoucher/PaymentVoucherOtherInfo";
+import PaymentVoucherDetailTable from "../../components/PaymentVoucher/PaymentVoucherDetailTable";
+import PaymentVoucherFooter from "../../components/PaymentVoucher/PaymentVoucherFooter";
 
 export default function PaymentVoucher() {
   const [expenseType, setExpenseType] =
@@ -15,6 +15,7 @@ export default function PaymentVoucher() {
       <PaymentVoucherHeader
         expenseType={expenseType}
         setExpenseType={setExpenseType}
+         onClose={() => navigate("/cash-management/payment-vouchers")}
       />
 
       <div className="px-3 lg:px-4">
