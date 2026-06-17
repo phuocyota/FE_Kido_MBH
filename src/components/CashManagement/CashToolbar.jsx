@@ -13,9 +13,14 @@ import {
   Landmark,
   X,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import DateFilterDropdown from "./DateFilterDropdown";
-export default function CashToolbar() {
+export default function CashToolbar({
+  onAddPaymentVoucher,
+  onAddReceiptVoucher,
+}) {
+  const navigate = useNavigate();
   const [openMenu, setOpenMenu] =
 
   
@@ -137,22 +142,24 @@ const [menuPosition, setMenuPosition] =
         }}
       >
         <button
-          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
-          onClick={() =>
-            setOpenMenu(false)
-          }
-        >
-          Thêm phiếu thu
-        </button>
+  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
+  onClick={() => {
+    setOpenMenu(false);
+    onAddReceiptVoucher?.();
+  }}
+>
+  Thêm phiếu thu
+</button>
 
         <button
-          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
-          onClick={() =>
-            setOpenMenu(false)
-          }
-        >
-          Thêm phiếu chi
-        </button>
+  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
+  onClick={() => {
+    setOpenMenu(false);
+    onAddPaymentVoucher?.();
+  }}
+>
+  Thêm phiếu chi
+</button>
 
         <button
           className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"

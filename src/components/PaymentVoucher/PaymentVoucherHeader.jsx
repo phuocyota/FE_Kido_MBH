@@ -32,15 +32,7 @@ export default function PaymentVoucherHeader({
         </div>
 
 
- <button
-          type="button"
-          onClick={onClose}
-          className="self-end lg:self-auto p-2 rounded-md hover:bg-gray-100 transition-colors"
-          title="Đóng"
-        >
-          <X size={20} />
-        </button>
-       
+  
       </div>
     </div>
   );
