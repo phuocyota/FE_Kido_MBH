@@ -1,18 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
 
 import CashHeader from "../../components/CashManagement/CashHeader";
 import CashToolbar from "../../components/CashManagement/CashToolbar";
 import CashTable from "../../components/CashManagement/CashTable";
 
+import PaymentVoucher from "./PaymentVoucher";
+// import ReceiptVoucher from "./ReceiptVoucher";
+
 export default function CashManagement() {
+  const [screen, setScreen] =
+    useState("cash");
+
+  if (screen === "paymentVoucher") {
+    return (
+      <PaymentVoucher
+        onBack={() =>
+          setScreen("cash")
+        }
+      />
+    );
+  }
+
+  // if (screen === "receiptVoucher") {
+  //   return (
+  //     <ReceiptVoucher
+  //       onBack={() =>
+  //         setScreen("cash")
+  //       }
+  //     />
+  //   );
+  // }
+
   return (
     <div className="min-h-screen bg-gray-100 p-3 md:p-4">
-  <CashHeader />
+      <CashHeader />
 
-  <div className="bg-white border border-gray-300 rounded-lg mt-4 overflow-hidden">
-    <CashToolbar />
-    <CashTable />
-  </div>
-</div>
+      <CashToolbar
+        onAddPaymentVoucher={() =>
+          setScreen("paymentVoucher")
+        }
+        onAddReceiptVoucher={() =>
+          setScreen("receiptVoucher")
+        }
+      />
+
+      <CashTable />
+    </div>
   );
 }
