@@ -19,6 +19,7 @@ import DateFilterDropdown from "./DateFilterDropdown";
 export default function CashToolbar({
   onAddPaymentVoucher,
   onAddReceiptVoucher,
+    onAddInternalTransfer,
 }) {
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] =
@@ -142,7 +143,7 @@ const [menuPosition, setMenuPosition] =
         }}
       >
         <button
-  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
+  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
   onClick={() => {
     setOpenMenu(false);
     onAddReceiptVoucher?.();
@@ -152,7 +153,7 @@ const [menuPosition, setMenuPosition] =
 </button>
 
         <button
-  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
+  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
   onClick={() => {
     setOpenMenu(false);
     onAddPaymentVoucher?.();
@@ -162,13 +163,11 @@ const [menuPosition, setMenuPosition] =
 </button>
 
         <button
-          className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
-          onClick={() =>
-            setOpenMenu(false)
-          }
-        >
-          Chuyển tiền nội bộ
-        </button>
+  onClick={onAddInternalTransfer}
+  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
+>
+  Chuyển tiền nội bộ
+</button>
       </div>,
       document.body
     )}
