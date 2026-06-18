@@ -5,7 +5,8 @@ import CashToolbar from "../../components/CashManagement/CashToolbar";
 import CashTable from "../../components/CashManagement/CashTable";
 
 import PaymentVoucher from "./PaymentVoucher";
-// import ReceiptVoucher from "./ReceiptVoucher";
+import ReceiptVoucher from "./ReceiptVoucher";
+import InternalTransfer from "./InternalTransfer";
 
 export default function CashManagement() {
   const [screen, setScreen] =
@@ -21,15 +22,25 @@ export default function CashManagement() {
     );
   }
 
-  // if (screen === "receiptVoucher") {
-  //   return (
-  //     <ReceiptVoucher
-  //       onBack={() =>
-  //         setScreen("cash")
-  //       }
-  //     />
-  //   );
-  // }
+  if (screen === "receiptVoucher") {
+    return (
+      <ReceiptVoucher
+        onBack={() =>
+          setScreen("cash")
+        }
+      />
+    );
+  }
+
+    if (screen === "internalTransfer") {
+    return (
+      <InternalTransfer
+        onBack={() =>
+          setScreen("cash")
+        }
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-3 md:p-4">
@@ -41,6 +52,9 @@ export default function CashManagement() {
         }
         onAddReceiptVoucher={() =>
           setScreen("receiptVoucher")
+        }
+        onAddInternalTransfer={() =>
+          setScreen("internalTransfer")
         }
       />
 
