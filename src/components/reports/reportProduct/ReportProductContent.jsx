@@ -46,8 +46,6 @@ export default function ReportProductContent({
 
   // REFS
   previewRef,
-  exportRef,
-
 }) {
 
   return (
@@ -129,40 +127,6 @@ export default function ReportProductContent({
           {interest === "Xuất hủy" && (
             <ProductCancelReport fromDate={fromDate} toDate={toDate} branch={branch} />
           )}
-
-        </div>
-
-        {/* EXPORT */}
-        <div className="fixed left-[-99999px] top-0">
-
-          <div
-            ref={exportRef}
-            className="bg-white"
-          >
-
-            {interest === "Bán hàng" && (
-
-              viewType === "chart"
-
-                ? <ProductSaleChart fromDate={fromDate} toDate={toDate} branch={branch} branchId={branchId} />
-
-                : <ProductSaleReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
-
-            )}
-
-            {interest === "Lợi nhuận" && (
-              <ProductProfitReport fromDate={fromDate} toDate={toDate} branch={branch} />
-            )}
-
-            {interest === "Xuất nhập tồn" && (
-              <ProductInventoryReport fromDate={fromDate} toDate={toDate} branchId={branchId} />
-            )}
-
-            {interest === "Xuất hủy" && (
-              <ProductCancelReport fromDate={fromDate} toDate={toDate} branch={branch} />
-            )}
-
-          </div>
 
         </div>
 

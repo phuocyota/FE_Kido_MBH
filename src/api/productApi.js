@@ -24,10 +24,21 @@ export const productApi = {
     return response.data.data || response.data;
   },
 
+  // Create product
+  create: async (data) => {
+    const response = await axiosInstance.post("/products", data);
+    return response.data.data || response.data;
+  },
+
   // Update product
   update: async (id, data) => {
     const response = await axiosInstance.put(`/products/${id}`, data);
     return response.data.data || response.data;
+  },
+
+  // Delete product
+  delete: async (id) => {
+    await axiosInstance.delete(`/products/${id}`);
   },
 
   // Bulk update products

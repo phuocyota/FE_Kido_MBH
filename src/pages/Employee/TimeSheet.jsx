@@ -367,7 +367,64 @@ export default function TimeSheet() {
     } finally {
       setLoading(false);
     }
-  }, [currentDate]);
+  };
+
+  const formatDateISO = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDeleteSchedule = async () => {
+    if (!deleteInfo) return;
+
+    try {
+      const scheduleData = await workScheduleApi.getMonthly(
+        deleteInfo.year,
+        deleteInfo.month,
+        deleteInfo.employeeId
+      );
+      const schedule = (Array.isArray(scheduleData) ? scheduleData : []).find(
+        (item) => item.workDate?.slice(0, 10) === deleteInfo.workDate
+      );
+
+      if (!schedule?.id) {
+        throw new Error("Schedule not found");
+      }
+
+      await workScheduleApi.delete(schedule.id);
+      toast.success("Xoa lich lam viec thanh cong");
+      setOpenDelete(false);
+      setDeleteInfo(null);
+      fetchTimeSheet();
+    } catch (error) {
+      toast.error("Khong the xoa lich lam viec");
+    }
+  };
+
+  const getWeekDays = (date) => {
+    const current = new Date(date);
+
+    const day =
+      current.getDay() === 0
+        ? 7
+        : current.getDay();
+
+    const monday = new Date(current);
+
+    monday.setDate(
+      current.getDate() - day + 1
+    );
+
+    return Array.from(
+      { length: 7 },
+      (_, index) => {
+        const d = new Date(monday);
+
+        d.setDate(
+          monday.getDate() + index
+        );
 
   // Fetch timesheet when week changes
   useEffect(() => {
@@ -616,6 +673,14 @@ export default function TimeSheet() {
                               getShiftInfo(shift).label || "ca làm"
                         );
 
+                        setDeleteInfo({
+                              employeeId: employee.id,
+                              day: date.getDate(),
+                              month: date.getMonth() + 1,
+                              year: date.getFullYear(),
+                              workDate: formatDateISO(date),
+                        });
+
                         setOpenDelete(true);
                         }}
                         />
@@ -723,9 +788,7 @@ export default function TimeSheet() {
       <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
 
         <button
-          onClick={() => {
-            setOpenDelete(false);
-          }}
+          onClick={handleDeleteSchedule}
           className="h-[40px] px-6 bg-blue-600 text-white rounded-xl"
         >
           Đồng ý

@@ -11,7 +11,7 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { branchApi, reportApi } from "../../../api";
-import { getBranchNameFromToken } from "../../../api/authSession";
+import { getBranchIdFromToken, getBranchNameFromToken } from "../../../api/authSession";
 
 export default function ReportContent({
   reportType,
@@ -40,9 +40,12 @@ export default function ReportContent({
       try {
         const data = await branchApi.getAll();
         const branches = Array.isArray(data) ? data : [];
-        setSelectedBranch(branches[0] || null);
+        const savedBranchId = getBranchIdFromToken();
+        setSelectedBranch(branches.find((item) => item.id === savedBranchId) || branches[0] || null);
       } catch {
-        setSelectedBranch(null);
+        const savedBranchId = getBranchIdFromToken();
+        const savedBranchName = getBranchNameFromToken();
+        setSelectedBranch(savedBranchId ? { id: savedBranchId, name: savedBranchName || "" } : null);
       }
     };
 

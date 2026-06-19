@@ -12,7 +12,11 @@ const getMonthLabel = (value) => {
   });
 };
 
-const unwrapData = (response) => response?.data?.data || response?.data || response || {};
+const unwrapData = (response) => {
+  if (response?.success !== undefined) return response.data;
+  if (response?.data?.success !== undefined) return response.data.data;
+  return response?.data || response || {};
+};
 
 export default function ProductInventoryReport({ fromDate, toDate, branchId }) {
   const [rows, setRows] = useState([]);
