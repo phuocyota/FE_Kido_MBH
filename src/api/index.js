@@ -9,5 +9,8 @@ export { inventoryItemApi } from "./inventoryItemApi";
 export { branchApi } from "./branchApi";
 export { dashboardApi } from "./dashboardApi";
 export { userApi } from "./userApi";
+export { financeApi } from "./financeApi";
+export { stockTakeApi } from "./stockTakeApi";
+export { stockTransferApi } from "./stockTransferApi";
 export * from "./socketClient";
 export { default as axiosInstance } from "./axiosConfig";

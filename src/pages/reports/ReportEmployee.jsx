@@ -1,10 +1,9 @@
 import React, {
+  useEffect,
   useRef,
   useState,
 } from "react";
- 
-
-import employeeReportData from "../../datas/employeeReportData";
+import { reportApi } from "../../api";
 
 import EmployeeReportSidebar from "../../components/reports/reportEmployee/EmployeeReportSidebar";
 import EmployeeReportContent from "../../components/reports/reportEmployee/EmployeeReportContent";
@@ -34,8 +33,49 @@ export default function ReportEmployee() {
   const [employee, setEmployee] =
     useState("all");
 
+  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadReport = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await reportApi.getEmployeeReport({
+          filter: "7days",
+          employeeId: employee,
+          limit: 10,
+        });
+        if (active) {
+          setReportData(data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err?.response?.data?.message || "Không thể tải báo cáo nhân viên");
+          setReportData(null);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadReport();
+
+    return () => {
+      active = false;
+    };
+  }, [employee]);
+
   const employees =
-    employeeReportData;
+    reportData?.employees?.map((item) => ({
+      id: item.id,
+      name: item.name,
+    })) || [];
 
   // =========================
   // UI STATE
@@ -236,6 +276,10 @@ export default function ReportEmployee() {
 
               // INTEREST
               focusType={focusType}
+
+              reportData={reportData}
+              loading={loading}
+              error={error}
 
               // ZOOM
               zoom={zoom}
