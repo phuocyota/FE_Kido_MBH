@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import { Calendar, ChevronRight } from "lucide-react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";import { Calendar, ChevronRight } from "lucide-react";
 import TimeFilterPopup from "./TimeFilterPopup";
 import CustomDatePopup from "./CustomDatePopup";
 
@@ -13,6 +16,16 @@ export default function SuppliersSidebar({
   setShowCustomDate,
   setSelectedTime,
 }) {
+
+  const [customDateLabel, setCustomDateLabel] = useState(
+  "Lựa chọn khác"
+);
+
+const formatDate = (date) => {
+  if (!date) return "";
+
+  return date.toLocaleDateString("vi-VN");
+};
 
 const popupRef = useRef(null);
 useEffect(() => {
@@ -30,6 +43,8 @@ useEffect(() => {
     "mousedown",
     handleClickOutside
   );
+
+  
 
   return () => {
     document.removeEventListener(
@@ -177,7 +192,11 @@ useEffect(() => {
                     : "border border-gray-300"
                 }`}
               >
-                <span>Lựa chọn khác</span>
+                {/* <span>Lựa chọn khác</span> */}
+
+                <span className="truncate">
+  {customDateLabel}
+</span>
 
                 <Calendar size={16} />
               </button>
@@ -187,8 +206,17 @@ useEffect(() => {
             {showCustomDate && (
   <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
     <CustomDatePopup
-      onClose={() => setShowCustomDate(false)}
-    />
+  onClose={() => setShowCustomDate(false)}
+  onApply={(range) => {
+    setCustomDateLabel(
+      `Từ ${formatDate(range.startDate)} đến ${formatDate(
+        range.endDate
+      )}`
+    );
+
+    setShowCustomDate(false);
+  }}
+/>
   </div>
 )}
 
