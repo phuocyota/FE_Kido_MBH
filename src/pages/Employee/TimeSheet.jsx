@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
   ChevronLeft,
@@ -12,6 +12,320 @@ import { workScheduleApi } from "../../api";
 import ShiftCell from "../../components/Employee/ShiftCell";
 import AddScheduleModal from "../../components/Employee/AddScheduleModal";
 
+const SHIFT_DEFINITIONS = {
+  morning: {
+    label: "Ca sáng",
+    timeRange: "08:00 - 12:00",
+    hours: 4,
+    colorClass: "bg-blue-100 text-blue-700",
+  },
+  afternoon: {
+    label: "Ca chiều",
+    timeRange: "13:00 - 17:00",
+    hours: 4,
+    colorClass: "bg-green-100 text-green-700",
+  },
+  full: {
+    label: "Cả ngày",
+    timeRange: "08:00 - 17:00",
+    hours: 8,
+    colorClass: "bg-purple-100 text-purple-700",
+  },
+};
+
+const TIME_RANGE_START_KEYS = [
+  "startTime",
+  "fromTime",
+  "start",
+  "from",
+  "checkIn",
+  "beginTime",
+];
+
+const TIME_RANGE_END_KEYS = [
+  "endTime",
+  "toTime",
+  "end",
+  "to",
+  "checkOut",
+  "finishTime",
+];
+
+const normalizeShiftCode = (shift) => {
+  if (typeof shift === "string") {
+    return shift;
+  }
+
+  if (!shift || typeof shift !== "object") {
+    return "";
+  }
+
+  return (
+    shift.shift ||
+    shift.type ||
+    shift.code ||
+    shift.shiftType ||
+    shift.value ||
+    ""
+  );
+};
+
+const parseTimeToMinutes = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const match = value.match(/(\d{1,2}):(\d{2})/);
+
+  if (!match) {
+    return null;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours > 23 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const getTimeValue = (shift, keys) => {
+  if (!shift || typeof shift !== "object") {
+    return "";
+  }
+
+  for (const key of keys) {
+    if (shift[key]) {
+      return shift[key];
+    }
+  }
+
+  if (shift.timeRange && typeof shift.timeRange === "object") {
+    for (const key of keys) {
+      if (shift.timeRange[key]) {
+        return shift.timeRange[key];
+      }
+    }
+  }
+
+  return "";
+};
+
+const getTimeRangeFromString = (shift) => {
+  if (typeof shift !== "string") {
+    return null;
+  }
+
+  const match = shift.match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    start: match[1],
+    end: match[2],
+  };
+};
+
+const getShiftTimeRange = (shift) => {
+  const stringRange = getTimeRangeFromString(shift);
+
+  if (stringRange) {
+    return stringRange;
+  }
+
+  const start = getTimeValue(shift, TIME_RANGE_START_KEYS);
+  const end = getTimeValue(shift, TIME_RANGE_END_KEYS);
+
+  if (!start || !end) {
+    return null;
+  }
+
+  return {
+    start,
+    end,
+  };
+};
+
+const calculateRangeHours = (timeRange) => {
+  if (!timeRange) {
+    return 0;
+  }
+
+  const startMinutes = parseTimeToMinutes(timeRange.start);
+  let endMinutes = parseTimeToMinutes(timeRange.end);
+
+  if (startMinutes === null || endMinutes === null) {
+    return 0;
+  }
+
+  if (endMinutes < startMinutes) {
+    endMinutes += 24 * 60;
+  }
+
+  return Math.max((endMinutes - startMinutes) / 60, 0);
+};
+
+const getExplicitHours = (shift) => {
+  if (!shift || typeof shift !== "object") {
+    return null;
+  }
+
+  const explicitHours =
+    shift.totalHours ??
+    shift.workHours ??
+    shift.hours ??
+    shift.durationHours ??
+    shift.durationInHours;
+
+  const parsedHours = Number(explicitHours);
+
+  if (Number.isFinite(parsedHours)) {
+    return parsedHours;
+  }
+
+  const explicitMinutes =
+    shift.totalMinutes ??
+    shift.workMinutes ??
+    shift.durationMinutes ??
+    shift.durationInMinutes;
+  const parsedMinutes = Number(explicitMinutes);
+
+  return Number.isFinite(parsedMinutes) ? parsedMinutes / 60 : null;
+};
+
+const getShiftHours = (shift) => {
+  if (Array.isArray(shift)) {
+    return shift.reduce((total, item) => total + getShiftHours(item), 0);
+  }
+
+  if (!shift) {
+    return 0;
+  }
+
+  const code = normalizeShiftCode(shift);
+
+  if (SHIFT_DEFINITIONS[code]) {
+    return SHIFT_DEFINITIONS[code].hours;
+  }
+
+  const explicitHours = getExplicitHours(shift);
+
+  if (explicitHours !== null) {
+    return explicitHours;
+  }
+
+  return calculateRangeHours(getShiftTimeRange(shift));
+};
+
+const formatHours = (hours) => {
+  const totalMinutes = Math.max(Math.round((Number(hours) || 0) * 60), 0);
+  const fullHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (minutes === 0) {
+    return `${fullHours} giờ`;
+  }
+
+  if (fullHours === 0) {
+    return `${minutes} phút`;
+  }
+
+  return `${fullHours} giờ ${minutes} phút`;
+};
+
+const getShiftInfo = (shift) => {
+  if (Array.isArray(shift)) {
+    const items = shift.map(getShiftInfo);
+
+    return {
+      label: items.map((item) => item.label).filter(Boolean).join(", "),
+      timeRange: items
+        .map((item) => item.timeRange)
+        .filter(Boolean)
+        .join(", "),
+      hours: getShiftHours(shift),
+      colorClass: "bg-indigo-100 text-indigo-700",
+    };
+  }
+
+  const code = normalizeShiftCode(shift);
+  const fixedShift = SHIFT_DEFINITIONS[code];
+  const timeRange = getShiftTimeRange(shift);
+  const hours = getShiftHours(shift);
+
+  if (fixedShift) {
+    return {
+      ...fixedShift,
+      hours,
+    };
+  }
+
+  if (timeRange) {
+    return {
+      label: "Khung giờ",
+      timeRange: `${timeRange.start} - ${timeRange.end}`,
+      hours,
+      colorClass: "bg-amber-100 text-amber-700",
+    };
+  }
+
+  return {
+    label: "",
+    timeRange: "",
+    hours,
+    colorClass: "bg-gray-100 text-gray-700",
+  };
+};
+
+const getEmployeeWeekHours = (employee, weekDays) => {
+  return weekDays.reduce((total, date) => {
+    const shift = employee.shifts?.[date.getDate()];
+
+    return total + getShiftHours(shift);
+  }, 0);
+};
+
+const formatDateISO = (date) => {
+  return date.toISOString().split("T")[0];
+};
+
+const getWeekDays = (date) => {
+  const current = new Date(date);
+
+  const day =
+    current.getDay() === 0
+      ? 7
+      : current.getDay();
+
+  const monday = new Date(current);
+
+  monday.setDate(
+    current.getDate() - day + 1
+  );
+
+  return Array.from(
+    { length: 7 },
+    (_, index) => {
+      const d = new Date(monday);
+
+      d.setDate(
+        monday.getDate() + index
+      );
+
+      return d;
+    }
+  );
+};
+
 export default function TimeSheet() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -24,18 +338,11 @@ export default function TimeSheet() {
 
   const [selectedShift, setSelectedShift] = useState("");
 
-  const [deleteInfo, setDeleteInfo] = useState(null);
-  
   // API data state
   const [timeSheetData, setTimeSheetData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch timesheet when week changes
-  useEffect(() => {
-    fetchTimeSheet();
-  }, [currentDate]);
-
-  const fetchTimeSheet = async () => {
+  const fetchTimeSheet = useCallback(async () => {
     const weekDays = getWeekDays(currentDate);
     const from = formatDateISO(weekDays[0]);
     const to = formatDateISO(weekDays[6]);
@@ -55,7 +362,7 @@ export default function TimeSheet() {
         shifts: emp.shifts || {},
       }));
       setTimeSheetData(mappedData);
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải bảng chấm công");
     } finally {
       setLoading(false);
@@ -119,10 +426,10 @@ export default function TimeSheet() {
           monday.getDate() + index
         );
 
-        return d;
-      }
-    );
-  };
+  // Fetch timesheet when week changes
+  useEffect(() => {
+    fetchTimeSheet();
+  }, [fetchTimeSheet]);
 
   const weekDays =
     getWeekDays(currentDate);
@@ -148,33 +455,18 @@ export default function TimeSheet() {
     "Thứ bảy",
   ];
 
-  const renderShift = (shift) => {
-    switch (shift) {
-      case "morning":
-        return (
-          <div className="bg-blue-100 text-blue-700 rounded-md px-2 py-1 text-sm font-medium">
-            Ca sáng
-          </div>
-        );
+  const dailyTotalHours = weekDays.map((date) =>
+    timeSheetData.reduce((total, employee) => {
+      const shift = employee.shifts?.[date.getDate()];
 
-      case "afternoon":
-        return (
-          <div className="bg-green-100 text-green-700 rounded-md px-2 py-1 text-sm font-medium">
-            Ca chiều
-          </div>
-        );
+      return total + getShiftHours(shift);
+    }, 0)
+  );
 
-      case "full":
-        return (
-          <div className="bg-purple-100 text-purple-700 rounded-md px-2 py-1 text-sm font-medium">
-            Cả ngày
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
+  const weeklyTotalHours = dailyTotalHours.reduce(
+    (total, hours) => total + hours,
+    0
+  );
 
   return (
     <div className="p-5 bg-[#f5f6f8] min-h-screen">
@@ -305,7 +597,7 @@ export default function TimeSheet() {
                 ))}
 
                 <th className="w-[180px] border px-4 py-4 border-gray-300 ">
-                  Lương dự kiến
+                  Tổng giờ làm
                 </th>
 
               </tr>
@@ -327,7 +619,8 @@ export default function TimeSheet() {
                   </td>
                 </tr>
               ) : (
-                timeSheetData.map((employee) => (
+                <>
+                {timeSheetData.map((employee) => (
 
                 <tr
                   key={employee.id}
@@ -346,7 +639,11 @@ export default function TimeSheet() {
 
                   </td>
 
-                  {weekDays.map((date) => (
+                  {weekDays.map((date) => {
+                    const shift = employee.shifts?.[date.getDate()];
+                    const shiftInfo = getShiftInfo(shift);
+
+                    return (
 
                     <td
                       key={date.toISOString()}
@@ -354,7 +651,11 @@ export default function TimeSheet() {
                     >
 
                       <ShiftCell
-                        shift={employee.shifts?.[date.getDate()]}
+                        shift={shift}
+                        shiftInfo={{
+                          ...shiftInfo,
+                          formattedHours: formatHours(shiftInfo.hours),
+                        }}
 
                         onAdd={() => {
                         setSelectedEmployee(employee);
@@ -368,17 +669,8 @@ export default function TimeSheet() {
 
                         onDelete={() => {
 
-                        const shift =
-                              employee.shifts?.[
-                              date.getDate()
-                              ];
-
                         setSelectedShift(
-                              shift === "morning"
-                              ? "Ca sáng"
-                              : shift === "afternoon"
-                              ? "Ca chiều"
-                              : "Cả ngày"
+                              getShiftInfo(shift).label || "ca làm"
                         );
 
                         setDeleteInfo({
@@ -395,19 +687,44 @@ export default function TimeSheet() {
 
                     </td>
 
-                  ))}
+                    );
+                  })}
 
                   <td className="border border-gray-300 px-4 py-4 text-right">
 
                     <div className="font-semibold">
-                      {(employee.salary || 0).toLocaleString()}
+                      {formatHours(getEmployeeWeekHours(employee, weekDays))}
                     </div>
 
                   </td>
 
                 </tr>
 
-              ))
+              ))}
+
+                <tr className="bg-blue-50 font-semibold text-blue-900">
+
+                  <td className="border border-gray-300 px-4 py-4">
+                    Tổng theo ngày
+                  </td>
+
+                  {dailyTotalHours.map((hours, index) => (
+
+                    <td
+                      key={weekDays[index].toISOString()}
+                      className="border border-gray-300 px-4 py-4 text-center"
+                    >
+                      {formatHours(hours)}
+                    </td>
+
+                  ))}
+
+                  <td className="border border-gray-300 px-4 py-4 text-right">
+                    {formatHours(weeklyTotalHours)}
+                  </td>
+
+                </tr>
+                </>
               )}
 
             </tbody>
