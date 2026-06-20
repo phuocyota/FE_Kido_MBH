@@ -70,4 +70,21 @@ export const dashboardApi = {
     const response = await axiosInstance.get("/reports/cancellations", { params });
     return unwrap(response);
   },
+
+  getHourlyRevenueStats: async (date, branchId) => {
+    const params = {};
+    if (date) params.date = date;
+    if (branchId) params.branchId = branchId;
+    const response = await axiosInstance.get("/dashboard/revenue/hourly", { params });
+    return unwrap(response);
+  },
+
+  getHourlyCustomerStats: async (date, branchId) => {
+    const params = {};
+    if (date) params.date = date;
+    if (branchId) params.branchId = branchId;
+    const response = await axiosInstance.get("/dashboard/customers/hourly", { params });
+    return unwrap(response);
+  },
 };
+
