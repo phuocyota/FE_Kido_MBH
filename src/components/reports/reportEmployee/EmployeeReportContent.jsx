@@ -15,6 +15,9 @@ import EmployeeCashierReport from "./EmployeeCashierReport";
 export default function EmployeeReportContent({
   viewType,
   focusType,
+  reportData,
+  loading,
+  error,
 
   zoom,
 
@@ -71,6 +74,16 @@ export default function EmployeeReportContent({
 
       {/* PREVIEW */}
       <div className="h-full overflow-auto p-5 bg-gray-200">
+        {loading && (
+          <div className="mb-3 rounded-lg bg-white p-3 text-sm text-gray-500">
+            Đang tải báo cáo...
+          </div>
+        )}
+        {error && (
+          <div className="mb-3 rounded-lg bg-white p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
         <div
   ref={(el) => {
     previewRef.current = el;
@@ -89,14 +102,14 @@ export default function EmployeeReportContent({
 
           {focusType === "time" &&
           viewType === "chart" && (
-            <EmployeeReportChart />
+            <EmployeeReportChart rows={reportData?.chart || []} />
           )}
 
 
           {
             focusType === "time" &&
             viewType === "report" && (
-              <EmployeeReportTableTime />
+              <EmployeeReportTableTime rows={reportData?.sales || []} reportData={reportData} />
             )
           }
 
@@ -104,6 +117,8 @@ export default function EmployeeReportContent({
             focusType === "profit" && (
               <EmployeeProfitReport
                 viewType={viewType}
+                rows={reportData?.profit || []}
+                reportData={reportData}
               />
             )
           }
@@ -112,6 +127,8 @@ export default function EmployeeReportContent({
             focusType === "cashier" && (
               <EmployeeCashierReport
                 viewType={viewType}
+                rows={reportData?.cashier || []}
+                reportData={reportData}
               />
             )
           }

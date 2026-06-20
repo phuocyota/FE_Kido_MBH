@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  AlertCircle,
-  Info,
-} from "lucide-react";
+import { AlertCircle, ChevronDown, Info } from "lucide-react";
 import { dashboardApi } from "../../api/dashboardApi";
-import { workScheduleApi } from "../../api/workScheduleApi";
 
 const filterOptions = [
   { label: "Hôm nay", value: "today" },
@@ -17,9 +11,9 @@ const filterOptions = [
 ];
 
 const stageFallbacks = {
-  afterKitchen: { name: "Hủy sau báo bếp", color: "#ff2d55" },
-  afterCheckout: { name: "Hủy sau tạm tính", color: "#ff7a00" },
-  afterInspection: { name: "Hủy khi kiểm đồ", color: "#ffc400" },
+  afterKitchen: { name: "Hủy sau báo bếp", color: "bg-red-500" },
+  afterCheckout: { name: "Hủy sau tạm tính", color: "bg-orange-500" },
+  afterInspection: { name: "Hủy khi kiểm đồ", color: "bg-yellow-400" },
 };
 
 const getStage = (stages, key) => {
@@ -27,32 +21,17 @@ const getStage = (stages, key) => {
   return stages.find((stage) => stage.key === key) || {
     key,
     name: fallback.name,
-    color: fallback.color,
     itemCount: 0,
-    amount: 0,
     percentage: 0,
-    items: [],
   };
 };
 
 export default function StaffAndCancelReport() {
-
   const [filter, setFilter] = useState("7 ngày qua");
-
   const [open, setOpen] = useState(false);
-
-  const [expanded, setExpanded] = useState(true);
-  const [expanded2, setExpanded2] = useState(false);
-
-const [expanded3, setExpanded3] = useState(false);
-
   const [cancellations, setCancellations] = useState(null);
-
   const [cancelLoading, setCancelLoading] = useState(false);
-
   const [cancelError, setCancelError] = useState("");
-
-  // Employee stats state
   const [employeeStats, setEmployeeStats] = useState({
     working: 0,
     absent: 0,
@@ -64,19 +43,10 @@ const [expanded3, setExpanded3] = useState(false);
   const [topStaffs, setTopStaffs] = useState([]);
   const [empLoading, setEmpLoading] = useState(false);
 
-  const filterValue = useMemo(() => {
-    return filterOptions.find((item) => item.label === filter)?.value || "7days";
-  }, [filter]);
-
-  const cancelSummary = cancellations?.summary || {};
-
-  const cancelStages = cancellations?.stages || [];
-
-  const afterKitchenStage = getStage(cancelStages, "afterKitchen");
-
-  const afterCheckoutStage = getStage(cancelStages, "afterCheckout");
-
-  const afterInspectionStage = getStage(cancelStages, "afterInspection");
+  const filterValue = useMemo(
+    () => filterOptions.find((item) => item.label === filter)?.value || "7days",
+    [filter]
+  );
 
   useEffect(() => {
     let active = true;
@@ -85,92 +55,40 @@ const [expanded3, setExpanded3] = useState(false);
       try {
         setCancelLoading(true);
         setCancelError("");
-
         const data = await dashboardApi.getCancellations({ filter: filterValue });
-
-        if (active) {
-          setCancellations(data);
-        }
+        if (active) setCancellations(data);
       } catch (err) {
         if (active) {
           setCancelError(err?.response?.data?.message || "Không thể tải dữ liệu hủy món");
           setCancellations(null);
         }
       } finally {
-        if (active) {
-          setCancelLoading(false);
-        }
+        if (active) setCancelLoading(false);
       }
     };
 
     const fetchEmployeeStats = async () => {
       try {
         setEmpLoading(true);
-        
-        // Get today's date range
-        const today = new Date();
-        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        
-        const monday = new Date(today);
-        monday.setDate(today.getDate() + mondayOffset);
-        
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        
-        const formatDate = (date) => date.toISOString().split('T')[0];
-        
-        const response = await workScheduleApi.getTimeSheet(formatDate(monday), formatDate(sunday));
-        const timesheetData = response?.data || response || [];
-        
-        if (!Array.isArray(timesheetData)) {
-          setEmployeeStats({ working: 0, absent: 0, pendingRequests: 0, late: 0, earlyLeave: 0, overtime: 0 });
-          setTopStaffs([]);
-          return;
-        }
-        
-        // Count employees working today
-        const todayDay = today.getDate();
-        const workingEmployees = timesheetData.filter(emp => emp.shifts && emp.shifts[todayDay]).length;
-        
-        // Calculate hours for each employee (mock calculation based on shift type)
-        const staffHours = timesheetData.map(emp => {
-          let totalHours = 0;
-          if (emp.shifts) {
-            Object.values(emp.shifts).forEach(shift => {
-              if (shift === 'morning') totalHours += 4;
-              else if (shift === 'afternoon') totalHours += 4;
-              else if (shift === 'full') totalHours += 8;
-            });
-          }
-          return {
-            name: emp.name || 'Nhân viên',
-            hours: totalHours,
-            hoursFormatted: `${Math.floor(totalHours)} giờ ${(totalHours % 1) * 60 > 0 ? Math.round((totalHours % 1) * 60) + ' phút' : ''}`.trim()
-          };
-        }).filter(s => s.hours > 0).sort((a, b) => b.hours - a.hours).slice(0, 5);
-        
+        const data = await dashboardApi.getEmployeeAttendance(filterValue);
         if (active) {
           setEmployeeStats({
-            working: workingEmployees,
-            absent: 0, // Not available from timesheet data
-            pendingRequests: 0, // Not available from timesheet data
-            late: 0, // Not available from timesheet data
-            earlyLeave: 0, // Not available from timesheet data
-            overtime: timesheetData.filter(emp => {
-              // Count employees with full shifts (8h) as overtime candidates
-              const shifts = emp.shifts || {};
-              return Object.values(shifts).includes('full');
-            }).length,
+            working: data?.summary?.working || 0,
+            absent: data?.summary?.absent || 0,
+            pendingRequests: data?.summary?.pendingRequests || 0,
+            late: data?.summary?.late || 0,
+            earlyLeave: data?.summary?.earlyLeave || 0,
+            overtime: data?.summary?.overtime || 0,
           });
-          setTopStaffs(staffHours);
+          setTopStaffs(Array.isArray(data?.topStaffs) ? data.topStaffs : []);
         }
-      } catch (err) {
-        // Silently fail - keep default values
-      } finally {
+      } catch {
         if (active) {
-          setEmpLoading(false);
+          setEmployeeStats({ working: 0, absent: 0, pendingRequests: 0, late: 0, earlyLeave: 0, overtime: 0 });
+          setTopStaffs([]);
         }
+      } finally {
+        if (active) setEmpLoading(false);
       }
     };
 
@@ -182,763 +100,151 @@ const [expanded3, setExpanded3] = useState(false);
     };
   }, [filterValue]);
 
+  const cancelSummary = cancellations?.summary || {};
+  const cancelStages = cancellations?.stages || [];
+  const stages = [
+    getStage(cancelStages, "afterKitchen"),
+    getStage(cancelStages, "afterCheckout"),
+    getStage(cancelStages, "afterInspection"),
+  ];
 
   return (
-    <div className="
-      grid
-      grid-cols-1
-      2xl:grid-cols-2
-      gap-4
-    ">
-
-      {/* ================= LEFT ================= */}
-      <div className="
-        bg-white
-        rounded-3xl
-        border
-        border-gray-200
-        shadow-sm
-        overflow-hidden
-      ">
-
-        {/* HEADER */}
+    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-5">
-
-          <div className="
-            flex
-            items-start
-            justify-between
-            gap-3
-            mb-6
-          ">
-
-            <h2 className="text-[22px] font-bold text-gray-900">
-              Tình trạng hủy món
-            </h2>
-
-            {/* FILTER */}
+          <div className="flex items-start justify-between gap-3 mb-6">
+            <h2 className="text-[22px] font-bold text-gray-900">Tình trạng hủy món</h2>
             <div className="relative">
-
               <button
                 onClick={() => setOpen(!open)}
-                className="
-                  h-11
-                  px-4
-                  rounded-2xl
-                  bg-gray-100
-                  hover:bg-gray-200
-                  transition
-                  flex
-                  items-center
-                  gap-2
-                  text-[15px]
-                  font-medium
-                  text-gray-700
-                  min-w-[150px]
-                  justify-between
-                "
+                className="h-11 px-4 rounded-2xl bg-gray-100 hover:bg-gray-200 transition flex items-center gap-2 text-[15px] font-medium text-gray-700 min-w-[150px] justify-between"
               >
                 {filter}
-
-                <ChevronDown
-                  size={18}
-                  className={`
-                    transition-transform duration-300
-                    ${open ? "rotate-180" : ""}
-                  `}
-                />
+                <ChevronDown size={18} className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
               </button>
-
               {open && (
-                <div className="
-                  absolute
-                  right-0
-                  mt-2
-                  w-[180px]
-                  bg-white
-                  rounded-2xl
-                  border
-                  border-gray-200
-                  shadow-2xl
-                  overflow-hidden
-                  z-50
-                ">
-
+                <div className="absolute right-0 mt-2 w-[180px] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden z-50">
                   {filterOptions.map((item) => (
-
                     <button
                       key={item.value}
                       onClick={() => {
                         setFilter(item.label);
                         setOpen(false);
                       }}
-                      className={`
-                        w-full
-                        px-4
-                        py-3
-                        text-left
-                        text-sm
-                        transition
-
-                        ${filter === item.label
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "hover:bg-gray-50 text-gray-700"
-                        }
-                      `}
+                      className={`w-full px-4 py-3 text-left text-sm transition ${
+                        filter === item.label ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"
+                      }`}
                     >
                       {item.label}
                     </button>
-
                   ))}
-
                 </div>
               )}
             </div>
           </div>
 
-          {/* STATS */}
-          <div className="
-            flex
-            flex-wrap
-            gap-10
-            mb-6
-          ">
-
+          <div className="flex flex-wrap gap-10 mb-6">
             <div>
-              <div className="text-gray-700 font-medium mb-1">
-                Món bị hủy
-              </div>
-
+              <div className="text-gray-700 font-medium mb-1">Món bị hủy</div>
               <div className="text-[36px] font-bold text-black">
                 {cancelLoading ? "..." : cancelSummary.cancelledItems || 0}
               </div>
             </div>
-
             <div>
-              <div className="text-gray-700 font-medium mb-1">
-                Hóa đơn bị hủy
-              </div>
-
+              <div className="text-gray-700 font-medium mb-1">Hóa đơn bị hủy</div>
               <div className="text-[36px] font-bold text-black">
                 {cancelLoading ? "..." : cancelSummary.cancelledInvoices || 0}
               </div>
             </div>
-
           </div>
 
-          {/* CARD 1 */}
-          <div className="
-            border
-            border-gray-200
-            rounded-3xl
-            overflow-hidden
-            mb-4
-          ">
-
-            {/* TOP */}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="
-                w-full
-                px-4
-                py-4
-                flex
-                items-center
-                justify-between
-                gap-4
-              "
-            >
-
-              <div className="
-                flex
-                items-center
-                gap-3
-                flex-1
-              ">
-
-                <div className="
-                  w-3
-                  h-3
-                  rounded-full
-                  bg-red-500
-                " />
-
-                <span className="font-medium text-gray-800">
-                  {afterKitchenStage.name}
-                </span>
-
-                {/* PROGRESS */}
-                <div className="
-                  flex-1
-                  h-2
-                  rounded-full
-                  bg-gray-100
-                  overflow-hidden
-                ">
-                  <div className="
-                    h-full
-                    bg-red-500
-                  "
-                    style={{ width: `${afterKitchenStage.percentage || 0}%` }}
-                  />
+          <div className="space-y-4">
+            {stages.map((stage) => {
+              const color = stageFallbacks[stage.key]?.color || "bg-blue-500";
+              return (
+                <div key={stage.key} className="border border-gray-200 rounded-3xl overflow-hidden">
+                  <div className="w-full px-4 py-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`w-3 h-3 rounded-full ${color}`} />
+                      <span className="font-medium text-gray-800">{stage.name}</span>
+                      <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div className={`h-full ${color}`} style={{ width: `${stage.percentage || 0}%` }} />
+                      </div>
+                    </div>
+                    <span className="font-semibold text-black">{stage.itemCount || 0} Món</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="
-                flex
-                items-center
-                gap-3
-              ">
-
-                <span className="font-semibold text-black">
-                  {afterKitchenStage.itemCount || 0} Món
-                </span>
-
-                {expanded ? (
-                  <ChevronUp size={18} />
-                ) : (
-                  <ChevronDown size={18} />
-                )}
-              </div>
-            </button>
-
-            {/* BODY */}
-            {expanded && (
-              <div className="
-                border-t
-                border-gray-100
-                h-[220px]
-                flex
-                flex-col
-                items-center
-                justify-center
-                px-6
-              ">
-
-                {/* ICON */}
-                <div className="
-                  w-14
-                  h-14
-                  rounded-2xl
-                  bg-blue-50
-                  flex
-                  items-center
-                  justify-center
-                  mb-5
-                ">
-
-                  <AlertCircle
-                    size={28}
-                    className="text-blue-600"
-                  />
-                </div>
-
-                <p className="text-gray-600 text-center text-[16px]">
-                  {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
-                </p>
-
-              </div>
-            )}
+              );
+            })}
           </div>
 
-          {/* CARD 2 */}
-          {/* CARD 2 */}
-<div className="
-  border
-  border-gray-200
-  rounded-3xl
-  overflow-hidden
-  mb-4
-">
-
-  {/* TOP */}
-  <button
-    onClick={() => setExpanded2(!expanded2)}
-    className="
-      w-full
-      px-4
-      py-4
-      flex
-      items-center
-      justify-between
-      gap-4
-    "
-  >
-
-    <div className="
-      flex
-      items-center
-      gap-3
-      flex-1
-    ">
-
-      <div className="
-        w-3
-        h-3
-        rounded-full
-        bg-orange-500
-      " />
-
-      <span className="font-medium text-gray-800">
-        {afterCheckoutStage.name}
-      </span>
-
-      {/* PROGRESS */}
-      <div className="
-        flex-1
-        h-2
-        rounded-full
-        bg-gray-100
-        overflow-hidden
-      ">
-        <div className="
-          h-full
-          bg-orange-500
-        "
-          style={{ width: `${afterCheckoutStage.percentage || 0}%` }}
-        />
-      </div>
-    </div>
-
-    <div className="
-      flex
-      items-center
-      gap-3
-    ">
-
-      <span className="font-semibold text-black">
-        {afterCheckoutStage.itemCount || 0} Món
-      </span>
-
-      {expanded2 ? (
-        <ChevronUp size={18} />
-      ) : (
-        <ChevronDown size={18} />
-      )}
-    </div>
-  </button>
-
-  {/* BODY */}
-  {expanded2 && (
-    <div className="
-      border-t
-      border-gray-100
-      h-[220px]
-      flex
-      flex-col
-      items-center
-      justify-center
-      px-6
-    ">
-
-      <div className="
-        w-14
-        h-14
-        rounded-2xl
-        bg-orange-50
-        flex
-        items-center
-        justify-center
-        mb-5
-      ">
-
-        <AlertCircle
-          size={28}
-          className="text-orange-500"
-        />
-      </div>
-
-      <p className="text-gray-600 text-center text-[16px]">
-        {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
-      </p>
-
-    </div>
-  )}
-</div>
-
-          {/* CARD 3 */}
-          {/* CARD 3 */}
-<div className="
-  border
-  border-gray-200
-  rounded-3xl
-  overflow-hidden
-">
-
-  {/* TOP */}
-  <button
-    onClick={() => setExpanded3(!expanded3)}
-    className="
-      w-full
-      px-4
-      py-4
-      flex
-      items-center
-      justify-between
-      gap-4
-    "
-  >
-
-    <div className="
-      flex
-      items-center
-      gap-3
-      flex-1
-    ">
-
-      <div className="
-        w-3
-        h-3
-        rounded-full
-        bg-yellow-400
-      " />
-
-      <span className="font-medium text-gray-800">
-        {afterInspectionStage.name}
-      </span>
-
-      {/* PROGRESS */}
-      <div className="
-        flex-1
-        h-2
-        rounded-full
-        bg-gray-100
-        overflow-hidden
-      ">
-        <div className="
-          h-full
-          bg-yellow-400
-        "
-          style={{ width: `${afterInspectionStage.percentage || 0}%` }}
-        />
-      </div>
-    </div>
-
-    <div className="
-      flex
-      items-center
-      gap-3
-    ">
-
-      <span className="font-semibold text-black">
-        {afterInspectionStage.itemCount || 0} Món
-      </span>
-
-      {expanded3 ? (
-        <ChevronUp size={18} />
-      ) : (
-        <ChevronDown size={18} />
-      )}
-    </div>
-  </button>
-
-  {/* BODY */}
-  {expanded3 && (
-    <div className="
-      border-t
-      border-gray-100
-      h-[220px]
-      flex
-      flex-col
-      items-center
-      justify-center
-      px-6
-    ">
-
-      <div className="
-        w-14
-        h-14
-        rounded-2xl
-        bg-yellow-50
-        flex
-        items-center
-        justify-center
-        mb-5
-      ">
-
-        <AlertCircle
-          size={28}
-          className="text-yellow-500"
-        />
-      </div>
-
-      <p className="text-gray-600 text-center text-[16px]">
-        {cancelLoading ? "Đang tải dữ liệu..." : cancelError || "Chưa có món nào bị hủy"}
-      </p>
-
-    </div>
-  )}
-</div>
-
-        </div>
-      </div>
-
-      {/* ================= RIGHT ================= */}
-      <div className="
-        bg-white
-        rounded-3xl
-        border
-        border-gray-200
-        shadow-sm
-        overflow-hidden
-      ">
-
-        {/* HEADER */}
-        <div className="p-5 border-b border-gray-100">
-
-          <div className="
-            flex
-            items-start
-            justify-between
-            gap-3
-            mb-5
-          ">
-
-            <div className="
-              flex
-              items-center
-              gap-3
-              flex-wrap
-            ">
-
-              <h2 className="text-[22px] font-bold text-gray-900">
-                Theo dõi nhân viên
-              </h2>
+          {(cancelError || (!cancelLoading && (cancelSummary.cancelledItems || 0) === 0)) && (
+            <div className="mt-4 h-[160px] flex flex-col items-center justify-center px-6 text-gray-600">
+              <AlertCircle size={28} className="text-blue-600 mb-3" />
+              <p>{cancelError || "Chưa có món nào bị hủy"}</p>
             </div>
+          )}
+        </div>
+      </div>
 
-            <button className="
-              h-11
-              px-4
-              rounded-2xl
-              bg-gray-100
-              text-gray-500
-              flex
-              items-center
-              gap-2
-            ">
-              Hôm nay
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100">
+          <div className="flex items-start justify-between gap-3 mb-5">
+            <h2 className="text-[22px] font-bold text-gray-900">Theo dõi nhân viên</h2>
+            <div className="h-11 px-4 rounded-2xl bg-gray-100 text-gray-500 flex items-center gap-2">
+              {filter}
               <ChevronDown size={18} />
-            </button>
+            </div>
           </div>
 
-          {/* STATS */}
-          <div className="
-            grid
-            grid-cols-2
-            lg:grid-cols-3
-            border
-            border-gray-200
-            rounded-3xl
-            overflow-hidden
-          ">
-
+          <div className="grid grid-cols-2 lg:grid-cols-3 border border-gray-200 rounded-3xl overflow-hidden">
             {[
-              {
-                title: "Nhân viên đi làm",
-                value: employeeStats.working,
-              },
-              {
-                title: "Nhân viên nghỉ làm",
-                value: employeeStats.absent,
-              },
-              {
-                title: "Yêu cầu chờ duyệt",
-                value: employeeStats.pendingRequests,
-              },
-              {
-                title: "Nhân viên đi muộn",
-                value: employeeStats.late,
-              },
-              {
-                title: "Nhân viên về sớm",
-                value: employeeStats.earlyLeave,
-              },
-              {
-                title: "Nhân viên làm thêm",
-                value: employeeStats.overtime,
-              },
-            ].map((item, index) => (
-
-              <div
-                key={index}
-                className="
-                  h-[96px]
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  border-r
-                  border-b
-                  border-gray-200
-                  last:border-r-0
-                "
-              >
-
-                <div className="
-                  text-sm
-                  text-gray-600
-                  mb-1
-                  text-center
-                ">
-                  {item.title}
-                </div>
-
-                <div className="
-                  text-[32px]
-                  font-bold
-                  text-black
-                ">
-                  {empLoading ? "..." : item.value}
-                </div>
-
+              ["Nhân viên đi làm", employeeStats.working],
+              ["Nhân viên nghỉ làm", employeeStats.absent],
+              ["Yêu cầu chờ duyệt", employeeStats.pendingRequests],
+              ["Nhân viên đi muộn", employeeStats.late],
+              ["Nhân viên về sớm", employeeStats.earlyLeave],
+              ["Nhân viên làm thêm", employeeStats.overtime],
+            ].map(([title, value]) => (
+              <div key={title} className="h-[96px] flex flex-col items-center justify-center border-r border-b border-gray-200">
+                <div className="text-sm text-gray-600 mb-1 text-center">{title}</div>
+                <div className="text-[32px] font-bold text-black">{empLoading ? "..." : value}</div>
               </div>
-
             ))}
-
           </div>
         </div>
 
-        {/* TABLE */}
         <div className="p-5">
-
-          <div className="
-            overflow-x-auto
-            rounded-2xl
-            border
-            border-gray-200
-          ">
-
+          <div className="overflow-x-auto rounded-2xl border border-gray-200">
             <table className="w-full min-w-[600px]">
-
               <thead className="bg-gray-50">
-
                 <tr>
-
-                  <th className="
-                    px-4
-                    py-4
-                    text-left
-                    text-sm
-                    font-semibold
-                    text-gray-700
-                  ">
-                    STT
-                  </th>
-
-                  <th className="
-                    px-4
-                    py-4
-                    text-left
-                    text-sm
-                    font-semibold
-                    text-gray-700
-                  ">
-                    Top 5 nhân viên làm nhiều giờ nhất
-                  </th>
-
-                  <th className="
-                    px-4
-                    py-4
-                    text-right
-                    text-sm
-                    font-semibold
-                    text-gray-700
-                  ">
-                    Số giờ làm
-                  </th>
-
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">STT</th>
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-gray-700">Top 5 nhân viên làm nhiều giờ nhất</th>
+                  <th className="px-4 py-4 text-right text-sm font-semibold text-gray-700">Số giờ làm</th>
                 </tr>
-
               </thead>
-
               <tbody>
-
                 {empLoading ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-8 text-gray-400">
-                      Đang tải dữ liệu...
-                    </td>
-                  </tr>
+                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Đang tải dữ liệu...</td></tr>
                 ) : topStaffs.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-8 text-gray-400">
-                      Chưa có dữ liệu nhân viên
-                    </td>
-                  </tr>
+                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Chưa có dữ liệu nhân viên</td></tr>
                 ) : (
                   topStaffs.map((staff, index) => (
-
-                    <tr
-                      key={index}
-                      className="
-                        border-t
-                        border-gray-100
-                        hover:bg-gray-50
-                        transition
-                      "
-                    >
-
-                      <td className="px-4 py-4">
-                        {index + 1}
-                      </td>
-
-                      <td className="
-                        px-4
-                        py-4
-                        font-medium
-                        text-gray-900
-                      ">
-                        {staff.name}
-                      </td>
-
-                      <td className="
-                        px-4
-                        py-4
-                        text-right
-                        font-semibold
-                        text-blue-600
-                      ">
-                        {staff.hoursFormatted || `${staff.hours} giờ`}
-                      </td>
-
+                    <tr key={staff.employeeId || index} className="border-t border-gray-100 hover:bg-gray-50 transition">
+                      <td className="px-4 py-4">{index + 1}</td>
+                      <td className="px-4 py-4 font-medium text-gray-900">{staff.name}</td>
+                      <td className="px-4 py-4 text-right font-semibold text-blue-600">{staff.hoursFormatted || `${staff.hours} giờ`}</td>
                     </tr>
-
                   ))
                 )}
-
               </tbody>
             </table>
           </div>
 
-          {/* FOOTER */}
-          <div className="
-            mt-4
-            p-4
-            rounded-2xl
-            bg-gray-50
-            flex
-            items-center
-            gap-3
-            text-gray-700
-          ">
-
-            <Info
-              size={18}
-              className="text-gray-500"
-            />
-
-            <span>
-              Quản lý chấm công - tính lương của cửa hàng
-            </span>
-
-            <button className="
-              text-blue-600
-              hover:underline
-              font-medium
-            ">
-              tại đây
-            </button>
-
+          <div className="mt-4 p-4 rounded-2xl bg-gray-50 flex items-center gap-3 text-gray-700">
+            <Info size={18} className="text-gray-500" />
+            <span>Quản lý chấm công - tính lương của cửa hàng</span>
           </div>
         </div>
       </div>
