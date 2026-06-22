@@ -335,6 +335,7 @@ export default function TimeSheet() {
 
   const [selectedDate, setSelectedDate] = useState("");
   const [openDelete, setOpenDelete] = useState(false);
+  const [deleteInfo, setDeleteInfo] = useState(null);
 
   const [selectedShift, setSelectedShift] = useState("");
 
@@ -369,17 +370,6 @@ export default function TimeSheet() {
     }
   }, [currentDate]);
 
-
-  
-}, [currentDate]);
-  
-  const formatDateISO = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
   const handleDeleteSchedule = async () => {
     if (!deleteInfo) return;
 
@@ -402,7 +392,7 @@ export default function TimeSheet() {
       setOpenDelete(false);
       setDeleteInfo(null);
       fetchTimeSheet();
-    } catch (error) {
+    } catch {
       toast.error("Khong the xoa lich lam viec");
     }
   };
@@ -795,6 +785,4 @@ export default function TimeSheet() {
 
     </div>
   );
-    }
-  );
-}}
+}
