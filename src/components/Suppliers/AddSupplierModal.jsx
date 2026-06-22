@@ -69,11 +69,13 @@ export default function AddSupplierModal({
 
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        name: form.name.trim(),
-        code: form.code || undefined,
-      };
+      const payload = {};
+      Object.entries(form).forEach(([key, value]) => {
+        const trimmedValue = typeof value === "string" ? value.trim() : value;
+        if (trimmedValue !== "") {
+          payload[key] = trimmedValue;
+        }
+      });
 
       if (isEdit) {
         await supplierApi.update(initialData.id, payload);
@@ -86,6 +88,7 @@ export default function AddSupplierModal({
       onSaved?.();
       onClose();
     } catch (error) {
+
       toast.error(
         error.response?.data?.message ||
           (isEdit

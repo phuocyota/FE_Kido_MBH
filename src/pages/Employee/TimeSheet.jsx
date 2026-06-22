@@ -367,6 +367,9 @@ export default function TimeSheet() {
     } finally {
       setLoading(false);
     }
+  }, [currentDate]);
+
+
   
 }, [currentDate]);
   
@@ -404,30 +407,8 @@ export default function TimeSheet() {
     }
   };
 
-  const getWeekDays = (date) => {
-    const current = new Date(date);
-
-    const day =
-      current.getDay() === 0
-        ? 7
-        : current.getDay();
-
-    const monday = new Date(current);
-
-    monday.setDate(
-      current.getDate() - day + 1
-    );
-
-    return Array.from(
-      { length: 7 },
-      (_, index) => {
-        const d = new Date(monday);
-
-        d.setDate(
-          monday.getDate() + index
-        );
-
   // Fetch timesheet when week changes
+
   useEffect(() => {
     fetchTimeSheet();
   }, [fetchTimeSheet]);
