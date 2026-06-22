@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import StockInHeader from "../components/StockIn/StockInHeader";
-import StockInInfo from "../components/StockIn/StockInInfo";
-import StockInTable from "../components/StockIn/StockInTable";
-import StockInFooter from "../components/StockIn/StockInFooter";
+import StockInHeader from "../../components/StockIn/StockInHeader";
+import StockInInfo from "../../components/StockIn/StockInInfo";
+import StockInTable from "../../components/StockIn/StockInTable";
+import StockInFooter from "../../components/StockIn/StockInFooter";
 
 export default function StockInCreate() {
   const [items, setItems] = useState([

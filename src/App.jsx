@@ -7,7 +7,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
 import PriceBook from "./pages/PriceBook";
-import StockTakes from "./pages/StockTakes";
+import StockTakes from "./pages/Stock/StockTakes";
 import Account from "./pages/Account";
 import StoreInfo from "./pages/StoreInfo";
 import ReportEndDay from "./pages/reports/ReportEndDay";
@@ -18,10 +18,12 @@ import TimeKeeping from "./pages/Employee/TimeKeeping";
 import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import ReportEmployee from "./pages/reports/ReportEmployee";
-import StockInCreate from "./pages/StockInCreate";
- import StockTransfer from "./pages/StockTransfer";
- import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
- import CashManagement from "./pages/CashManagement/CashManagement";
+import StockInList from "./pages/Stock/StockInList";
+import StockInCreate from "./pages/Stock/StockInCreate";
+import StockOutList from "./pages/Stock/StockOutList";
+ import StockTransfer from "./pages/Stock/StockTransfer";
+import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
+import CashManagement from "./pages/CashManagement/CashManagement";
 import { authApi } from "./api";
 
 const PrivateRoute = ({ children }) => {
@@ -66,7 +68,9 @@ const App = () => {
                   <Route path="/pay-sheet" element={<PaySheet />} />
                   <Route path="/suppliers" element={<Suppliers />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />
+                  <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />
+                  <Route path="/stock-out" element={<StockOutList />} />
                   <Route path="/cash-management/payment-vouchers" element={<PaymentVoucher />} />
                   <Route path="/stock-transfer" element={<StockTransfer />} />
                   <Route path="/cash-management" element={<CashManagement />} />
