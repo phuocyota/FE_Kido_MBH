@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { branchApi, inventoryItemApi, stockTransferApi } from "../api";
+import { branchApi, inventoryItemApi, stockTransferApi } from "../../api";
 
 const formatMoney = (value) =>
   new Intl.NumberFormat("vi-VN").format(Number(value || 0));
@@ -23,10 +23,6 @@ const uniqueBranchesByName = (branchList) => {
     return true;
   });
 };
-import React from "react";
-import StockTransferInfo from "../../components/StockTransfer/StockTransferInfo";
-import StockTransferTable from "../../components/StockTransfer/StockTransferTable";
-import StockTransferFooter from "../../components/StockTransfer/StockTransferFooter";
 
 export default function StockTransfer() {
   const [branches, setBranches] = useState([]);
