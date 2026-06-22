@@ -23,6 +23,10 @@ const uniqueBranchesByName = (branchList) => {
     return true;
   });
 };
+import React from "react";
+import StockTransferInfo from "../../components/StockTransfer/StockTransferInfo";
+import StockTransferTable from "../../components/StockTransfer/StockTransferTable";
+import StockTransferFooter from "../../components/StockTransfer/StockTransferFooter";
 
 export default function StockTransfer() {
   const [branches, setBranches] = useState([]);

@@ -1,18 +1,33 @@
 import React from "react";
-import { ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function StockInHeader() {
+  const navigate = useNavigate();
+
   return (
     <div className="border-b border-gray-300 bg-gray-50 p-3 md:p-4">
       <div className="flex flex-col lg:flex-row lg:items-center gap-3">
 
-        {/* Tiêu đề */}
-        <h1 className="text-lg md:text-xl font-semibold shrink-0">
-          Thêm mới phiếu nhập kho
-        </h1>
+        {/* Nút quay lại danh sách phiếu nhập kho */}
+        <div className="flex w-full shrink-0 flex-col items-start gap-2 sm:flex-row sm:items-center lg:w-auto">
+          <button
+            type="button"
+            onClick={() => navigate("/stock-in")}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-500 hover:bg-cyan-50 hover:text-cyan-700 sm:w-auto"
+          >
+            <ArrowLeft size={17} />
+            Quay lại
+          </button>
+
+          {/* Tiêu đề trang thêm mới */}
+          <h1 className="text-lg font-semibold leading-tight text-slate-900 md:text-xl">
+            Thêm mới phiếu nhập kho
+          </h1>
+        </div>
 
         {/* Khu vực thao tác */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 
           {/* Loại nhập */}
           <div className="relative w-full sm:w-[180px]">

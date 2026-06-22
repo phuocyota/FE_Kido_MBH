@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import SidebarFilterStock from "../components/StockTakes/SidebarFilterStock";
-import TableStock from "../components/StockTakes/TableStock";
+import SidebarFilterStock from "../../components/StockTakes/SidebarFilterStock";
+import TableStock from "../../components/StockTakes/TableStock";
 import { Filter } from "lucide-react";
 
 export default function StockTakes() {
