@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   FileSpreadsheet,
@@ -20,6 +21,7 @@ const defaultFilterValues = {
 };
 
 export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
+  const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterValues, setFilterValues] = useState(defaultFilterValues);
   const iconButtonClass =
@@ -101,21 +103,23 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
           </button>
 
           <div className="inline-flex flex-1 overflow-hidden rounded-full shadow-sm sm:flex-none">
-            <button
-              type="button"
-              className="inline-flex h-9 flex-1 items-center justify-center gap-2 bg-cyan-600 px-4 text-sm font-bold text-white transition hover:bg-cyan-700 sm:flex-none"
-            >
-              <Plus size={17} />
-              Thêm
-            </button>
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center border-l border-white/30 bg-cyan-600 text-white transition hover:bg-cyan-700"
-              title="Tùy chọn thêm"
-            >
-              <ChevronDown size={16} />
-            </button>
-          </div>
+  <button
+    type="button"
+    onClick={() => navigate("/stock-out/create")}
+    className="inline-flex h-9 flex-1 items-center justify-center gap-2 bg-cyan-600 px-4 text-sm font-bold text-white transition hover:bg-cyan-700 sm:flex-none"
+  >
+    <Plus size={17} />
+    Thêm
+  </button>
+
+  <button
+    type="button"
+    className="inline-flex h-9 w-9 shrink-0 items-center justify-center border-l border-white/30 bg-cyan-600 text-white transition hover:bg-cyan-700"
+    title="Tùy chọn thêm"
+  >
+    <ChevronDown size={16} />
+  </button>
+</div>
 
            
         </div>

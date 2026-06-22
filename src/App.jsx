@@ -21,6 +21,7 @@ import ReportEmployee from "./pages/reports/ReportEmployee";
 import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
 import StockOutList from "./pages/Stock/StockOutList";
+import StockOutCreate from "./pages/Stock/StockOutCreate";
  import StockTransfer from "./pages/Stock/StockTransfer";
 import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
 import CashManagement from "./pages/CashManagement/CashManagement";
@@ -71,6 +72,7 @@ const App = () => {
                   <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />
                   <Route path="/stock-out" element={<StockOutList />} />
+                  <Route path="/stock-out/create" element={<StockOutCreate />} />
                   <Route path="/cash-management/payment-vouchers" element={<PaymentVoucher />} />
                   <Route path="/stock-transfer" element={<StockTransfer />} />
                   <Route path="/cash-management" element={<CashManagement />} />
