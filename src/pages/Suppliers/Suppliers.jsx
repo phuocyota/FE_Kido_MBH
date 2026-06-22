@@ -6,6 +6,7 @@ import {
   Download,
   
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { supplierApi } from "../../api";
 import AddSupplierModal from "../../components/Suppliers/AddSupplierModal";
@@ -17,6 +18,7 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
 const [openAddSupplier, setOpenAddSupplier] =
   useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,6 +41,18 @@ const [openAddSupplier, setOpenAddSupplier] =
   useEffect(() => {
     loadSuppliers();
   }, [status, search]);
+
+  const handleDeleteSupplier = async (supplier) => {
+    if (!window.confirm(`Xoa nha cung cap "${supplier.name}"?`)) return;
+
+    try {
+      await supplierApi.delete(supplier.id);
+      toast.success("Xoa nha cung cap thanh cong");
+      loadSuppliers();
+    } catch (err) {
+      toast.error("Khong the xoa nha cung cap");
+    }
+  };
 
   // phân trang 
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,7 +112,10 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
               />
             </div>
 <button
-  onClick={() => setOpenAddSupplier(true)}
+  onClick={() => {
+    setSelectedSupplier(null);
+    setOpenAddSupplier(true);
+  }}
   className="h-11 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 font-medium cursor-pointer"
 >
   <Plus size={18} />
@@ -150,6 +167,11 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
     totalPages={totalPages}
     startIndex={startIndex}
     itemsPerPage={itemsPerPage}
+    onEdit={(supplier) => {
+      setSelectedSupplier(supplier);
+      setOpenAddSupplier(true);
+    }}
+    onDelete={handleDeleteSupplier}
   />
 ) : (
   <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -170,7 +192,10 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
       </p>
 
       <button
-        onClick={() => setOpenAddSupplier(true)}
+        onClick={() => {
+          setSelectedSupplier(null);
+          setOpenAddSupplier(true);
+        }}
         className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 cursor-pointer "
       >
         <Plus size={18} />
@@ -187,12 +212,13 @@ const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
 
       <AddSupplierModal
   open={openAddSupplier}
-  onClose={() =>
-    setOpenAddSupplier(false)
-  }
+  onClose={() => {
+    setOpenAddSupplier(false);
+    setSelectedSupplier(null);
+  }}
   onSaved={loadSuppliers}
+  initialData={selectedSupplier}
 />
     </div>
   );
 }
- 

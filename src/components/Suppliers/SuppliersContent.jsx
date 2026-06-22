@@ -1,4 +1,5 @@
 import React from "react";
+import { Edit2, Trash2 } from "lucide-react";
 
 export default function SuppliersContent({
   suppliers,
@@ -8,6 +9,8 @@ export default function SuppliersContent({
   totalPages,
   startIndex,
   itemsPerPage,
+  onEdit,
+  onDelete,
 }) {
   return (
     <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -43,6 +46,9 @@ export default function SuppliersContent({
             <th className="p-3 text-right">
               Tổng mua
             </th>
+            <th className="p-3 text-center">
+              Thao tÃ¡c
+            </th>
           </tr>
         </thead>
 
@@ -73,15 +79,32 @@ export default function SuppliersContent({
               </td>
 
               <td className="p-3 text-right">
-                {supplier.debt.toLocaleString(
+                {Number(supplier.debt || 0).toLocaleString(
                   "vi-VN"
                 )}
               </td>
 
               <td className="p-3 text-right">
-                {supplier.totalPurchase.toLocaleString(
+                {Number(supplier.totalPurchase || 0).toLocaleString(
                   "vi-VN"
                 )}
+              </td>
+
+              <td className="p-3 text-center">
+                <button
+                  onClick={() => onEdit?.(supplier)}
+                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  title="Sua nha cung cap"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => onDelete?.(supplier)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  title="Xoa nha cung cap"
+                >
+                  <Trash2 size={16} />
+                </button>
               </td>
             </tr>
           ))}

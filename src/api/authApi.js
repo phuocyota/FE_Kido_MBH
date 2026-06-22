@@ -19,9 +19,9 @@ const findAuthValue = (source, keys) => {
 export const authApi = {
   login: async (email, password) => {
     const response = await axiosInstance.post("/auth/login/admin", { email, password });
-    const { accessToken, userId, userType } = response.data.data;
+    const { accessToken, userId, userType, branchId, branchName } = response.data.data;
     
-    saveAuthSession({ accessToken, userId, role: userType });
+    saveAuthSession({ accessToken, userId, role: userType, branchId, branchName });
 
     return response.data;
   },
@@ -42,6 +42,8 @@ export const authApi = {
     return {
       userId: localStorage.getItem("userId"),
       role: localStorage.getItem("role"),
+      branchId: localStorage.getItem("branchId"),
+      branchName: localStorage.getItem("branchName"),
     };
   },
 };

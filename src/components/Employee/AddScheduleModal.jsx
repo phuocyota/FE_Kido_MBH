@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
+import { workScheduleApi } from "../../api";
 
 export default function AddScheduleModal({
   open,
   onClose,
   employee,
   date,
+  onSuccess,
 }) {
   const [morning, setMorning] = useState(false);
 
@@ -22,6 +25,45 @@ const [customShift, setCustomShift] = useState(false);
 
 const [startTime, setStartTime] = useState("08:00");
 const [endTime, setEndTime] = useState("17:00");
+const [saving, setSaving] = useState(false);
+
+const parseDate = (value) => {
+  const [day, month, year] = value.split("/");
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
+
+const getSelectedShift = () => {
+  if (fullDay) return "full";
+  if (morning && afternoon) return "full";
+  if (morning) return "morning";
+  if (afternoon) return "afternoon";
+  return "";
+};
+
+const handleSave = async () => {
+  const shift = getSelectedShift();
+
+  if (!employee?.id || !date || !shift) {
+    toast.error("Vui long chon ca lam viec");
+    return;
+  }
+
+  setSaving(true);
+  try {
+    await workScheduleApi.create({
+      employeeId: employee.id,
+      workDate: parseDate(date),
+      shift,
+      note: customShift ? `${startTime} - ${endTime}` : "",
+    });
+    toast.success("Them lich lam viec thanh cong");
+    onSuccess?.();
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Khong the them lich lam viec");
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (!open) return null;
 
@@ -367,7 +409,11 @@ const [endTime, setEndTime] = useState("17:00");
             Bỏ qua
           </button>
 
-          <button className="h-[42px] px-6 rounded-xl bg-blue-600 text-white"        >
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="h-[42px] px-6 rounded-xl bg-blue-600 text-white disabled:opacity-50"
+          >
             Lưu
           </button>
 

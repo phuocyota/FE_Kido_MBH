@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { reportApi } from "../../../api";
 
+const unwrapData = (response) => {
+  if (response?.success !== undefined) return response.data;
+  if (response?.data?.success !== undefined) return response.data.data;
+  return response?.data || response || {};
+};
+
 export default function ProductSaleReport({ fromDate, toDate, branchId }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,8 +25,7 @@ export default function ProductSaleReport({ fromDate, toDate, branchId }) {
       const to = toDate ? new Date(toDate).toISOString() : undefined;
       // Get monthly order plan report with date range
       const response = await reportApi.getMonthlyOrderPlan(null, from, to, branchId);
-      // response.data = { success, message, data }, so actual report is in response.data.data
-      const result = response.data?.data || response.data || response;
+      const result = unwrapData(response);
       
       setReportData(result);
       
