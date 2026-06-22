@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { reportApi } from "../../api/reportApi";
+import { dashboardApi } from "../../api/dashboardApi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -40,6 +41,9 @@ export default function DashboardCharts() {
   const [loading, setLoading] = useState(false);
   const [revenueData, setRevenueData] = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
+  const [hourlyRevenue, setHourlyRevenue] = useState(null);
+  const [hourlyCustomers, setHourlyCustomers] = useState(null);
+
 
   const filters = [
     "Hôm nay",
@@ -87,14 +91,26 @@ export default function DashboardCharts() {
       setLoading(true);
       try {
         const { from, to } = getDateRange();
-        const [revenueRes, customers] = await Promise.all([
+        const todayStr = new Date().toISOString().split("T")[0];
+        let targetDate = todayStr;
+        if (filter === "Hôm qua") {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          targetDate = yesterday.toISOString().split("T")[0];
+        }
+
+        const [revenueRes, customers, hourlyRevRes, hourlyCustRes] = await Promise.all([
           reportApi.getDailyRevenue(from, to),
           reportApi.getCustomerStats("today"),
+          dashboardApi.getHourlyRevenueStats(targetDate),
+          dashboardApi.getHourlyCustomerStats(targetDate),
         ]);
         // Extract data from API response wrapper
         const revenue = revenueRes.data || revenueRes;
         setRevenueData(revenue);
         setCustomerStats(customers);
+        setHourlyRevenue(hourlyRevRes);
+        setHourlyCustomers(hourlyCustRes);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -108,6 +124,7 @@ export default function DashboardCharts() {
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [filter]);
+
 
   // Transform API data to chart format
   const transformRevenueData = () => {
@@ -152,9 +169,10 @@ export default function DashboardCharts() {
       revenue: formatCurrency(totalRevenue),
       orders: totalOrders,
       hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: dailyData.length > 0 ? dailyData.map(() => totalRevenue / 5 / 1000000) : [0, 0, 0, 0, 0],
+        labels: hourlyRevenue?.labels || ["06h", "07h", "08h", "09h", "10h"],
+        values: hourlyRevenue?.values ? hourlyRevenue.values.map((v) => Number(v || 0) / 1000000) : [0, 0, 0, 0, 0],
       },
+
       day: {
         labels: dailyData.map((d) => getDayLabel(d.date)),
         values: dailyData.map((d) => (d.revenue || 0) / 1000000),
@@ -245,17 +263,13 @@ export default function DashboardCharts() {
       return days[date.getDay()];
     };
 
-    // Aggregate hourly data from daily (simplified)
-    const hourlyValues = daily.length > 0 
-      ? daily.map((d) => Math.round(d.customers / 8)) // Estimate per hour
-      : [];
-
     return {
       total: customerStats.totalCustomers || 0,
       hour: {
-        labels: ["06h", "07h", "08h", "09h", "10h"],
-        values: hourlyValues.length >= 5 ? hourlyValues.slice(0, 5) : [0, 0, 0, 0, 0],
+        labels: hourlyCustomers?.labels || ["06h", "07h", "08h", "09h", "10h"],
+        values: hourlyCustomers?.values || [0, 0, 0, 0, 0],
       },
+
       day: {
         labels: daily.map((d) => getDayLabel(d.date)),
         values: daily.map((d) => d.customers),

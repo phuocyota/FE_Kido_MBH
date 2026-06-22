@@ -1,5 +1,7 @@
 import axiosInstance from "./axiosConfig";
 
+const unwrap = (response) => response.data?.data || response.data;
+
 export const dashboardApi = {
   // Get revenue statistics
   // filter: 'today' | 'yesterday' | '7days' | 'thisMonth' | 'lastMonth'
@@ -9,7 +11,7 @@ export const dashboardApi = {
       params.branchId = branchId;
     }
     const response = await axiosInstance.get("/dashboard/revenue", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Get customer statistics
@@ -20,7 +22,23 @@ export const dashboardApi = {
       params.branchId = branchId;
     }
     const response = await axiosInstance.get("/dashboard/customers", { params });
-    return response.data;
+    return unwrap(response);
+  },
+
+  getRecentActivities: async ({ limit = 10, branchId } = {}) => {
+    const params = { limit };
+    if (branchId) {
+      params.branchId = branchId;
+    }
+    const response = await axiosInstance.get("/dashboard/recent-activities", { params });
+    return unwrap(response);
+  },
+
+  getEmployeeAttendance: async (filter = "today") => {
+    const response = await axiosInstance.get("/dashboard/employee-attendance", {
+      params: { filter },
+    });
+    return unwrap(response);
   },
 
   getMenuPerformance: async ({ filter = "7days", groupBy = "category", branchId, from, to } = {}) => {
@@ -35,7 +53,7 @@ export const dashboardApi = {
       params.to = to;
     }
     const response = await axiosInstance.get("/reports/menu-performance", { params });
-    return response.data?.data || response.data;
+    return unwrap(response);
   },
 
   getCancellations: async ({ filter = "7days", branchId, from, to } = {}) => {
@@ -50,6 +68,23 @@ export const dashboardApi = {
       params.to = to;
     }
     const response = await axiosInstance.get("/reports/cancellations", { params });
-    return response.data?.data || response.data;
+    return unwrap(response);
+  },
+
+  getHourlyRevenueStats: async (date, branchId) => {
+    const params = {};
+    if (date) params.date = date;
+    if (branchId) params.branchId = branchId;
+    const response = await axiosInstance.get("/dashboard/revenue/hourly", { params });
+    return unwrap(response);
+  },
+
+  getHourlyCustomerStats: async (date, branchId) => {
+    const params = {};
+    if (date) params.date = date;
+    if (branchId) params.branchId = branchId;
+    const response = await axiosInstance.get("/dashboard/customers/hourly", { params });
+    return unwrap(response);
   },
 };
+

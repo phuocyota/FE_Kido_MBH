@@ -1,144 +1,140 @@
-import React, { useEffect, useState } from "react";
-import { Search, X, ChevronRight, Upload } from "lucide-react";
-import { inventoryItemApi } from "../../api";
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { inventoryItemApi, stockTakeApi } from "../../api";
 
-export default function StockTakeModal({ open, onClose }) {
+const formatMoney = (value) => new Intl.NumberFormat("vi-VN").format(Number(value || 0));
 
-      const [activeTab, setActiveTab] = useState("all");
-      const [products, setProducts] = useState([]);
-      const [search, setSearch] = useState("");
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState("");
+export default function StockTakeModal({ open, onClose, onSaved }) {
+  const [activeTab, setActiveTab] = useState("all");
+  const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState("");
+  const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-      useEffect(() => {
-        if (!open) return;
+  useEffect(() => {
+    if (!open) return;
 
-        const loadProducts = async () => {
-          try {
-            setLoading(true);
-            setError("");
-            const data = await inventoryItemApi.getAll();
-            const items = Array.isArray(data) ? data : [];
-            setProducts(
-              items.map((item) => ({
-                id: item.id,
-                code: item.sku,
-                name: item.name,
-                stock: Number(item.quantity || 0),
-                actual: null,
-                price: Number(item.costPerUnit || 0),
-              }))
-            );
-            setCurrentPage(1);
-          } catch (err) {
-            setProducts([]);
-            setError("Không thể tải danh sách hàng hóa");
-          } finally {
-            setLoading(false);
-          }
-        };
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await inventoryItemApi.getAll();
+        const items = Array.isArray(data) ? data : [];
+        setProducts(
+          items.map((item) => ({
+            id: item.id,
+            code: item.sku,
+            name: item.name,
+            stock: Number(item.quantity || 0),
+            actual: Number(item.quantity || 0),
+            price: Number(item.costPerUnit || item.price || 0),
+          }))
+        );
+        setSearch("");
+        setNote("");
+        setCurrentPage(1);
+      } catch (err) {
+        setProducts([]);
+        setError(err?.response?.data?.message || "Không thể tải danh sách hàng hóa");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        loadProducts();
-      }, [open]);
+    loadProducts();
+  }, [open]);
 
-      const filteredProducts = products.filter((item) => {
-  const keyword = search.trim().toLowerCase();
+  const filteredProducts = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
 
-  if (
-    keyword &&
-    !item.code?.toLowerCase().includes(keyword) &&
-    !item.name?.toLowerCase().includes(keyword)
-  ) {
-    return false;
-  }
+    return products.filter((item) => {
+      if (
+        keyword &&
+        !item.code?.toLowerCase().includes(keyword) &&
+        !item.name?.toLowerCase().includes(keyword)
+      ) {
+        return false;
+      }
 
-  switch (activeTab) {
-    case "match":
-      return item.actual !== null && item.actual === item.stock;
-
-    case "diff":
-      return item.actual !== null && item.actual !== item.stock;
-
-    case "unchecked":
-      return item.actual === null;
-
-    default:
+      const diff = Number(item.actual || 0) - Number(item.stock || 0);
+      if (activeTab === "match") return diff === 0;
+      if (activeTab === "diff") return diff !== 0;
+      if (activeTab === "increase") return diff > 0;
+      if (activeTab === "decrease") return diff < 0;
       return true;
-  }
-});
+    });
+  }, [activeTab, products, search]);
 
-const totalCount = products.length;
+  const totalCount = products.length;
+  const diffCount = products.filter((item) => Number(item.actual || 0) !== Number(item.stock || 0)).length;
+  const matchCount = totalCount - diffCount;
+  const increaseCount = products.filter((item) => Number(item.actual || 0) > Number(item.stock || 0)).length;
+  const decreaseCount = products.filter((item) => Number(item.actual || 0) < Number(item.stock || 0)).length;
 
-const matchCount = products.filter(
-  (item) =>
-    item.actual !== null &&
-    item.actual === item.stock
-).length;
+  const itemsPerPage = 10;
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
-const diffCount = products.filter(
-  (item) =>
-    item.actual !== null &&
-    item.actual !== item.stock
-).length;
+  const payload = {
+    countedAt: new Date().toISOString(),
+    note,
+    items: products.map((item) => ({
+      productId: item.id,
+      actualQuantity: Number(item.actual || 0),
+    })),
+  };
 
-const uncheckedCount = products.filter(
-  (item) =>
-    item.actual === null
-).length;
+  const saveDraft = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      await stockTakeApi.createDraft(payload);
+      onSaved?.();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Không thể lưu phiếu kiểm kho");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-
-// phân trang 
-const [currentPage, setCurrentPage] = useState(1);
-
-const itemsPerPage = 10;
-const totalPages = Math.max(
-  1,
-  Math.ceil(filteredProducts.length / itemsPerPage)
-);
-const startIndex =
-  (currentPage - 1) * itemsPerPage;
-
-const currentProducts =
-  filteredProducts.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-
-  const handleChangeTab = (tab) => {
-  setActiveTab(tab);
-  setCurrentPage(1);
-};
+  const complete = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      const draft = await stockTakeApi.createDraft(payload);
+      await stockTakeApi.complete(draft.id);
+      onSaved?.();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Không thể hoàn thành kiểm kho");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!open) return null;
-  
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col">
-      {/* HEADER */}
       <div className="border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <h2 className="text-lg md:text-xl font-semibold whitespace-nowrap">
-              Kiểm kho
-            </h2>
+          <h2 className="text-lg md:text-xl font-semibold whitespace-nowrap">Kiểm kho</h2>
 
-            <div className="relative flex-1 max-w-[650px]">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-
-              <input
-                type="text"
-                placeholder="Tìm hàng hóa theo mã hoặc tên"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div className="relative flex-1 max-w-[650px]">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm hàng hóa theo mã hoặc tên"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg outline-none text-sm focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           <button
@@ -150,60 +146,35 @@ const currentProducts =
         </div>
       </div>
 
-      {/* BODY */}
       <div className="flex flex-col xl:flex-row flex-1 min-h-0">
-        {/* LEFT */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* TABS */}
-          <div className="flex overflow-x-auto whitespace-nowrap border-b border-gray-200 bg-white ">
-  <button
-    onClick={() => handleChangeTab("all")}
-    className={`px-5 h-12 text-sm font-medium border-b-2 transition cursor-pointer ${
-      activeTab === "all"
-        ? "border-blue-500 text-blue-600"
-        : "border-transparent text-gray-600 hover:text-blue-600"
-    }`}
-  >
-    Tất cả ({totalCount})
-  </button>
+          <div className="flex overflow-x-auto whitespace-nowrap border-b border-gray-200 bg-white">
+            {[
+              ["all", `Tất cả (${totalCount})`],
+              ["match", `Khớp (${matchCount})`],
+              ["diff", `Lệch (${diffCount})`],
+              ["increase", `Lệch tăng (${increaseCount})`],
+              ["decrease", `Lệch giảm (${decreaseCount})`],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setActiveTab(key);
+                  setCurrentPage(1);
+                }}
+                className={`px-5 h-12 text-sm font-medium border-b-2 transition cursor-pointer ${
+                  activeTab === key
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-  <button
-    onClick={() => setActiveTab("match")}
-    className={`px-5 h-12 text-sm font-medium border-b-2 transition cursor-pointer ${
-      activeTab === "match"
-        ? "border-blue-500 text-blue-600"
-        : "border-transparent text-gray-600 hover:text-blue-600"
-    }`}
-  >
-    Khớp ({matchCount})
-  </button>
-
-  <button
-    onClick={() => setActiveTab("diff")}
-    className={`px-5 h-12 text-sm font-medium border-b-2 transition cursor-pointer ${
-      activeTab === "diff"
-        ? "border-blue-500 text-blue-600"
-        : "border-transparent text-gray-600 hover:text-blue-600"
-    }`}
-  >
-    Lệch ({diffCount})
-  </button>
-
-  <button
-    onClick={() => setActiveTab("unchecked")}
-    className={`px-5 h-12 text-sm font-medium border-b-2 transition cursor-pointer ${
-      activeTab === "unchecked"
-        ? "border-blue-500 text-blue-600"
-        : "border-transparent text-gray-600 hover:text-blue-600"
-    }`}
-  >
-    Chưa kiểm ({uncheckedCount})
-  </button>
-</div>
-
-          {/* TABLE */}
           <div className="flex-1 overflow-x-auto overflow-y-auto">
-  <div className="min-w-[700px] lg:min-w-[900px]">
+            <div className="min-w-[900px]">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-blue-50 z-10">
                   <tr>
@@ -216,203 +187,145 @@ const currentProducts =
                     <th className="p-3 text-center">Giá trị lệch</th>
                   </tr>
                 </thead>
+                <tbody>
+                  {loading && (
+                    <tr>
+                      <td colSpan="7" className="text-center py-10 text-gray-400">
+                        Đang tải danh sách hàng hóa...
+                      </td>
+                    </tr>
+                  )}
 
-               <tbody>
-  {/* Upload Box */}
-  
+                  {!loading && error && (
+                    <tr>
+                      <td colSpan="7" className="text-center py-10 text-red-500">
+                        {error}
+                      </td>
+                    </tr>
+                  )}
 
-  {/* Danh sách sản phẩm */}
-  {loading && (
-    <tr>
-      <td
-        colSpan="7"
-        className="text-center py-10 text-gray-400"
-      >
-        Đang tải danh sách hàng hóa...
-      </td>
-    </tr>
-  )}
+                  {!loading &&
+                    !error &&
+                    currentProducts.map((item, index) => {
+                      const diff = Number(item.actual || 0) - Number(item.stock || 0);
+                      return (
+                        <tr key={item.id} className="border-b border-gray-300 hover:bg-gray-50">
+                          <td className="p-3 text-center">{startIndex + index + 1}</td>
+                          <td className="p-3">{item.code}</td>
+                          <td className="p-3">{item.name}</td>
+                          <td className="p-3 text-center">{item.stock}</td>
+                          <td className="p-3 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              value={item.actual}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                setProducts((prev) =>
+                                  prev.map((product) =>
+                                    product.id === item.id
+                                      ? { ...product, actual: value === "" ? "" : Number(value) }
+                                      : product
+                                  )
+                                );
+                              }}
+                              className="w-24 rounded border border-gray-300 px-2 py-1 text-center outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+                          <td className={`p-3 text-center ${diff === 0 ? "text-gray-700" : "text-blue-600 font-semibold"}`}>
+                            {diff}
+                          </td>
+                          <td className="p-3 text-center">{formatMoney(diff * Number(item.price || 0))}</td>
+                        </tr>
+                      );
+                    })}
 
-  {!loading && error && (
-    <tr>
-      <td
-        colSpan="7"
-        className="text-center py-10 text-red-500"
-      >
-        {error}
-      </td>
-    </tr>
-  )}
-
-  {!loading && !error && currentProducts.map((item, index) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-300 hover:bg-gray-50"
-    >
-      <td className="p-3 text-center">
-        {startIndex + index + 1}
-      </td>
-
-      <td className="p-3">
-        {item.code}
-      </td>
-
-      <td className="p-3">
-        {item.name}
-      </td>
-
-      <td className="p-3 text-center">
-        {item.stock}
-      </td>
-
-      <td className="p-3 text-center">
-        {item.actual ?? ""}
-      </td>
-
-      <td className="p-3 text-center">
-        {item.actual != null
-          ? item.actual - item.stock
-          : ""}
-      </td>
-
-      <td className="p-3 text-center">
-        -
-      </td>
-    </tr>
-  ))}
-
-  {!loading && !error && filteredProducts.length === 0 && (
-    <tr>
-      <td
-        colSpan="7"
-        className="text-center py-10 text-gray-400"
-      >
-        Chưa có sản phẩm nào
-      </td>
-    </tr>
-  )}
-
-   
-</tbody>
+                  {!loading && !error && filteredProducts.length === 0 && (
+                    <tr>
+                      <td colSpan="7" className="text-center py-10 text-gray-400">
+                        Chưa có sản phẩm nào
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
               </table>
-
-
-              <div className="border-t border-gray-200 bg-white p-4 md:p-6">
-  <div className="max-w-[900px] mx-auto border-2 border-dashed border-blue-300 rounded-2xl bg-blue-50/30 p-5 md:p-8 text-center">
-    <p className="text-gray-700 font-medium text-sm md:text-base">
-      Nhấn chọn hoặc kéo thả file dữ liệu vào đây
-    </p>
-
-    <p className="text-gray-400 text-sm mt-2 mb-5">
-      Chỉ nhận file Excel định dạng .xlsx
-    </p>
-
-    <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg inline-flex items-center gap-2 font-medium transition-all cursor-pointer">
-      <Upload size={18} />4
-      Chọn file
-    </button>
-  </div>
-</div>
             </div>
           </div>
 
-
-          {/* Pagination */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t bg-white">
-  <div className="text-xs sm:text-sm text-gray-500">
-    Hiển thị {currentProducts.length} /{" "}
-    {filteredProducts.length} mặt hàng
-  </div>
-
-  <div className="flex items-center gap-1 overflow-x-auto pb-1">
-    <button
-      disabled={currentPage === 1}
-      onClick={() =>
-        setCurrentPage((prev) => prev - 1)
-      }
-      className="px-3 py-1 border rounded disabled:opacity-50"
-    >
-      Trước
-    </button>
-
-    {Array.from(
-      { length: totalPages },
-      (_, i) => (
-        <button
-          key={i}
-          onClick={() =>
-            setCurrentPage(i + 1)
-          }
-          className={`w-9 h-9 rounded ${
-            currentPage === i + 1
-              ? "bg-blue-600 text-white"
-              : "border"
-          }`}
-        >
-          {i + 1}
-        </button>
-      )
-    )}
-
-    <button
-      disabled={currentPage === totalPages}
-      onClick={() =>
-        setCurrentPage((prev) => prev + 1)
-      }
-      className="px-3 py-1 border rounded disabled:opacity-50"
-    >
-      Sau
-    </button>
-  </div>
-</div>
+            <div className="text-xs sm:text-sm text-gray-500">
+              Hiển thị {currentProducts.length} / {filteredProducts.length} mặt hàng
+            </div>
+            <div className="flex items-center gap-1 overflow-x-auto pb-1">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Trước
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`w-9 h-9 rounded ${currentPage === index + 1 ? "bg-blue-600 text-white" : "border"}`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="w-full xl:w-[380px] xl:border-l border-t xl:border-t-0 border-gray-200 bg-white flex flex-col">
           <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center font-semibold text-gray-800">
-              Danh-02/06/2026 10:46
-              <ChevronRight size={16} />
-            </div>
-
-            <div className="mt-5">
-              <label className="block text-sm font-medium mb-2">
-                Mã kiểm kho
-              </label>
-
-              <input
-                type="text"
-                placeholder="Mã phiếu tự động"
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
+            <div className="flex items-center font-semibold text-gray-800">Phiếu kiểm kho mới</div>
             <div className="flex justify-between mt-5 text-sm">
               <span>Tổng SL thực tế</span>
-              <span className="font-semibold">0</span>
+              <span className="font-semibold">
+                {products.reduce((sum, item) => sum + Number(item.actual || 0), 0)}
+              </span>
             </div>
-
             <textarea
               rows={4}
               placeholder="Ghi chú"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
               className="w-full mt-4 p-3 border border-gray-300 rounded-lg resize-none outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex-1 p-4 min-h-[250px]">
             <div className="h-full border border-gray-300 rounded-xl p-3">
-              <h4 className="font-semibold mb-3">
-                Kiểm gần đây
-              </h4>
+              <h4 className="font-semibold mb-3">Tóm tắt</h4>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between"><span>Mặt hàng</span><span>{products.length}</span></div>
+                <div className="flex justify-between"><span>Khớp</span><span>{matchCount}</span></div>
+                <div className="flex justify-between"><span>Lệch</span><span>{diffCount}</span></div>
+              </div>
             </div>
           </div>
 
           <div className="p-4 border-t border-gray-200 flex gap-3">
-            <button className="flex-1 h-11 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 cursor-pointer">
-              Lưu tạm
+            <button
+              onClick={saveDraft}
+              disabled={saving || loading || products.length === 0}
+              className="flex-1 h-11 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 cursor-pointer disabled:opacity-50"
+            >
+              {saving ? "Đang lưu..." : "Lưu tạm"}
             </button>
-
-            <button className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium cursor-pointer ">
+            <button
+              onClick={complete}
+              disabled={saving || loading || products.length === 0}
+              className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium cursor-pointer disabled:opacity-50"
+            >
               Hoàn thành
             </button>
           </div>

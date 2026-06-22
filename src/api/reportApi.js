@@ -1,5 +1,7 @@
 import axiosInstance from "./axiosConfig";
 
+const unwrap = (response) => response.data?.data || response.data;
+
 export const reportApi = {
   // Revenue summary
   getRevenue: async (from, to, branchId) => {
@@ -89,5 +91,16 @@ export const reportApi = {
 
     const response = await axiosInstance.get("/reports/monthly-order-plan", { params });
     return response.data;
+  },
+
+  getEmployeeReport: async ({ filter = "7days", from, to, branchId, employeeId, limit = 10 } = {}) => {
+    const params = { filter, limit };
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (branchId) params.branchId = branchId;
+    if (employeeId && employeeId !== "all") params.employeeId = employeeId;
+
+    const response = await axiosInstance.get("/reports/employee", { params });
+    return unwrap(response);
   },
 };
