@@ -1,92 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import SidebarPrice from "../components/PriceBook/SidebarPrice";
 import TablePrice from "../components/PriceBook/TablePrice";
-import { Filter } from "lucide-react";
+import ToolbarFilterDropdown from "../components/layout/ToolbarFilterDropdown";
 
 export default function PriceBook() {
-  const [openFilter, setOpenFilter] = useState(false);
-
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100">
+      <div className="mx-auto max-w-[1800px] p-4">
+        <div className="mb-4 grid gap-3 border-b border-cyan-200 bg-slate-50 px-3 py-3 sm:grid-cols-[auto_1fr] sm:items-center">
+          <ToolbarFilterDropdown panelClassName="sm:w-[640px]">
+            <SidebarPrice />
+          </ToolbarFilterDropdown>
 
-      {/* MOBILE TOP BAR */}
-      <div className="lg:hidden p-4 pb-0">
-        <button
-          onClick={() => setOpenFilter(true)}
-          className="
-            flex items-center gap-2
-            bg-white
-            border
-            border-gray-400
-            px-4 py-2
-            rounded-xl
-            shadow-sm
-          "
-        >
-          <Filter size={18} />
-          Bộ lọc
-        </button>
+          <span className="text-sm font-medium text-slate-700 sm:px-3">
+            Bảng giá chung
+          </span>
+        </div>
+
+        <TablePrice />
       </div>
-
-      {/* CONTAINER */}
-      <div className="max-w-[1800px] mx-auto p-4 flex gap-4">
-
-        {/* SIDEBAR DESKTOP */}
-        <div className="hidden lg:block w-72 shrink-0">
-          <SidebarPrice />
-        </div>
-
-        {/* CONTENT */}
-        <div className="flex-1 min-w-0">
-          <TablePrice />
-        </div>
-
-      </div>
-
-      {/* MOBILE DRAWER */}
-      {openFilter && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="flex h-full">
-
-            {/* SIDEBAR */}
-            <div
-              className="
-                w-[85vw]
-                max-w-[340px]
-                bg-white
-                h-full
-                shadow-2xl
-                overflow-y-auto
-              "
-            >
-              {/* HEADER */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-300">
-                <div className="font-semibold text-lg">
-                  Bộ lọc
-                </div>
-
-                <button
-                  onClick={() => setOpenFilter(false)}
-                  className="text-xl"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* CONTENT */}
-              <div className="p-4">
-                <SidebarPrice />
-              </div>
-            </div>
-
-            {/* OVERLAY */}
-            <div
-              className="flex-1 bg-black/40"
-              onClick={() => setOpenFilter(false)}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

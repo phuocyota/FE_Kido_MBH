@@ -7,6 +7,7 @@ import { reportApi } from "../../api";
 
 import EmployeeReportSidebar from "../../components/reports/reportEmployee/EmployeeReportSidebar";
 import EmployeeReportContent from "../../components/reports/reportEmployee/EmployeeReportContent";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 export default function ReportEmployee() {
   // =========================
@@ -236,38 +237,40 @@ export default function ReportEmployee() {
       <div className="max-w-[1800px] mx-auto">
 
         {/* HEADER */}
-        <div className="mb-4 lg:mb-5">
-          <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
-            Báo cáo nhân viên
-          </h1>
-        </div>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
+              Báo cáo nhân viên
+            </h1>
 
-        {/* BODY */}
-        <div className="flex flex-col 2xl:flex-row gap-4">
-
-          {/* SIDEBAR */}
-          <div className="w-full 2xl:w-[340px] 2xl:min-w-[340px] shrink-0">
-
-            <EmployeeReportSidebar
-              viewType={viewType}
-              setViewType={setViewType}
-
-              focusType={focusType}
-              setFocusType={setFocusType}
-
-              period={period}
-              setPeriod={setPeriod}
-
-              employee={employee}
-              setEmployee={setEmployee}
-
-              employees={employees}
-            />
-
+            <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
+              <EmployeeReportSidebar
+                viewType={viewType}
+                setViewType={setViewType}
+                focusType={focusType}
+                setFocusType={setFocusType}
+                period={period}
+                setPeriod={setPeriod}
+                employee={employee}
+                setEmployee={setEmployee}
+                employees={employees}
+              />
+            </ToolbarFilterDropdown>
           </div>
 
-          {/* CONTENT */}
-          <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-slate-700">
+              {focusType === "time"
+                ? "Thời gian"
+                : focusType === "cashier"
+                ? "Thu ngân"
+                : "Lợi nhuận"}
+            </span>
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <div className="min-w-0">
 
             <EmployeeReportContent
 
@@ -315,8 +318,6 @@ export default function ReportEmployee() {
 
               exportRef={exportRef}
             />
-
-          </div>
 
         </div>
 

@@ -41,8 +41,15 @@ const stockOutTypeOptions = [
   "Xuất kho lắp ráp",
 ];
 
+const stockTransferTypeOptions = [
+  "Tất cả",
+  "Chuyển kho nội bộ",
+  "Chuyển kho điều chuyển",
+];
+
 const paymentStatusOptions = ["Tất cả", "Đã thanh toán", "Chưa thanh toán"];
 const salesDocumentStatusOptions = ["Tất cả", "Đã lập", "Chưa lập"];
+const transferStatusOptions = ["Tất cả", "Phiếu tạm", "Đã chuyển", "Đã hủy"];
 
 const formatDate = (date) => {
   if (!date) return "";
@@ -152,12 +159,25 @@ export default function StockFilterPanel({
   onApply,
 }) {
   const isStockOut = type === "out";
-  const typeLabel = isStockOut ? "Loại xuất" : "Loại nhập";
-  const statusLabel = isStockOut
+  const isStockTransfer = type === "transfer";
+  const typeLabel = isStockTransfer
+    ? "Loại chứng từ"
+    : isStockOut
+    ? "Loại xuất"
+    : "Loại nhập";
+  const statusLabel = isStockTransfer
+    ? "Trạng thái"
+    : isStockOut
     ? "Trạng thái lập chứng từ bán hàng"
     : "Trạng thái thanh toán";
-  const typeOptions = isStockOut ? stockOutTypeOptions : stockInTypeOptions;
-  const statusOptions = isStockOut
+  const typeOptions = isStockTransfer
+    ? stockTransferTypeOptions
+    : isStockOut
+    ? stockOutTypeOptions
+    : stockInTypeOptions;
+  const statusOptions = isStockTransfer
+    ? transferStatusOptions
+    : isStockOut
     ? salesDocumentStatusOptions
     : paymentStatusOptions;
 

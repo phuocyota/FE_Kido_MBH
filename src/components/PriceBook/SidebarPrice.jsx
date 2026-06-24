@@ -5,14 +5,8 @@ import { productApi } from "../../api";
 
 export default function SidebarFilter() {
 
-      const [openLoaiThucDon, setOpenLoaiThucDon] = useState(true);
-      const [openLoaiHang, setOpenLoaiHang] = useState(true);
       const [openNhomHang, setOpenNhomHang] = useState(true);
-      const [openTonKho, setOpenTonKho] = useState(true);
-      const [openHienThi, setOpenHienThi] = useState(true);
       const [openModal, setOpenModal] = useState(false);
-      const [isEdit, setIsEdit] = useState(false);
-      const [selectedItem, setSelectedItem] = useState(null);
       const [groupData, setGroupData] = useState([]);
       const [loadingGroups, setLoadingGroups] = useState(false);
 
@@ -33,7 +27,7 @@ export default function SidebarFilter() {
       }, []);
 
       return (
-            <div className="w-72 space-y-4">
+            <div className="w-full space-y-4">
 
                   {/* ===== BẢNG GIÁ ===== */}
                   <div className="bg-white p-4 rounded-xl shadow">
@@ -44,8 +38,6 @@ export default function SidebarFilter() {
 
                               <button className="p-1 rounded-full hover:bg-gray-100"
                                     onClick={() => {
-                                          setIsEdit(false);
-                                          setSelectedItem("");
                                           setOpenModal(true);
                                     }}>
                                     <Plus size={18} />

@@ -41,9 +41,9 @@ export default function TimeFilterPopup({
   ];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] w-full max-w-[95vw] lg:w-[860px] overflow-hidden">
+    <div className="w-full max-w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
       <div className="p-4 lg:p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 lg:gap-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
             <div key={group.title}>
               <h4 className="font-semibold text-base lg:text-lg mb-3 lg:mb-4 whitespace-nowrap">

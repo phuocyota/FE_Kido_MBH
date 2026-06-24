@@ -5,13 +5,13 @@ export default function CustomDatePopup({ onClose }) {
   const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   return (
-    <div className="w-full max-w-[95vw] lg:w-[860px] bg-white rounded-3xl border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden">
+    <div className="w-full max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
       <div className="p-4 lg:p-5">
         <h2 className="text-lg lg:text-2xl font-semibold mb-4 lg:mb-6">
           Chọn khoảng thời gian
         </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+        <div className="grid grid-cols-1 gap-6">
           {/* THÁNG TRÁI */}
           <div>
             <div className="flex items-center justify-between mb-5">

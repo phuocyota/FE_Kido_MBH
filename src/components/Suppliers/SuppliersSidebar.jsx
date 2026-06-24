@@ -58,7 +58,7 @@ useEffect(() => {
 ]);
 
   return (
-    <div className="relative overflow-visible w-full lg:w-[260px] bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+    <div className="relative w-full overflow-visible rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
 
       {/* Nhóm NCC */}
       <div className="mb-8">
@@ -133,8 +133,11 @@ useEffect(() => {
               <input
                 type="radio"
                 checked={!showCustomDate}
-                readOnly
-                className="w-5 h-5 accent-blue-600"
+                onChange={() => {
+                  setShowCustomDate(false);
+                  setShowTimeFilter(true);
+                }}
+                className="h-5 w-5 shrink-0 accent-blue-600"
               />
 
               <button
@@ -158,7 +161,7 @@ useEffect(() => {
             </label>
 
             {showTimeFilter && (
-  <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
+  <div className="mt-3 w-full">
     <TimeFilterPopup
       selectedTime={selectedTime}
       setSelectedTime={setSelectedTime}
@@ -176,8 +179,11 @@ useEffect(() => {
               <input
                 type="radio"
                 checked={showCustomDate}
-                readOnly
-                className="w-5 h-5 accent-blue-600"
+                onChange={() => {
+                  setShowTimeFilter(false);
+                  setShowCustomDate(true);
+                }}
+                className="h-5 w-5 shrink-0 accent-blue-600"
               />
 
               <button
@@ -204,7 +210,7 @@ useEffect(() => {
             </label>
 
             {showCustomDate && (
-  <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
+  <div className="mt-3 w-full">
     <CustomDatePopup
   onClose={() => setShowCustomDate(false)}
   onApply={(range) => {
