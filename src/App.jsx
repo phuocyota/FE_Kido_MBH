@@ -22,7 +22,8 @@ import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
 import StockOutList from "./pages/Stock/StockOutList";
 import StockOutCreate from "./pages/Stock/StockOutCreate";
- import StockTransfer from "./pages/Stock/StockTransfer";
+import StockTransferList from "./pages/Stock/StockTransferList";
+import StockTransfer from "./pages/Stock/StockTransfer";
 import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
 import CashManagement from "./pages/CashManagement/CashManagement";
 import { authApi } from "./api";
@@ -74,7 +75,8 @@ const App = () => {
                   <Route path="/stock-out" element={<StockOutList />} />
                   <Route path="/stock-out/create" element={<StockOutCreate />} />
                   <Route path="/cash-management/payment-vouchers" element={<PaymentVoucher />} />
-                  <Route path="/stock-transfer" element={<StockTransfer />} />
+                  <Route path="/stock-transfer" element={<StockTransferList />} />
+                  <Route path="/stock-transfer/create" element={<StockTransfer />} />
                   <Route path="/cash-management" element={<CashManagement />} />
                 </Routes>
               </>

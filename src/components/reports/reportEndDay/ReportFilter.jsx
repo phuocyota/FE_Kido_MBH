@@ -29,7 +29,6 @@ export default function ReportFilter({
       className="
         report-sidebar
         w-full
-        xl:w-[340px]
         shrink-0
         rounded-3xl
         shadow-sm
@@ -75,7 +74,7 @@ export default function ReportFilter({
               onChange={() =>
                 setReportType("portrait")
               }
-              className="w-5 h-5"
+              className="h-5 w-5 shrink-0 accent-blue-600"
             />
 
             <span className="text-lg font-medium">
@@ -111,7 +110,7 @@ export default function ReportFilter({
               onChange={() =>
                 setReportType("landscape")
               }
-              className="w-5 h-5"
+              className="h-5 w-5 shrink-0 accent-blue-600"
             />
 
             <span className="text-lg font-medium">
@@ -262,7 +261,7 @@ export default function ReportFilter({
         type="radio"
         checked={dateType === "single"}
         onChange={() => setDateType("single")}
-        className="w-5 h-5 mt-4"
+        className="mt-4 h-5 w-5 shrink-0 accent-blue-600"
       />
 
       <div className="flex-1">
@@ -288,7 +287,7 @@ export default function ReportFilter({
         type="radio"
         checked={dateType === "range"}
         onChange={() => setDateType("range")}
-        className="w-5 h-5 mt-4"
+        className="mt-4 h-5 w-5 shrink-0 accent-blue-600"
       />
 
       <div className="flex-1 border-2 border-gray-300 rounded-2xl p-4 bg-white">
@@ -332,7 +331,7 @@ export default function ReportFilter({
         type="radio"
         checked={dateType === "hour"}
         onChange={() => setDateType("hour")}
-        className="w-5 h-5 mt-4"
+        className="mt-4 h-5 w-5 shrink-0 accent-blue-600"
       />
 
       <div className="flex-1 border-2 border-gray-300 rounded-2xl p-4 bg-white">

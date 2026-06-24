@@ -18,7 +18,7 @@ export default function EmployeeReportSidebar({
       const [showTimePopup, setShowTimePopup] = useState(false);
 const [showCustomDate, setShowCustomDate] = useState(false);
 
-const [selectedTime, setSelectedTime] = useState("Tuần trước");
+const [selectedTime, setSelectedTime] = useState(period || "Tuần trước");
 
 const timePopupRef = useRef(null);
 const customPopupRef = useRef(null);
@@ -55,7 +55,7 @@ useEffect(() => {
   ) {
     setViewType("vertical");
   }
-}, [focusType]);
+}, [focusType, setViewType]);
 
 // Đóng popup khi click ra ngoài
 useEffect(() => {
@@ -87,7 +87,7 @@ useEffect(() => {
 
 
   return (
-    <div className="w-full lg:w-[320px] flex flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
 
       {/* Nhân viên */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
@@ -311,15 +311,19 @@ useEffect(() => {
         <input
           type="radio"
           checked={!showCustomDate}
-          readOnly
-          className="w-5 h-5 accent-purple-600"
+          onChange={() => {
+            setShowCustomDate(false);
+            setShowTimePopup(true);
+          }}
+          className="h-5 w-5 shrink-0 accent-purple-600"
         />
 
         <button
           type="button"
-          onClick={() =>
-            setShowTimePopup(!showTimePopup)
-          }
+          onClick={() => {
+            setShowCustomDate(false);
+            setShowTimePopup(!showTimePopup);
+          }}
           className="flex-1 h-12 border border-gray-300 rounded-xl px-4 flex items-center justify-between bg-white"
         >
           <span>{selectedTime}</span>
@@ -329,10 +333,13 @@ useEffect(() => {
       </label>
 
       {showTimePopup && (
-  <div className="absolute top-1/2 left-[calc(100%+20px)] -translate-y-1/2 z-[999]">
+  <div className="mt-3 w-full">
     <TimeFilterPopup
       selectedTime={selectedTime}
-      setSelectedTime={setSelectedTime}
+      setSelectedTime={(value) => {
+        setSelectedTime(value);
+        setPeriod(value);
+      }}
       onClose={() => setShowTimePopup(false)}
     />
   </div>
@@ -345,17 +352,19 @@ useEffect(() => {
         <input
           type="radio"
           checked={showCustomDate}
-          onChange={() =>
-            setShowCustomDate(true)
-          }
-          className="w-5 h-5 accent-purple-600"
+          onChange={() => {
+            setShowTimePopup(false);
+            setShowCustomDate(true);
+          }}
+          className="h-5 w-5 shrink-0 accent-purple-600"
         />
 
         <button
           type="button"
-          onClick={() =>
-            setShowCustomDate(true)
-          }
+          onClick={() => {
+            setShowTimePopup(false);
+            setShowCustomDate(true);
+          }}
           className="flex-1 h-12 border border-gray-300 rounded-xl px-4 flex items-center justify-between bg-white"
         >
           <span>Lựa chọn khác</span>
@@ -365,7 +374,7 @@ useEffect(() => {
       </label>
 
      {showCustomDate && (
-  <div className="absolute top-1/2 left-[calc(100%+20px)] -translate-y-1/2 z-[999]">
+  <div className="mt-3 w-full">
     <CustomDatePopup
       onClose={() =>
         setShowCustomDate(false)

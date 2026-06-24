@@ -137,7 +137,7 @@ export default function CustomDatePopup({
   );
 
   return (
-    <div className="w-full max-w-[95vw] lg:w-[860px] bg-white rounded-3xl border border-gray-200 shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden">
+    <div className="w-full max-w-full overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
       <div className="p-5">
         <h2 className="text-xl lg:text-2xl font-semibold mb-5">
           Chọn khoảng thời gian
@@ -156,7 +156,7 @@ export default function CustomDatePopup({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 gap-8">
           {renderCalendar(
             5,
             2026,

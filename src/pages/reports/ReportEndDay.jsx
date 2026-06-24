@@ -5,6 +5,7 @@ import html2canvas from "html2canvas";
 
 import ReportFilter from "../../components/reports/reportEndDay/ReportFilter";
 import ReportContent from "../../components/reports/reportEndDay/ReportContent";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 export default function ReportEndDay() {
 
@@ -143,41 +144,43 @@ export default function ReportEndDay() {
       <div className="max-w-[1800px] mx-auto">
 
         {/* HEADER */}
-        <div className="mb-4 lg:mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
 
-          <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
-            Báo cáo cuối ngày
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
+              Báo cáo cuối ngày
+            </h1>
+
+            <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
+              <ReportFilter
+                reportType={reportType}
+                setReportType={setReportType}
+                interest={interest}
+                interests={interests}
+                openInterest={openInterest}
+                setOpenInterest={setOpenInterest}
+                setInterest={setInterest}
+                dateType={dateType}
+                setDateType={setDateType}
+                fromDate={fromDate}
+                toDate={toDate}
+                setFromDate={setFromDate}
+                setToDate={setToDate}
+                formatDate={formatDate}
+              />
+            </ToolbarFilterDropdown>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-slate-700">
+              {interest}
+            </span>
+          </div>
 
         </div>
 
-        {/* CONTENT */}
-        <div className="flex flex-col 2xl:flex-row gap-4">
-
-          {/* SIDEBAR */}
-          <div className="w-full 2xl:w-[340px] 2xl:min-w-[340px] shrink-0">
-
-            <ReportFilter
-              reportType={reportType}
-              setReportType={setReportType}
-              interest={interest}
-              interests={interests}
-              openInterest={openInterest}
-              setOpenInterest={setOpenInterest}
-              setInterest={setInterest}
-              dateType={dateType}
-              setDateType={setDateType}
-              fromDate={fromDate}
-              toDate={toDate}
-              setFromDate={setFromDate}
-              setToDate={setToDate}
-              formatDate={formatDate}
-            />
-
-          </div>
-
-          {/* REPORT */}
-          <div className="flex-1 min-w-0">
+        {/* REPORT */}
+        <div className="min-w-0">
 
             <ReportContent
               reportType={reportType}
@@ -196,8 +199,6 @@ export default function ReportEndDay() {
               previewRef={previewRef}
               exportRef={exportRef}
             />
-
-          </div>
 
         </div>
 
