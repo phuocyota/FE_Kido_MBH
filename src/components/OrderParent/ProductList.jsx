@@ -1,5 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import { buildAssetUrl } from "../../api/client";
 
 export default function ProductList({
   products,
@@ -53,7 +54,7 @@ export default function ProductList({
               <div className="relative overflow-hidden">
 
                 <img
-                  src={item.image}
+                  src={buildAssetUrl(item.image)}
                   alt={item.name}
                   className="h-28 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-36 md:h-40"
                 />
