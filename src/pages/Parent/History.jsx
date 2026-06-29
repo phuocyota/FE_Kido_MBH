@@ -117,8 +117,9 @@ export default function History() {
   const [fromDate, setFromDate] = useState(() => getCurrentWeekRange().from);
   const [toDate, setToDate] = useState(() => getCurrentWeekRange().to);
   const [status, setStatus] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const observerTarget = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -165,28 +166,44 @@ export default function History() {
     });
   }, [ordersData, fromDate, toDate, status]);
 
-  const totalPages = Math.max(Math.ceil(filteredOrders.length / ITEMS_PER_PAGE), 1);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentOrders = filteredOrders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentOrders = filteredOrders.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredOrders.length;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore]);
 
   const updateStatus = (nextStatus) => {
     setStatus(nextStatus);
-    setCurrentPage(1);
+    setVisibleCount(ITEMS_PER_PAGE);
   };
 
   const updateDate = (setDate) => (value) => {
     setDate(value);
-    setCurrentPage(1);
+    setVisibleCount(ITEMS_PER_PAGE);
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Lịch sử order</h1>
+    <div className="space-y-6 pb-10">
+      <h1 className="text-2xl font-bold text-gray-800">Lịch sử order</h1>
 
       {loading && <p className="text-sm text-gray-500">Đang tải dữ liệu...</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      <div className="flex flex-col lg:flex-row justify-between gap-4 bg-white p-4 rounded-2xl shadow">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           <DatePickerField
             label="Chọn ngày bắt đầu"
@@ -223,33 +240,35 @@ export default function History() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {currentOrders.map((order) => (
           <button
             key={order.id}
             type="button"
             onClick={() => setSelectedOrder(order)}
-            className="w-full bg-white p-4 rounded-2xl shadow hover:shadow-md transition cursor-pointer flex items-center justify-between gap-3 text-left"
+            className="w-full bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:bg-white/80 transition-all cursor-pointer flex items-center justify-between gap-3 text-left group"
           >
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-4 min-w-0">
               <img
                 src={banhngot}
                 alt=""
-                className="w-12 h-12 rounded-lg object-cover"
+                className="w-14 h-14 rounded-2xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
               />
               <div className="min-w-0">
-                <p className="font-medium text-sm line-clamp-1">{order.name}</p>
-                <p className="text-gray-800 font-semibold text-sm">
+                <p className="font-bold text-gray-800 text-base line-clamp-1">{order.name}</p>
+                <p className="text-blue-600 font-bold text-sm mt-0.5">
                   {formatMoney(order.price)}
                 </p>
               </div>
             </div>
 
             <div className="text-right shrink-0">
-              <p className="text-sm text-gray-500">Số lượng: {order.quantity}</p>
+              <p className="text-xs font-medium text-gray-500 mb-1.5">Số lượng: {order.quantity}</p>
               <span
-                className={`mt-1 inline-block text-xs px-2 py-1 rounded-full ${
-                  statusClass[order.status] || statusClass.pending
+                className={`inline-block text-[11px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wide border ${
+                  order.status === "done" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+                  order.status === "cancel" ? "bg-rose-50 text-rose-600 border-rose-100/50" :
+                  "bg-blue-50 text-blue-600 border-blue-100/50"
                 }`}
               >
                 {order.statusText || statusText[order.status] || "Đang xử lý"}
@@ -259,53 +278,17 @@ export default function History() {
         ))}
 
         {filteredOrders.length === 0 && (
-          <p className="text-center text-gray-400">Không có đơn hàng</p>
+          <div className="flex flex-col items-center justify-center py-10 bg-white/40 rounded-3xl border border-dashed border-gray-300">
+            <p className="text-gray-500 font-medium">Không có đơn hàng nào</p>
+          </div>
         )}
-      </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
-        <p className="text-sm text-gray-500">
-          Trang {currentPage} / {totalPages}
-        </p>
-
-        <div className="flex items-center gap-2 flex-wrap justify-center">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-          >
-            ←
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, index) => {
-            const page = index + 1;
-
-            return (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 rounded-lg text-sm ${
-                  currentPage === page
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-          >
-            →
-          </button>
-        </div>
+        {/* Intersection Observer Target for Infinite Scroll */}
+        {hasMore && (
+          <div ref={observerTarget} className="py-6 flex justify-center">
+            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
       </div>
 
       {selectedOrder && (

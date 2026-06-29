@@ -53,76 +53,98 @@ export default function Dashboard() {
       await refreshHome?.();
     } catch (err) {
       console.error("Cancel order error:", err);
-      toast.error(err.message || "Không hủy được đơn hàng");
     } finally {
       setCancellingOrder(false);
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
+    <div className="space-y-6 min-h-full">
+      <div className="relative z-10">
         <h1 className="text-2xl font-bold text-gray-800">Good Morning</h1>
         {loading && <p className="text-sm text-gray-500 mt-1">Đang tải dữ liệu...</p>}
         {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className={`md:col-span-1 p-6 rounded-2xl shadow-xl flex justify-between items-center text-white ${
+        {/* Wallet Card - Premium Glow & Pattern */}
+        <div className={`relative md:col-span-1 p-6 rounded-3xl flex justify-between items-center text-white overflow-hidden transition-transform hover:-translate-y-1 ${
           walletBalance < 0 
-            ? "bg-gradient-to-br from-red-400 to-red-600" 
-            : "bg-gradient-to-br from-green-400 to-green-600"
+            ? "bg-gradient-to-br from-rose-400 to-red-600 shadow-lg shadow-rose-500/30" 
+            : "bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-teal-500/30"
         }`}>
-          <div>
-            <p className="text-sm opacity-80 mb-1">
-              {walletBalance < 0 ? "Nợ" : "Số dư"}
+          {/* Abstract Background Pattern */}
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+          
+          <div className="relative z-10">
+            <p className="text-sm text-white/90 mb-1 font-medium tracking-wide uppercase text-xs">
+              {walletBalance < 0 ? "Tài khoản nợ" : "Số dư khả dụng"}
             </p>
-            <p className="text-3xl font-bold">
+            <p className="text-3xl font-bold tracking-tight">
               {formatMoney(Math.abs(walletBalance))}
             </p>
-            <p className="mt-2 text-xs font-medium text-white/85">
-              Tạm ứng: {formatMoney(advanceAmount)}
-            </p>
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full backdrop-blur-md">
+              <p className="text-xs font-medium text-white">
+                Tạm ứng: {formatMoney(advanceAmount)}
+              </p>
+            </div>
           </div>
-          <Wallet size={40} className="opacity-80" />
+          <div className="relative z-10 p-3 bg-white/20 rounded-2xl backdrop-blur-md">
+            <Wallet size={32} className="text-white drop-shadow-md" />
+          </div>
         </div>
 
-        <div className="md:col-span-2 bg-white/90 backdrop-blur p-5 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Bell size={18} className="text-yellow-500" />
-            <p className="font-semibold text-gray-800">Thông báo</p>
+        {/* Notifications Card - Glassmorphism & Hover Effects */}
+        <div className="md:col-span-2 bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2 bg-amber-100 rounded-xl">
+              <Bell size={18} className="text-amber-600" />
+            </div>
+            <p className="font-bold text-gray-800 text-lg">Thông báo</p>
           </div>
 
-          <div className="space-y-3 text-sm">
+          <div className="space-y-2 text-sm">
             {notifications.length > 0 ? (
               notifications.map((item) => (
-                <div key={item.id} className="flex justify-between items-center gap-3">
-                  <span className="text-gray-700">{item.message}</span>
-                  <span className="text-gray-400 shrink-0">{formatTime(item.createdAt)}</span>
+                <div key={item.id} className="group flex justify-between items-center gap-4 p-3.5 bg-white/40 rounded-2xl border border-white/50 shadow-sm hover:bg-white/60 transition-all duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:scale-150 transition-transform duration-300" />
+                    </div>
+                    <span className="text-gray-700 font-medium line-clamp-1">{item.message}</span>
+                  </div>
+                  <span className="text-gray-400 text-xs font-medium shrink-0 bg-white/80 px-2 py-1 rounded-lg">{formatTime(item.createdAt)}</span>
                 </div>
               ))
             ) : (
-              <p className="text-gray-400">Chưa có thông báo</p>
+              <div className="flex flex-col items-center justify-center py-6 text-gray-400">
+                <Bell size={32} className="opacity-20 mb-2" />
+                <p>Chưa có thông báo</p>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="md:col-span-3 bg-white/90 backdrop-blur p-5 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Utensils size={18} className="text-green-600" />
-            <p className="font-semibold text-gray-800">Order hôm nay của con</p>
+        {/* Today's Order Card - Glassmorphism */}
+        <div className="md:col-span-3 bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2 bg-green-100 rounded-xl">
+              <Utensils size={18} className="text-green-600" />
+            </div>
+            <p className="font-bold text-gray-800 text-lg">Order hôm nay của con</p>
           </div>
 
           {todayOrder ? (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4 bg-white/50 p-4 rounded-2xl border border-white">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <p className="font-medium text-gray-800">
+                  <p className="font-semibold text-gray-800 text-base">
                     {todayOrder.items?.map((item) => `${item.name} x${item.quantity}`).join(", ")}
                   </p>
-                  <p className="text-xs text-gray-400">Đặt lúc {formatTime(todayOrder.orderedAt)}</p>
+                  <p className="text-xs text-gray-500 font-medium">Đặt lúc {formatTime(todayOrder.orderedAt)}</p>
                 </div>
-                <p className="text-base font-bold text-gray-800 whitespace-nowrap shrink-0">
+                <p className="text-lg font-bold text-green-600 whitespace-nowrap shrink-0 bg-green-50 px-3 py-1 rounded-xl">
                   {formatMoney(todayOrder.totalAmount)}
                 </p>
               </div>
@@ -132,7 +154,7 @@ export default function Dashboard() {
                   {todayOrder.addons.map((addon) => (
                     <span
                       key={addon.id}
-                      className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                      className="rounded-lg bg-white shadow-sm border border-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
                     >
                       + {addon.name} x{addon.quantity}
                       {addon.price > 0 ? ` - ${formatMoney(addon.price)}` : ""}
@@ -141,91 +163,116 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100">
-                <span className="whitespace-nowrap text-blue-600 text-sm font-medium bg-blue-50 px-3 py-1.5 rounded-full">
-                  {todayOrder.statusText}
-                </span>
+              <div className="flex items-center justify-between mt-2 pt-4 border-t border-gray-200/60">
+                <div className="flex items-center gap-2 bg-blue-50/80 px-4 py-2 rounded-xl border border-blue-100/50">
+                  <div className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                  </div>
+                  <span className="whitespace-nowrap text-blue-700 text-sm font-semibold">
+                    {todayOrder.statusText}
+                  </span>
+                </div>
                 
                 {canCancelTodayOrder && (
                   <button
                     type="button"
                     onClick={handleCancelTodayOrder}
                     disabled={cancellingOrder}
-                    className="flex items-center justify-center rounded-xl bg-red-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex items-center justify-center rounded-xl bg-gradient-to-r from-red-500 to-rose-500 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-red-500/20 transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {cancellingOrder ? "Đang hủy..." : "Hủy"}
+                    {cancellingOrder ? "Đang hủy..." : "Hủy đơn"}
                   </button>
                 )}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">Hôm nay chưa có order</p>
+            <div className="flex flex-col items-center justify-center py-8 bg-white/40 rounded-2xl border border-dashed border-gray-300">
+              <Utensils size={32} className="text-gray-300 mb-2" />
+              <p className="text-sm font-medium text-gray-500">Hôm nay chưa có order</p>
+            </div>
           )}
         </div>
 
-        <div className="md:col-span-3 bg-white/90 backdrop-blur p-5 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <p className="font-semibold text-gray-800">Lịch sử gần đây</p>
+        {/* Recent History Card */}
+        <div className="md:col-span-3 bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+          <div className="flex items-center justify-between mb-5">
+            <p className="font-bold text-gray-800 text-lg">Lịch sử gần đây</p>
             <button
               type="button"
               onClick={() => navigate("/history")}
-              className="text-xs text-blue-600 cursor-pointer hover:underline"
+              className="text-sm font-semibold text-blue-600 cursor-pointer hover:text-blue-700 bg-blue-50 px-4 py-1.5 rounded-full transition-colors"
             >
               Xem tất cả
             </button>
           </div>
 
-          <div className="space-y-3 text-sm">
+          <div className="space-y-2 text-sm">
             {recentHistory.length > 0 ? (
               recentHistory.map((item) => (
-                <div key={item.id} className="flex justify-between items-center gap-3">
+                <div key={item.id} className="flex justify-between items-center gap-3 p-3.5 bg-white/40 rounded-2xl border border-white/50 shadow-sm hover:bg-white/60 transition-all duration-300">
                   <div>
-                    <p className="font-medium text-gray-800">{item.title}</p>
-                    <p className="text-gray-400 text-xs">{formatTime(item.createdAt)}</p>
+                    <p className="font-semibold text-gray-800">{item.title}</p>
+                    <p className="text-gray-400 text-xs mt-0.5 font-medium">{formatTime(item.createdAt)}</p>
                   </div>
                   <div className="text-right">
-                    <p className={item.amount < 0 ? "text-red-500 font-medium" : "text-green-600 font-medium"}>
-                      {formatMoney(item.amount)}
+                    <p className={item.amount < 0 ? "text-rose-600 font-bold text-base" : "text-emerald-600 font-bold text-base"}>
+                      {item.amount > 0 ? "+" : ""}{formatMoney(item.amount)}
                     </p>
-                    <p className="text-green-600 text-xs">{item.statusText}</p>
+                    <p className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[11px] font-bold uppercase tracking-wide border border-blue-100/50">
+                      {item.statusText}
+                    </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-400">Chưa có giao dịch</p>
+              <p className="text-gray-400 text-center py-4">Chưa có giao dịch</p>
             )}
           </div>
         </div>
 
-        <div className="md:col-span-3 bg-white/90 backdrop-blur p-5 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 size={18} className="text-blue-600" />
-            <p className="font-semibold text-gray-800">Thống kê</p>
+        {/* Statistics Card */}
+        <div className="md:col-span-3 bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2 bg-indigo-100 rounded-xl">
+              <BarChart3 size={18} className="text-indigo-600" />
+            </div>
+            <p className="font-bold text-gray-800 text-lg">Thống kê chi tiêu</p>
           </div>
 
-          <div className="mb-4">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Tuần này</span>
-              <span className="font-medium">{formatMoney(weekStats.spent)}</span>
+          <div className="flex flex-col gap-3 mb-2">
+            <div className="bg-white/60 p-4 rounded-2xl border border-white">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600 font-medium">Tuần này</span>
+                <span className="font-bold text-gray-800">{formatMoney(weekStats.spent)}</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-blue-400 to-indigo-500 h-2.5 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${getProgress(weekStats.spent, weekStats.limit)}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs mt-2 text-gray-500 font-medium">
+                <span>0đ</span>
+                <span>{formatMoney(weekStats.limit)}</span>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 h-2 rounded-full">
-              <div
-                className="bg-green-500 h-2 rounded-full"
-                style={{ width: `${getProgress(weekStats.spent, weekStats.limit)}%` }}
-              />
-            </div>
-          </div>
 
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Tháng này</span>
-              <span className="font-medium">{formatMoney(monthStats.spent)}</span>
-            </div>
-            <div className="w-full bg-gray-200 h-2 rounded-full">
-              <div
-                className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${getProgress(monthStats.spent, monthStats.limit)}%` }}
-              />
+            <div className="bg-white/60 p-4 rounded-2xl border border-white">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600 font-medium">Tháng này</span>
+                <span className="font-bold text-gray-800">{formatMoney(monthStats.spent)}</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-purple-400 to-pink-500 h-2.5 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${getProgress(monthStats.spent, monthStats.limit)}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs mt-2 text-gray-500 font-medium">
+                <span>0đ</span>
+                <span>{formatMoney(monthStats.limit)}</span>
+              </div>
             </div>
           </div>
         </div>

@@ -12,8 +12,14 @@ export default function Stats() {
   const orders = useMemo(() => normalizeParentHistory(homeData), [homeData]);
   const [filter, setFilter] = useState("week");
   const [compareType, setCompareType] = useState("");
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
   
-  
+  const compareOptions = [
+    { value: "", label: "-- Chọn kiểu so sánh --" },
+    { value: "week", label: "Tuần này với tuần trước" },
+    { value: "month", label: "Tháng này với tháng trước" },
+    { value: "custom", label: "Chọn khoảng thời gian" },
+  ];
   const [start1, setStart1] = useState("");
 const [end1, setEnd1] = useState("");
 
@@ -295,7 +301,7 @@ const FEEDBACK = getFeedback(diff);
   // UI
   // =========================
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-5 pb-8">
 
       {/* HEADER */}
       <div className="flex justify-between items-center">
@@ -467,17 +473,47 @@ const FEEDBACK = getFeedback(diff);
 
   <p className="font-semibold">⚖️ So sánh chi tiêu</p>
 
-  {/* COMBOBOX */}
-  <select
-    value={compareType}
-    onChange={(e) => setCompareType(e.target.value)}
-    className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-  >
-    <option value="">-- Chọn kiểu so sánh --</option>
-    <option value="week">Tuần này với tuần trước</option>
-    <option value="month">Tháng này với tháng trước</option>
-    <option value="custom">Chọn khoảng thời gian</option>
-  </select>
+  {/* CUSTOM COMBOBOX */}
+  <div className="relative">
+    <button
+      type="button"
+      onClick={() => setIsCompareOpen(!isCompareOpen)}
+      className="w-full flex justify-between items-center px-4 py-3.5 bg-gray-50/80 border border-gray-200/60 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors shadow-sm"
+    >
+      {compareOptions.find(o => o.value === compareType)?.label || "-- Chọn kiểu so sánh --"}
+      <svg className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isCompareOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    {isCompareOpen && (
+      <>
+        {/* Invisible overlay to close dropdown on click outside */}
+        <div className="fixed inset-0 z-40" onClick={() => setIsCompareOpen(false)}></div>
+        <div className="absolute z-50 w-full mt-2 bg-white/90 backdrop-blur-xl border border-gray-100/50 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden">
+          <div className="py-1">
+            {compareOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setCompareType(opt.value);
+                  setIsCompareOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                  compareType === opt.value 
+                    ? 'bg-blue-50/50 text-blue-600 font-semibold' 
+                    : 'text-gray-700 hover:bg-gray-50/80'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
 
   {/* nếu chọn khoảng thời gian thì hiện thị  */}
   {compareType === "custom" && (

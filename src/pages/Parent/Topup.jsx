@@ -81,7 +81,7 @@ export default function Topup() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="space-y-5 pb-8">
 
       {/* HEADER */}
       <h1 className="text-xl font-bold">💰 Nạp tiền</h1>
@@ -149,8 +149,8 @@ export default function Topup() {
       </div>
 
       {/* INPUT AMOUNT */}
-      <div className="bg-white p-5 rounded-2xl shadow space-y-3">
-        <p className="font-semibold text-gray-700">
+      <div className="bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 space-y-4">
+        <p className="font-semibold text-gray-800 text-lg">
           Nhập số tiền cần nạp vào ví
         </p>
 
@@ -159,7 +159,7 @@ export default function Topup() {
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
           placeholder="Nhập số tiền..."
-          className="w-full border border-gray-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full bg-white/60 backdrop-blur-sm border border-white/50 rounded-2xl p-4 text-lg outline-none focus:ring-2 focus:ring-blue-400/50 shadow-inner transition-all"
         />
 
         {/* QUICK SELECT */}
@@ -168,10 +168,10 @@ export default function Topup() {
             <button
               key={a}
               onClick={() => setAmount(a)}
-              className={`px-3 py-2 rounded-full text-sm border border-gray-300 ${
+              className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all border ${
                 amount === a
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100"
+                  ? "bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20"
+                  : "bg-white/50 text-gray-700 border-white/60 hover:bg-white/80 shadow-sm"
               }`}
             >
               {a.toLocaleString()}đ
@@ -181,8 +181,8 @@ export default function Topup() {
       </div>
 
       {/* PAYMENT METHODS */}
-      <div className="bg-white p-5 rounded-2xl shadow space-y-3">
-        <p className="font-semibold text-gray-700">
+      <div className="bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 space-y-4">
+        <p className="font-semibold text-gray-800 text-lg">
           Chọn phương thức thanh toán
         </p>
 
@@ -190,10 +190,10 @@ export default function Topup() {
           <div
             key={m.id}
             onClick={() => setMethod(m.id)}
-            className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${
+            className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
               method === m.id
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200"
+                ? "border-blue-400 bg-blue-50/80 shadow-sm"
+                : "border-white/60 bg-white/50 hover:bg-white/80"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -219,9 +219,9 @@ export default function Topup() {
         ))}
       </div>
       {/* SUMMARY */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-2 pt-2">
         <span className="font-semibold text-gray-700">Số tiền cần trả:</span>
-        <span className="text-2xl font-bold text-blue-600">
+        <span className="text-3xl font-bold text-blue-600 drop-shadow-sm">
           {amount.toLocaleString()}đ
         </span>
       </div>
@@ -230,10 +230,10 @@ export default function Topup() {
       <button
         disabled={amount <= 0 || paying}
         onClick={handleTopup}
-        className={`w-full py-3 rounded-2xl font-semibold text-white transition ${
+        className={`w-full py-4 rounded-3xl font-bold text-white transition-all text-lg shadow-lg ${
           amount > 0 && !paying
-            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 active:scale-95"
-            : "bg-gray-300 cursor-not-allowed"
+            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:scale-[1.02] hover:shadow-blue-500/30 active:scale-95"
+            : "bg-gray-300 cursor-not-allowed opacity-70 shadow-none"
         }`}
       >
         {paying ? "Đang xử lý..." : `Nạp ${amount.toLocaleString()}đ`}
