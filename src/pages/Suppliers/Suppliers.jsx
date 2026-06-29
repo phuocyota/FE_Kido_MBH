@@ -1,14 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  Search,
-  Plus,
-  Upload,
-  Download,
-  SlidersHorizontal,
-  List,
-  Settings,
-  HelpCircle,
-} from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Download, Package, Plus, Search, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
 
@@ -16,6 +7,7 @@ import { supplierApi } from "../../api";
 import AddSupplierModal from "../../components/Suppliers/AddSupplierModal";
 import SuppliersSidebar from "../../components/Suppliers/SuppliersSidebar";
 import SuppliersContent from "../../components/Suppliers/SuppliersContent";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 export default function Suppliers() {
   const [status, setStatus] = useState("active");
@@ -25,32 +17,37 @@ export default function Suppliers() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showTimeFilter, setShowTimeFilter] = useState(false);
+  const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
+  const [showCustomDate, setShowCustomDate] = useState(false);
 
-  // States for new filters
-  const [selectedGroup, setSelectedGroup] = useState("Tất cả các nhóm");
-  const [purchaseFrom, setPurchaseFrom] = useState("");
-  const [purchaseTo, setPurchaseTo] = useState("");
-  const [debtFrom, setDebtFrom] = useState("");
-  const [debtTo, setDebtTo] = useState("");
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(suppliers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentSuppliers = suppliers.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
       const data = await supplierApi.getAll(status, search);
       setSuppliers(Array.isArray(data) ? data : []);
       setCurrentPage(1);
-    } catch (err) {
+    } catch {
       setSuppliers([]);
       setError("Không thể tải danh sách nhà cung cấp");
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, status]);
 
   useEffect(() => {
     loadSuppliers();
-  }, [status, search]);
+  }, [loadSuppliers]);
 
   const handleDeleteSupplier = async (supplier) => {
     if (!window.confirm(`Xoá nhà cung cấp "${supplier.name}"?`)) return;
@@ -59,99 +56,41 @@ export default function Suppliers() {
       await supplierApi.delete(supplier.id);
       toast.success("Xoá nhà cung cấp thành công");
       loadSuppliers();
-    } catch (err) {
-      toast.error("Không thể xoá nhà cung cấp");
+    } catch {
+      toast.error("Khong the xoa nha cung cap");
     }
   };
 
-  // Get unique supplier groups dynamically
-  const groups = [
-    "Tất cả các nhóm",
-    ...new Set(suppliers.map((s) => s.group).filter(Boolean)),
-  ];
-
-  // Client-side filtering
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    // 1. Nhóm NCC
-    if (
-      selectedGroup !== "Tất cả các nhóm" &&
-      supplier.group !== selectedGroup
-    ) {
-      return false;
-    }
-
-    // 2. Tổng mua
-    const purchaseVal = supplier.totalPurchase || 0;
-    if (purchaseFrom !== "" && purchaseVal < Number(purchaseFrom)) {
-      return false;
-    }
-    if (purchaseTo !== "" && purchaseVal > Number(purchaseTo)) {
-      return false;
-    }
-
-    // 3. Nợ hiện tại
-    const debtVal = supplier.debt || 0;
-    if (debtFrom !== "" && debtVal < Number(debtFrom)) {
-      return false;
-    }
-    if (debtTo !== "" && debtVal > Number(debtTo)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Phân trang
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
-  const totalPages = Math.max(1, Math.ceil(filteredSuppliers.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentSuppliers = filteredSuppliers.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-
-  // Reset page when client-side filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedGroup, purchaseFrom, purchaseTo, debtFrom, debtTo]);
-
-  // Menu sidebar
-  const [showTimeFilter, setShowTimeFilter] = useState(false);
-  const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
-  const [showCustomDate, setShowCustomDate] = useState(false);
+  const openCreateModal = () => {
+    setSelectedSupplier(null);
+    setOpenAddSupplier(true);
+  };
 
   return (
-    <div className="w-full min-h-screen bg-[#f4f6f8] p-4 flex flex-col lg:flex-row gap-4">
-      {/* SIDEBAR */}
-      <SuppliersSidebar
-        status={status}
-        setStatus={setStatus}
-        selectedTime={selectedTime}
-        showTimeFilter={showTimeFilter}
-        setShowTimeFilter={setShowTimeFilter}
-        showCustomDate={showCustomDate}
-        setShowCustomDate={setShowCustomDate}
-        setSelectedTime={setSelectedTime}
-        selectedGroup={selectedGroup}
-        setSelectedGroup={setSelectedGroup}
-        purchaseFrom={purchaseFrom}
-        setPurchaseFrom={setPurchaseFrom}
-        purchaseTo={purchaseTo}
-        setPurchaseTo={setPurchaseTo}
-        debtFrom={debtFrom}
-        setDebtFrom={setDebtFrom}
-        debtTo={debtTo}
-        setDebtTo={setDebtTo}
-        groups={groups}
-      />
+    <div className="min-h-screen bg-[#f3f5f7] p-4">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-gray-400 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="whitespace-nowrap text-2xl font-bold text-gray-900">
+              Nhà cung cấp
+            </h1>
 
-      {/* CONTENT AREA */}
-      <div className="flex-1 flex flex-col gap-4">
-        {/* TOOLBAR */}
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative w-full max-w-[400px]">
+            <ToolbarFilterDropdown panelClassName="sm:w-[520px]">
+              <SuppliersSidebar
+                status={status}
+                setStatus={setStatus}
+                selectedTime={selectedTime}
+                showTimeFilter={showTimeFilter}
+                setShowTimeFilter={setShowTimeFilter}
+                showCustomDate={showCustomDate}
+                setShowCustomDate={setShowCustomDate}
+                setSelectedTime={setSelectedTime}
+              />
+            </ToolbarFilterDropdown>
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+            <div className="relative w-full max-w-xl">
               <Search
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -161,51 +100,82 @@ export default function Suppliers() {
                 placeholder="Theo mã, tên, số điện thoại"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-              />
-              <SlidersHorizontal
-                size={16}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                className="h-11 w-full rounded-lg border border-gray-300 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
               />
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+            
+
             <button
-              onClick={() => {
-                setSelectedSupplier(null);
-                setOpenAddSupplier(true);
-              }}
-              className="h-10 px-4 border border-[#0f62fe] text-[#0f62fe] bg-white hover:bg-blue-50 rounded-lg flex items-center gap-1.5 font-medium text-sm transition cursor-pointer whitespace-nowrap"
+              onClick={openCreateModal}
+              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 font-medium text-white hover:bg-blue-700"
             >
-              <Plus size={16} />
+              <Plus size={18} />
               Nhà cung cấp
             </button>
 
-            <button className="h-10 px-4 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg flex items-center gap-1.5 font-medium text-sm transition cursor-pointer whitespace-nowrap">
-              <Upload size={16} className="text-gray-500" />
-              Import file
+            <button className="flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 hover:bg-gray-50">
+              <Upload size={18} />
+              Import
             </button>
 
-            <button className="h-10 px-4 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg flex items-center gap-1.5 font-medium text-sm transition cursor-pointer whitespace-nowrap">
-              <Download size={16} className="text-gray-500" />
+            <button className="flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 hover:bg-gray-50">
+              <Download size={18} />
               Xuất file
             </button>
-
-            <div className="h-5 w-[1px] bg-gray-300 mx-1 hidden sm:block" />
-
-            <button className="h-10 w-10 border border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer flex-shrink-0">
-              <List size={18} />
-            </button>
-
-            <button className="h-10 w-10 border border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer flex-shrink-0">
-              <Settings size={18} />
-            </button>
-
-            <button className="h-10 w-10 border border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer flex-shrink-0">
-              <HelpCircle size={18} />
-            </button>
           </div>
+        </div>
+
+        <div className="p-3">
+          {loading ? (
+            <div className="flex min-h-[650px] items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm">
+              Đang tải danh sách nhà cung cấp...
+            </div>
+          ) : error ? (
+            <div className="flex min-h-[650px] items-center justify-center rounded-xl border border-gray-200 bg-white text-red-500 shadow-sm">
+              {error}
+            </div>
+          ) : suppliers.length > 0 ? (
+            <SuppliersContent
+              suppliers={suppliers}
+              currentSuppliers={currentSuppliers}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              itemsPerPage={itemsPerPage}
+              onEdit={(supplier) => {
+                setSelectedSupplier(supplier);
+                setOpenAddSupplier(true);
+              }}
+              onDelete={handleDeleteSupplier}
+            />
+          ) : (
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="flex min-h-[650px] flex-col items-center justify-center">
+                <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+                  <Package size={48} />
+                </div>
+
+                <h3 className="mb-3 text-3xl font-semibold text-gray-900">
+                  Chưa có nhà cung cấp nào
+                </h3>
+
+                <p className="mb-6 max-w-md text-center text-gray-500">
+                  Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung
+                  cấp một cách hiệu quả
+                </p>
+
+                <button
+                  onClick={openCreateModal}
+                  className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-white hover:bg-blue-700"
+                >
+                  <Plus size={18} />
+                  Thêm nhà cung cấp
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         {/* TABLE DATA */}
         {loading ? (
