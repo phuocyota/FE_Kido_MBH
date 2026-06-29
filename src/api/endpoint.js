@@ -32,5 +32,15 @@ export const API = {
   PRODUCTS: {
     FULL: withApiPrefix("/products/full"),
   },
+
+  ORDERS: {
+    CANCEL: (id) => withApiPrefix(`/orders/${id}/cancel`),
+  },
+
+  CART: {
+    CLEAR_ME: withApiPrefix("/cart/me/clear"),
+    ADD_ME_ITEM: withApiPrefix("/cart/me/items"),
+    COMPLETE_ME: withApiPrefix("/cart/me/complete"),
+  },
  
 };

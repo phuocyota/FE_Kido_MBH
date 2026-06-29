@@ -1,11 +1,15 @@
 import { apiRequest } from "./client";
 import { API } from "./endpoint";
 
-export const getProductsFull = async ({ branchId } = {}) => {
+export const getProductsFull = async ({ branchId, maxPrice } = {}) => {
   const params = new URLSearchParams();
 
   if (branchId) {
     params.set("branchId", branchId);
+  }
+
+  if (maxPrice !== undefined && maxPrice !== null) {
+    params.set("maxPrice", maxPrice);
   }
 
   const query = params.toString();

@@ -1,29 +1,24 @@
 import React, { useMemo, useState } from "react";
-import { ArrowLeft, Check, ChevronRight } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Wallet } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import momo from "../../assets/momo.jpg";
 import vnpay from "../../assets/vnpay.png";
-import vietqr from "../../assets/vietqr.webp";
+import { addMyCartItem, clearMyCart, completeMyCart } from "../../api/cart";
 
 const CHECKOUT_KEY = "parentOrderCheckout";
 
 const methods = [
   {
-    id: "momo",
-    name: "Thanh toán qua MoMo",
+    id: "WALLET",
+    name: "Thanh toán bằng ví/tạm ứng",
     img: momo,
   },
   {
-    id: "vnpay",
-    name: "Thanh toán qua VNPay",
+    id: "CASH",
+    name: "Trả tiền mặt tại căn tin",
     img: vnpay,
-  },
-  {
-    id: "vietqr",
-    name: "Thanh toán qua VietQR",
-    img: vietqr,
   },
 ];
 
@@ -38,18 +33,11 @@ const readJsonStorage = (storage, key, fallback = null) => {
   }
 };
 
-const writeJsonStorage = (storage, key, value) => {
-  storage.setItem(key, JSON.stringify(value));
-};
-
-const getNextOrderNumber = () => {
-  const current = Number(localStorage.getItem("orderNumber") || 0) + 1;
-  localStorage.setItem("orderNumber", String(current));
-  return current;
-};
-
 const formatMoney = (value = 0) =>
   `${Number(value || 0).toLocaleString("vi-VN")} đ`;
+
+const getOrderType = (pickupType) =>
+  pickupType === "Ra chơi lấy" ? "PRE_ORDER" : "TAKEAWAY";
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -57,9 +45,10 @@ export default function Payment() {
   const [checkout] = useState(() =>
     readJsonStorage(sessionStorage, CHECKOUT_KEY)
   );
-  const [method, setMethod] = useState("momo");
+  const [method, setMethod] = useState("WALLET");
   const [pickupType, setPickupType] = useState("Lấy liền");
   const [successOrder, setSuccessOrder] = useState(null);
+  const [paying, setPaying] = useState(false);
 
   const selectedMethod = useMemo(
     () => methods.find((item) => item.id === method) || methods[0],
@@ -73,41 +62,52 @@ export default function Payment() {
   const totalQuantity = items.reduce((sum, item) => sum + item.qty, 0);
   const student = checkout?.student;
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     if (!student || items.length === 0) {
       toast.error("Không tìm thấy thông tin đơn hàng");
       navigate("/order");
       return;
     }
 
-    const orderNumber = getNextOrderNumber();
-    const createdAt = Date.now();
-    const oldOrders = readJsonStorage(localStorage, "orders", []);
+    if (paying) return;
 
-    const newOrder = {
-      orderKey: `${createdAt}-${orderNumber}`,
-      id: orderNumber,
-      items,
-      total,
-      studentId: String(student.cardId || student.id),
-      studentName: student.name,
-      status: "pending",
-      paymentMethod: selectedMethod.id,
-      paymentMethodName: selectedMethod.name,
-      isRefunded: false,
-      pickupType,
-      createdAt,
-    };
+    try {
+      setPaying(true);
+      await clearMyCart();
 
-    writeJsonStorage(localStorage, "orders", [...oldOrders, newOrder]);
-    sessionStorage.removeItem(CHECKOUT_KEY);
+      for (const item of items) {
+        await addMyCartItem({
+          productId: item.id,
+          quantity: item.qty,
+          note: item.note || undefined,
+        });
+      }
 
-    if (typeof refreshHome === "function") {
-      refreshHome();
+      const result = await completeMyCart({
+        branchId: checkout?.branchId || student.branchId,
+        paymentMethod: selectedMethod.id,
+        orderType: getOrderType(pickupType),
+        note: pickupType,
+      });
+
+      sessionStorage.removeItem(CHECKOUT_KEY);
+
+      if (typeof refreshHome === "function") {
+        await refreshHome();
+      }
+
+      setSuccessOrder(result?.order?.orderCode || result?.order?.id || "OK");
+      toast.success(
+        selectedMethod.id === "CASH"
+          ? "Đã tạo đơn, vui lòng thanh toán tại căn tin"
+          : "Thanh toán thành công"
+      );
+    } catch (error) {
+      console.error("Complete cart error:", error);
+      toast.error(error.message || "Không thanh toán được đơn hàng");
+    } finally {
+      setPaying(false);
     }
-
-    setSuccessOrder(orderNumber);
-    toast.success("Thanh toán thành công");
   };
 
   if (!checkout || items.length === 0) {
@@ -267,9 +267,10 @@ export default function Payment() {
             <button
               type="button"
               onClick={handleConfirmPayment}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-indigo-600 active:scale-[0.99]"
+              disabled={paying}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-indigo-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Thanh toán bằng {selectedMethod.name.replace("Thanh toán qua ", "")}
+              {paying ? "Đang xử lý..." : `Thanh toán bằng ${selectedMethod.name.replace("Thanh toán bằng ", "")}`}
               <ChevronRight size={20} />
             </button>
           </div>
@@ -279,16 +280,19 @@ export default function Payment() {
       {successOrder && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
-            <h2 className="text-xl font-bold text-green-600">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
+              <Wallet size={28} />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-green-600">
               Thanh toán thành công
             </h2>
-            <p className="mt-2 text-sm text-gray-600">Số thứ tự của đơn</p>
-            <p className="mt-3 text-4xl font-bold text-indigo-600">
-              #{successOrder}
+            <p className="mt-2 text-sm text-gray-600">Mã đơn</p>
+            <p className="mt-3 break-words text-2xl font-bold text-indigo-600">
+              {successOrder}
             </p>
             <button
               type="button"
-              onClick={() => navigate("/order")}
+              onClick={() => navigate("/")}
               className="mt-6 w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"
             >
               OK

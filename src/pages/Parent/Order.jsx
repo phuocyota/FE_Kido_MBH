@@ -86,6 +86,12 @@ export default function Order() {
   const [menuLoading, setMenuLoading] = useState(false);
   const [menuError, setMenuError] = useState("");
   const branchId = homeData?.user?.branchId || storedStudent?.branchId || "";
+  const advanceAmount = Number(
+    homeData?.statistics?.month?.limit ??
+      homeData?.statistics?.week?.limit ??
+      storedStudent?.advanceAmount ??
+      0
+  );
 
   useEffect(() => {
     if (loading) return;
@@ -102,7 +108,10 @@ export default function Order() {
       try {
         setMenuLoading(true);
         setMenuError("");
-        const data = await getProductsFull({ branchId });
+        const data = await getProductsFull({
+          branchId,
+          maxPrice: advanceAmount || undefined,
+        });
 
         if (!ignore) {
           setMenuData(Array.isArray(data) ? data : []);
@@ -127,7 +136,7 @@ export default function Order() {
     return () => {
       ignore = true;
     };
-  }, [branchId, loading]);
+  }, [advanceAmount, branchId, loading]);
 
   const student = useMemo(() => {
     const user = homeData?.user;
@@ -146,13 +155,18 @@ export default function Order() {
         localStorage.getItem("userId") ??
         "",
       balance: Number(homeData?.wallet?.balance ?? storedStudent?.balance ?? 0),
+      advanceAmount: Number(advanceAmount || 0),
       branchId,
     };
-  }, [branchId, homeData?.user, homeData?.wallet?.balance, storedStudent]);
+  }, [advanceAmount, branchId, homeData, storedStudent]);
 
   const categories = useMemo(() => {
     const apiCategories = menuData
-      .filter((item) => (item.products || []).length > 0)
+      .filter((item) =>
+        (item.products || []).some(
+          (product) => !advanceAmount || Number(product.price || 0) <= advanceAmount
+        )
+      )
       .map((item) => ({
         id: item.id,
         name: item.name,
@@ -160,26 +174,28 @@ export default function Order() {
       }));
 
     return [ALL_CATEGORY, ...apiCategories];
-  }, [menuData]);
+  }, [advanceAmount, menuData]);
 
   const products = useMemo(() => {
     return menuData.flatMap((category) =>
-      (category.products || []).map((item) => ({
-        id: item.id,
-        name: item.name,
-        image: buildAssetUrl(item.imageUrl) || "/kido.jpg",
-        category: category.name,
-        categoryId: category.id,
-        price: Number(item.price || 0),
-        oldPrice: item.oldPrice ? Number(item.oldPrice) : null,
-        sold: Number(item.sold || 0),
-        likes: Number(item.likes ?? item.like ?? 0),
-        remain: Number(item.remain ?? item.quantity ?? 0),
-        description: item.description || "",
-        unit: item.unit || "",
-      }))
+      (category.products || [])
+        .filter((item) => !advanceAmount || Number(item.price || 0) <= advanceAmount)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          image: buildAssetUrl(item.imageUrl) || "/kido.jpg",
+          category: category.name,
+          categoryId: category.id,
+          price: Number(item.price || 0),
+          oldPrice: item.oldPrice ? Number(item.oldPrice) : null,
+          sold: Number(item.sold || 0),
+          likes: Number(item.likes ?? item.like ?? 0),
+          remain: Number(item.remain ?? item.quantity ?? 0),
+          description: item.description || "",
+          unit: item.unit || "",
+        }))
     );
-  }, [menuData]);
+  }, [advanceAmount, menuData]);
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -277,6 +293,18 @@ export default function Order() {
     );
   };
 
+  const clearCart = () => {
+    const confirmed = window.confirm("Bạn có chắc muốn xóa các món đã chọn?");
+
+    if (!confirmed) return;
+
+    setCart([]);
+    setNoteModal(null);
+    setNoteValue("");
+    sessionStorage.removeItem("parentOrderCheckout");
+    toast.success("Đã xóa giỏ hàng");
+  };
+
   const total = useMemo(() => {
     return cart.reduce(
       (sum, item) => sum + item.price * item.qty,
@@ -358,6 +386,7 @@ export default function Order() {
         cart={cart}
         total={total}
         onCheckout={handlePayment}
+        onClearCart={clearCart}
       />
 
       {noteModal && (

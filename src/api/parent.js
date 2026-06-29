@@ -32,3 +32,18 @@ export const updateCustomerAdvanceAmount = async (customerId, amount) => {
 
   return res?.data ?? res;
 };
+
+export const cancelParentOrder = async (
+  orderId,
+  { reason = "Phu huynh yeu cau huy don", isRefunded = true } = {}
+) => {
+  const res = await apiRequest(API.ORDERS.CANCEL(orderId), {
+    method: "PUT",
+    body: JSON.stringify({
+      reason,
+      isRefunded,
+    }),
+  });
+
+  return res?.data ?? res;
+};
