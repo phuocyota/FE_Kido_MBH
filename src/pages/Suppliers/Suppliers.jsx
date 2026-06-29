@@ -40,7 +40,7 @@ export default function Suppliers() {
       const data = await supplierApi.getAll(status, search);
       setSuppliers(Array.isArray(data) ? data : []);
       setCurrentPage(1);
-    } catch (err) {
+    } catch {
       setSuppliers([]);
       setError("Không thể tải danh sách nhà cung cấp");
     } finally {
@@ -59,8 +59,31 @@ export default function Suppliers() {
       await supplierApi.delete(supplier.id);
       toast.success("Xoá nhà cung cấp thành công");
       loadSuppliers();
-    } catch (err) {
+    } catch {
       toast.error("Không thể xoá nhà cung cấp");
+    }
+  };
+
+  const handleDeleteSuppliers = async (selectedSuppliers) => {
+    if (selectedSuppliers.length === 0) return false;
+
+    const message =
+      selectedSuppliers.length === 1
+        ? `Xoá nhà cung cấp "${selectedSuppliers[0].name}"?`
+        : `Xoá ${selectedSuppliers.length} nhà cung cấp đã chọn?`;
+
+    if (!window.confirm(message)) return false;
+
+    try {
+      await Promise.all(
+        selectedSuppliers.map((supplier) => supplierApi.delete(supplier.id))
+      );
+      toast.success("Xoá nhà cung cấp thành công");
+      loadSuppliers();
+      return true;
+    } catch {
+      toast.error("Không thể xoá nhà cung cấp");
+      return false;
     }
   };
 
@@ -105,10 +128,9 @@ export default function Suppliers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const totalPages = Math.max(1, Math.ceil(filteredSuppliers.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSuppliers = filteredSuppliers.slice(
-    startIndex,
-    startIndex + itemsPerPage
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   // Reset page when client-side filters change
@@ -247,7 +269,6 @@ export default function Suppliers() {
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}
-            startIndex={startIndex}
             itemsPerPage={itemsPerPage}
             setItemsPerPage={setItemsPerPage}
             onEdit={(supplier) => {
@@ -255,6 +276,7 @@ export default function Suppliers() {
               setOpenAddSupplier(true);
             }}
             onDelete={handleDeleteSupplier}
+            onBulkDelete={handleDeleteSuppliers}
           />
         )}
       </div>
