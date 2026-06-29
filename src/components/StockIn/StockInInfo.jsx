@@ -1,6 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { supplierApi } from "../../api";
+import AddSupplierModal from "../Suppliers/AddSupplierModal";
+
+const formatDateTimeLocal = (date) => {
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+};
 
 export default function StockInInfo() {
   const [supplierName, setSupplierName] = useState("");
@@ -8,6 +14,10 @@ export default function StockInInfo() {
   const [showSupplierList, setShowSupplierList] = useState(false);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [supplierError, setSupplierError] = useState("");
+  const [hasLoadedSuppliers, setHasLoadedSuppliers] = useState(false);
+  const [openAddSupplier, setOpenAddSupplier] = useState(false);
+  const isLoadingSuppliersRef = useRef(false);
+  const defaultPostedAt = useMemo(() => formatDateTimeLocal(new Date()), []);
 
   const filteredSuppliers = useMemo(() => {
     const keyword = supplierName.trim().toLowerCase();
@@ -22,24 +32,39 @@ export default function StockInInfo() {
     });
   }, [supplierName, suppliers]);
 
-  const handleOpenSupplierList = async () => {
-    const nextOpen = !showSupplierList;
-    setShowSupplierList(nextOpen);
+  const loadSuppliers = useCallback(async () => {
+    if (isLoadingSuppliersRef.current) return;
 
-    if (!nextOpen) return;
-
+    isLoadingSuppliersRef.current = true;
     setLoadingSuppliers(true);
     setSupplierError("");
 
     try {
       const data = await supplierApi.getAll();
       setSuppliers(Array.isArray(data) ? data : []);
+      setHasLoadedSuppliers(true);
     } catch (error) {
       console.error("Failed to fetch suppliers:", error);
       setSupplierError("Không thể tải danh sách nhà cung cấp");
+      setSuppliers([]);
     } finally {
+      isLoadingSuppliersRef.current = false;
       setLoadingSuppliers(false);
     }
+  }, []);
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [loadSuppliers]);
+
+  const handleFocusSupplierInput = async () => {
+    setShowSupplierList(true);
+    if (!hasLoadedSuppliers && !loadingSuppliers) await loadSuppliers();
+  };
+
+  const handleOpenAddSupplier = () => {
+    setShowSupplierList(false);
+    setOpenAddSupplier(true);
   };
 
   const handleSelectSupplier = (supplier) => {
@@ -61,17 +86,20 @@ export default function StockInInfo() {
                 value={supplierName}
                 onChange={(event) => {
                   setSupplierName(event.target.value);
-                  if (suppliers.length > 0) setShowSupplierList(true);
+                  setShowSupplierList(true);
                 }}
+                onClick={handleFocusSupplierInput}
+                onFocus={handleFocusSupplierInput}
                 className="flex-1 rounded-l border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                 placeholder="Chọn nhà cung cấp"
               />
 
               <button
                 type="button"
-                onClick={handleOpenSupplierList}
-                disabled={loadingSuppliers}
-                className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+                onClick={handleOpenAddSupplier}
+                className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-gray-300 hover:bg-gray-50"
+                title="Thêm nhà cung cấp"
+                aria-label="Thêm nhà cung cấp"
               >
                 <Plus size={16} />
               </button>
@@ -149,6 +177,7 @@ export default function StockInInfo() {
 
           <input
             type="datetime-local"
+            defaultValue={defaultPostedAt}
             className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
           />
         </div>
@@ -185,6 +214,12 @@ export default function StockInInfo() {
           />
         </div>
       </div>
+
+      <AddSupplierModal
+        open={openAddSupplier}
+        onClose={() => setOpenAddSupplier(false)}
+        onSaved={loadSuppliers}
+      />
     </div>
   );
 }
