@@ -50,8 +50,8 @@ export default function Header({ student }) {
       <p className="text-gray-200 text-sm font-bold">{student.school}</p>
 
       {/* Hàng 2 */}
-      <p className="text-yellow-300 font-bold">
-        💰 {student.balance.toLocaleString()}
+      <p className={`font-bold ${student.balance < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
+        💰 {student.balance < 0 ? `Nợ: ${Math.abs(student.balance).toLocaleString()}` : student.balance.toLocaleString()}
       </p>
       <p className="text-gray-200 text-sm font-bold">Lớp: {student.class}</p>
 

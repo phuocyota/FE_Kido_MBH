@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 import momo from "../../assets/momo.jpg";
-import vnpay from "../../assets/vnpay.png";
-import vietqr from "../../assets/vietqr.webp";
 
 import AdvanceAmountModal from "../../components/Topup/AdvanceAmountModal";
 import { Wallet } from "lucide-react";
@@ -19,6 +17,7 @@ export default function Topup() {
 const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
   const quickAmounts = [10000, 20000, 50000, 100000];
   const customerId = homeData?.user?.id;
+  const walletBalance = homeData?.wallet?.balance ?? 0;
 
   useEffect(() => {
     const currentLimit =
@@ -55,17 +54,7 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
     id: "momo",
     name: "Thanh toán qua MoMo",
     img: momo,
-  },
-  {
-    id: "vnpay",
-    name: "Thanh toán qua VNPay",
-    img: vnpay,
-  },
-  {
-    id: "vietqr",
-    name: "Thanh toán qua VietQR",
-    img: vietqr,
-  },
+  }
 ];
 
   return (
@@ -73,6 +62,22 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
 
       {/* HEADER */}
       <h1 className="text-xl font-bold">💰 Nạp tiền</h1>
+
+      {/* DEBT ALERT */}
+      {walletBalance < 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p className="text-red-600 text-sm font-medium">Tài khoản đang nợ</p>
+            <p className="text-red-700 text-xl font-bold">{Math.abs(walletBalance).toLocaleString()}đ</p>
+          </div>
+          <button
+            onClick={() => setAmount(Math.abs(walletBalance))}
+            className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition shadow-sm"
+          >
+            Nạp trả nợ
+          </button>
+        </div>
+      )}
 
       
       {/* ADVANCE BALANCE */}
@@ -189,6 +194,13 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
             )}
           </div>
         ))}
+      </div>
+      {/* SUMMARY */}
+      <div className="flex items-center justify-between px-1">
+        <span className="font-semibold text-gray-700">Số tiền cần trả:</span>
+        <span className="text-2xl font-bold text-blue-600">
+          {amount.toLocaleString()}đ
+        </span>
       </div>
 
       {/* BUTTON */}

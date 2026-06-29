@@ -35,7 +35,7 @@ export const updateCustomerAdvanceAmount = async (customerId, amount) => {
 
 export const cancelParentOrder = async (
   orderId,
-  { reason = "Phu huynh yeu cau huy don", isRefunded = true } = {}
+  { reason = "Phụ huynh yêu cầu hủy đơn", isRefunded = true } = {}
 ) => {
   const res = await apiRequest(API.ORDERS.CANCEL(orderId), {
     method: "PUT",

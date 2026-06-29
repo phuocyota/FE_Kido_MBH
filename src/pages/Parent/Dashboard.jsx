@@ -41,18 +41,18 @@ export default function Dashboard() {
   const handleCancelTodayOrder = async () => {
     if (!todayOrder?.id || cancellingOrder) return;
 
-    const confirmed = window.confirm("Ban co chac muon huy don hang nay?");
+    const confirmed = window.confirm("Bạn có chắc muốn hủy đơn hàng này?");
 
     if (!confirmed) return;
 
     try {
       setCancellingOrder(true);
       await cancelParentOrder(todayOrder.id);
-      toast.success("Da huy don hang");
+      toast.success("Đã hủy đơn hàng");
       await refreshHome?.();
     } catch (err) {
       console.error("Cancel order error:", err);
-      toast.error(err.message || "Khong huy duoc don hang");
+      toast.error(err.message || "Không hủy được đơn hàng");
     } finally {
       setCancellingOrder(false);
     }
@@ -67,10 +67,18 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="md:col-span-1 bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-2xl shadow-xl flex justify-between items-center">
+        <div className={`md:col-span-1 p-6 rounded-2xl shadow-xl flex justify-between items-center text-white ${
+          walletBalance < 0 
+            ? "bg-gradient-to-br from-red-400 to-red-600" 
+            : "bg-gradient-to-br from-green-400 to-green-600"
+        }`}>
           <div>
-            <p className="text-sm opacity-80 mb-1">Số dư</p>
-            <p className="text-3xl font-bold">{formatMoney(walletBalance)}</p>
+            <p className="text-sm opacity-80 mb-1">
+              {walletBalance < 0 ? "Nợ" : "Số dư"}
+            </p>
+            <p className="text-3xl font-bold">
+              {formatMoney(Math.abs(walletBalance))}
+            </p>
             <p className="mt-2 text-xs font-medium text-white/85">
               Tạm ứng: {formatMoney(advanceAmount)}
             </p>
@@ -143,7 +151,7 @@ export default function Dashboard() {
                     disabled={cancellingOrder}
                     className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {cancellingOrder ? "Dang huy..." : "Huy don"}
+                    {cancellingOrder ? "Đang hủy..." : "Hủy đơn"}
                   </button>
                 )}
               </div>

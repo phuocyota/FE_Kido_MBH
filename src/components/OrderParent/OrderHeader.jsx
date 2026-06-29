@@ -47,22 +47,26 @@ export default function OrderHeader({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+            <div className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${
+              Number(student?.balance || 0) < 0 
+                ? "bg-red-50 border-red-200" 
+                : "bg-green-50 border-green-200"
+            }`}>
               <Wallet
                 size={22}
-                className="text-green-600"
+                className={Number(student?.balance || 0) < 0 ? "text-red-600" : "text-green-600"}
               />
 
               <div>
-                <div className="text-xs text-green-700">
-                  Số dư
+                <div className={`text-xs ${Number(student?.balance || 0) < 0 ? "text-red-700" : "text-green-700"}`}>
+                  {Number(student?.balance || 0) < 0 ? "Nợ" : "Số dư"}
                 </div>
 
-                <div className="font-bold text-green-700">
-                  {Number(student?.balance || 0).toLocaleString()} đ
+                <div className={`font-bold ${Number(student?.balance || 0) < 0 ? "text-red-700" : "text-green-700"}`}>
+                  {Math.abs(Number(student?.balance || 0)).toLocaleString()} đ
                 </div>
 
-                <div className="mt-1 text-xs font-medium text-green-700/80">
+                <div className={`mt-1 text-xs font-medium ${Number(student?.balance || 0) < 0 ? "text-red-700/80" : "text-green-700/80"}`}>
                   Tạm ứng: {Number(student?.advanceAmount || 0).toLocaleString()} đ
                 </div>
               </div>
