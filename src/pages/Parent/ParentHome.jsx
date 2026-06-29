@@ -15,9 +15,19 @@ export default function ParentHome() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const fabRef = useRef(null);
   const isDragging = useRef(false);
+
+  // Force stop momentum scroll on tap
+  const handleStopScroll = () => {
+    if (scrollRef.current) {
+      scrollRef.current.style.overflowY = 'hidden';
+      void scrollRef.current.offsetHeight; 
+      scrollRef.current.style.overflowY = 'auto';
+    }
+  };
   const dragStartPos = useRef({ x: 0, y: 0 });
   const touchOffset = useRef({ x: 0, y: 0 });
 
@@ -238,7 +248,12 @@ const [avatarError, setAvatarError] = useState("");
             <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none translate-x-1/3"></div>
             <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl pointer-events-none translate-y-1/4"></div>
 
-            <div className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain">
+            <div 
+              ref={scrollRef}
+              onTouchStart={handleStopScroll}
+              onMouseDown={handleStopScroll}
+              className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain"
+            >
               <Outlet context={{ homeData, loading, error, refreshHome: fetchHome }} />
             </div>
           </div>
