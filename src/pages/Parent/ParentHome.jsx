@@ -157,8 +157,8 @@ const [avatarError, setAvatarError] = useState("");
         <div className="w-full h-full backdrop-blur-sm [mask-image:radial-gradient(circle_at_center,transparent_40%,black_100%)]" />
       </div>
 
-      <div className="relative min-h-[100dvh] flex items-center justify-center p-3 sm:p-4">
-        <div className="w-full max-w-6xl h-[calc(100dvh-1.5rem)] sm:h-[calc(100dvh-2rem)] flex gap-2">
+      <div className="relative min-h-[100dvh] flex items-center justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:p-4">
+        <div className="w-full max-w-6xl h-[calc(100dvh-1.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100dvh-2rem)] flex gap-2">
           <div className="hidden md:flex w-64 bg-white rounded-2xl p-4 flex-col shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100">
             <div className="flex flex-col items-center mb-6 border-b border-gray-200 pb-4">
 
@@ -232,17 +232,13 @@ const [avatarError, setAvatarError] = useState("");
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100 overflow-hidden">
-            <div className="md:hidden flex items-center p-4 border-b border-gray-300 bg-white relative shrink-0">
-              <img
-                src={avatarSrc}
-                alt={user?.fullName || "Student avatar"}
-                className="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-200"
-              />
-              <p className="font-semibold text-gray-800 absolute left-1/2 -translate-x-1/2">Canteen</p>
-            </div>
+          <div className="relative flex-1 flex flex-col bg-white/60 backdrop-blur-3xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden">
+            {/* Ambient Background Blobs */}
+            <div className="absolute top-0 left-0 w-80 h-80 bg-purple-300/40 rounded-full blur-3xl pointer-events-none -translate-x-1/4 -translate-y-1/4"></div>
+            <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl pointer-events-none translate-y-1/4"></div>
 
-            <div className="flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain">
+            <div className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain">
               <Outlet context={{ homeData, loading, error, refreshHome: fetchHome }} />
             </div>
           </div>

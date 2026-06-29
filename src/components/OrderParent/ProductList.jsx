@@ -48,39 +48,28 @@ export default function ProductList({
 
             <div
               key={item.id}
-              className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:shadow-md"
+              className="group overflow-hidden rounded-2xl border border-transparent bg-white shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-indigo-100"
             >
-
               <div className="relative overflow-hidden">
-
                 <img
                   src={buildAssetUrl(item.image)}
                   alt={item.name}
-                  className="h-28 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-36 md:h-40"
+                  className="h-32 w-full object-cover transition-transform duration-500 group-hover:scale-110 sm:h-40 md:h-44"
                 />
-
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </div>
 
-              <div className="p-2.5 sm:p-3">
-
-                <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-gray-800 sm:text-base">
-
+              <div className="p-3 sm:p-4">
+                <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-tight text-gray-800 sm:text-base group-hover:text-indigo-600 transition-colors">
                   {item.name}
-
                 </h3>
-
-                <p className="mt-1 text-sm font-bold text-red-600 sm:text-base">
-
-                  {item.price.toLocaleString()} đ
-
+                <p className="mt-1.5 text-[15px] font-bold text-blue-600">
+                  {item.price.toLocaleString()}đ
                 </p>
 
                 <div className="mt-3 flex items-center justify-between gap-2">
-
-                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600">
-
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 border border-emerald-100">
                     Còn {item.remain}
-
                   </span>
 
                   {qty === 0 ? (
@@ -88,59 +77,54 @@ export default function ProductList({
                       type="button"
                       onClick={() => addToCart(item)}
                       disabled={isSoldOut}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300 sm:h-10 sm:w-10"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/30 transition-transform active:scale-90 hover:scale-105 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none"
                       aria-label={`Thêm ${item.name}`}
                     >
-                      <Plus size={18} />
+                      <Plus size={20} />
                     </button>
                   ) : (
-                    <div className="flex shrink-0 items-center gap-1 rounded-full bg-indigo-50 p-1">
+                    <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-indigo-50/80 p-1 border border-indigo-100">
                       <button
                         type="button"
                         onClick={() => decreaseQty(item.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-indigo-600 shadow-sm transition hover:bg-indigo-100"
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-indigo-600 shadow-sm transition-transform active:scale-90 hover:bg-gray-50"
                         aria-label={`Giảm ${item.name}`}
                       >
-                        <span className="text-lg leading-none">-</span>
+                        <span className="text-xl leading-none font-medium mb-0.5">-</span>
                       </button>
-
-                      <span className="min-w-5 text-center text-sm font-bold text-indigo-700">
+                      <span className="min-w-[1.5rem] text-center text-sm font-bold text-indigo-700">
                         {qty}
                       </span>
-
                       <button
                         type="button"
                         onClick={() => increaseQty(item.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-700"
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-sm transition-transform active:scale-90 hover:scale-105"
                         aria-label={`Tăng ${item.name}`}
                       >
-                        <Plus size={15} />
+                        <Plus size={16} />
                       </button>
                     </div>
                   )}
-
                 </div>
 
                 {qty > 0 && (
                   <button
                     type="button"
                     onClick={() => openNoteModal(cartItem)}
-                    className="mt-2 w-full rounded-lg bg-slate-50 px-2.5 py-2 text-left text-xs text-gray-600 transition hover:bg-slate-100"
+                    className="mt-3 w-full rounded-xl bg-gray-50 px-3 py-2 text-left text-xs text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 border border-transparent hover:border-indigo-100"
                   >
                     {cartItem.note ? (
-                      <span className="line-clamp-1">
-                        Ghi chú: {cartItem.note}
+                      <span className="line-clamp-1 font-medium">
+                        <span className="text-gray-400 mr-1">📝</span> {cartItem.note}
                       </span>
                     ) : (
-                      <span className="font-medium text-indigo-600">
-                        Thêm ghi chú
+                      <span className="font-semibold text-indigo-600 flex items-center gap-1">
+                        <span className="text-lg leading-none">+</span> Thêm ghi chú dặn dò
                       </span>
                     )}
                   </button>
                 )}
-
               </div>
-
             </div>
 
           );
