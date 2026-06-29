@@ -24,5 +24,13 @@ export const API = {
   PARENT: {
     HOME: withApiPrefix("/parent/home"),
   },
+
+  CUSTOMER: {
+    DETAIL: (id) => withApiPrefix(`/customers/${id}`),
+  },
+
+  PRODUCTS: {
+    FULL: withApiPrefix("/products/full"),
+  },
  
 };

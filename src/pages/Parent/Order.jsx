@@ -1,15 +1,57 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  Cookie,
+  CupSoda,
+  Sandwich,
+  Soup,
+  UtensilsCrossed,
+} from "lucide-react";
 
 import OrderHeader from "../../components/OrderParent/OrderHeader";
 import CategoryBar from "../../components/OrderParent/CategoryBar";
 import ProductList from "../../components/OrderParent/ProductList";
 import BottomCheckout from "../../components/OrderParent/BottomCheckout";
 
-import categories from "../../datas/categories";
-import productsData from "../../datas/products";
 import { buildAssetUrl } from "../../api/client";
+import { getProductsFull } from "../../api/products";
+
+const ALL_CATEGORY = {
+  id: "all",
+  name: "Tat ca",
+  icon: UtensilsCrossed,
+};
+
+const normalizeText = (value = "") =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
+
+const getCategoryIcon = (name = "") => {
+  const normalizedName = normalizeText(name);
+
+  if (normalizedName.includes("nuoc") || normalizedName.includes("uong")) {
+    return CupSoda;
+  }
+
+  if (normalizedName.includes("banh mi")) {
+    return Sandwich;
+  }
+
+  if (normalizedName.includes("banh")) {
+    return Cookie;
+  }
+
+  if (normalizedName.includes("com") || normalizedName.includes("mon")) {
+    return Soup;
+  }
+
+  return UtensilsCrossed;
+};
 
 const readJsonStorage = (key, fallback = null) => {
   try {
@@ -40,6 +82,52 @@ export default function Order() {
   const [cart, setCart] = useState(() => readCheckoutStorage()?.items || []);
   const [noteModal, setNoteModal] = useState(null);
   const [noteValue, setNoteValue] = useState("");
+  const [menuData, setMenuData] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(false);
+  const [menuError, setMenuError] = useState("");
+  const branchId = homeData?.user?.branchId || storedStudent?.branchId || "";
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!branchId) {
+      setMenuData([]);
+      setMenuError("Khong tim thay chi nhanh cua hoc sinh");
+      return;
+    }
+
+    let ignore = false;
+
+    const fetchProducts = async () => {
+      try {
+        setMenuLoading(true);
+        setMenuError("");
+        const data = await getProductsFull({ branchId });
+
+        if (!ignore) {
+          setMenuData(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error("Fetch products error:", err);
+
+        if (!ignore) {
+          setMenuData([]);
+          setMenuError(err.message || "Khong tai duoc danh sach san pham");
+          toast.error(err.message || "Khong tai duoc danh sach san pham");
+        }
+      } finally {
+        if (!ignore) {
+          setMenuLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      ignore = true;
+    };
+  }, [branchId, loading]);
 
   const student = useMemo(() => {
     const user = homeData?.user;
@@ -58,34 +146,40 @@ export default function Order() {
         localStorage.getItem("userId") ??
         "",
       balance: Number(homeData?.wallet?.balance ?? storedStudent?.balance ?? 0),
+      branchId,
     };
-  }, [homeData?.user, homeData?.wallet?.balance, storedStudent]);
+  }, [branchId, homeData?.user, homeData?.wallet?.balance, storedStudent]);
+
+  const categories = useMemo(() => {
+    const apiCategories = menuData
+      .filter((item) => (item.products || []).length > 0)
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        icon: getCategoryIcon(item.name),
+      }));
+
+    return [ALL_CATEGORY, ...apiCategories];
+  }, [menuData]);
 
   const products = useMemo(() => {
-    const categoryByName = categories.reduce((result, item) => {
-      result[item.name] = item.id;
-      return result;
-    }, {});
-
-    const categoryIds = new Set(categories.map((item) => item.id));
-
-    return productsData.map((item) => {
-      const categoryId = categoryIds.has(item.category)
-        ? item.category
-        : categoryByName[item.category] || item.categoryId || "all";
-
-      return {
-        ...item,
-        categoryId,
+    return menuData.flatMap((category) =>
+      (category.products || []).map((item) => ({
+        id: item.id,
+        name: item.name,
+        image: buildAssetUrl(item.imageUrl) || "/kido.jpg",
+        category: category.name,
+        categoryId: category.id,
         price: Number(item.price || 0),
         oldPrice: item.oldPrice ? Number(item.oldPrice) : null,
         sold: Number(item.sold || 0),
         likes: Number(item.likes ?? item.like ?? 0),
-        remain: Number(item.remain ?? 0),
+        remain: Number(item.remain ?? item.quantity ?? 0),
         description: item.description || "",
-      };
-    });
-  }, []);
+        unit: item.unit || "",
+      }))
+    );
+  }, [menuData]);
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -207,6 +301,7 @@ export default function Order() {
         items: cart,
         total,
         student,
+        branchId,
         createdAt: Date.now(),
       })
     );
@@ -250,6 +345,8 @@ export default function Order() {
 
       <ProductList
         products={filteredProducts}
+        loading={menuLoading}
+        error={menuError}
         cart={cart}
         addToCart={addToCart}
         increaseQty={increaseQty}

@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 export default function AdvanceAmountModal({
   open,
   value,
+  saving = false,
   onClose,
   onSave,
 }) {
@@ -33,7 +34,7 @@ export default function AdvanceAmountModal({
             Thiết lập số tiền ứng trước
           </h2>
 
-          <button onClick={onClose}>
+          <button onClick={onClose} disabled={saving}>
             <X size={20} />
           </button>
         </div>
@@ -50,6 +51,7 @@ export default function AdvanceAmountModal({
             <input
               type="number"
               value={amount}
+              disabled={saving}
               onChange={(e) =>
                 setAmount(Number(e.target.value))
               }
@@ -61,6 +63,7 @@ export default function AdvanceAmountModal({
             {quickAmounts.map((item) => (
               <button
                 key={item}
+                disabled={saving}
                 onClick={() => setAmount(item)}
                 className={`py-3 rounded-xl border transition ${
                   amount === item
@@ -86,17 +89,16 @@ export default function AdvanceAmountModal({
         <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
           <button
             onClick={onClose}
+            disabled={saving}
             className="px-5 py-2 rounded-xl border border-gray-300"
           >
             Hủy
           </button>
 
           <button
-            onClick={() => {
-              onSave(amount);
-              onClose();
-            }}
-            className="px-5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => onSave(amount)}
+            disabled={saving || amount < 0}
+            className="px-5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300"
           >
             Lưu
           </button>

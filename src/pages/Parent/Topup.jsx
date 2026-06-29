@@ -1,18 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import toast from "react-hot-toast";
 import momo from "../../assets/momo.jpg";
 import vnpay from "../../assets/vnpay.png";
 import vietqr from "../../assets/vietqr.webp";
 
 import AdvanceAmountModal from "../../components/Topup/AdvanceAmountModal";
 import { Wallet } from "lucide-react";
+import { updateCustomerAdvanceAmount } from "../../api/parent";
 
 export default function Topup() {
+  const { homeData, refreshHome } = useOutletContext() || {};
   const [amount, setAmount] = useState(0);
   const [method, setMethod] = useState("momo");
   const [advanceAmount, setAdvanceAmount] = useState(50000);
+  const [savingAdvance, setSavingAdvance] = useState(false);
 
 const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
   const quickAmounts = [10000, 20000, 50000, 100000];
+  const customerId = homeData?.user?.id;
+
+  useEffect(() => {
+    const currentLimit =
+      homeData?.statistics?.month?.limit ?? homeData?.statistics?.week?.limit;
+
+    if (currentLimit !== undefined && currentLimit !== null) {
+      setAdvanceAmount(Number(currentLimit));
+    }
+  }, [homeData]);
+
+  const handleSaveAdvanceAmount = async (nextAmount) => {
+    if (!customerId) {
+      toast.error("Khong tim thay thong tin hoc sinh");
+      return;
+    }
+
+    try {
+      setSavingAdvance(true);
+      await updateCustomerAdvanceAmount(customerId, nextAmount);
+      setAdvanceAmount(nextAmount);
+      await refreshHome?.();
+      toast.success("Da cap nhat muc tam ung");
+      setOpenAdvanceModal(false);
+    } catch (err) {
+      console.error("Update advance amount error:", err);
+      toast.error(err.message || "Khong cap nhat duoc muc tam ung");
+    } finally {
+      setSavingAdvance(false);
+    }
+  };
 
   const methods = [
   {
@@ -170,8 +206,13 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
       <AdvanceAmountModal
   open={openAdvanceModal}
   value={advanceAmount}
-  onClose={() => setOpenAdvanceModal(false)}
-  onSave={setAdvanceAmount}
+  saving={savingAdvance}
+  onClose={() => {
+    if (!savingAdvance) {
+      setOpenAdvanceModal(false);
+    }
+  }}
+  onSave={handleSaveAdvanceAmount}
 />
 
     </div>
