@@ -20,38 +20,13 @@ const getProgress = (spent = 0, limit = 0) => {
   return Math.min(Math.round((spent / limit) * 100), 100);
 };
 
-const previewTodayOrder = {
-  id: "order_001",
-  status: "PREPARING",
-  statusText: "Đang chuẩn bị",
-  orderedAt: "2026-05-29T09:45:00+07:00",
-  items: [
-    {
-      id: "item_001",
-      name: "Cơm gà",
-      quantity: 2,
-      unitPrice: 15000,
-      totalPrice: 30000,
-    },
-  ],
-  addons: [
-    {
-      id: "addon_001",
-      name: "Sữa",
-      quantity: 1,
-      price: 0,
-    },
-  ],
-  totalAmount: 30000,
-};
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const { homeData, loading, error } = useOutletContext();
 
   const walletBalance = homeData?.wallet?.balance ?? 0;
   const notifications = homeData?.notifications ?? [];
-  const todayOrder = homeData?.todayOrder ?? previewTodayOrder;
+  const todayOrder = homeData?.todayOrder ?? null;
   const recentHistory = homeData?.recentHistory ?? [];
   const weekStats = homeData?.statistics?.week ?? { spent: 0, limit: 0 };
   const monthStats = homeData?.statistics?.month ?? { spent: 0, limit: 0 };

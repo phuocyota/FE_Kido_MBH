@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BarChart3, Wallet, Utensils, Clock } from "lucide-react";
-import { mockOrders } from "../../datas/mockOrders";
+import { useOutletContext } from "react-router-dom";
+import { normalizeParentHistory } from "../../api/parentData";
 
 import bang from "../../assets/bang.png";
 import vuot from "../../assets/vuot.png";
 import tietkiem from "../../assets/tietkiem.png";
 
 export default function Stats() {
-  const [orders, setOrders] = useState([]);
+  const { homeData } = useOutletContext() || {};
+  const orders = useMemo(() => normalizeParentHistory(homeData), [homeData]);
   const [filter, setFilter] = useState("week");
   const [compareType, setCompareType] = useState("");
   
@@ -19,12 +21,6 @@ const [start2, setStart2] = useState("");
 const [end2, setEnd2] = useState("");
 
 
-  // =========================
-  // LOAD DATA
-  // =========================
-  useEffect(() => {
-    setOrders(mockOrders);
-  }, []);
   const now = new Date();
 
   // =========================
@@ -170,7 +166,7 @@ const getWeekRange = (date, offset = 0) => {
 };
 
 // 👉 THÁNG
-const getMonth = (date, offset = 0) => {
+const GET_MONTH = (date, offset = 0) => {
   const d = new Date(date);
   return {
     month: d.getMonth() + offset,
@@ -265,7 +261,7 @@ const getFeedback = (diff) => {
   };
 };
 
-const feedback = getFeedback(diff);
+const FEEDBACK = getFeedback(diff);
   // =========================
   // 🍱 TOP FOOD
   // =========================
