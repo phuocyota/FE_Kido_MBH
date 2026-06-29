@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Package, Plus, Search, Upload } from "lucide-react";
 import toast from "react-hot-toast";
-
 
 import { supplierApi } from "../../api";
 import AddSupplierModal from "../../components/Suppliers/AddSupplierModal";
 import SuppliersSidebar from "../../components/Suppliers/SuppliersSidebar";
 import SuppliersContent from "../../components/Suppliers/SuppliersContent";
 import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
+
+const ALL_GROUPS = "Tất cả các nhóm";
 
 export default function Suppliers() {
   const [status, setStatus] = useState("active");
@@ -18,17 +19,16 @@ export default function Suppliers() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+
   const [showTimeFilter, setShowTimeFilter] = useState(false);
   const [selectedTime, setSelectedTime] = useState("Toàn thời gian");
   const [showCustomDate, setShowCustomDate] = useState(false);
-
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(suppliers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentSuppliers = suppliers.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const [selectedGroup, setSelectedGroup] = useState(ALL_GROUPS);
+  const [purchaseFrom, setPurchaseFrom] = useState("");
+  const [purchaseTo, setPurchaseTo] = useState("");
+  const [debtFrom, setDebtFrom] = useState("");
+  const [debtTo, setDebtTo] = useState("");
 
   const loadSuppliers = useCallback(async () => {
     try {
@@ -49,6 +49,11 @@ export default function Suppliers() {
     loadSuppliers();
   }, [loadSuppliers]);
 
+  const openCreateModal = () => {
+    setSelectedSupplier(null);
+    setOpenAddSupplier(true);
+  };
+
   const handleDeleteSupplier = async (supplier) => {
     if (!window.confirm(`Xoá nhà cung cấp "${supplier.name}"?`)) return;
 
@@ -57,14 +62,81 @@ export default function Suppliers() {
       toast.success("Xoá nhà cung cấp thành công");
       loadSuppliers();
     } catch {
-      toast.error("Khong the xoa nha cung cap");
+      toast.error("Không thể xoá nhà cung cấp");
     }
   };
 
-  const openCreateModal = () => {
-    setSelectedSupplier(null);
-    setOpenAddSupplier(true);
+  const handleDeleteSuppliers = async (selectedSuppliers) => {
+    if (selectedSuppliers.length === 0) return false;
+
+    const message =
+      selectedSuppliers.length === 1
+        ? `Xoá nhà cung cấp "${selectedSuppliers[0].name}"?`
+        : `Xoá ${selectedSuppliers.length} nhà cung cấp đã chọn?`;
+
+    if (!window.confirm(message)) return false;
+
+    try {
+      await Promise.all(
+        selectedSuppliers.map((supplier) => supplierApi.delete(supplier.id))
+      );
+      toast.success("Xoá nhà cung cấp thành công");
+      loadSuppliers();
+      return true;
+    } catch {
+      toast.error("Không thể xoá nhà cung cấp");
+      return false;
+    }
   };
+
+  const groups = useMemo(
+    () => [
+      ALL_GROUPS,
+      ...new Set(suppliers.map((supplier) => supplier.group).filter(Boolean)),
+    ],
+    [suppliers]
+  );
+
+  const filteredSuppliers = useMemo(
+    () =>
+      suppliers.filter((supplier) => {
+        if (selectedGroup !== ALL_GROUPS && supplier.group !== selectedGroup) {
+          return false;
+        }
+
+        const purchaseVal = supplier.totalPurchase || 0;
+        if (purchaseFrom !== "" && purchaseVal < Number(purchaseFrom)) {
+          return false;
+        }
+        if (purchaseTo !== "" && purchaseVal > Number(purchaseTo)) {
+          return false;
+        }
+
+        const debtVal = supplier.debt || 0;
+        if (debtFrom !== "" && debtVal < Number(debtFrom)) {
+          return false;
+        }
+        if (debtTo !== "" && debtVal > Number(debtTo)) {
+          return false;
+        }
+
+        return true;
+      }),
+    [debtFrom, debtTo, purchaseFrom, purchaseTo, selectedGroup, suppliers]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedGroup, purchaseFrom, purchaseTo, debtFrom, debtTo, itemsPerPage]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredSuppliers.length / itemsPerPage)
+  );
+  const currentSuppliers = filteredSuppliers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="min-h-screen bg-[#f3f5f7] p-4">
@@ -85,6 +157,17 @@ export default function Suppliers() {
                 showCustomDate={showCustomDate}
                 setShowCustomDate={setShowCustomDate}
                 setSelectedTime={setSelectedTime}
+                selectedGroup={selectedGroup}
+                setSelectedGroup={setSelectedGroup}
+                purchaseFrom={purchaseFrom}
+                setPurchaseFrom={setPurchaseFrom}
+                purchaseTo={purchaseTo}
+                setPurchaseTo={setPurchaseTo}
+                debtFrom={debtFrom}
+                setDebtFrom={setDebtFrom}
+                debtTo={debtTo}
+                setDebtTo={setDebtTo}
+                groups={groups}
               />
             </ToolbarFilterDropdown>
           </div>
@@ -103,8 +186,6 @@ export default function Suppliers() {
                 className="h-11 w-full rounded-lg border border-gray-300 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
               />
             </div>
-
-            
 
             <button
               onClick={openCreateModal}
@@ -135,22 +216,7 @@ export default function Suppliers() {
             <div className="flex min-h-[650px] items-center justify-center rounded-xl border border-gray-200 bg-white text-red-500 shadow-sm">
               {error}
             </div>
-          ) : suppliers.length > 0 ? (
-            <SuppliersContent
-              suppliers={suppliers}
-              currentSuppliers={currentSuppliers}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              totalPages={totalPages}
-              startIndex={startIndex}
-              itemsPerPage={itemsPerPage}
-              onEdit={(supplier) => {
-                setSelectedSupplier(supplier);
-                setOpenAddSupplier(true);
-              }}
-              onDelete={handleDeleteSupplier}
-            />
-          ) : (
+          ) : suppliers.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="flex min-h-[650px] flex-col items-center justify-center">
                 <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-blue-50 text-blue-500">
@@ -162,8 +228,8 @@ export default function Suppliers() {
                 </h3>
 
                 <p className="mb-6 max-w-md text-center text-gray-500">
-                  Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung
-                  cấp một cách hiệu quả
+                  Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung cấp
+                  một cách hiệu quả
                 </p>
 
                 <button
@@ -175,58 +241,24 @@ export default function Suppliers() {
                 </button>
               </div>
             </div>
+          ) : (
+            <SuppliersContent
+              suppliers={filteredSuppliers}
+              currentSuppliers={currentSuppliers}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
+              onEdit={(supplier) => {
+                setSelectedSupplier(supplier);
+                setOpenAddSupplier(true);
+              }}
+              onDelete={handleDeleteSupplier}
+              onBulkDelete={handleDeleteSuppliers}
+            />
           )}
         </div>
-        {/* TABLE DATA */}
-        {loading ? (
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[600px] flex items-center justify-center text-gray-500">
-            Đang tải danh sách nhà cung cấp...
-          </div>
-        ) : error ? (
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[600px] flex items-center justify-center text-red-500">
-            {error}
-          </div>
-        ) : (status === "active" && !search && suppliers.length === 0) ? (
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="h-full min-h-[600px] flex flex-col items-center justify-center p-6">
-              <div className="w-28 h-28 rounded-full bg-blue-50 flex items-center justify-center mb-6">
-                <span className="text-5xl">📦</span>
-              </div>
-              <h3 className="text-3xl font-semibold text-gray-900 mb-3">
-                Chưa có nhà cung cấp nào
-              </h3>
-              <p className="text-gray-500 text-center max-w-md mb-6">
-                Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung cấp một cách hiệu quả
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedSupplier(null);
-                  setOpenAddSupplier(true);
-                }}
-                className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 cursor-pointer font-medium"
-              >
-                <Plus size={18} />
-                Thêm nhà cung cấp
-              </button>
-            </div>
-          </div>
-        ) : (
-          <SuppliersContent
-            suppliers={filteredSuppliers}
-            currentSuppliers={currentSuppliers}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-            startIndex={startIndex}
-            itemsPerPage={itemsPerPage}
-            setItemsPerPage={setItemsPerPage}
-            onEdit={(supplier) => {
-              setSelectedSupplier(supplier);
-              setOpenAddSupplier(true);
-            }}
-            onDelete={handleDeleteSupplier}
-          />
-        )}
       </div>
 
       <AddSupplierModal

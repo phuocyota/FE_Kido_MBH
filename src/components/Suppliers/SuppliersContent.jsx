@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 
 export default function SuppliersContent({
@@ -7,13 +7,18 @@ export default function SuppliersContent({
   currentPage,
   setCurrentPage,
   totalPages,
-  startIndex,
   itemsPerPage,
   setItemsPerPage,
   onEdit,
   onDelete,
+  onBulkDelete,
 }) {
   const [selectedIds, setSelectedIds] = useState([]);
+
+  const selectedSuppliers = useMemo(
+    () => suppliers.filter((supplier) => selectedIds.includes(supplier.id)),
+    [selectedIds, suppliers]
+  );
 
   // Toggle individual row checkbox
   const handleToggleRow = (id) => {
@@ -45,7 +50,7 @@ export default function SuppliersContent({
   return (
     <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-fit">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
+        <table className="w-full min-w-[980px]">
           <thead>
             <tr className="bg-[#eaf2ff] border-b border-gray-200">
               <th className="p-3 text-center w-12">
@@ -82,6 +87,10 @@ export default function SuppliersContent({
 
               <th className="p-3 text-right font-semibold text-gray-900 text-[14px] whitespace-nowrap">
                 Tổng mua
+              </th>
+
+              <th className="p-3 text-center font-semibold text-gray-900 text-[14px] whitespace-nowrap w-28">
+                Thao tác
               </th>
             </tr>
           </thead>
@@ -127,11 +136,57 @@ export default function SuppliersContent({
                 <td className="p-3 text-sm text-right text-gray-900 font-medium">
                   {Number(supplier.totalPurchase || 0).toLocaleString("vi-VN")}
                 </td>
+
+                <td className="p-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit?.(supplier)}
+                      title="Sửa nhà cung cấp"
+                      aria-label="Sửa nhà cung cấp"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition cursor-pointer"
+                    >
+                      <Edit2 size={15} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onDelete?.(supplier)}
+                      title="Xoá nhà cung cấp"
+                      aria-label="Xoá nhà cung cấp"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition cursor-pointer"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selectedSuppliers.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-slate-50">
+          <span className="text-sm font-medium text-gray-700">
+            Đã chọn {selectedSuppliers.length} nhà cung cấp
+          </span>
+
+          <button
+            type="button"
+            onClick={async () => {
+              const deleted = await onBulkDelete?.(selectedSuppliers);
+              if (deleted) {
+                setSelectedIds([]);
+              }
+            }}
+            className="h-9 px-4 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white text-sm font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+          >
+            <Trash2 size={16} />
+            Xoá đã chọn
+          </button>
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-white">
