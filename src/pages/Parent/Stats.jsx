@@ -327,30 +327,96 @@ const feedback = getFeedback(diff);
       </div>
 
       {/* SUMMARY */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-green-500 text-white p-4 rounded-2xl">
-          <Wallet size={18} />
-          <p className="text-sm">Tổng tiền</p>
-          <p className="font-bold">
-            {totalMoney.toLocaleString()}đ
-          </p>
-        </div>
+<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
 
-        <div className="bg-blue-500 text-white p-4 rounded-2xl">
-          <Utensils size={18} />
-          <p className="text-sm">Số đơn</p>
-          <p className="font-bold">{totalOrders}</p>
-        </div>
+  {/* Tổng tiền */}
+  <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-green-50 p-3 shadow-sm transition-all duration-300 hover:shadow-md">
 
-        <div className="bg-purple-500 text-white p-4 rounded-2xl">
-          <Clock size={18} />
-          <p className="text-sm">Trung bình</p>
-          <p className="font-bold">
-            {Math.round(avgPerDay).toLocaleString()}đ
-          </p>
-        </div>
+    <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-emerald-100/40"></div>
+
+    <div className="relative z-10 flex items-start justify-between">
+
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
+          Tổng tiền
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold text-slate-800 whitespace-nowrap">
+          {totalMoney.toLocaleString()}đ
+        </h2>
       </div>
 
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-100 bg-white shadow-sm">
+        <Wallet className="h-5 w-5 text-emerald-500" />
+      </div>
+
+    </div>
+
+    <p className="relative z-10 mt-2 text-right text-[11px] italic text-slate-400">
+      Hôm nay
+    </p>
+
+  </div>
+
+  {/* Số đơn */}
+  <div className="relative overflow-hidden rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-3 shadow-sm transition-all duration-300 hover:shadow-md">
+
+    <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-sky-100/40"></div>
+
+    <div className="relative z-10 flex items-start justify-between">
+
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-600">
+          Số đơn
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold text-slate-800">
+          {totalOrders}
+        </h2>
+      </div>
+
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-100 bg-white shadow-sm">
+        <Utensils className="h-5 w-5 text-sky-500" />
+      </div>
+
+    </div>
+
+    <p className="relative z-10 mt-2 text-right text-[11px] italic text-slate-400">
+      Tuần này
+    </p>
+
+  </div>
+
+  {/* Trung bình */}
+  <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 p-3 shadow-sm transition-all duration-300 hover:shadow-md">
+
+    <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-violet-100/40"></div>
+
+    <div className="relative z-10 flex items-start justify-between">
+
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-600">
+          Trung bình
+        </p>
+
+        <h2 className="mt-2 text-2xl font-bold text-slate-800 whitespace-nowrap">
+          {Math.round(avgPerDay).toLocaleString()}đ
+        </h2>
+      </div>
+
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-100 bg-white shadow-sm">
+        <Clock className="h-5 w-5 text-violet-500" />
+      </div>
+
+    </div>
+
+    <p className="relative z-10 mt-2 text-right text-[11px] italic text-slate-400">
+      Mỗi ngày
+    </p>
+
+  </div>
+
+</div>
       {/* CHART */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-4">
 

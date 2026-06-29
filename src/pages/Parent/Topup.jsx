@@ -39,50 +39,50 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
       <h1 className="text-xl font-bold">💰 Nạp tiền</h1>
 
       
-{/* ADVANCE BALANCE */}
-<div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-4 shadow-lg text-white sm:p-5 lg:p-6">
-  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      {/* ADVANCE BALANCE */}
+      <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-4 shadow-lg text-white sm:p-5 lg:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-    {/* Left */}
-    <div className="flex items-start gap-4 flex-1">
+          {/* Left */}
+          <div className="flex items-start gap-4 flex-1">
 
-      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 sm:h-16 sm:w-16">
-        <Wallet size={30} />
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 sm:h-16 sm:w-16">
+              <Wallet size={30} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+
+              <p className="text-sm text-blue-100 sm:text-base">
+                Mức tạm ứng số dư mong muốn
+              </p>
+
+              <h2 className="mt-1 break-words text-2xl font-bold sm:text-3xl lg:text-4xl">
+                {advanceAmount.toLocaleString()}đ
+              </h2>
+
+              <p className="mt-2 text-xs leading-5 text-blue-100 sm:text-sm">
+                Nhà trường sẽ tự động trừ dần vào các khoản ăn uống,
+                bán trú và các dịch vụ phát sinh của học sinh.
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* Right */}
+          <div className="w-full lg:w-auto">
+
+            <button
+              onClick={() => setOpenAdvanceModal(true)}
+              className="w-full rounded-xl bg-white px-5 py-3 font-semibold text-blue-600 shadow transition hover:bg-blue-50 active:scale-95 lg:w-auto"
+            >
+              Thiết lập
+            </button>
+
+          </div>
+
+        </div>
       </div>
-
-      <div className="min-w-0 flex-1">
-
-        <p className="text-sm text-blue-100 sm:text-base">
-          Mức tạm ứng số dư mong muốn
-        </p>
-
-        <h2 className="mt-1 break-words text-2xl font-bold sm:text-3xl lg:text-4xl">
-          {advanceAmount.toLocaleString()}đ
-        </h2>
-
-        <p className="mt-2 text-xs leading-5 text-blue-100 sm:text-sm">
-          Nhà trường sẽ tự động trừ dần vào các khoản ăn uống,
-          bán trú và các dịch vụ phát sinh của học sinh.
-        </p>
-
-      </div>
-
-    </div>
-
-    {/* Right */}
-    <div className="w-full lg:w-auto">
-
-      <button
-        onClick={() => setOpenAdvanceModal(true)}
-        className="w-full rounded-xl bg-white px-5 py-3 font-semibold text-blue-600 shadow transition hover:bg-blue-50 active:scale-95 lg:w-auto"
-      >
-        Thiết lập
-      </button>
-
-    </div>
-
-  </div>
-</div>
 
       {/* INPUT AMOUNT */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-3">
