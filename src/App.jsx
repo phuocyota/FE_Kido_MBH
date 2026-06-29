@@ -11,6 +11,7 @@ import Topup from "./pages/Parent/Topup";
 import Login from "./pages/Parent/Login";
 import Order from "./pages/Parent/Order";
 import Payment from "./pages/Parent/Payment";
+import PaymentResult from "./pages/PaymentResult";
 import ProtectedRoute from "./api/ProtectedRoute";
 
 const App = () => {
@@ -22,6 +23,9 @@ const App = () => {
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
+        
+        {/* PAYMENT RESULT */}
+        <Route path="/payment-result" element={<PaymentResult />} />
 
         {/* PRIVATE */}
         <Route

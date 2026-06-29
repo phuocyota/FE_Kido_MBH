@@ -6,6 +6,7 @@ import momo from "../../assets/momo.jpg";
 import AdvanceAmountModal from "../../components/Topup/AdvanceAmountModal";
 import { Wallet } from "lucide-react";
 import { updateCustomerAdvanceAmount } from "../../api/parent";
+import { createMomoTopup } from "../../api/momo";
 
 export default function Topup() {
   const { homeData, refreshHome } = useOutletContext() || {};
@@ -13,8 +14,9 @@ export default function Topup() {
   const [method, setMethod] = useState("momo");
   const [advanceAmount, setAdvanceAmount] = useState(50000);
   const [savingAdvance, setSavingAdvance] = useState(false);
+  const [paying, setPaying] = useState(false);
 
-const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
+  const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
   const quickAmounts = [10000, 20000, 50000, 100000];
   const customerId = homeData?.user?.id;
   const walletBalance = homeData?.wallet?.balance ?? 0;
@@ -50,12 +52,33 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
   };
 
   const methods = [
-  {
-    id: "momo",
-    name: "Thanh toán qua MoMo",
-    img: momo,
-  }
-];
+    {
+      id: "momo",
+      name: "Thanh toán qua MoMo",
+      img: momo,
+    }
+  ];
+
+  const handleTopup = async () => {
+    if (amount <= 0 || !customerId) return;
+    
+    if (method === "momo") {
+      try {
+        setPaying(true);
+        const res = await createMomoTopup(customerId, amount);
+        if (res?.payUrl) {
+          window.location.href = res.payUrl;
+        } else {
+          toast.error("Không tạo được link thanh toán MoMo");
+        }
+      } catch (err) {
+        console.error("Topup error:", err);
+        toast.error(err.message || "Lỗi khi tạo yêu cầu nạp tiền");
+      } finally {
+        setPaying(false);
+      }
+    }
+  };
 
   return (
     <div className="p-5 space-y-5">
@@ -205,14 +228,15 @@ const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
 
       {/* BUTTON */}
       <button
-        disabled={amount <= 0}
+        disabled={amount <= 0 || paying}
+        onClick={handleTopup}
         className={`w-full py-3 rounded-2xl font-semibold text-white transition ${
-          amount > 0
-            ? "bg-gradient-to-r from-blue-500 to-indigo-500"
-            : "bg-gray-300"
+          amount > 0 && !paying
+            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 active:scale-95"
+            : "bg-gray-300 cursor-not-allowed"
         }`}
       >
-        Nạp {amount.toLocaleString()}đ
+        {paying ? "Đang xử lý..." : `Nạp ${amount.toLocaleString()}đ`}
       </button>
 
       <AdvanceAmountModal

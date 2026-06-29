@@ -42,5 +42,10 @@ export const API = {
     ADD_ME_ITEM: withApiPrefix("/cart/me/items"),
     COMPLETE_ME: withApiPrefix("/cart/me/complete"),
   },
+
+  MOMO: {
+    CREATE: (orderId) => withApiPrefix(`/momo/create/${orderId}`),
+    TOPUP: withApiPrefix("/momo/topup"),
+  },
  
 };

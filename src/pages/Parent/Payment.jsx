@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import momo from "../../assets/momo.jpg";
 import vnpay from "../../assets/vnpay.png";
 import { addMyCartItem, clearMyCart, completeMyCart } from "../../api/cart";
+import { createMomoPayment } from "../../api/momo";
 
 const CHECKOUT_KEY = "parentOrderCheckout";
 
@@ -13,12 +14,17 @@ const methods = [
   {
     id: "WALLET",
     name: "Thanh toán bằng ví/tạm ứng",
-    img: momo,
+    img: momo, // TODO: Update this icon if it's for internal wallet
   },
   {
     id: "CASH",
     name: "Trả tiền mặt tại căn tin",
-    img: vnpay,
+    img: vnpay, // TODO: Update this icon
+  },
+  {
+    id: "MOMO",
+    name: "Thanh toán qua MoMo",
+    img: momo,
   },
 ];
 
@@ -90,13 +96,25 @@ export default function Payment() {
         note: pickupType,
       });
 
+      const orderId = result?.order?.orderCode || result?.order?.id;
+
+      if (selectedMethod.id === "MOMO") {
+        const res = await createMomoPayment(result.order.id);
+        if (res?.payUrl) {
+          window.location.href = res.payUrl;
+          return;
+        } else {
+          throw new Error("Không lấy được đường dẫn thanh toán MoMo");
+        }
+      }
+
       sessionStorage.removeItem(CHECKOUT_KEY);
 
       if (typeof refreshHome === "function") {
         await refreshHome();
       }
 
-      setSuccessOrder(result?.order?.orderCode || result?.order?.id || "OK");
+      setSuccessOrder(orderId || "OK");
       toast.success(
         selectedMethod.id === "CASH"
           ? "Đã tạo đơn, vui lòng thanh toán tại căn tin"
