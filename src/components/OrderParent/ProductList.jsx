@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 
 export default function ProductList({
   products,
+  loading = false,
+  error = "",
   cart,
   addToCart,
   increaseQty,
@@ -16,7 +18,19 @@ export default function ProductList({
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-3 py-4 pb-4 sm:px-4 sm:py-6">
 
-      {products.length === 0 && (
+      {loading && (
+        <div className="py-20 text-center text-gray-500">
+          Dang tai san pham...
+        </div>
+      )}
+
+      {!loading && error && (
+        <div className="py-20 text-center text-red-500">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && products.length === 0 && (
         <div className="py-20 text-center text-gray-500">
           Không tìm thấy sản phẩm.
         </div>
