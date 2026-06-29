@@ -9,6 +9,8 @@ import History from "./pages/Parent/History";
 import Stats from "./pages/Parent/Stats";
 import Topup from "./pages/Parent/Topup";
 import Login from "./pages/Parent/Login";
+import Order from "./pages/Parent/Order";
+import Payment from "./pages/Parent/Payment";
 import ProtectedRoute from "./api/ProtectedRoute";
 
 const App = () => {
@@ -34,6 +36,9 @@ const App = () => {
           <Route path="history" element={<History />} />
           <Route path="stats" element={<Stats />} />
           <Route path="topup" element={<Topup />} />
+          <Route path="order" element={<Order />} />
+          <Route path="order/payment" element={<Payment />} />
+          
         </Route>
 
       </Routes>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Home, History, BarChart, CreditCard, Menu, LogOut } from "lucide-react";
+import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
@@ -42,6 +42,11 @@ export default function ParentHome() {
 
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
+   {
+    name: "Đặt món", path: "order",
+    icon: UtensilsCrossed,
+  },
+
     { name: "Lịch sử", path: "history", icon: History },
     { name: "Thống kê", path: "stats", icon: BarChart },
     { name: "Nạp tiền", path: "topup", icon: CreditCard },
