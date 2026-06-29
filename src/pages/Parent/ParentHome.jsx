@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
+import { Pencil } from "lucide-react";
 
 const DEFAULT_AVATAR = "https://i.pravatar.cc/100";
 
@@ -13,6 +14,10 @@ export default function ParentHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+const [previewAvatar, setPreviewAvatar] = useState(null);
+const [avatarError, setAvatarError] = useState("");
 
   const fetchHome = async () => {
     try {
@@ -38,19 +43,48 @@ export default function ParentHome() {
   };
 
   const user = homeData?.user;
-  const avatarSrc = buildAssetUrl(user?.avatarUrl) || DEFAULT_AVATAR;
+  const avatarSrc = previewAvatar || buildAssetUrl(user?.avatarUrl) || DEFAULT_AVATAR;
 
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
-   {
-    name: "Đặt món", path: "order",
-    icon: UtensilsCrossed,
-  },
+   { name: "Đặt món", path: "order", icon: UtensilsCrossed,  },
 
     { name: "Lịch sử", path: "history", icon: History },
     { name: "Thống kê", path: "stats", icon: BarChart },
     { name: "Nạp tiền", path: "topup", icon: CreditCard },
   ];
+
+  const handleAvatarChange = (event) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  setAvatarError("");
+
+  // Chỉ cho phép ảnh
+  if (!file.type.startsWith("image/")) {
+    setAvatarError("Vui lòng chọn tệp hình ảnh.");
+    return;
+  }
+
+  // Giới hạn 5MB
+  const MAX_SIZE = 5 * 1024 * 1024;
+
+  if (file.size > MAX_SIZE) {
+    setAvatarError("Ảnh không được vượt quá 5MB.");
+    return;
+  }
+
+  // Preview ảnh
+  const preview = URL.createObjectURL(file);
+
+  setPreviewAvatar(preview);
+
+  // ===========================
+  // Sau này sẽ gọi API ở đây
+  
+  // ===========================
+};
 
   return (
     <div
@@ -65,16 +99,44 @@ export default function ParentHome() {
         <div className="w-full max-w-6xl h-[90vh] flex gap-2">
           <div className="hidden md:flex w-64 bg-white rounded-2xl p-4 flex-col shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100">
             <div className="flex flex-col items-center mb-6 border-b border-gray-200 pb-4">
-              <img
-                src={avatarSrc}
-                alt={user?.fullName || "Student avatar"}
-                className="w-14 h-14 rounded-full mb-2 border-2 border-blue-500 shadow object-cover"
-              />
 
-              <p className="font-semibold text-gray-800 text-center">
-                {user?.fullName || (loading ? "Đang tải..." : "Học sinh")}
-              </p>
-            </div>
+  <div className="relative">
+
+    <img
+      src={avatarSrc}
+      alt={user?.fullName || "Student avatar"}
+      className="w-16 h-16 rounded-full border-2 border-blue-500 shadow object-cover"
+    />
+
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 transition"
+    >
+      <Pencil size={15} />
+    </button>
+
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/png,image/jpeg,image/jpg,image/webp"
+      className="hidden"
+      onChange={handleAvatarChange}
+    />
+
+  </div>
+
+  <p className="mt-3 font-semibold text-gray-800 text-center">
+    {user?.fullName || (loading ? "Đang tải..." : "Học sinh")}
+  </p>
+
+  {avatarError && (
+    <p className="mt-2 text-xs text-red-500 text-center">
+      {avatarError}
+    </p>
+  )}
+
+</div>
 
             <div className="flex flex-col gap-2">
               {menu.map((item) => {

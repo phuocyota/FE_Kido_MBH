@@ -3,10 +3,15 @@ import momo from "../../assets/momo.jpg";
 import vnpay from "../../assets/vnpay.png";
 import vietqr from "../../assets/vietqr.webp";
 
+import AdvanceAmountModal from "../../components/Topup/AdvanceAmountModal";
+import { Wallet } from "lucide-react";
+
 export default function Topup() {
   const [amount, setAmount] = useState(0);
   const [method, setMethod] = useState("momo");
+  const [advanceAmount, setAdvanceAmount] = useState(50000);
 
+const [openAdvanceModal, setOpenAdvanceModal] = useState(false);
   const quickAmounts = [10000, 20000, 50000, 100000];
 
   const methods = [
@@ -33,10 +38,56 @@ export default function Topup() {
       {/* HEADER */}
       <h1 className="text-xl font-bold">💰 Nạp tiền</h1>
 
+      
+{/* ADVANCE BALANCE */}
+<div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-4 shadow-lg text-white sm:p-5 lg:p-6">
+  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+    {/* Left */}
+    <div className="flex items-start gap-4 flex-1">
+
+      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 sm:h-16 sm:w-16">
+        <Wallet size={30} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+
+        <p className="text-sm text-blue-100 sm:text-base">
+          Mức tạm ứng số dư mong muốn
+        </p>
+
+        <h2 className="mt-1 break-words text-2xl font-bold sm:text-3xl lg:text-4xl">
+          {advanceAmount.toLocaleString()}đ
+        </h2>
+
+        <p className="mt-2 text-xs leading-5 text-blue-100 sm:text-sm">
+          Nhà trường sẽ tự động trừ dần vào các khoản ăn uống,
+          bán trú và các dịch vụ phát sinh của học sinh.
+        </p>
+
+      </div>
+
+    </div>
+
+    {/* Right */}
+    <div className="w-full lg:w-auto">
+
+      <button
+        onClick={() => setOpenAdvanceModal(true)}
+        className="w-full rounded-xl bg-white px-5 py-3 font-semibold text-blue-600 shadow transition hover:bg-blue-50 active:scale-95 lg:w-auto"
+      >
+        Thiết lập
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
       {/* INPUT AMOUNT */}
       <div className="bg-white p-5 rounded-2xl shadow space-y-3">
         <p className="font-semibold text-gray-700">
-          Nhập số tiền
+          Nhập số tiền cần nạp vào ví
         </p>
 
         <input
@@ -116,120 +167,14 @@ export default function Topup() {
         Nạp {amount.toLocaleString()}đ
       </button>
 
+      <AdvanceAmountModal
+  open={openAdvanceModal}
+  value={advanceAmount}
+  onClose={() => setOpenAdvanceModal(false)}
+  onSave={setAdvanceAmount}
+/>
+
     </div>
   );
 }
 
-
-// import React, { useState } from "react";
-// import momo from "../../assets/momo.jpg";
-// import vnpay from "../../assets/vnpay.png";
-// import vietqr from "../../assets/vietqr.webp";
-
-// export default function Topup() {
-//   const [amount, setAmount] = useState(20000);
-//   const [method, setMethod] = useState("momo");
-
-//   const quickAmounts = [10000, 20000, 50000, 100000];
-
-//   const methods = [
-//     { id: "momo", name: "MoMo", img: momo },
-//     { id: "vnpay", name: "VNPay", img: vnpay },
-//     { id: "vietqr", name: "VietQR", img: vietqr },
-//   ];
-
-//   return (
-//     <div className="p-6 space-y-6">
-
-//       {/* HEADER */}
-//       <h1 className="text-xl font-bold">💰 Nạp tiền</h1>
-
-//       {/* HERO AMOUNT */}
-//       <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-3xl shadow-xl text-center">
-//         <p className="text-sm opacity-80">Số tiền nạp</p>
-//         <p className="text-4xl font-bold mt-2">
-//           {amount.toLocaleString()}đ
-//         </p>
-//       </div>
-
-//       {/* QUICK AMOUNT */}
-//       <div className="grid grid-cols-4 gap-3">
-//         {quickAmounts.map((a) => (
-//           <button
-//             key={a}
-//             onClick={() => setAmount(a)}
-//             className={`py-2 rounded-xl text-sm font-medium transition ${
-//               amount === a
-//                 ? "bg-blue-500 text-white shadow"
-//                 : "bg-gray-100 hover:bg-gray-200"
-//             }`}
-//           >
-//             {a / 1000}k
-//           </button>
-//         ))}
-//       </div>
-
-//       {/* INPUT */}
-//       <input
-//         type="number"
-//         value={amount}
-//         onChange={(e) => setAmount(Number(e.target.value))}
-//         className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
-//         placeholder="Nhập số tiền..."
-//       />
-
-//       {/* PAYMENT METHODS */}
-//       <div className="space-y-3">
-//         <p className="font-semibold text-gray-700">
-//           Phương thức thanh toán
-//         </p>
-
-//         {methods.map((m) => (
-//           <div
-//             key={m.id}
-//             onClick={() => setMethod(m.id)}
-//             className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition border ${
-//               method === m.id
-//                 ? "border-blue-500 bg-blue-50 shadow-md scale-[1.02]"
-//                 : "border-gray-200 hover:shadow"
-//             }`}
-//           >
-//             <div className="flex items-center gap-3">
-//               <img
-//                 src={m.img}
-//                 className="w-10 h-10 object-contain"
-//               />
-//               <div>
-//                 <p className="font-medium">{m.name}</p>
-//                 <p className="text-xs text-gray-400">
-//                   Thanh toán nhanh chóng
-//                 </p>
-//               </div>
-//             </div>
-
-//             {/* RADIO */}
-//             <div
-//               className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-//                 method === m.id
-//                   ? "border-blue-500"
-//                   : "border-gray-300"
-//               }`}
-//             >
-//               {method === m.id && (
-//                 <div className="w-3 h-3 bg-blue-500 rounded-full" />
-//               )}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* BUTTON */}
-//       <button
-//         className="w-full py-4 rounded-2xl text-white font-semibold text-lg bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg hover:scale-[1.02] transition"
-//       >
-//         Nạp {amount.toLocaleString()}đ 🚀
-//       </button>
-
-//     </div>
-//   );
-// }
