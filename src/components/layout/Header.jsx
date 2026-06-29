@@ -23,6 +23,14 @@ const menu = [
   },
 
   {
+    name: "Đơn hàng",
+    children: [
+      { name: "Hóa đơn", path: "/hoa-don" },
+       
+    ],
+  },
+
+  {
     name: "Nhà cung cấp", path: "/suppliers",
   },
 
