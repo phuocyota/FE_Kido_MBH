@@ -6,7 +6,7 @@ export default function CategoryBar({
   setActiveCategory,
 }) {
   return (
-    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+    <div className="sticky -top-4 md:-top-6 z-20 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto">
 
         <div className="flex gap-3 overflow-x-auto px-4 py-3 scrollbar-hide">

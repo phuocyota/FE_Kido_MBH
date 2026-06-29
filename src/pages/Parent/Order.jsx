@@ -19,7 +19,7 @@ import { getProductsFull } from "../../api/products";
 
 const ALL_CATEGORY = {
   id: "all",
-  name: "Tat ca",
+  name: "Tất cả",
   icon: UtensilsCrossed,
 };
 
@@ -88,9 +88,9 @@ export default function Order() {
   const branchId = homeData?.user?.branchId || storedStudent?.branchId || "";
   const advanceAmount = Number(
     homeData?.statistics?.month?.limit ??
-      homeData?.statistics?.week?.limit ??
-      storedStudent?.advanceAmount ??
-      0
+    homeData?.statistics?.week?.limit ??
+    storedStudent?.advanceAmount ??
+    0
   );
 
   useEffect(() => {
@@ -205,8 +205,8 @@ export default function Order() {
         activeCategory === "all"
           ? true
           : activeCategory === "flash"
-          ? item.flashSale
-          : item.categoryId === activeCategory;
+            ? item.flashSale
+            : item.categoryId === activeCategory;
 
       const matchSearch =
         !keyword ||
