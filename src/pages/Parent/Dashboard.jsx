@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Bell, Wallet, Utensils, BarChart3 } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import toast from "react-hot-toast";
+import { cancelParentOrder } from "../../api/parent";
 
 const formatMoney = (value = 0) =>
   new Intl.NumberFormat("vi-VN").format(value) + "đ";
@@ -22,7 +24,8 @@ const getProgress = (spent = 0, limit = 0) => {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { homeData, loading, error } = useOutletContext();
+  const { homeData, loading, error, refreshHome } = useOutletContext();
+  const [cancellingOrder, setCancellingOrder] = useState(false);
 
   const walletBalance = homeData?.wallet?.balance ?? 0;
   const notifications = homeData?.notifications ?? [];
@@ -30,6 +33,30 @@ export default function Dashboard() {
   const recentHistory = homeData?.recentHistory ?? [];
   const weekStats = homeData?.statistics?.week ?? { spent: 0, limit: 0 };
   const monthStats = homeData?.statistics?.month ?? { spent: 0, limit: 0 };
+  const advanceAmount = monthStats.limit ?? weekStats.limit ?? 0;
+  const canCancelTodayOrder =
+    todayOrder &&
+    ![0, 5, 6, 10, 11].includes(Number(todayOrder.status));
+
+  const handleCancelTodayOrder = async () => {
+    if (!todayOrder?.id || cancellingOrder) return;
+
+    const confirmed = window.confirm("Ban co chac muon huy don hang nay?");
+
+    if (!confirmed) return;
+
+    try {
+      setCancellingOrder(true);
+      await cancelParentOrder(todayOrder.id);
+      toast.success("Da huy don hang");
+      await refreshHome?.();
+    } catch (err) {
+      console.error("Cancel order error:", err);
+      toast.error(err.message || "Khong huy duoc don hang");
+    } finally {
+      setCancellingOrder(false);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -44,6 +71,9 @@ export default function Dashboard() {
           <div>
             <p className="text-sm opacity-80 mb-1">Số dư</p>
             <p className="text-3xl font-bold">{formatMoney(walletBalance)}</p>
+            <p className="mt-2 text-xs font-medium text-white/85">
+              Tạm ứng: {formatMoney(advanceAmount)}
+            </p>
           </div>
           <Wallet size={40} className="opacity-80" />
         </div>
@@ -106,6 +136,16 @@ export default function Dashboard() {
                 <p className="text-sm font-semibold text-gray-800">
                   {formatMoney(todayOrder.totalAmount)}
                 </p>
+                {canCancelTodayOrder && (
+                  <button
+                    type="button"
+                    onClick={handleCancelTodayOrder}
+                    disabled={cancellingOrder}
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {cancellingOrder ? "Dang huy..." : "Huy don"}
+                  </button>
+                )}
               </div>
             </div>
           ) : (
