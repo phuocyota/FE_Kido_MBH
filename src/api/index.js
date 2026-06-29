@@ -12,5 +12,7 @@ export { userApi } from "./userApi";
 export { financeApi } from "./financeApi";
 export { stockTakeApi } from "./stockTakeApi";
 export { stockTransferApi } from "./stockTransferApi";
+export { stockInApi } from "./stockInApi";
+export { orderApi } from "./orderApi";
 export * from "./socketClient";
 export { default as axiosInstance } from "./axiosConfig";

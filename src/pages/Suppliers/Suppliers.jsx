@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Download, Package, Plus, Search, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
+
 import { supplierApi } from "../../api";
 import AddSupplierModal from "../../components/Suppliers/AddSupplierModal";
 import SuppliersSidebar from "../../components/Suppliers/SuppliersSidebar";
@@ -49,11 +50,11 @@ export default function Suppliers() {
   }, [loadSuppliers]);
 
   const handleDeleteSupplier = async (supplier) => {
-    if (!window.confirm(`Xoa nha cung cap "${supplier.name}"?`)) return;
+    if (!window.confirm(`Xoá nhà cung cấp "${supplier.name}"?`)) return;
 
     try {
       await supplierApi.delete(supplier.id);
-      toast.success("Xoa nha cung cap thanh cong");
+      toast.success("Xoá nhà cung cấp thành công");
       loadSuppliers();
     } catch {
       toast.error("Khong the xoa nha cung cap");
@@ -94,7 +95,6 @@ export default function Suppliers() {
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
-
               <input
                 type="text"
                 placeholder="Theo mã, tên, số điện thoại"
@@ -177,6 +177,56 @@ export default function Suppliers() {
             </div>
           )}
         </div>
+        {/* TABLE DATA */}
+        {loading ? (
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[600px] flex items-center justify-center text-gray-500">
+            Đang tải danh sách nhà cung cấp...
+          </div>
+        ) : error ? (
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[600px] flex items-center justify-center text-red-500">
+            {error}
+          </div>
+        ) : (status === "active" && !search && suppliers.length === 0) ? (
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="h-full min-h-[600px] flex flex-col items-center justify-center p-6">
+              <div className="w-28 h-28 rounded-full bg-blue-50 flex items-center justify-center mb-6">
+                <span className="text-5xl">📦</span>
+              </div>
+              <h3 className="text-3xl font-semibold text-gray-900 mb-3">
+                Chưa có nhà cung cấp nào
+              </h3>
+              <p className="text-gray-500 text-center max-w-md mb-6">
+                Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung cấp một cách hiệu quả
+              </p>
+              <button
+                onClick={() => {
+                  setSelectedSupplier(null);
+                  setOpenAddSupplier(true);
+                }}
+                className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 cursor-pointer font-medium"
+              >
+                <Plus size={18} />
+                Thêm nhà cung cấp
+              </button>
+            </div>
+          </div>
+        ) : (
+          <SuppliersContent
+            suppliers={filteredSuppliers}
+            currentSuppliers={currentSuppliers}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            itemsPerPage={itemsPerPage}
+            setItemsPerPage={setItemsPerPage}
+            onEdit={(supplier) => {
+              setSelectedSupplier(supplier);
+              setOpenAddSupplier(true);
+            }}
+            onDelete={handleDeleteSupplier}
+          />
+        )}
       </div>
 
       <AddSupplierModal

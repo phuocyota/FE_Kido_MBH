@@ -26,6 +26,10 @@ const menu = [
     name: "Nhà cung cấp", path: "/suppliers",
   },
 
+  {
+    name: "Đơn hàng", path: "/orders",
+  },
+
   // {
   //   name: "Giao dịch",
   //   children: [

@@ -82,7 +82,7 @@ function EditableCell({ value, onSave, type = "text", align = "left" }) {
   );
 }
 
-export default function TableProduct() {
+export default function TableProduct({ filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" } }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const ITEMS_PER_PAGE = 22;
@@ -91,6 +91,10 @@ export default function TableProduct() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -117,10 +121,45 @@ export default function TableProduct() {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(products.length / ITEMS_PER_PAGE));
+  const filteredProducts = products.filter(p => {
+    if (filters.search) {
+      const q = filters.search.toLowerCase().trim();
+      const matchSku = p.code?.toLowerCase().includes(q);
+      const matchName = p.name?.toLowerCase().includes(q);
+      if (!matchSku && !matchName) return false;
+    }
+
+    if (filters.categoryId && p.categoryId !== filters.categoryId) {
+      return false;
+    }
+
+    if (filters.displayStatus === "active" && !p.isActive) {
+      return false;
+    }
+    if (filters.displayStatus === "inactive" && p.isActive) {
+      return false;
+    }
+
+    if (filters.stockStatus === "inStock" && p.stock <= 0) {
+      return false;
+    }
+    if (filters.stockStatus === "outOfStock" && p.stock > 0) {
+      return false;
+    }
+    if (filters.stockStatus === "under" && p.stock >= 5) {
+      return false;
+    }
+    if (filters.stockStatus === "over" && p.stock <= 100) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentData = products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentData = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleUpdateProduct = async (productId, field, value) => {
     try {
@@ -184,96 +223,96 @@ export default function TableProduct() {
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <div className="max-h-[900px] overflow-y-auto">
-    <table className="w-full text-sm">
-      
-      {/* HEADER */}
-      <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
-        <tr>
-          <th className="p-2"><input type="checkbox" /></th>
-          <th className="p-2 text-left">Mã hàng</th>
-          <th className="p-2 text-left">Tên hàng</th>
-          <th className="p-2 text-center">Loại</th>
-          <th className="p-2 text-center">Giá bán</th>
-          <th className="p-2 text-center">Giá vốn</th>
-          <th className="p-2 text-center">Tồn kho</th>
-          <th className="p-2 text-center">Đặt hàng</th>
-        </tr>
-      </thead>
+          <table className="w-full text-sm">
+            
+            {/* HEADER */}
+            <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
+              <tr>
+                <th className="p-2"><input type="checkbox" /></th>
+                <th className="p-2 text-left">Mã hàng</th>
+                <th className="p-2 text-left">Tên hàng</th>
+                <th className="p-2 text-center">Loại</th>
+                <th className="p-2 text-center">Giá bán</th>
+                <th className="p-2 text-center">Giá vốn</th>
+                <th className="p-2 text-center">Tồn kho</th>
+                <th className="p-2 text-center">Đặt hàng</th>
+              </tr>
+            </thead>
 
-      {/* BODY */}
-      <tbody>
-        {loading ? (
-          <tr>
-            <td colSpan={8} className="text-center py-14 text-gray-400">
-              Đang tải dữ liệu...
-            </td>
-          </tr>
-        ) : currentData.length === 0 ? (
-          <tr>
-            <td colSpan={8} className="text-center py-14 text-gray-400">
-              Không có dữ liệu sản phẩm
-            </td>
-          </tr>
-        ) : (
-          currentData.map((item, index) => (
-          <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
-            <td className="p-4 text-center"><input type="checkbox" /></td>
-            <td className="p-2">
-              <EditableCell
-                value={item.code}
-                onSave={(val) => handleUpdateProduct(item.id, "sku", val)}
-              />
-            </td>
-            <td className="p-2">
-              <EditableCell
-                value={item.name}
-                onSave={(val) => handleUpdateProduct(item.id, "name", val)}
-              />
-            </td>
-            <td className="p-2 text-center">{item.category}</td>
-            <td className="p-2">
-              <EditableCell
-                value={item.price}
-                onSave={(val) => handleUpdateProduct(item.id, "price", parseFloat(val))}
-                type="number"
-                align="center"
-              />
-            </td>
-            <td className="p-2">
-              <EditableCell
-                value={item.cost}
-                onSave={(val) => handleUpdateProduct(item.id, "costPrice", parseFloat(val))}
-                type="number"
-                align="center"
-              />
-            </td>
-            <td className="p-4 text-center">{item.stock}</td>
-            <td className="p-4 text-center">
-              <button
-                onClick={() => {
-                  setSelectedProduct(item);
-                  setOpenAddModal(true);
-                }}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                title="Sửa chi tiết"
-              >
-                <Edit2 size={16} />
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(item)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                title="Xoa san pham"
-              >
-                <Trash2 size={16} />
-              </button>
-            </td>
-          </tr>
-        ))
-        )}
-      </tbody>
+            {/* BODY */}
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-14 text-gray-400">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : currentData.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-14 text-gray-400">
+                    Không có dữ liệu sản phẩm
+                  </td>
+                </tr>
+              ) : (
+                currentData.map((item, index) => (
+                  <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
+                    <td className="p-4 text-center"><input type="checkbox" /></td>
+                    <td className="p-2">
+                      <EditableCell
+                        value={item.code}
+                        onSave={(val) => handleUpdateProduct(item.id, "sku", val)}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <EditableCell
+                        value={item.name}
+                        onSave={(val) => handleUpdateProduct(item.id, "name", val)}
+                      />
+                    </td>
+                    <td className="p-2 text-center">{item.category}</td>
+                    <td className="p-2">
+                      <EditableCell
+                        value={item.price}
+                        onSave={(val) => handleUpdateProduct(item.id, "price", parseFloat(val))}
+                        type="number"
+                        align="center"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <EditableCell
+                        value={item.cost}
+                        onSave={(val) => handleUpdateProduct(item.id, "costPrice", parseFloat(val))}
+                        type="number"
+                        align="center"
+                      />
+                    </td>
+                    <td className="p-4 text-center">{item.stock}</td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(item);
+                          setOpenAddModal(true);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Sửa chi tiết"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(item)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Xoa san pham"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
 
-    </table>
-  </div>
+          </table>
+        </div>
 
         {/* PAGINATION */}
         <div className="flex justify-between items-center p-4 border-t">
@@ -300,7 +339,6 @@ export default function TableProduct() {
           </div>
         </div>
       </div>
-
 
       <AddProductModal
         open={openAddModal}

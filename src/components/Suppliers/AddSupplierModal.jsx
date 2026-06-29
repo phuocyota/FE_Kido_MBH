@@ -41,15 +41,15 @@ export default function AddSupplierModal({
       code: initialData?.code || "",
       phone: initialData?.phone || "",
       email: initialData?.email || "",
-      cccd: initialData?.cccd || "",
+      cccd: initialData?.cccd || initialData?.idCard || "",
       address: initialData?.address || "",
-      city: initialData?.city || "",
+      city: initialData?.city || initialData?.province || "",
       district: initialData?.district || "",
       ward: initialData?.ward || "",
       group: initialData?.group || "",
       note: initialData?.note || "",
       taxCode: initialData?.taxCode || "",
-      company: initialData?.company || "",
+      company: initialData?.company || initialData?.companyName || "",
       status: initialData?.status || "active",
     });
   }, [initialData, open]);

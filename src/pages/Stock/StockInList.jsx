@@ -1,27 +1,49 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { stockInApi } from "../../api";
 import StockInDetailTable from "../../components/StockIn/StockInDetailTable";
 import StockInListTable from "../../components/StockIn/StockInListTable";
 import StockInListToolbar from "../../components/StockIn/StockInListToolbar";
 import StockInPagination from "../../components/StockIn/StockInPagination";
-import { stockInReceiptsData } from "../../datas/stockInListData";
 
 export default function StockInList() {
   const navigate = useNavigate();
+  const [receipts, setReceipts] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedReceiptId, setSelectedReceiptId] = useState(
-    stockInReceiptsData[0]?.id
-  );
+  const [selectedReceiptId, setSelectedReceiptId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
+  const [error, setError] = useState("");
+
+  const loadReceipts = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await stockInApi.getAll();
+      setReceipts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message || "Không thể tải danh sách phiếu nhập kho"
+      );
+      setReceipts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReceipts();
+  }, []);
 
   const filteredReceipts = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
-    if (!keyword) return stockInReceiptsData;
+    if (!keyword) return receipts;
 
-    // Lọc dữ liệu mẫu theo các trường người dùng thường tìm trên danh sách nhập kho.
-    return stockInReceiptsData.filter((receipt) =>
+    return receipts.filter((receipt) =>
       [
         receipt.postedDate,
         receipt.voucherNo,
@@ -34,7 +56,69 @@ export default function StockInList() {
         .toLowerCase()
         .includes(keyword)
     );
-  }, [searchKeyword]);
+  }, [receipts, searchKeyword]);
+
+  useEffect(() => {
+    if (!filteredReceipts.length) {
+      setSelectedReceiptId(null);
+      return;
+    }
+
+    const selectedStillVisible = filteredReceipts.some(
+      (receipt) => receipt.id === selectedReceiptId
+    );
+
+    if (!selectedStillVisible) {
+      setSelectedReceiptId(filteredReceipts[0].id);
+    }
+  }, [filteredReceipts, selectedReceiptId]);
+
+  useEffect(() => {
+    const selectedReceipt = receipts.find(
+      (receipt) => receipt.id === selectedReceiptId
+    );
+
+    if (
+      !selectedReceipt ||
+      selectedReceipt.details?.length ||
+      loadedDetailIds.has(selectedReceipt.id)
+    ) {
+      return;
+    }
+
+    let ignore = false;
+
+    const loadDetail = async () => {
+      try {
+        setDetailLoading(true);
+        setLoadedDetailIds((prev) => new Set(prev).add(selectedReceipt.id));
+        const receiptDetail = await stockInApi.getById(selectedReceipt.id);
+        if (ignore) return;
+
+        setReceipts((prev) =>
+          prev.map((receipt) =>
+            receipt.id === selectedReceipt.id
+              ? { ...receipt, ...receiptDetail }
+              : receipt
+          )
+        );
+      } catch (err) {
+        if (!ignore) {
+          setError(
+            err?.response?.data?.message || "Không thể tải chi tiết phiếu nhập kho"
+          );
+        }
+      } finally {
+        if (!ignore) setDetailLoading(false);
+      }
+    };
+
+    loadDetail();
+
+    return () => {
+      ignore = true;
+    };
+  }, [loadedDetailIds, receipts, selectedReceiptId]);
 
   const visibleReceipts = filteredReceipts.slice(
     (currentPage - 1) * pageSize,
@@ -50,13 +134,11 @@ export default function StockInList() {
   };
 
   const handleSearchChange = (value) => {
-    // Khi tìm kiếm, đưa người dùng về trang đầu để luôn thấy kết quả mới nhất.
     setSearchKeyword(value);
     setCurrentPage(1);
   };
 
   const handlePageSizeChange = (value) => {
-    // Khi đổi số dòng hiển thị, reset trang để tránh rơi vào trang không còn dữ liệu.
     setPageSize(value);
     setCurrentPage(1);
   };
@@ -69,6 +151,18 @@ export default function StockInList() {
           onSearchChange={handleSearchChange}
           onCreateClick={handleCreateClick}
         />
+
+        {(loading || detailLoading || error) && (
+          <div className="border-b border-cyan-200 bg-white px-4 py-3 text-sm">
+            {loading && (
+              <span className="text-slate-500">Đang tải dữ liệu...</span>
+            )}
+            {!loading && detailLoading && (
+              <span className="text-slate-500">Đang tải chi tiết...</span>
+            )}
+            {error && <span className="text-red-600">{error}</span>}
+          </div>
+        )}
 
         <StockInListTable
           receipts={visibleReceipts}

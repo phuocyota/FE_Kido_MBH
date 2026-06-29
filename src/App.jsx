@@ -17,6 +17,7 @@ import TimeSheet from "./pages/Employee/TimeSheet";
 import TimeKeeping from "./pages/Employee/TimeKeeping";
 import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
+import Orders from "./pages/Orders/Orders";
 import ReportEmployee from "./pages/reports/ReportEmployee";
 import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
@@ -69,6 +70,7 @@ const App = () => {
                   <Route path="/time-keeping" element={<TimeKeeping />} />
                   <Route path="/pay-sheet" element={<PaySheet />} />
                   <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/orders" element={<Orders />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />
                   <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />

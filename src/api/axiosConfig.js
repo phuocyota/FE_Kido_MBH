@@ -63,6 +63,7 @@ axiosInstance.interceptors.request.use(
       }
     }
 
+
     if (config.data) {
       config.data = cleanEmpty(config.data);
     }
