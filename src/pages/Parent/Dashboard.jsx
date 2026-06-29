@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Wallet, Utensils, BarChart3 } from "lucide-react";
+import { Bell, Wallet, Utensils, BarChart3, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 import { cancelParentOrder } from "../../api/parent";
@@ -36,7 +36,8 @@ export default function Dashboard() {
   const advanceAmount = monthStats.limit ?? weekStats.limit ?? 0;
   const canCancelTodayOrder =
     todayOrder &&
-    ![0, 5, 6, 10, 11].includes(Number(todayOrder.status));
+    ![0, 5, 6, 10, 11].includes(Number(todayOrder.status)) &&
+    (Date.now() - new Date(todayOrder.orderedAt || todayOrder.createdAt).getTime() <= 15 * 60 * 1000);
 
   const handleCancelTodayOrder = async () => {
     if (!todayOrder?.id || cancellingOrder) return;
@@ -113,45 +114,46 @@ export default function Dashboard() {
           </div>
 
           {todayOrder ? (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-2">
-                <div>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
                   <p className="font-medium text-gray-800">
                     {todayOrder.items?.map((item) => `${item.name} x${item.quantity}`).join(", ")}
                   </p>
                   <p className="text-xs text-gray-400">Đặt lúc {formatTime(todayOrder.orderedAt)}</p>
                 </div>
-
-                {todayOrder.addons?.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {todayOrder.addons.map((addon) => (
-                      <span
-                        key={addon.id}
-                        className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
-                      >
-                        + {addon.name} x{addon.quantity}
-                        {addon.price > 0 ? ` - ${formatMoney(addon.price)}` : ""}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                <span className="text-blue-600 text-sm font-medium bg-blue-50 px-3 py-1 rounded-full">
-                  {todayOrder.statusText}
-                </span>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-base font-bold text-gray-800 whitespace-nowrap shrink-0">
                   {formatMoney(todayOrder.totalAmount)}
                 </p>
+              </div>
+
+              {todayOrder.addons?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {todayOrder.addons.map((addon) => (
+                    <span
+                      key={addon.id}
+                      className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                    >
+                      + {addon.name} x{addon.quantity}
+                      {addon.price > 0 ? ` - ${formatMoney(addon.price)}` : ""}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100">
+                <span className="whitespace-nowrap text-blue-600 text-sm font-medium bg-blue-50 px-3 py-1.5 rounded-full">
+                  {todayOrder.statusText}
+                </span>
+                
                 {canCancelTodayOrder && (
                   <button
                     type="button"
                     onClick={handleCancelTodayOrder}
                     disabled={cancellingOrder}
-                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex items-center justify-center rounded-xl bg-red-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {cancellingOrder ? "Đang hủy..." : "Hủy đơn"}
+                    {cancellingOrder ? "Đang hủy..." : "Hủy"}
                   </button>
                 )}
               </div>

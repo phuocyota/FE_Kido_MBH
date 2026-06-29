@@ -30,22 +30,7 @@ export default function OrderHeader({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center gap-3 bg-slate-50 border border-gray-200 rounded-xl px-4 py-3">
-              <CreditCard
-                size={22}
-                className="text-indigo-600"
-              />
 
-              <div>
-                <div className="text-xs text-gray-500">
-                  Mã học sinh
-                </div>
-
-                <div className="font-semibold">
-                  {student?.cardId}
-                </div>
-              </div>
-            </div>
 
             <div className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${
               Number(student?.balance || 0) < 0 
