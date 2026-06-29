@@ -6,6 +6,12 @@ import { Filter } from "lucide-react";
 
 export default function Products() {
   const [openFilter, setOpenFilter] = useState(false);
+  const [filters, setFilters] = useState({
+    search: "",
+    categoryId: null,
+    stockStatus: "all",
+    displayStatus: "active", // default to active as in the screenshot selection
+  });
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -34,13 +40,13 @@ export default function Products() {
 
         {/* SIDEBAR DESKTOP */}
         <div className="hidden lg:block w-72 shrink-0">
-          <SidebarFilter />
+          <SidebarFilter filters={filters} setFilters={setFilters} />
         </div>
 
         {/* CONTENT */}
         
         <div className="flex-1 min-w-0">
-          <TableProduct />
+          <TableProduct filters={filters} />
         </div>
       </div>
 
@@ -76,7 +82,7 @@ export default function Products() {
 
               {/* CONTENT */}
               <div className="p-4">
-                <SidebarFilter />
+                <SidebarFilter filters={filters} setFilters={setFilters} />
               </div>
             </div>
 

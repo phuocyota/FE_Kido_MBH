@@ -3,10 +3,11 @@ import { ChevronDown, Plus, Pencil } from "lucide-react";
 import { useState } from "react";
 import { productApi } from "../../api";
 
-export default function SidebarFilter() {
+export default function SidebarFilter({
+      filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" },
+      setFilters = () => { }
+}) {
 
-      const [openLoaiThucDon, setOpenLoaiThucDon] = useState(true);
-      const [openLoaiHang, setOpenLoaiHang] = useState(true);
       const [openNhomHang, setOpenNhomHang] = useState(true);
       const [openTonKho, setOpenTonKho] = useState(true);
       const [openHienThi, setOpenHienThi] = useState(true);
@@ -15,6 +16,7 @@ export default function SidebarFilter() {
       const [selectedItem, setSelectedItem] = useState(null);
       const [groupData, setGroupData] = useState([]);
       const [loadingGroups, setLoadingGroups] = useState(false);
+      const [categorySearch, setCategorySearch] = useState("");
 
       useEffect(() => {
             const loadCategories = async () => {
@@ -32,6 +34,10 @@ export default function SidebarFilter() {
             loadCategories();
       }, []);
 
+      const filteredGroups = groupData.filter(item =>
+            item.name?.toLowerCase().includes(categorySearch.toLowerCase())
+      );
+
       return (
             <div className="w-72 space-y-4">
 
@@ -40,101 +46,11 @@ export default function SidebarFilter() {
                         <p className="font-medium mb-2">Tìm kiếm</p>
                         <input
                               type="text"
+                              value={filters.search}
+                              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                               placeholder="Theo mã, tên hàng"
                               className="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                  </div>
-
-                  {/* LOẠI THỰC ĐƠN */}
-                  <div className="bg-white p-4 rounded-xl shadow">
-                        <div
-                              className="flex justify-between items-center mb-3 cursor-pointer"
-                              onClick={() => setOpenLoaiThucDon(!openLoaiThucDon)}
-                        >
-                              <p className="font-medium">Loại thực đơn</p>
-
-                              <ChevronDown
-                                    size={18}
-                                    className={`transition-transform duration-300 ${openLoaiThucDon ? "rotate-180" : ""
-                                          }`}
-                              />
-                        </div>
-
-                        <div
-                              className={`overflow-hidden transition-all duration-300 ${openLoaiThucDon ? "max-h-40 mt-3" : "max-h-0"
-                                    }`}
-                        >
-                              <div className="space-y-3 text-sm">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4" />
-                                          <span>Đồ ăn</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4" />
-                                          <span>Đồ uống</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4" />
-                                          <span>Khác</span>
-                                    </label>
-                              </div>
-                        </div>
-                  </div>
-
-                  {/* LOẠI HÀNG */}
-                  <div className="bg-white p-4 rounded-xl shadow">
-                        <div
-                              className="flex justify-between items-center mb-3 cursor-pointer"
-                              onClick={() => setOpenLoaiHang(!openLoaiHang)}
-                        >
-                              <p className="font-medium">Loại hàng</p>
-
-                              <ChevronDown
-                                    size={18}
-                                    className={`transition-transform duration-300 ${openLoaiHang ? "rotate-180" : ""
-                                          }`}
-                              />
-                        </div>
-
-                        <div
-                              className={`overflow-hidden transition-all duration-300 ${openLoaiHang ? "max-h-96 mt-3" : "max-h-0"
-                                    }`}
-                        >
-                              <div className="space-y-3 text-sm">
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Hàng hóa thường</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Chế biến</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Dịch vụ</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Combo - Đóng gói</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Combo tùy chọn</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                          <input type="checkbox" className="w-4 h-4 accent-blue-600" />
-                                          <span>Buffet gọi món</span>
-                                    </label>
-                              </div>
-                        </div>
                   </div>
 
                   {/* NHÓM HÀNG */}
@@ -190,14 +106,21 @@ export default function SidebarFilter() {
 
                                     {/* SEARCH */}
                                     <input
+                                          value={categorySearch}
+                                          onChange={(e) => setCategorySearch(e.target.value)}
                                           placeholder="Tìm kiếm nhóm hàng"
                                           className="w-full border border-gray-300 rounded-lg p-2 mb-3 outline-none focus:ring-2 focus:ring-blue-500"
                                     />
 
                                     {/* LIST */}
-                                    <div className="text-sm space-y-1">
+                                    <div className="text-sm space-y-1 max-h-60 overflow-y-auto">
 
-                                          <p className="font-semibold px-2 py-1">Tất cả</p>
+                                          <p
+                                                className={`font-semibold px-2 py-1 cursor-pointer rounded ${!filters.categoryId ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
+                                                onClick={() => setFilters(prev => ({ ...prev, categoryId: null }))}
+                                          >
+                                                Tất cả
+                                          </p>
 
                                           {loadingGroups && (
                                                 <div className="px-2 py-1 text-gray-400">
@@ -205,23 +128,25 @@ export default function SidebarFilter() {
                                                 </div>
                                           )}
 
-                                          {!loadingGroups && groupData.length === 0 && (
+                                          {!loadingGroups && filteredGroups.length === 0 && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       Chưa có nhóm hàng
                                                 </div>
                                           )}
 
-                                          {!loadingGroups && groupData.map((item) => (
+                                          {!loadingGroups && filteredGroups.map((item) => (
                                                 <div
                                                       key={item.id}
-                                                      className="flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group"
+                                                      className={`flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group cursor-pointer ${filters.categoryId === item.id ? "bg-blue-50 text-blue-600 font-medium" : ""}`}
+                                                      onClick={() => setFilters(prev => ({ ...prev, categoryId: item.id }))}
                                                 >
                                                       <span>{item.name}</span>
 
                                                       {/* ICON EDIT */}
                                                       <Pencil
                                                             size={16}
-                                                            onClick={() => {
+                                                            onClick={(e) => {
+                                                                  e.stopPropagation();
                                                                   setIsEdit(true);
                                                                   setSelectedItem(item); // truyền object luôn
                                                                   setOpenModal(true);
@@ -264,28 +189,53 @@ export default function SidebarFilter() {
                         >
                               <div className="space-y-3 text-sm">
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="stock" defaultChecked />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="stock"
+                                                checked={filters.stockStatus === "all"}
+                                                onChange={() => setFilters(prev => ({ ...prev, stockStatus: "all" }))}
+                                          />
                                           <span>Tất cả</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="stock" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="stock"
+                                                checked={filters.stockStatus === "under"}
+                                                onChange={() => setFilters(prev => ({ ...prev, stockStatus: "under" }))}
+                                          />
                                           <span>Dưới định mức tồn</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="stock" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="stock"
+                                                checked={filters.stockStatus === "over"}
+                                                onChange={() => setFilters(prev => ({ ...prev, stockStatus: "over" }))}
+                                          />
                                           <span>Vượt định mức tồn</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="stock" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="stock"
+                                                checked={filters.stockStatus === "inStock"}
+                                                onChange={() => setFilters(prev => ({ ...prev, stockStatus: "inStock" }))}
+                                          />
                                           <span>Còn hàng trong kho</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="stock" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="stock"
+                                                checked={filters.stockStatus === "outOfStock"}
+                                                onChange={() => setFilters(prev => ({ ...prev, stockStatus: "outOfStock" }))}
+                                          />
                                           <span>Hết hàng trong kho</span>
                                     </label>
 
@@ -320,18 +270,33 @@ export default function SidebarFilter() {
                         >
                               <div className="space-y-3 text-sm">
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="display" defaultChecked />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="display"
+                                                checked={filters.displayStatus === "active"}
+                                                onChange={() => setFilters(prev => ({ ...prev, displayStatus: "active" }))}
+                                          />
                                           <span>Hàng đang kinh doanh</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="display" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="display"
+                                                checked={filters.displayStatus === "inactive"}
+                                                onChange={() => setFilters(prev => ({ ...prev, displayStatus: "inactive" }))}
+                                          />
                                           <span>Hàng ngừng kinh doanh</span>
                                     </label>
 
-                                    <label className="flex items-center gap-2">
-                                          <input type="radio" name="display" />
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                                type="radio"
+                                                name="display"
+                                                checked={filters.displayStatus === "all"}
+                                                onChange={() => setFilters(prev => ({ ...prev, displayStatus: "all" }))}
+                                          />
                                           <span>Tất cả</span>
                                     </label>
 

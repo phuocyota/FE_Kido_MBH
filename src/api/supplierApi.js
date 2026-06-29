@@ -11,25 +11,25 @@ export const supplierApi = {
       params.search = search;
     }
     const response = await axiosInstance.get("/suppliers", { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Get supplier by ID
   getById: async (id) => {
     const response = await axiosInstance.get(`/suppliers/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Create new supplier
   create: async (data) => {
     const response = await axiosInstance.post("/suppliers", data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Update supplier
   update: async (id, data) => {
     const response = await axiosInstance.put(`/suppliers/${id}`, data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Delete supplier
