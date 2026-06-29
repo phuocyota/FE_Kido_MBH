@@ -47,14 +47,10 @@ export default function SuppliersSidebar({
   }, [setShowTimeFilter, setShowCustomDate]);
 
   return (
-    <div className="relative overflow-visible w-full lg:w-[280px] bg-white rounded-[20px] border border-gray-200 shadow-sm p-4 h-fit flex-shrink-0">
-      {/* Title */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-5 px-1">
-        Nhà cung cấp
-      </h1>
+    <div className="relative w-full overflow-visible rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
 
-      {/* Nhóm nhà cung cấp */}
-      <div className="mb-6">
+      {/* Nhóm NCC */}
+      <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[15px] font-semibold text-gray-900 flex items-center">
             Nhóm nhà cung cấp
@@ -130,7 +126,7 @@ export default function SuppliersSidebar({
                   setShowCustomDate(false);
                   setShowTimeFilter(true);
                 }}
-                className="w-5 h-5 accent-blue-600 cursor-pointer"
+                className="h-5 w-5 shrink-0 accent-blue-600"
               />
 
               <button
@@ -152,14 +148,14 @@ export default function SuppliersSidebar({
             </label>
 
             {showTimeFilter && (
-              <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">
-                <TimeFilterPopup
-                  selectedTime={selectedTime}
-                  setSelectedTime={setSelectedTime}
-                  onClose={() => setShowTimeFilter(false)}
-                />
-              </div>
-            )}
+  <div className="mt-3 w-full">
+    <TimeFilterPopup
+      selectedTime={selectedTime}
+      setSelectedTime={setSelectedTime}
+      onClose={() => setShowTimeFilter(false)}
+    />
+  </div>
+)}
           </div>
 
           {/* Tùy chỉnh */}
@@ -173,7 +169,7 @@ export default function SuppliersSidebar({
                   setShowTimeFilter(false);
                   setShowCustomDate(true);
                 }}
-                className="w-5 h-5 accent-blue-600 cursor-pointer"
+                className="h-5 w-5 shrink-0 accent-blue-600"
               />
 
               <button
@@ -191,6 +187,22 @@ export default function SuppliersSidebar({
               </button>
             </label>
 
+            {showCustomDate && (
+  <div className="mt-3 w-full">
+    <CustomDatePopup
+  onClose={() => setShowCustomDate(false)}
+  onApply={(range) => {
+    setCustomDateLabel(
+      `Từ ${formatDate(range.startDate)} đến ${formatDate(
+        range.endDate
+      )}`
+    );
+
+    setShowCustomDate(false);
+  }}
+/>
+  </div>
+)}
 
             {showCustomDate && (
               <div className="fixed inset-x-2 top-24 z-[9999] lg:absolute lg:inset-auto lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-4">

@@ -9,6 +9,7 @@ import React, {
 import { branchApi } from "../../api";
 import { getBranchIdFromToken, getBranchNameFromToken } from "../../api/authSession";
 import ReportProductFilter from "../../components/reports/reportProduct/ReportProductFilter";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 import ReportProductContent from "../../components/reports/reportProduct/ReportProductContent";
 
@@ -274,65 +275,51 @@ export default function ReportProduct() {
     <div className="max-w-[1800px] mx-auto">
 
       {/* HEADER */}
-      <div className="mb-4 lg:mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
 
-        <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
-          Báo cáo hàng hóa
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
+            Báo cáo hàng hóa
+          </h1>
+
+          <ToolbarFilterDropdown panelClassName="sm:w-[760px]">
+            <ReportProductFilter
+              viewType={viewType}
+              setViewType={setViewType}
+              interest={interest}
+              setInterest={setInterest}
+              interests={interests}
+              branch={branch}
+              setBranch={setBranch}
+              dateMode={dateMode}
+              setDateMode={setDateMode}
+              timeType={timeType}
+              setTimeType={setTimeType}
+              fromDate={fromDate}
+              toDate={toDate}
+              setFromDate={setFromDate}
+              setToDate={setToDate}
+              formatDate={formatDate}
+              productKeyword={productKeyword}
+              setProductKeyword={setProductKeyword}
+              category={category}
+              setCategory={setCategory}
+              foodTypes={foodTypes}
+              setFoodTypes={setFoodTypes}
+            />
+          </ToolbarFilterDropdown>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-medium text-slate-700">
+            {interest}
+          </span>
+        </div>
 
       </div>
 
-      {/* BODY */}
-      <div className="flex flex-col 2xl:flex-row gap-4">
-
-        {/* FILTER */}
-        <div className="w-full 2xl:w-[340px] 2xl:min-w-[340px] shrink-0">
-
-          <ReportProductFilter
-
-            // VIEW
-            viewType={viewType}
-            setViewType={setViewType}
-
-            // INTEREST
-            interest={interest}
-            setInterest={setInterest}
-            interests={interests}
-
-            // BRANCH
-            branch={branch}
-            setBranch={setBranch}
-
-            // TIME
-            dateMode={dateMode}
-            setDateMode={setDateMode}
-
-            timeType={timeType}
-            setTimeType={setTimeType}
-
-            fromDate={fromDate}
-            toDate={toDate}
-
-            setFromDate={setFromDate}
-            setToDate={setToDate}
-
-            formatDate={formatDate}
-
-            // FILTER
-            productKeyword={productKeyword}
-            setProductKeyword={setProductKeyword}
-
-            category={category}
-            setCategory={setCategory}
-
-            foodTypes={foodTypes}
-            setFoodTypes={setFoodTypes}
-          />
-
-        </div>
-
-        {/* CONTENT */}
-        <div className="flex-1 min-w-0">
+      {/* CONTENT */}
+      <div className="min-w-0">
 
           <ReportProductContent
 
@@ -367,8 +354,6 @@ export default function ReportProduct() {
             // REFS
             previewRef={previewRef}
           />
-
-        </div>
 
       </div>
 

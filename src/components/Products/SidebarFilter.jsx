@@ -39,7 +39,7 @@ export default function SidebarFilter({
       );
 
       return (
-            <div className="w-72 space-y-4">
+            <div className="w-full space-y-4">
 
                   {/* SEARCH */}
                   <div className="bg-white p-4 rounded-xl shadow">
