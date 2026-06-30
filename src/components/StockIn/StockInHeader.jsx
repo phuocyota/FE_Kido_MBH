@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StockInHeader() {
+export default function StockInHeader({ paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
   const navigate = useNavigate();
 
   return (
@@ -30,9 +30,9 @@ export default function StockInHeader() {
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 
           {/* Loại nhập */}
-          <div className="relative w-full sm:w-[180px]">
+          <div className="relative w-full sm:w-[240px]">
             <select className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
-              <option>Mua hàng</option>
+              <option>Nhập hàng từ nhà cung cấp</option>
               <option>Khác</option>
             </select>
 
@@ -45,12 +45,22 @@ export default function StockInHeader() {
           {/* Radio */}
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input type="radio" name="payment" />
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentStatus === "DEBT"}
+                onChange={() => onChangePaymentStatus("DEBT")}
+              />
               Chưa thanh toán
             </label>
 
             <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input type="radio" name="payment" />
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentStatus === "PAID"}
+                onChange={() => onChangePaymentStatus("PAID")}
+              />
               Đã thanh toán
             </label>
           </div>
@@ -63,6 +73,8 @@ export default function StockInHeader() {
 
             <input
               type="text"
+              value={reference}
+              onChange={(e) => onChangeReference(e.target.value)}
               placeholder="Nhập hóa đơn"
               className="h-10 w-full sm:max-w-[260px] px-3 text-sm bg-white border border-gray-300 rounded-md shadow-sm placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
             />
