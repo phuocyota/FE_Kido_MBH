@@ -1,5 +1,5 @@
 import React, { useEffect, useState,useRef } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
 import { buildAssetUrl } from "../../api/client";
@@ -14,6 +14,7 @@ export default function ParentHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -262,7 +263,9 @@ const [avatarError, setAvatarError] = useState("");
         {/* Floating Speed Dial Container (Mobile Only) */}
         <div
           ref={fabRef}
-          className="md:hidden touch-none fixed bottom-6 right-6 z-50 flex flex-col items-end"
+          className={`md:hidden touch-none fixed right-6 z-50 flex flex-col items-end ${
+            location.pathname.includes("/order") ? "bottom-[80px]" : "bottom-6"
+          }`}
           style={{ transition: "all 0.2s" }}
         >
           {/* Speed Dial Menu Items */}

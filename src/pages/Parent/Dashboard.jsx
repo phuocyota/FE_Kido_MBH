@@ -3,6 +3,40 @@ import { Bell, Wallet, Utensils, BarChart3, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 import { cancelParentOrder } from "../../api/parent";
+import { mapParentStatus } from "../../api/parentData";
+
+const getStatusText = (status, isFoodOrder = true) => {
+  const mapped = mapParentStatus(status);
+  if (!isFoodOrder) {
+    const statusMap = {
+      completed: "Hoàn thành",
+      cancel: "Đã hủy",
+      pending: "Đang xử lý",
+      payment: "Chờ thanh toán",
+      ready: "Đang xử lý",
+    };
+    return statusMap[mapped] || "Đang xử lý";
+  }
+  const statusMap = {
+    completed: "Hoàn thành",
+    ready: "Chờ lấy món",
+    pending: "Chờ chế biến",
+    payment: "Chờ thanh toán",
+    cancel: "Đã hủy",
+  };
+  return statusMap[mapped] || "Chờ chế biến";
+};
+
+const getStatusColor = (status) => {
+  const mapped = mapParentStatus(status);
+  switch (mapped) {
+    case "completed": return "bg-emerald-50 text-emerald-600 border-emerald-100/50";
+    case "ready": return "bg-amber-50 text-amber-600 border-amber-100/50";
+    case "payment": return "bg-indigo-50 text-indigo-600 border-indigo-100/50";
+    case "cancel": return "bg-rose-50 text-rose-600 border-rose-100/50";
+    default: return "bg-blue-50 text-blue-600 border-blue-100/50";
+  }
+};
 
 const formatMoney = (value = 0) =>
   new Intl.NumberFormat("vi-VN").format(value) + "đ";
@@ -164,13 +198,37 @@ export default function Dashboard() {
               )}
 
               <div className="flex items-center justify-between mt-2 pt-4 border-t border-gray-200/60">
-                <div className="flex items-center gap-2 bg-blue-50/80 px-4 py-2 rounded-xl border border-blue-100/50">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+                  mapParentStatus(todayOrder.status) === 'completed' ? 'bg-emerald-50/80 border-emerald-100/50' :
+                  mapParentStatus(todayOrder.status) === 'ready' ? 'bg-amber-50/80 border-amber-100/50' :
+                  mapParentStatus(todayOrder.status) === 'payment' ? 'bg-indigo-50/80 border-indigo-100/50' :
+                  mapParentStatus(todayOrder.status) === 'cancel' ? 'bg-rose-50/80 border-rose-100/50' :
+                  'bg-blue-50/80 border-blue-100/50'
+                }`}>
                   <div className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                    {['pending', 'ready', 'payment'].includes(mapParentStatus(todayOrder.status)) && (
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        mapParentStatus(todayOrder.status) === 'ready' ? 'bg-amber-400' :
+                        mapParentStatus(todayOrder.status) === 'payment' ? 'bg-indigo-400' :
+                        'bg-blue-400'
+                      }`}></span>
+                    )}
+                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                      mapParentStatus(todayOrder.status) === 'completed' ? 'bg-emerald-500' :
+                      mapParentStatus(todayOrder.status) === 'ready' ? 'bg-amber-500' :
+                      mapParentStatus(todayOrder.status) === 'payment' ? 'bg-indigo-500' :
+                      mapParentStatus(todayOrder.status) === 'cancel' ? 'bg-rose-500' :
+                      'bg-blue-500'
+                    }`}></span>
                   </div>
-                  <span className="whitespace-nowrap text-blue-700 text-sm font-semibold">
-                    {todayOrder.statusText}
+                  <span className={`whitespace-nowrap text-sm font-semibold ${
+                      mapParentStatus(todayOrder.status) === 'completed' ? 'text-emerald-700' :
+                      mapParentStatus(todayOrder.status) === 'ready' ? 'text-amber-700' :
+                      mapParentStatus(todayOrder.status) === 'payment' ? 'text-indigo-700' :
+                      mapParentStatus(todayOrder.status) === 'cancel' ? 'text-rose-700' :
+                      'text-blue-700'
+                  }`}>
+                    {getStatusText(todayOrder.status, true)}
                   </span>
                 </div>
                 
@@ -219,8 +277,8 @@ export default function Dashboard() {
                     <p className={item.amount < 0 ? "text-rose-600 font-bold text-base" : "text-emerald-600 font-bold text-base"}>
                       {item.amount > 0 ? "+" : ""}{formatMoney(item.amount)}
                     </p>
-                    <p className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[11px] font-bold uppercase tracking-wide border border-blue-100/50">
-                      {item.statusText}
+                    <p className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide border ${getStatusColor(item.status)}`}>
+                      {getStatusText(item.status, item.type !== "TOPUP")}
                     </p>
                   </div>
                 </div>
