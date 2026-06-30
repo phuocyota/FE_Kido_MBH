@@ -19,7 +19,7 @@ export default function BottomCheckout({
   );
 
   return (
-    <div className="sticky bottom-0 z-30 mt-auto px-2 pt-2 sm:px-4">
+    <div className="sticky bottom-0 z-[60] mt-auto px-2 pt-2 sm:px-4">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-t-2xl border border-b-0 border-gray-200 bg-white px-3 py-2.5 shadow-[0_-8px_25px_rgba(0,0,0,0.08)] animate-in slide-in-from-bottom duration-300 sm:px-4 sm:py-3">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <div className="relative">

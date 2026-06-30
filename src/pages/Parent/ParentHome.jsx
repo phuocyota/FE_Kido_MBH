@@ -1,5 +1,5 @@
 import React, { useEffect, useState,useRef } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
 import { buildAssetUrl } from "../../api/client";
@@ -14,10 +14,21 @@ export default function ParentHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const fabRef = useRef(null);
   const isDragging = useRef(false);
+
+  // Force stop momentum scroll on tap
+  const handleStopScroll = () => {
+    if (scrollRef.current) {
+      scrollRef.current.style.overflowY = 'hidden';
+      void scrollRef.current.offsetHeight; 
+      scrollRef.current.style.overflowY = 'auto';
+    }
+  };
   const dragStartPos = useRef({ x: 0, y: 0 });
   const touchOffset = useRef({ x: 0, y: 0 });
 
@@ -238,7 +249,12 @@ const [avatarError, setAvatarError] = useState("");
             <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none translate-x-1/3"></div>
             <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl pointer-events-none translate-y-1/4"></div>
 
-            <div className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain">
+            <div 
+              ref={scrollRef}
+              onTouchStart={handleStopScroll}
+              onMouseDown={handleStopScroll}
+              className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain"
+            >
               <Outlet context={{ homeData, loading, error, refreshHome: fetchHome }} />
             </div>
           </div>
@@ -247,7 +263,9 @@ const [avatarError, setAvatarError] = useState("");
         {/* Floating Speed Dial Container (Mobile Only) */}
         <div
           ref={fabRef}
-          className="md:hidden touch-none fixed bottom-6 right-6 z-50 flex flex-col items-end"
+          className={`md:hidden touch-none fixed right-6 z-50 flex flex-col items-end ${
+            location.pathname.includes("/order") ? "bottom-[80px]" : "bottom-6"
+          }`}
           style={{ transition: "all 0.2s" }}
         >
           {/* Speed Dial Menu Items */}

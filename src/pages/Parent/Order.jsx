@@ -338,7 +338,7 @@ export default function Order() {
       refreshHome();
     }
 
-    navigate("payment");
+    navigate("/order/payment");
   };
 
   if (loading && !student) {

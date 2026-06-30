@@ -49,15 +49,19 @@ const formatMoney = (value = 0) =>
   `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
 const statusText = {
-  done: "Hoàn thành",
-  pending: "Đang xử lý",
+  completed: "Hoàn thành",
+  ready: "Chờ lấy món",
+  pending: "Chờ chế biến",
+  payment: "Chờ thanh toán",
   cancel: "Đã hủy",
 };
 
 const statusClass = {
-  done: "bg-green-100 text-green-600",
+  completed: "bg-emerald-100 text-emerald-600",
+  ready: "bg-amber-100 text-amber-600",
   pending: "bg-blue-100 text-blue-600",
-  cancel: "bg-red-100 text-red-500",
+  payment: "bg-indigo-100 text-indigo-600",
+  cancel: "bg-rose-100 text-rose-500",
 };
 
 function DatePickerField({ value, onChange, label }) {
@@ -220,8 +224,10 @@ export default function History() {
         <div className="flex gap-2 flex-wrap">
           {[
             ["all", "Tất cả"],
-            ["done", "Hoàn thành"],
-            ["pending", "Đang xử lý"],
+            ["payment", "Chờ thanh toán"],
+            ["pending", "Chờ chế biến"],
+            ["ready", "Chờ lấy món"],
+            ["completed", "Hoàn thành"],
             ["cancel", "Đã hủy"],
           ].map(([key, label]) => (
             <button
@@ -266,12 +272,14 @@ export default function History() {
               <p className="text-xs font-medium text-gray-500 mb-1.5">Số lượng: {order.quantity}</p>
               <span
                 className={`inline-block text-[11px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wide border ${
-                  order.status === "done" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+                  order.status === "completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+                  order.status === "ready" ? "bg-amber-50 text-amber-600 border-amber-100/50" :
+                  order.status === "payment" ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" :
                   order.status === "cancel" ? "bg-rose-50 text-rose-600 border-rose-100/50" :
                   "bg-blue-50 text-blue-600 border-blue-100/50"
                 }`}
               >
-                {order.statusText || statusText[order.status] || "Đang xử lý"}
+                {statusText[order.status] || "Chờ chế biến"}
               </span>
             </div>
           </button>
@@ -316,14 +324,17 @@ export default function History() {
                   className={`text-xs px-3 py-1 rounded-full shadow ${
                     selectedOrder.status === "cancel"
                       ? "bg-red-500 text-white"
-                      : selectedOrder.status === "done"
-                      ? "bg-green-500 text-white"
+                      : selectedOrder.status === "completed"
+                      ? "bg-emerald-500 text-white"
+                      : selectedOrder.status === "ready"
+                      ? "bg-amber-500 text-white"
+                      : selectedOrder.status === "payment"
+                      ? "bg-indigo-500 text-white"
                       : "bg-blue-500 text-white"
                   }`}
                 >
-                  {selectedOrder.statusText ||
-                    statusText[selectedOrder.status] ||
-                    "Đang xử lý"}
+                  {statusText[selectedOrder.status] ||
+                    "Chờ chế biến"}
                 </span>
               </div>
             </div>

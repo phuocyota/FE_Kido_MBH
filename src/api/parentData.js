@@ -1,10 +1,14 @@
-const DONE_STATUSES = new Set(["COMPLETED", "RECEIVED", "DONE", "PAID"]);
-const CANCELLED_STATUSES = new Set(["CANCELLED", "CANCELED", "FAILED"]);
+const COMPLETED_STATUSES = new Set(["COMPLETED", "RECEIVED", "DELIVERED", "PAID"]);
+const READY_STATUSES = new Set(["DONE", "READY", "PREPARED"]);
+const PAYMENT_STATUSES = new Set(["CASH", "WAITING_PAYMENT", "PENDING_PAYMENT"]);
+const CANCELLED_STATUSES = new Set(["CANCELLED", "CANCELED", "FAILED", "REJECTED"]);
 
 export const mapParentStatus = (status) => {
   const value = String(status || "").toUpperCase();
 
-  if (DONE_STATUSES.has(value)) return "done";
+  if (COMPLETED_STATUSES.has(value)) return "completed";
+  if (READY_STATUSES.has(value)) return "ready";
+  if (PAYMENT_STATUSES.has(value)) return "payment";
   if (CANCELLED_STATUSES.has(value)) return "cancel";
 
   return "pending";
@@ -38,6 +42,7 @@ export const normalizeParentHistory = (homeData) => {
         date: todayOrder.orderedAt || todayOrder.createdAt,
         pickupType: todayOrder.pickupType || "",
         paymentMethod: todayOrder.paymentMethod || "Ví",
+        isFoodOrder: true,
       });
     });
   }
