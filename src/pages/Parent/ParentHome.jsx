@@ -121,7 +121,11 @@ const [avatarError, setAvatarError] = useState("");
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
    { name: "Đặt món", path: "order", icon: UtensilsCrossed,  },
-
+{
+  name: "Đặt món bán trú",
+  path: "boarding-order",
+  icon: UtensilsCrossed,
+},
     { name: "Lịch sử", path: "history", icon: History },
     { name: "Thống kê", path: "stats", icon: BarChart },
     { name: "Nạp tiền", path: "topup", icon: CreditCard },
