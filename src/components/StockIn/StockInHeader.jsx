@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StockInHeader() {
+export default function StockInHeader({ paymentStatus, onChangePaymentStatus }) {
   const navigate = useNavigate();
 
   return (
@@ -45,12 +45,22 @@ export default function StockInHeader() {
           {/* Radio */}
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input type="radio" name="payment" />
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentStatus === "DEBT"}
+                onChange={() => onChangePaymentStatus("DEBT")}
+              />
               Chưa thanh toán
             </label>
 
             <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input type="radio" name="payment" />
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentStatus === "PAID"}
+                onChange={() => onChangePaymentStatus("PAID")}
+              />
               Đã thanh toán
             </label>
           </div>

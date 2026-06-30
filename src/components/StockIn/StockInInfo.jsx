@@ -8,8 +8,8 @@ const formatDateTimeLocal = (date) => {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 };
 
-export default function StockInInfo() {
-  const [supplierName, setSupplierName] = useState("");
+export default function StockInInfo({ supplier, onChangeSupplier, note, onChangeNote }) {
+  const [supplierName, setSupplierName] = useState(supplier?.name || "");
   const [suppliers, setSuppliers] = useState([]);
   const [showSupplierList, setShowSupplierList] = useState(false);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
@@ -57,6 +57,12 @@ export default function StockInInfo() {
     loadSuppliers();
   }, [loadSuppliers]);
 
+  useEffect(() => {
+    if (supplier) {
+      setSupplierName(supplier.name || "");
+    }
+  }, [supplier]);
+
   const handleFocusSupplierInput = async () => {
     setShowSupplierList(true);
     if (!hasLoadedSuppliers && !loadingSuppliers) await loadSuppliers();
@@ -67,8 +73,9 @@ export default function StockInInfo() {
     setOpenAddSupplier(true);
   };
 
-  const handleSelectSupplier = (supplier) => {
-    setSupplierName(supplier.name || "");
+  const handleSelectSupplier = (selectedSupplier) => {
+    setSupplierName(selectedSupplier.name || "");
+    onChangeSupplier(selectedSupplier);
     setShowSupplierList(false);
   };
 
@@ -165,6 +172,8 @@ export default function StockInInfo() {
           <label className="mb-1 block text-sm font-medium">Diễn giải</label>
 
           <input
+            value={note}
+            onChange={(e) => onChangeNote(e.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
             placeholder="Nhập diễn giải"
           />
