@@ -30,9 +30,9 @@ export default function StockInHeader({ paymentStatus, onChangePaymentStatus }) 
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 
           {/* Loại nhập */}
-          <div className="relative w-full sm:w-[180px]">
+          <div className="relative w-full sm:w-[240px]">
             <select className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
-              <option>Mua hàng</option>
+              <option>Nhập hàng từ nhà cung cấp</option>
               <option>Khác</option>
             </select>
 

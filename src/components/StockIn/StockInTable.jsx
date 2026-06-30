@@ -56,7 +56,7 @@ export default function StockInTable({ items, setItems }) {
           name: product.name,
           unit: product.unit || "Cái",
           quantity: 1,
-          price: product.costPrice || product.price || 0,
+          price: product.costPrice || 0,
         },
       ]);
     }

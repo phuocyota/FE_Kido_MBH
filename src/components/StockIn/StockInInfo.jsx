@@ -191,23 +191,14 @@ export default function StockInInfo({ supplier, onChangeSupplier, note, onChange
           />
         </div>
 
-        <div className="md:col-span-5">
+        <div className="md:col-span-9">
           <label className="mb-1 block text-sm font-medium">
-            Ký hiệu hóa đơn
+            Tham chiếu
           </label>
 
           <input
             className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="VD: 1C24TYY"
-          />
-        </div>
-
-        <div className="md:col-span-4">
-          <label className="mb-1 block text-sm font-medium">Số hóa đơn</label>
-
-          <input
-            className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="Nhập số hóa đơn"
+            placeholder="Nhập tham chiếu"
           />
         </div>
 
