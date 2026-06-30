@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 // import RegisterFace from "../../components/FaceId/RegisterFace";
 import { loginByCard } from "../../api/auth";
-import bgImage from "../../assets/anh-can-tin-so-2.png";
+import bgImage from "../../assets/anh-can-tin-so-2.jpg";
 import { loginCashier } from "../../api/auth";
 import { isKitchenToken, saveAuthSession } from "../../api/session";
 

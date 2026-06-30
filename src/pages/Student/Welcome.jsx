@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import bg from "../../assets/anh-can-tin-so-2.png";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
 
 import QRVerify from "../../components/FaceId/QRVerify";
-import { warmCameraStream } from "../../components/FaceId/cameraStream";
 import { loginByCard } from "../../api/auth";
 import { saveAuthSession } from "../../api/session";
 
@@ -114,10 +113,6 @@ export default function Welcome() {
   //     },
   //   });
   // };
-
-  useEffect(() => {
-    warmCameraStream("environment");
-  }, []);
 
   useEffect(() => {
     const SCAN_RESET_MS = 500;
