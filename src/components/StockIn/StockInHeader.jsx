@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StockInHeader({ paymentStatus, onChangePaymentStatus }) {
+export default function StockInHeader({ paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
   const navigate = useNavigate();
 
   return (
@@ -73,6 +73,8 @@ export default function StockInHeader({ paymentStatus, onChangePaymentStatus }) 
 
             <input
               type="text"
+              value={reference}
+              onChange={(e) => onChangeReference(e.target.value)}
               placeholder="Nhập hóa đơn"
               className="h-10 w-full sm:max-w-[260px] px-3 text-sm bg-white border border-gray-300 rounded-md shadow-sm placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
             />

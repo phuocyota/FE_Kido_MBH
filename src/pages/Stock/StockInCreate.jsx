@@ -14,6 +14,7 @@ export default function StockInCreate() {
   const [paymentStatus, setPaymentStatus] = useState("DEBT");
   const [supplier, setSupplier] = useState(null);
   const [note, setNote] = useState("");
+  const [reference, setReference] = useState("");
   const [items, setItems] = useState([]);
 
   const handleSave = async () => {
@@ -32,7 +33,7 @@ export default function StockInCreate() {
         type: "IMPORT",
         supplierId: supplier.id,
         paymentStatus: paymentStatus,
-        note: note,
+        note: reference ? `[Tham chiếu: ${reference}] ${note}` : note,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -60,6 +61,8 @@ export default function StockInCreate() {
         <StockInHeader 
           paymentStatus={paymentStatus}
           onChangePaymentStatus={setPaymentStatus}
+          reference={reference}
+          onChangeReference={setReference}
         />
 
         {/* Thông tin phiếu */}
@@ -68,6 +71,7 @@ export default function StockInCreate() {
           onChangeSupplier={setSupplier}
           note={note}
           onChangeNote={setNote}
+          reference={reference}
         />
 
         {/* Bảng chi tiết */}

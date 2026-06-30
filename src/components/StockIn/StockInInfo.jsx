@@ -8,7 +8,7 @@ const formatDateTimeLocal = (date) => {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 };
 
-export default function StockInInfo({ supplier, onChangeSupplier, note, onChangeNote }) {
+export default function StockInInfo({ supplier, onChangeSupplier, note, onChangeNote, reference }) {
   const [supplierName, setSupplierName] = useState(supplier?.name || "");
   const [suppliers, setSuppliers] = useState([]);
   const [showSupplierList, setShowSupplierList] = useState(false);
@@ -197,8 +197,10 @@ export default function StockInInfo({ supplier, onChangeSupplier, note, onChange
           </label>
 
           <input
-            className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="Nhập tham chiếu"
+            value={reference}
+            readOnly
+            className="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 focus:outline-none"
+            placeholder="Hệ thống tự động điền từ HĐ mua hàng"
           />
         </div>
 
