@@ -33,7 +33,14 @@ export const normalizeCartItem = (item) => {
 
 export const normalizeCart = (response) => {
   const cart = unwrap(response);
-  const items = getCartItems(cart).map(normalizeCartItem);
+  const cartItems = getCartItems(cart);
+  const items = (
+    cartItems.length > 0
+      ? cartItems
+      : cart?.product || cart?.productId || cart?.name
+        ? [cart]
+        : []
+  ).map(normalizeCartItem);
 
   return {
     ...cart,
@@ -56,15 +63,30 @@ export const addCartItem = async ({ productId, quantity = 1, note = "" }) => {
   return normalizeCart(response);
 };
 
-export const updateCartItem = async (itemId, { quantity }) => {
-  const response = await apiRequest(API.CART.ITEM(itemId), {
-    method: "PUT",
-    body: JSON.stringify({ quantity }),
-  });
+export const updateCartItem =
+  async (
+    itemId,
+    {
+      quantity,
+      note = "",
+    }
+  ) => {
 
-  return normalizeCart(response);
-};
+    const response =
+      await apiRequest(
+        API.CART.ITEM(itemId),
+        {
+          method: "PUT",
 
+          body: JSON.stringify({
+            quantity,
+            note,
+          }),
+        }
+      );
+
+    return normalizeCart(response);
+  };
 export const deleteCartItem = async (itemId) => {
   const response = await apiRequest(API.CART.ITEM(itemId), {
     method: "DELETE",

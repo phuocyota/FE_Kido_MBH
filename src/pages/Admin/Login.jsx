@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, User, Lock, ScanFace } from "lucide-react";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
+import { Mail } from "lucide-react";
 import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import RegisterFace from "../../components/FaceId/RegisterFace";
+// import RegisterFace from "../../components/FaceId/RegisterFace";
 import { loginByCard } from "../../api/auth";
+import bgImage from "../../assets/anh-can-tin-so-2.jpg";
+import { loginCashier } from "../../api/auth";
+import { isKitchenToken, saveAuthSession } from "../../api/session";
 
 // 👉 import component Face (bạn đã làm ở trên)
 
@@ -19,14 +23,32 @@ export default function Login() {
   const scanBufferRef = useRef([]);
   const cardLoginInFlightRef = useRef(false);
 
-  const saveAuthSession = (authData) => {
-    localStorage.setItem("accessToken", authData.accessToken);
-    localStorage.setItem("isLogin", "true");
+  // nhân viên login 
+  const handleLoginCashier = async () => {
+  try {
 
-    if (authData.userId) localStorage.setItem("userId", authData.userId);
-    if (authData.userType) localStorage.setItem("userType", authData.userType);
-    if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
-  };
+    const authData = await loginCashier({ username, password });
+
+    if (!isKitchenToken(authData.accessToken)) {
+      throw new Error("Tài khoản không có quyền bếp");
+    }
+
+    saveAuthSession(authData);
+    localStorage.setItem("isLogin", "true");
+    localStorage.setItem("userId", authData.userId);
+    localStorage.setItem("userType", authData.userType);
+    localStorage.setItem("deviceId", authData.deviceId);
+    localStorage.setItem("fullName", authData.fullName);
+localStorage.setItem("avatar", authData.avatar || "");
+
+    toast.success("Đăng nhập thành công");
+
+    navigate("/kitchen");
+
+  } catch (error) {
+    toast.error(error?.message || "Đăng nhập thất bại");
+  }
+};
 
   const handleCardLogin = async (cardId) => {
     const normalizedCardId = String(cardId || "").trim();
@@ -40,6 +62,9 @@ export default function Login() {
       if (!authData?.accessToken) {
         throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
       }
+
+      console.log("CARD LOGIN AUTH:", authData);
+
 
       saveAuthSession(authData);
       toast.success("Dang nhap bang the thanh cong");
@@ -96,7 +121,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div
+  className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
+  style={{
+    backgroundImage: `url(${bgImage})`,
+  }}
+>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
 
         {/* LOGO */}
@@ -105,7 +135,7 @@ export default function Login() {
             <img src={logo} alt="kido" className="w-full h-full object-cover" />
           </div>
           <div className="text-lg font-semibold text-gray-800 mt-3">
-            Đăng nhập hệ thống
+            Đăng nhập hệ thống nhân viên căn tin
           </div>
         </div>
 
@@ -122,7 +152,8 @@ export default function Login() {
             Tài khoản
           </button>
 
-          <button
+          {/* Face ID disabled: QR-only flow */}
+          {/* <button
             onClick={() => setTab("face")}
             className={`flex-1 py-2 text-sm font-medium ${tab === "face"
               ? "border-b-2 border-blue-600 text-blue-600"
@@ -131,7 +162,7 @@ export default function Login() {
           >
             <ScanFace size={16} className="inline mr-1" />
             Face ID
-          </button>
+          </button> */}
         </div>
 
         {/* ================= TAB CONTENT ================= */}
@@ -141,21 +172,22 @@ export default function Login() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleLogin();
+              handleLoginCashier();
             }}
             className="space-y-5"
           >
             {/* USERNAME */}
-            <div className="relative">
-              <User size={18} className="absolute left-0 top-2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tên đăng nhập hoặc Sđt"
-                className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
+<div className="relative">
+  <Mail size={18} className="absolute left-0 top-2 text-gray-400" />
+
+  <input
+    type="text"
+    placeholder="Email nhân viên"
+    className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
+    value={username}
+    onChange={(e) => setUsername(e.target.value)}
+  />
+</div>
 
             {/* PASSWORD */}
             <div className="relative">
@@ -192,15 +224,15 @@ export default function Login() {
           </form>
         )}
 
-        {/* 😊 FACE ID */}
-        {tab === "face" && (
+        {/* 😊 FACE ID disabled: QR-only flow */}
+        {/* {tab === "face" && (
           <RegisterFace
             onSuccess={() => {
               toast.success("Login bằng Face thành công 🎉");
               navigate("/");
             }}
           />
-        )}
+        )} */}
       </div>
     </div>
   );

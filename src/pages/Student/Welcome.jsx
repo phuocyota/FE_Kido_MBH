@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import bg from "../../assets/anh-can-tin-so-2.png";
 
-import FaceVerify from "../../components/FaceId/FaceVerify";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
+
+import QRVerify from "../../components/FaceId/QRVerify";
 import { loginByCard } from "../../api/auth";
+import { saveAuthSession } from "../../api/session";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -11,15 +13,6 @@ export default function Welcome() {
   const scanInFlightRef = useRef(false);
   const qrInFlightRef = useRef(false);
   const scanBufferRef = useRef([]);
-
-  const saveAuthSession = (authData) => {
-    localStorage.setItem("accessToken", authData.accessToken);
-    localStorage.setItem("isLogin", "true");
-
-    if (authData.userId) localStorage.setItem("userId", authData.userId);
-    if (authData.userType) localStorage.setItem("userType", authData.userType);
-    if (authData.deviceId) localStorage.setItem("deviceId", authData.deviceId);
-  };
 
   const normalizeCardId = (value) => {
     const raw = String(value || "").trim();
@@ -36,10 +29,6 @@ export default function Welcome() {
     try {
       scanInFlightRef.current = true;
       const authData = await loginByCard(cardId);
-
-      if (!authData?.accessToken) {
-        throw new Error("Dang nhap the thanh cong nhung thieu accessToken");
-      }
 
       saveAuthSession(authData);
 
@@ -74,7 +63,7 @@ export default function Welcome() {
   };
 
   const handleQrPaymentScan = async (value) => {
-    const cardId = normalizeCardId(value);
+    const cardId = String(value || "").trim();
 
     if (!cardId) {
       alert("QR không hợp lệ");
@@ -87,12 +76,7 @@ export default function Welcome() {
       qrInFlightRef.current = true;
       const authData = await loginByCard(cardId);
 
-      if (!authData?.accessToken) {
-        throw new Error("Dang nhap QR thanh cong nhung thieu accessToken");
-      }
-
       saveAuthSession(authData);
-
       const student = {
         id: authData.userId,
         cardId,
@@ -120,14 +104,15 @@ export default function Welcome() {
     }
   };
 
-  const handleFaceLoginSuccess = (student) => {
-    navigate("/order", {
-      state: {
-        type: "student",
-        student,
-      },
-    });
-  };
+  // Face login disabled: QR-only flow.
+  // const handleFaceLoginSuccess = (student) => {
+  //   navigate("/order", {
+  //     state: {
+  //       type: "student",
+  //       student,
+  //     },
+  //   });
+  // };
 
   useEffect(() => {
     const SCAN_RESET_MS = 500;
@@ -176,17 +161,28 @@ export default function Welcome() {
 
   return (
     <div
-      className="h-screen w-full bg-cover bg-center flex items-center justify-center relative"
+      className="
+        h-screen
+        w-full
+        bg-cover
+        bg-center
+        flex
+        items-center
+        justify-center
+        relative
+      "
       style={{
         backgroundImage: `url(${bg})`,
       }}
     >
       <div className="absolute inset-0 bg-black/40"></div>
 
-      <div className="relative bg-blue/10 backdrop-blur-2xl border border-blue20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
+      <div className="relative bg-black/35 backdrop-blur-2xl border border-white/20 p-10 rounded-3xl text-center text-white w-[420px] shadow-2xl">
         <div className="text-6xl mb-4">🍔</div>
 
+        {/* TAB */}
         <div className="flex mb-5 border-b border-white/30">
+
           <button
             onClick={() => setTab("card")}
             className={`flex-1 py-2 text-sm font-medium ${tab === "card"
@@ -199,23 +195,37 @@ export default function Welcome() {
 
           <button
             onClick={() => setTab("qr")}
-            className={`flex-1 py-2 text-sm font-medium ${tab === "qr"
-              ? "border-b-2 border-white text-white"
-              : "text-white/60"
-              }`}
+            className={`
+              flex-1
+              py-2
+              text-sm
+              font-medium
+              ${tab === "qr"
+                ? "border-b-2 border-white text-white"
+                : "text-white/60"
+              }
+            `}
           >
             📷 QR
           </button>
 
-          <button
+          {/* Face ID disabled: QR-only flow */}
+          {/* <button
             onClick={() => setTab("face")}
-            className={`flex-1 py-2 text-sm font-medium ${tab === "face"
-              ? "border-b-2 border-white text-white"
-              : "text-white/60"
-              }`}
+            className={`
+              flex-1
+              py-2
+              text-sm
+              font-medium
+              ${tab === "face"
+                ? "border-b-2 border-white text-white"
+                : "text-white/60"
+              }
+            `}
           >
             😊 Face ID
-          </button>
+          </button> */}
+
         </div>
 
         {tab === "card" && (
@@ -230,23 +240,25 @@ export default function Welcome() {
 
         {tab === "qr" && (
           <div className="mt-4">
-            <FaceVerify
-              mode="qr"
+
+            <QRVerify
               onSuccess={(data) => {
                 handleQrPaymentScan(data?.value);
               }}
             />
+
           </div>
         )}
 
-        {tab === "face" && (
+        {/* Face ID disabled: QR-only flow */}
+        {/* {tab === "face" && (
           <div className="mt-4">
             <FaceVerify
               mode="face"
               onSuccess={handleFaceLoginSuccess}
             />
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
