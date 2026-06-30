@@ -14,5 +14,6 @@ export { stockTakeApi } from "./stockTakeApi";
 export { stockTransferApi } from "./stockTransferApi";
 export { stockInApi } from "./stockInApi";
 export { orderApi } from "./orderApi";
+export { mealItemApi } from "./mealItemApi";
 export * from "./socketClient";
 export { default as axiosInstance } from "./axiosConfig";

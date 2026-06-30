@@ -27,6 +27,7 @@ import StockTransferList from "./pages/Stock/StockTransferList";
 import StockTransfer from "./pages/Stock/StockTransfer";
 import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
 import CashManagement from "./pages/CashManagement/CashManagement";
+import MealItems from "./pages/MealItems/MealItems";
 import { authApi } from "./api";
 
 const PrivateRoute = ({ children }) => {
@@ -59,6 +60,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/products" element={<Products />} />
+                  <Route path="/meal-items" element={<MealItems />} />
                   <Route path="/price-book" element={<PriceBook />} />
                   <Route path="/stock-takes" element={<StockTakes />} />
                   <Route path="/account" element={<Account />} />
