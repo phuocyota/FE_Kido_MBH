@@ -29,6 +29,9 @@ const menu = [
   {
     name: "Đơn hàng", path: "/orders",
   },
+  {
+    name: "Bán trú", path: "/boarding-orders",
+  },
 
   // {
   //   name: "Giao dịch",
@@ -68,18 +71,18 @@ const menu = [
       { name: "Cuối ngày", path: "/report-end-day" },
       { name: "Hàng hóa", path: "/report-product" },
       { name: "Nhân viên", path: "/report-employee" },
-      { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
+      // { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
 
     ],
   },
 
-  {
-    name: "Thuế & Kế toán",
-    children: [
-      { name: "Thuế & Kế toán", path: "/thue" },
-      { name: "Hóa đơn điện tử", path: "/hoa-don-dien-tu" },
-    ],
-  },
+  // {
+  //   name: "Thuế & Kế toán",
+  //   children: [
+  //     { name: "Thuế & Kế toán", path: "/thue" },
+  //     { name: "Hóa đơn điện tử", path: "/hoa-don-dien-tu" },
+  //   ],
+  // },
 ];
 
 export default function Header() {
