@@ -10,11 +10,11 @@ import {
   Utensils,
   X,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import CustomSelect from "../ui/CustomSelect";
 
 export default function BoardingMealModal({
   context,
-  fallbackImage,
   foodTemplates,
   makeFoodId,
   meals,
@@ -39,7 +39,7 @@ export default function BoardingMealModal({
   const selectedTemplate = foodTemplates.find((item) => item.id === draft.templateId);
   const previewFood = {
     name: draft.name.trim() || selectedTemplate?.name || "Tên món ăn",
-    image: draft.image || selectedTemplate?.image || fallbackImage,
+    image: selectedTemplate?.image || null,
     description:
       draft.description.trim() ||
       selectedTemplate?.description ||
@@ -63,43 +63,26 @@ export default function BoardingMealModal({
     setDraft((current) => ({
       ...current,
       templateId,
-      imageName: "",
       name: template?.name ?? current.name,
-      image: template?.image ?? current.image,
-      imageFile: null,
       description: template?.description ?? current.description,
       ingredientsText: template?.ingredients?.join(", ") ?? current.ingredientsText,
     }));
   };
 
-  const chooseImageFile = (file) => {
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setDraft((current) => ({
-        ...current,
-        image: typeof reader.result === "string" ? reader.result : current.image,
-        imageName: file.name,
-        templateId: "",
-        imageFile: file,
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSave = () => {
-    if (!previewFood.name || previewFood.name === "Tên món ăn") return;
+    if (!previewFood.name || previewFood.name === "Tên món ăn") {
+      toast.error("Vui lòng nhập tên món ăn");
+      return;
+    }
 
     onSave({
       meal: draft.meal,
       applyMode: draft.applyMode,
       order: {
         food: {
-          id: initialFood?.id ?? makeFoodId(previewFood.name, context.day?.key, draft.meal),
+          id: draft.templateId || initialFood?.id || makeFoodId(previewFood.name, context.day?.key, draft.meal),
           name: previewFood.name,
           image: previewFood.image,
-          imageFile: draft.imageFile,
           description: previewFood.description,
           ingredients: previewFood.ingredients,
         },
@@ -190,23 +173,6 @@ export default function BoardingMealModal({
             </label>
 
             <label className="block">
-              <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
-                <ImagePlus size={16} className="text-sky-600" />
-                Ảnh món
-              </span>
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                onChange={(event) => chooseImageFile(event.target.files?.[0])}
-                className="block w-full rounded-lg border border-slate-200 bg-white text-sm text-slate-700 file:mr-4 file:h-11 file:border-0 file:bg-sky-50 file:px-4 file:text-sm file:font-bold file:text-sky-700 hover:file:bg-sky-100"
-              />
-              <p className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                <Upload size={14} />
-                {draft.imageName || "Chọn ảnh từ máy tính để hiển thị cho phụ huynh."}
-              </p>
-            </label>
-
-            <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Thành phần</span>
               <input
                 value={draft.ingredientsText}
@@ -241,11 +207,13 @@ export default function BoardingMealModal({
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-100">
-              <img
-                src={previewFood.image}
-                alt={previewFood.name}
-                className="h-52 w-full object-cover sm:h-64"
-              />
+              {previewFood.image && (
+                <img
+                  src={previewFood.image}
+                  alt={previewFood.name}
+                  className="h-52 w-full object-cover sm:h-64"
+                />
+              )}
               <div className="p-4">
                 <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
                   <Sparkles size={14} />

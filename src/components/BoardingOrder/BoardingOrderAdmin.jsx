@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ChefHat, Clock3, Plus, RefreshCcw, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import canteenImage from "../../assets/comthitkhotrung.jpg";
-import kidoImage from "../../assets/Yaourt.png";
-import testFood from "../../assets/comgasotnam.jpg";
+
 import BoardingMealModal from "./BoardingMealModal";
 import BoardingMenuSchedule from "./BoardingMenuSchedule";
 import CustomSelect from "../ui/CustomSelect";
 import { mealItemApi, productApi } from "../../api";
+import { getBranchIdFromToken } from "../../api/authSession";
 
 const levels = [
   { value: "preschool", label: "Mầm non", meals: ["Ăn sáng", "Ăn trưa", "Ăn xế"] },
@@ -25,29 +24,7 @@ const dayThemes = [
   { label: "Chủ nhật", header: "from-teal-500 to-emerald-500", cell: "bg-teal-50", button: "from-teal-400 via-emerald-400 to-green-300" },
 ];
 
-const foodTemplates = [
-  {
-    id: "rice-chicken",
-    name: "Cơm gà sốt nấm",
-    image: testFood,
-    description: "Suất trưa cân bằng tinh bột, đạm và rau xanh.",
-    ingredients: ["Cơm trắng", "Ức gà", "Nấm", "Cà rốt", "Rau cải"],
-  },
-  {
-    id: "rice-pork-egg",
-    name: "Cơm thịt kho trứng",
-    image: canteenImage,
-    description: "Món trưa quen vị, dễ ăn, dùng kèm rau luộc và canh.",
-    ingredients: ["Cơm trắng", "Thịt heo", "Trứng cút", "Rau luộc", "Canh bí đỏ"],
-  },
-  {
-    id: "yogurt",
-    name: "Yaourt trái cây",
-    image: kidoImage,
-    description: "Món xế mát, dễ tiêu hóa và phù hợp khẩu vị học sinh.",
-    ingredients: ["Sữa chua", "Mứt trái cây", "Ngũ cốc giòn"],
-  },
-];
+// Food templates will be fetched from API
 
 const formatDate = (date) =>
   new Intl.DateTimeFormat("vi-VN", {
@@ -119,6 +96,7 @@ export default function BoardingOrderAdmin() {
   const [schedule, setSchedule] = useState({});
   const [modalContext, setModalContext] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [foodTemplates, setFoodTemplates] = useState([]);
 
   const currentLevel = levels.find((item) => item.value === level) ?? levels[0];
   const meals = currentLevel.meals;
@@ -127,7 +105,8 @@ export default function BoardingOrderAdmin() {
   const fetchSchedule = async () => {
     setIsLoading(true);
     try {
-      const data = await mealItemApi.getAll({ status: "ACTIVE" });
+      const branchId = getBranchIdFromToken();
+      const data = await mealItemApi.getAll({ status: "ACTIVE", branchId });
       const newSchedule = {};
 
       data.forEach(item => {
@@ -139,8 +118,12 @@ export default function BoardingOrderAdmin() {
         
         if (meal && dateKey && itemLevel === level) {
             let imageUrl = item.product.imageUrl || "";
-            if (imageUrl && !imageUrl.startsWith("/") && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
-              imageUrl = `/${imageUrl}`;
+            if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+              const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+              if (!imageUrl.startsWith("/")) {
+                imageUrl = `/${imageUrl}`;
+              }
+              imageUrl = `${baseUrl}${imageUrl}`;
             }
 
             newSchedule[makeKey(itemLevel, dateKey, meal)] = {
@@ -167,6 +150,38 @@ export default function BoardingOrderAdmin() {
       setIsLoading(false);
     }
   };
+
+  const fetchTemplates = async () => {
+    try {
+      const data = await productApi.getAll();
+      const templates = data
+        .filter((p) => p.isCanteenItem === false && p.isActive === true)
+        .map((p) => {
+            let imageUrl = p.imageUrl || "";
+            if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+              const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+              if (!imageUrl.startsWith("/")) {
+                imageUrl = `/${imageUrl}`;
+              }
+              imageUrl = `${baseUrl}${imageUrl}`;
+            }
+            return {
+              id: p.id,
+              name: p.name,
+              image: imageUrl,
+              description: p.description || "",
+              ingredients: [],
+            };
+        });
+      setFoodTemplates(templates);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   useEffect(() => {
     fetchSchedule();
@@ -229,6 +244,7 @@ export default function BoardingOrderAdmin() {
           }
 
           return mealItemApi.create({
+              branchId: getBranchIdFromToken(),
               productId,
               mealPeriod: mealToEnum[meal],
               level,
@@ -408,7 +424,6 @@ export default function BoardingOrderAdmin() {
       {modalContext && (
         <BoardingMealModal
           context={modalContext}
-          fallbackImage={canteenImage}
           foodTemplates={foodTemplates}
           makeFoodId={makeFoodId}
           meals={meals}

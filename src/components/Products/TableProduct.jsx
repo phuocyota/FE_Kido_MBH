@@ -103,8 +103,12 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
       // Map BE fields to FE format
       const mappedData = data.map(p => {
         let imageUrl = p.imageUrl || "";
-        if (imageUrl && !imageUrl.startsWith("/") && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
-          imageUrl = `/${imageUrl}`;
+        if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+          const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+          if (!imageUrl.startsWith("/")) {
+            imageUrl = `/${imageUrl}`;
+          }
+          imageUrl = `${baseUrl}${imageUrl}`;
         }
         return {
           id: p.id,
