@@ -35,7 +35,16 @@ export default function AddProductModal({
   useEffect(() => {
     if (!open) return;
 
-    setImagePreview(initialData?.imageUrl || null);
+    let previewUrl = initialData?.imageUrl || null;
+    if (previewUrl && !previewUrl.startsWith("http") && !previewUrl.startsWith("data:")) {
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+      if (!previewUrl.startsWith("/")) {
+        previewUrl = `/${previewUrl}`;
+      }
+      previewUrl = `${baseUrl}${previewUrl}`;
+    }
+    setImagePreview(previewUrl);
+
     setForm({
       name: initialData?.name || "",
       categoryId: initialData?.categoryId || "",
@@ -94,7 +103,7 @@ export default function AddProductModal({
       setIsUploading(true);
       try {
         const res = await productApi.uploadImage(imageFile);
-        finalImageUrl = res.imageUrl;
+        finalImageUrl = res.path ? res.path.replace(/^\//, "") : "";
       } catch (err) {
         toast.error("Lỗi khi tải ảnh lên");
         setIsUploading(false);

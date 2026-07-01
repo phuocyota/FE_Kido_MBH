@@ -138,12 +138,17 @@ export default function BoardingOrderAdmin() {
         const itemLevel = item.level;
         
         if (meal && dateKey && itemLevel === level) {
+            let imageUrl = item.product.imageUrl || "";
+            if (imageUrl && !imageUrl.startsWith("/") && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+              imageUrl = `/${imageUrl}`;
+            }
+
             newSchedule[makeKey(itemLevel, dateKey, meal)] = {
                 id: item.id,
                 food: {
                     id: item.product.id,
                     name: item.product.name,
-                    image: item.product.imageUrl || "",
+                    image: imageUrl,
                     description: item.product.description || "",
                     ingredients: [], 
                 },
@@ -199,7 +204,7 @@ export default function BoardingOrderAdmin() {
           if (order.food.imageFile) {
               try {
                   const res = await productApi.uploadImage(order.food.imageFile);
-                  finalImageUrl = res.imageUrl;
+                  finalImageUrl = res.path ? res.path.replace(/^\//, "") : "";
               } catch (err) {
                   toast.error("Không thể tải ảnh món ăn lên");
               }
