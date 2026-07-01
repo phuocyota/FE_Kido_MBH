@@ -24,9 +24,35 @@ export const productApi = {
     return response.data.data || response.data;
   },
 
+  createCategory: async (data) => {
+    const response = await axiosInstance.post("/categories", data);
+    return response.data.data || response.data;
+  },
+
+  updateCategory: async (id, data) => {
+    const response = await axiosInstance.put(`/categories/${id}`, data);
+    return response.data.data || response.data;
+  },
+
+  deleteCategory: async (id) => {
+    const response = await axiosInstance.delete(`/categories/${id}`);
+    return response.data.data || response.data;
+  },
+
   // Create product
   create: async (data) => {
     const response = await axiosInstance.post("/products", data);
+    return response.data.data || response.data;
+  },
+
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axiosInstance.post("/upload/images", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data.data || response.data;
   },
 

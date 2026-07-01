@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { ChevronDown, Plus, Pencil } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { productApi } from "../../api";
 
 export default function SidebarFilter({
@@ -13,26 +14,56 @@ export default function SidebarFilter({
       const [openHienThi, setOpenHienThi] = useState(true);
       const [openModal, setOpenModal] = useState(false);
       const [isEdit, setIsEdit] = useState(false);
-      const [selectedItem, setSelectedItem] = useState(null);
+      const [selectedCategory, setSelectedCategory] = useState(null);
+      const [categoryName, setCategoryName] = useState("");
       const [groupData, setGroupData] = useState([]);
       const [loadingGroups, setLoadingGroups] = useState(false);
       const [categorySearch, setCategorySearch] = useState("");
 
-      useEffect(() => {
-            const loadCategories = async () => {
-                  try {
-                        setLoadingGroups(true);
-                        const data = await productApi.getCategories();
-                        setGroupData(Array.isArray(data) ? data : []);
-                  } catch {
-                        setGroupData([]);
-                  } finally {
-                        setLoadingGroups(false);
-                  }
-            };
+      const loadCategories = async () => {
+            try {
+                  setLoadingGroups(true);
+                  const data = await productApi.getCategories();
+                  setGroupData(Array.isArray(data) ? data : []);
+            } catch {
+                  setGroupData([]);
+            } finally {
+                  setLoadingGroups(false);
+            }
+      };
 
+      useEffect(() => {
             loadCategories();
       }, []);
+
+      const handleSaveCategory = async () => {
+            if (!categoryName.trim()) return toast.error("Vui lòng nhập tên nhóm");
+            try {
+                  if (isEdit) {
+                        await productApi.updateCategory(selectedCategory.id, { name: categoryName.trim() });
+                        toast.success("Cập nhật nhóm hàng thành công");
+                  } else {
+                        await productApi.createCategory({ name: categoryName.trim() });
+                        toast.success("Thêm nhóm hàng thành công");
+                  }
+                  setOpenModal(false);
+                  loadCategories();
+            } catch (err) {
+                  toast.error(err?.response?.data?.message || "Có lỗi xảy ra");
+            }
+      };
+
+      const handleDeleteCategory = async () => {
+            if (!selectedCategory) return;
+            try {
+                  await productApi.deleteCategory(selectedCategory.id);
+                  toast.success("Xóa nhóm hàng thành công");
+                  setOpenModal(false);
+                  loadCategories();
+            } catch (err) {
+                  toast.error(err?.response?.data?.message || "Không thể xóa nhóm hàng");
+            }
+      };
 
       const filteredGroups = groupData.filter(item =>
             item.name?.toLowerCase().includes(categorySearch.toLowerCase())
@@ -76,7 +107,8 @@ export default function SidebarFilter({
                                     <button
                                           onClick={() => {
                                                 setIsEdit(false);
-                                                setSelectedItem("");
+                                                setSelectedCategory(null);
+                                                setCategoryName("");
                                                 setOpenModal(true);
                                           }}
                                     >
@@ -148,7 +180,8 @@ export default function SidebarFilter({
                                                             onClick={(e) => {
                                                                   e.stopPropagation();
                                                                   setIsEdit(true);
-                                                                  setSelectedItem(item); // truyền object luôn
+                                                                  setSelectedCategory(item);
+                                                                  setCategoryName(item.name);
                                                                   setOpenModal(true);
                                                             }}
                                                             className="opacity-0 group-hover:opacity-100 cursor-pointer text-gray-500 hover:text-blue-600"
@@ -328,8 +361,8 @@ export default function SidebarFilter({
                                           <div>
                                                 <label className="block text-sm mb-1">Tên nhóm</label>
                                                 <input
-                                                      value={selectedItem || ""}
-                                                      onChange={(e) => setSelectedItem(e.target.value)}
+                                                      value={categoryName}
+                                                      onChange={(e) => setCategoryName(e.target.value)}
                                                       className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                                 />
                                           </div>
@@ -347,7 +380,10 @@ export default function SidebarFilter({
                                     {/* FOOTER */}
                                     <div className="flex justify-end gap-2 mt-6">
 
-                                          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
+                                          <button 
+                                                onClick={handleSaveCategory}
+                                                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer"
+                                          >
                                                 Lưu
                                           </button>
 
@@ -360,7 +396,10 @@ export default function SidebarFilter({
 
                                           {/* CHỈ HIỆN KHI EDIT */}
                                           {isEdit && (
-                                                <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 cursor-pointer">
+                                                <button 
+                                                      onClick={handleDeleteCategory}
+                                                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 cursor-pointer"
+                                                >
                                                       Xóa
                                                 </button>
                                           )}

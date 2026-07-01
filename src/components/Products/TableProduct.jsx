@@ -101,18 +101,31 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
     try {
       const data = await productApi.getAll();
       // Map BE fields to FE format
-      const mappedData = data.map(p => ({
-        id: p.id,
-        categoryId: p.categoryId,
-        code: p.sku,
-        name: p.name,
-        category: p.category?.name || "",
-        price: parseFloat(p.price),
-        cost: parseFloat(p.costPrice),
-        unit: p.unit || "",
-        isActive: p.isActive,
-        stock: 0, // Stock not available in products table, use inventory API if needed
-      }));
+      const mappedData = data.map(p => {
+        let imageUrl = p.imageUrl || "";
+        if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+          const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+          if (!imageUrl.startsWith("/")) {
+            imageUrl = `/${imageUrl}`;
+          }
+          imageUrl = `${baseUrl}${imageUrl}`;
+        }
+        return {
+          id: p.id,
+          categoryId: p.categoryId,
+          code: p.sku,
+          name: p.name,
+          category: p.category?.name || "",
+          price: parseFloat(p.price),
+          cost: parseFloat(p.costPrice),
+          unit: p.unit || "",
+          isActive: p.isActive,
+          isCanteenItem: p.isCanteenItem,
+          isBoarding: p.isCanteenItem === false,
+          imageUrl,
+          stock: 0, // Stock not available in products table, use inventory API if needed
+        };
+      });
       setProducts(mappedData);
     } catch (error) {
       toast.error("Không thể tải danh sách sản phẩm");
@@ -357,6 +370,8 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               categoryId: data.categoryId || undefined,
               unit: data.unit || undefined,
               isActive: data.active,
+              isCanteenItem: !data.isBoarding,
+              imageUrl: data.imageUrl || undefined,
             };
 
             if (isEdit && productId) {

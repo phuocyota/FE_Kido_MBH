@@ -13,7 +13,6 @@ const menu = [
     name: "Hàng hóa",
     children: [
       { name: "Danh mục", path: "/products" },
-      { name: "Thiết lập thực đơn", path: "/meal-items" },
       { name: "Thiết lập giá", path: "/price-book" },
       { name: "Kiểm kho", path: "/stock-takes" },
       { name: "Nhập kho", path: "/stock-in" },
