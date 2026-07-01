@@ -372,6 +372,8 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               isActive: data.active,
               isCanteenItem: !data.isBoarding,
               imageUrl: data.imageUrl || undefined,
+              ingredients: data.ingredients || undefined,
+              description: data.description || undefined,
             };
 
             if (isEdit && productId) {

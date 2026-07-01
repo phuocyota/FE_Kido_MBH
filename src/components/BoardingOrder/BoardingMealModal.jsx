@@ -30,7 +30,7 @@ export default function BoardingMealModal({
     imageName: "",
     description: initialFood?.description ?? "",
     ingredientsText: initialFood?.ingredients?.join(", ") ?? "",
-    note: context.order?.note ?? "",
+    sortOrder: context.order?.sortOrder ?? 0,
     applyMode: context.applyMode ?? "day",
     meal: context.meal ?? meals[0] ?? "",
     imageFile: null,
@@ -39,7 +39,7 @@ export default function BoardingMealModal({
   const selectedTemplate = foodTemplates.find((item) => item.id === draft.templateId);
   const previewFood = {
     name: draft.name.trim() || selectedTemplate?.name || "Tên món ăn",
-    image: selectedTemplate?.image || null,
+    image: draft.imageFile ? URL.createObjectURL(draft.imageFile) : (draft.image || selectedTemplate?.image || null),
     description:
       draft.description.trim() ||
       selectedTemplate?.description ||
@@ -66,6 +66,7 @@ export default function BoardingMealModal({
       name: template?.name ?? current.name,
       description: template?.description ?? current.description,
       ingredientsText: template?.ingredients?.join(", ") ?? current.ingredientsText,
+      image: template?.image ?? current.image,
     }));
   };
 
@@ -83,10 +84,11 @@ export default function BoardingMealModal({
           id: draft.templateId || initialFood?.id || makeFoodId(previewFood.name, context.day?.key, draft.meal),
           name: previewFood.name,
           image: previewFood.image,
+          imageFile: draft.imageFile,
           description: previewFood.description,
           ingredients: previewFood.ingredients,
         },
-        note: draft.note.trim(),
+        sortOrder: Number(draft.sortOrder) || 0,
         updatedAt: new Date().toISOString(),
       },
     });
@@ -194,13 +196,13 @@ export default function BoardingMealModal({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-bold text-slate-700">Ghi chú</span>
-              <textarea
-                value={draft.note}
-                onChange={(event) => updateDraft("note", event.target.value)}
-                rows={3}
-                placeholder="Ví dụ: ít sốt, không cay, suất riêng cho bé dị ứng..."
-                className="min-h-24 w-full resize-none rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-100"
+              <span className="mb-2 block text-sm font-bold text-slate-700">Thứ tự ưu tiên</span>
+              <input
+                type="number"
+                value={draft.sortOrder}
+                onChange={(event) => updateDraft("sortOrder", event.target.value)}
+                placeholder="Ví dụ: 0, 1, 2..."
+                className="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               />
             </label>
           </div>
@@ -242,11 +244,7 @@ export default function BoardingMealModal({
                   </div>
                 </div>
 
-                {draft.note && (
-                  <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
-                    {draft.note}
-                  </p>
-                )}
+
               </div>
             </div>
           </div>

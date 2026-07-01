@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { stockInApi } from "../../api";
+import StockHeader from "../../components/Stock/StockHeader";
 import StockInDetailTable from "../../components/StockIn/StockInDetailTable";
 import StockInListTable from "../../components/StockIn/StockInListTable";
 import StockInListToolbar from "../../components/StockIn/StockInListToolbar";
@@ -143,42 +144,55 @@ export default function StockInList() {
     setCurrentPage(1);
   };
 
+  const totalAmount = useMemo(() => {
+    return filteredReceipts.reduce((sum, receipt) => sum + (receipt.totalAmount || 0), 0);
+  }, [filteredReceipts]);
+
   return (
-    <div className="min-h-screen bg-cyan-50 sm:p-2">
-      <div className="mx-auto flex max-w-[1800px] min-w-0 flex-col overflow-hidden border-cyan-200 bg-white shadow-sm sm:border">
-        <StockInListToolbar
-          searchKeyword={searchKeyword}
-          onSearchChange={handleSearchChange}
-          onCreateClick={handleCreateClick}
+    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
+      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+        <StockHeader
+          activeTab="in"
+          onRefresh={loadReceipts}
+          totalCount={filteredReceipts.length}
+          totalAmount={totalAmount}
         />
 
-        {(loading || detailLoading || error) && (
-          <div className="border-b border-cyan-200 bg-white px-4 py-3 text-sm">
-            {loading && (
-              <span className="text-slate-500">Đang tải dữ liệu...</span>
-            )}
-            {!loading && detailLoading && (
-              <span className="text-slate-500">Đang tải chi tiết...</span>
-            )}
-            {error && <span className="text-red-600">{error}</span>}
-          </div>
-        )}
+        <div className="mt-4 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+          <StockInListToolbar
+            searchKeyword={searchKeyword}
+            onSearchChange={handleSearchChange}
+            onCreateClick={handleCreateClick}
+          />
 
-        <StockInListTable
-          receipts={visibleReceipts}
-          selectedReceipt={selectedReceipt}
-          onSelectReceipt={setSelectedReceiptId}
-        />
+          {(loading || detailLoading || error) && (
+            <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
+              {loading && (
+                <span className="text-slate-500">Đang tải dữ liệu...</span>
+              )}
+              {!loading && detailLoading && (
+                <span className="text-slate-500">Đang tải chi tiết...</span>
+              )}
+              {error && <span className="text-red-600">{error}</span>}
+            </div>
+          )}
 
-        <StockInPagination
-          total={filteredReceipts.length}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={handlePageSizeChange}
-        />
+          <StockInListTable
+            receipts={visibleReceipts}
+            selectedReceipt={selectedReceipt}
+            onSelectReceipt={setSelectedReceiptId}
+          />
 
-        <StockInDetailTable receipt={selectedReceipt} />
+          <StockInPagination
+            total={filteredReceipts.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
+
+          <StockInDetailTable receipt={selectedReceipt} />
+        </div>
       </div>
     </div>
   );

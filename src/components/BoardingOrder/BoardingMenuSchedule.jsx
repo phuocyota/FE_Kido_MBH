@@ -20,48 +20,53 @@ function EmptyMealButton({ day, onOpen }) {
   );
 }
 
-function MealCard({ compact = false, day, meal, order, onOpen }) {
-  if (!order) {
-    return <EmptyMealButton day={day} onOpen={onOpen} />;
+function MealCard({ compact = false, day, meal, options = [], onOpen }) {
+  if (!options || options.length === 0) {
+    return <EmptyMealButton day={day} onOpen={() => onOpen({ day, meal, optionIndex: 0 })} />;
   }
 
   return (
-    <div
-      className={`relative rounded-lg border border-white bg-white p-2 text-left shadow-sm ring-1 ring-slate-100 ${
-        compact ? "" : "min-h-40"
-      }`}
-    >
-      <div className={compact ? "flex min-w-0 gap-2" : ""}>
-        <img
-          src={order.food.image}
-          alt={order.food.name}
-          className={
-            compact
-              ? "h-14 w-14 shrink-0 rounded-lg object-cover"
-              : "h-24 w-full rounded-lg object-cover"
-          }
-        />
-        <div className={compact ? "min-w-0 flex-1 pr-8" : "mt-2"}>
-          <p className="text-[11px] font-bold uppercase text-emerald-600">
-            {meal}
-          </p>
-          <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
-            {order.food.name}
-          </h3>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-            {order.food.ingredients?.slice(0, compact ? 2 : 3).join(", ")}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-2 w-full h-full flex flex-col justify-center">
+      {options.map((opt, idx) => (
+        <div
+          key={opt.id || idx}
+          className="relative flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-1.5 text-left shadow-sm hover:border-emerald-300 transition"
+        >
+          <img
+            src={opt.food.image}
+            alt={opt.food.name}
+            className="h-10 w-10 shrink-0 rounded-lg object-cover border border-slate-100"
+          />
+          <div className="min-w-0 flex-1 pr-6">
+            <p className="text-[9px] font-bold uppercase text-emerald-600">
+              Lựa chọn {idx + 1}
+            </p>
+            <h4 className="truncate text-xs font-bold text-slate-800" title={opt.food.name}>
+              {opt.food.name}
+            </h4>
+          </div>
 
-      <button
-        type="button"
-        onClick={onOpen}
-        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-md transition hover:bg-amber-100 hover:text-amber-700"
-        aria-label={`Chỉnh sửa ${order.food.name}`}
-      >
-        <Edit3 size={15} />
-      </button>
+          <button
+            type="button"
+            onClick={() => onOpen({ day, meal, order: opt, optionIndex: idx })}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 transition"
+            aria-label="Sửa lựa chọn"
+          >
+            <Edit3 size={12} />
+          </button>
+        </div>
+      ))}
+
+      {options.length < 3 && (
+        <button
+          type="button"
+          onClick={() => onOpen({ day, meal, optionIndex: options.length })}
+          className="flex h-8 w-full items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 bg-slate-50/50 text-xs font-medium text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition"
+        >
+          <Plus size={14} />
+          Lựa chọn {options.length + 1}
+        </button>
+      )}
     </div>
   );
 }
@@ -76,6 +81,7 @@ export default function BoardingMenuSchedule({
 }) {
   return (
     <>
+      {/* Mobile / Tablet view */}
       <div className="block p-3 lg:hidden">
         <div className="grid gap-4 md:grid-cols-2">
           {weekDays.map((day) => (
@@ -106,8 +112,8 @@ export default function BoardingMenuSchedule({
                           compact
                           day={day}
                           meal={meal}
-                          order={schedule[key]}
-                          onOpen={() => onOpenMeal({ day, meal })}
+                          options={schedule[key]}
+                          onOpen={onOpenMeal}
                         />
                       </div>
                     </div>
@@ -119,6 +125,7 @@ export default function BoardingMenuSchedule({
         </div>
       </div>
 
+      {/* Desktop view */}
       <div className="hidden p-4 lg:block">
         <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="overflow-x-auto">
@@ -164,13 +171,13 @@ export default function BoardingMenuSchedule({
                       return (
                         <td
                           key={key}
-                          className={`h-48 border-b border-r border-white ${day.cell} p-3 align-middle`}
+                          className={`border-b border-r border-white ${day.cell} p-3 align-middle`}
                         >
                           <MealCard
                             day={day}
                             meal={meal}
-                            order={schedule[key]}
-                            onOpen={() => onOpenMeal({ day, meal })}
+                            options={schedule[key]}
+                            onOpen={onOpenMeal}
                           />
                         </td>
                       );

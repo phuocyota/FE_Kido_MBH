@@ -36,4 +36,10 @@ export const supplierApi = {
   delete: async (id) => {
     await axiosInstance.delete(`/suppliers/${id}`);
   },
+
+  // Get supplier debts
+  getDebts: async (id) => {
+    const response = await axiosInstance.get(`/suppliers/${id}/debts`);
+    return response.data.data || response.data;
+  },
 };

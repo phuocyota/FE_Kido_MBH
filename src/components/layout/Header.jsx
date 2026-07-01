@@ -14,16 +14,16 @@ const menu = [
     children: [
       { name: "Danh mục", path: "/products" },
       { name: "Thiết lập giá", path: "/price-book" },
-      { name: "Kiểm kho", path: "/stock-takes" },
-      { name: "Nhập kho", path: "/stock-in" },
-      { name: "Xuất kho", path: "/stock-out" },
-      { name: "Chuyển kho", path: "/stock-transfer" },
+      { name: "Kho", path: "/stock-in" },
       { name: "Thu chi", path: "/cash-management" },
     ],
   },
 
   {
     name: "Nhà cung cấp", path: "/suppliers",
+  },
+  {
+    name: "Khách hàng", path: "/customers",
   },
 
   {

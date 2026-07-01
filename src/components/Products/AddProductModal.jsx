@@ -17,6 +17,8 @@ const emptyForm = {
   isBoarding: false,
   unit: "",
   imageUrl: "",
+  ingredients: "",
+  description: "",
 };
 
 export default function AddProductModal({
@@ -59,6 +61,8 @@ export default function AddProductModal({
       isBoarding: initialData?.isBoarding ?? false,
       unit: initialData?.unit || "",
       imageUrl: initialData?.imageUrl || "",
+      ingredients: initialData?.ingredients || "",
+      description: initialData?.description || "",
     });
   }, [initialData, open]);
 
@@ -310,6 +314,32 @@ export default function AddProductModal({
               </div>
             </div>
           </div>
+
+          {form.isBoarding && (
+            <div className="border border-gray-300 rounded-2xl p-5 space-y-5">
+              <div>
+                <label className="font-semibold text-gray-900 block mb-2">Thành phần</label>
+                <input
+                  name="ingredients"
+                  value={form.ingredients}
+                  onChange={handleChange}
+                  placeholder="Ví dụ: Cơm trắng, thịt heo, rau luộc"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-900 block mb-2">Mô tả</label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Mô tả ngắn để phụ huynh xem chi tiết món"
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-300 px-4 md:px-6 py-4 flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-start md:items-center">

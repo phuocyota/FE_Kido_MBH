@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ChefHat, Clock3, Plus, RefreshCcw, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-
 import BoardingMealModal from "./BoardingMealModal";
 import BoardingMenuSchedule from "./BoardingMenuSchedule";
 import CustomSelect from "../ui/CustomSelect";
@@ -23,8 +22,6 @@ const dayThemes = [
   { label: "Thứ 7", header: "from-violet-500 to-fuchsia-500", cell: "bg-violet-50", button: "from-violet-400 via-fuchsia-400 to-pink-300" },
   { label: "Chủ nhật", header: "from-teal-500 to-emerald-500", cell: "bg-teal-50", button: "from-teal-400 via-emerald-400 to-green-300" },
 ];
-
-// Food templates will be fetched from API
 
 const formatDate = (date) =>
   new Intl.DateTimeFormat("vi-VN", {
@@ -80,14 +77,14 @@ const mealToEnum = {
   "Ăn sáng": "BREAKFAST",
   "Ăn trưa": "LUNCH",
   "Ăn xế": "AFTERNOON",
-  "Ăn tối": "DINNER"
+  "Ăn tối": "DINNER",
 };
 
 const enumToMeal = {
   BREAKFAST: "Ăn sáng",
   LUNCH: "Ăn trưa",
   AFTERNOON: "Ăn xế",
-  DINNER: "Ăn tối"
+  DINNER: "Ăn tối",
 };
 
 export default function BoardingOrderAdmin() {
@@ -109,39 +106,48 @@ export default function BoardingOrderAdmin() {
       const data = await mealItemApi.getAll({ status: "ACTIVE", branchId });
       const newSchedule = {};
 
-      data.forEach(item => {
+      data.forEach((item) => {
         if (!item.product) return;
 
         const meal = enumToMeal[item.mealPeriod];
         const dateKey = item.dateKey;
         const itemLevel = item.level;
-        
-        if (meal && dateKey && itemLevel === level) {
-            let imageUrl = item.product.imageUrl || "";
-            if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
-              const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
-              if (!imageUrl.startsWith("/")) {
-                imageUrl = `/${imageUrl}`;
-              }
-              imageUrl = `${baseUrl}${imageUrl}`;
-            }
 
-            newSchedule[makeKey(itemLevel, dateKey, meal)] = {
-                id: item.id,
-                food: {
-                    id: item.product.id,
-                    name: item.product.name,
-                    image: imageUrl,
-                    description: item.product.description || "",
-                    ingredients: [], 
-                },
-                note: item.note || "",
-                scope: "day",
-                dateKey: dateKey,
-                meal,
-                level: itemLevel,
-            };
+        if (meal && dateKey && itemLevel === level) {
+          let imageUrl = item.product.imageUrl || "";
+          if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+            const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+            if (!imageUrl.startsWith("/")) {
+              imageUrl = `/${imageUrl}`;
+            }
+            imageUrl = `${baseUrl}${imageUrl}`;
+          }
+
+          const key = makeKey(itemLevel, dateKey, meal);
+          if (!newSchedule[key]) {
+            newSchedule[key] = [];
+          }
+
+          newSchedule[key].push({
+            id: item.id,
+            food: {
+              id: item.product.id,
+              name: item.product.name,
+              image: imageUrl,
+              description: item.product.description || "",
+              ingredients: item.product.ingredients ? item.product.ingredients.split(",").map(i => i.trim()).filter(Boolean) : [],
+            },
+            note: item.note || "",
+            sortOrder: item.sortOrder || 0,
+            scope: "day",
+            dateKey: dateKey,
+            meal,
+            level: itemLevel,
+          });
         }
+      });
+      Object.keys(newSchedule).forEach((key) => {
+        newSchedule[key].sort((a, b) => a.sortOrder - b.sortOrder);
       });
       setSchedule(newSchedule);
     } catch (err) {
@@ -157,21 +163,21 @@ export default function BoardingOrderAdmin() {
       const templates = data
         .filter((p) => p.isCanteenItem === false && p.isActive === true)
         .map((p) => {
-            let imageUrl = p.imageUrl || "";
-            if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
-              const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
-              if (!imageUrl.startsWith("/")) {
-                imageUrl = `/${imageUrl}`;
-              }
-              imageUrl = `${baseUrl}${imageUrl}`;
+          let imageUrl = p.imageUrl || "";
+          if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
+            const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
+            if (!imageUrl.startsWith("/")) {
+              imageUrl = `/${imageUrl}`;
             }
-            return {
-              id: p.id,
-              name: p.name,
-              image: imageUrl,
-              description: p.description || "",
-              ingredients: [],
-            };
+            imageUrl = `${baseUrl}${imageUrl}`;
+          }
+          return {
+            id: p.id,
+            name: p.name,
+            image: imageUrl,
+            description: p.description || "",
+            ingredients: p.ingredients ? p.ingredients.split(",").map(i => i.trim()).filter(Boolean) : [],
+          };
         });
       setFoodTemplates(templates);
     } catch (err) {
@@ -189,72 +195,101 @@ export default function BoardingOrderAdmin() {
 
   const filledCount = weekDays.reduce(
     (count, day) =>
-      count + meals.filter((meal) => Boolean(schedule[makeKey(level, day.key, meal)])).length,
-    0,
+      count +
+      meals.filter((meal) => {
+        const options = schedule[makeKey(level, day.key, meal)] || [];
+        return options.length > 0;
+      }).length,
+    0
   );
   const totalSlots = weekDays.length * meals.length;
 
-  const openModal = ({ day = weekDays[0], meal = meals[0], applyMode = "day" } = {}) => {
-    const key = makeKey(level, day.key, meal);
-
+  const openModal = ({ day = weekDays[0], meal = meals[0], applyMode = "day", order = null, optionIndex = 0 } = {}) => {
     setModalContext({
       day,
       meal,
       applyMode,
-      order: schedule[key],
+      order,
+      optionIndex,
     });
   };
 
   const saveMeal = async ({ meal, applyMode, order }) => {
     if (!modalContext?.day) return;
     const targetDays = applyMode === "week" ? weekDays : [modalContext.day];
-    
+
     setIsLoading(true);
     try {
       let productId = order.food.id;
-      
-      const isTemplate = foodTemplates.some(t => t.id === productId);
-      if (!isTemplate && String(productId).startsWith("admin-")) {
-          let finalImageUrl = order.food.image;
-          if (order.food.imageFile) {
-              try {
-                  const res = await productApi.uploadImage(order.food.imageFile);
-                  finalImageUrl = res.path ? res.path.replace(/^\//, "") : "";
-              } catch (err) {
-                  toast.error("Không thể tải ảnh món ăn lên");
-              }
-          }
 
-          const newProduct = await productApi.create({
-              categoryId: null,
-              name: order.food.name,
-              description: order.food.description,
-              imageUrl: finalImageUrl,
-              price: 0,
-              isActive: true,
-              isCanteenItem: false
-          });
-          productId = newProduct.id;
+      const isTemplate = foodTemplates.some((t) => t.id === productId);
+      if (!isTemplate && String(productId).startsWith("admin-")) {
+        let finalImageUrl = order.food.image;
+        if (order.food.imageFile) {
+          try {
+            const res = await productApi.uploadImage(order.food.imageFile);
+            finalImageUrl = res.path ? res.path.replace(/^\//, "") : "";
+          } catch (err) {
+            toast.error("Không thể tải ảnh món ăn lên");
+          }
+        }
+
+        const newProduct = await productApi.create({
+          categoryId: null,
+          name: order.food.name,
+          description: order.food.description,
+          ingredients: order.food.ingredients.join(", "),
+          imageUrl: finalImageUrl,
+          price: 0,
+          isActive: true,
+          isCanteenItem: false,
+        });
+        productId = newProduct.id;
+      } else {
+        // Update existing product
+        let finalImageUrl = order.food.image;
+        if (order.food.imageFile) {
+          try {
+            const res = await productApi.uploadImage(order.food.imageFile);
+            finalImageUrl = res.path ? res.path.replace(/^\//, "") : "";
+          } catch (err) {
+            toast.error("Không thể tải ảnh món ăn lên");
+          }
+        }
+
+        await productApi.update(productId, {
+          name: order.food.name,
+          description: order.food.description,
+          ingredients: order.food.ingredients.join(", "),
+          imageUrl: finalImageUrl,
+        });
       }
 
-      await Promise.all(targetDays.map(async (day) => {
-          const existing = schedule[makeKey(level, day.key, meal)];
-          if (existing?.id) {
-              await mealItemApi.delete(existing.id).catch(() => {});
+      await Promise.all(
+        targetDays.map(async (day) => {
+          const dayKey = makeKey(level, day.key, meal);
+          const dayOptions = schedule[dayKey] || [];
+
+          // Delete existing option at index if editing
+          const existingOption = dayOptions[modalContext.optionIndex];
+          if (existingOption?.id) {
+            await mealItemApi.delete(existingOption.id).catch(() => {});
           }
 
           return mealItemApi.create({
-              branchId: getBranchIdFromToken(),
-              productId,
-              mealPeriod: mealToEnum[meal],
-              level,
-              dayOfWeek: day.date.getDay(),
-              dateKey: day.key,
-              note: order.note,
-              status: "ACTIVE"
+            branchId: getBranchIdFromToken(),
+            productId,
+            mealPeriod: mealToEnum[meal],
+            level,
+            dayOfWeek: day.date.getDay(),
+            dateKey: day.key,
+            note: order.note,
+            sortOrder: order.sortOrder || 0,
+            status: "ACTIVE",
           });
-      }));
-      
+        })
+      );
+
       toast.success("Lưu thực đơn thành công");
       await fetchSchedule();
       setModalContext(null);
@@ -267,51 +302,47 @@ export default function BoardingOrderAdmin() {
 
   const deleteMeal = async () => {
     if (!modalContext?.day || !modalContext?.meal) return;
-    
-    const key = makeKey(level, modalContext.day.key, modalContext.meal);
-    const existing = schedule[key];
-    
+
+    const existing = modalContext.order;
+
     if (existing?.id) {
-        setIsLoading(true);
-        try {
-            await mealItemApi.delete(existing.id);
-            toast.success("Xóa món thành công");
-            await fetchSchedule();
-            setModalContext(null);
-        } catch (err) {
-            toast.error("Không thể xóa món");
-        } finally {
-            setIsLoading(false);
-        }
-    } else {
-        setSchedule((current) => {
-          const next = { ...current };
-          delete next[key];
-          return next;
-        });
+      setIsLoading(true);
+      try {
+        await mealItemApi.delete(existing.id);
+        toast.success("Xóa món thành open công");
+        await fetchSchedule();
         setModalContext(null);
+      } catch (err) {
+        toast.error("Không thể xóa món");
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setModalContext(null);
     }
   };
 
   const clearWeek = async () => {
     setIsLoading(true);
     try {
-        const promises = [];
-        weekDays.forEach((day) => {
-            meals.forEach((meal) => {
-                const existing = schedule[makeKey(level, day.key, meal)];
-                if (existing?.id) {
-                    promises.push(mealItemApi.delete(existing.id).catch(() => {}));
-                }
-            });
+      const promises = [];
+      weekDays.forEach((day) => {
+        meals.forEach((meal) => {
+          const options = schedule[makeKey(level, day.key, meal)] || [];
+          options.forEach((opt) => {
+            if (opt?.id) {
+              promises.push(mealItemApi.delete(opt.id).catch(() => {}));
+            }
+          });
         });
-        await Promise.all(promises);
-        toast.success("Đã làm mới tuần");
-        await fetchSchedule();
+      });
+      await Promise.all(promises);
+      toast.success("Đã làm mới tuần");
+      await fetchSchedule();
     } catch (err) {
-        toast.error("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra");
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -357,7 +388,7 @@ export default function BoardingOrderAdmin() {
           <div className="grid gap-4 border-b border-slate-200 p-4 sm:grid-cols-2 xl:grid-cols-[220px_220px_1fr] xl:items-end xl:p-5">
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Khối lớp</span>
-              <CustomSelect 
+              <CustomSelect
                 value={level}
                 onChange={setLevel}
                 options={levels}
@@ -367,12 +398,12 @@ export default function BoardingOrderAdmin() {
 
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Tuần áp dụng</span>
-              <CustomSelect 
+              <CustomSelect
                 value={week}
                 onChange={setWeek}
                 options={[
                   { value: "this", label: "Tuần này" },
-                  { value: "next", label: "Tuần tới" }
+                  { value: "next", label: "Tuần tới" },
                 ]}
                 themeColor="sky"
               />
@@ -401,7 +432,7 @@ export default function BoardingOrderAdmin() {
                 Lịch thực đơn
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                Bấm dấu cộng để thêm theo ngày, hoặc chọn áp dụng cả tuần trong popup.
+                Bấm các nút lựa chọn để thiết lập tối đa 3 món cho một bữa ăn.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">

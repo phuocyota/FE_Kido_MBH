@@ -25,7 +25,7 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterValues, setFilterValues] = useState(defaultFilterValues);
   const iconButtonClass =
-    "inline-flex h-9 w-9 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 transition hover:border-cyan-400 hover:text-cyan-700";
+    "min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition";
 
   const handleFilterChange = (field, value) => {
     // Lưu lựa chọn lọc ở toolbar để sau này có thể nối API dễ dàng.
@@ -33,95 +33,98 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
   };
 
   return (
-    <div className="grid gap-3 border-b border-cyan-200 bg-slate-50 px-3 py-3 xl:grid-cols-[auto_1fr] xl:items-center">
-      <div className="grid gap-2 sm:grid-cols-[auto_auto_1fr] sm:items-center">
-        <button
-          type="button"
-          className="inline-flex h-9 min-w-0 items-center justify-center gap-2 rounded border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-500 shadow-sm sm:justify-start"
-        >
-          <span className="truncate">Thực hiện hàng loạt</span>
-          <ChevronDown size={15} className="shrink-0" />
-        </button>
+    <div className="bg-white border-b border-gray-300">
+      <div className="p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          {/* Filters & Actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+            <button
+              type="button"
+              className="h-10 px-4 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2"
+            >
+              <span className="truncate">Thực hiện hàng loạt</span>
+              <ChevronDown size={15} className="shrink-0" />
+            </button>
 
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsFilterOpen((current) => !current)}
-            className={`inline-flex h-9 w-full items-center justify-center gap-2 rounded border bg-white px-4 text-sm font-semibold text-slate-900 shadow-sm transition hover:border-cyan-600 hover:text-cyan-700 sm:w-auto ${
-              isFilterOpen ? "border-cyan-600" : "border-slate-700"
-            }`}
-          >
-            Lọc
-            <ChevronDown
-              size={15}
-              className={`transition ${isFilterOpen ? "rotate-180" : ""}`}
-            />
-          </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((current) => !current)}
+                className={`h-10 px-4 w-full sm:w-auto rounded-xl border bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2 ${
+                  isFilterOpen ? "border-indigo-600 text-indigo-600 ring-2 ring-indigo-100" : "border-gray-300"
+                }`}
+              >
+                Lọc
+                <ChevronDown
+                  size={15}
+                  className={`transition ${isFilterOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-          {isFilterOpen && (
-            <StockFilterPanel
-              type="out"
-              values={filterValues}
-              onChange={handleFilterChange}
-              onReset={() => setFilterValues(defaultFilterValues)}
-              onApply={() => setIsFilterOpen(false)}
-            />
-          )}
-        </div>
+              {isFilterOpen && (
+                <StockFilterPanel
+                  type="out"
+                  values={filterValues}
+                  onChange={handleFilterChange}
+                  onReset={() => setFilterValues(defaultFilterValues)}
+                  onApply={() => setIsFilterOpen(false)}
+                />
+              )}
+            </div>
 
-        {/* Khoảng thời gian lọc chứng từ xuất kho đang xem. */}
-        <span className="text-sm font-medium text-slate-700 sm:px-3">
-          {filterValues.reportPeriod}
-        </span>
-      </div>
+            {/* Khoảng thời gian lọc chứng từ xuất kho đang xem. */}
+            <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
+              {filterValues.reportPeriod}
+            </span>
+          </div>
 
-      <div className="grid gap-2 md:grid-cols-[minmax(220px,320px)_auto] md:items-center md:justify-end">
-        <label className="relative h-9 w-full">
-          <input
-            value={searchKeyword}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Tìm kiếm"
-            className="h-full w-full rounded border border-violet-400 bg-white pl-3 pr-10 text-sm italic text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
-          />
-          <Search
-            size={17}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-violet-500"
-          />
-        </label>
+          {/* Search & Main Actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto lg:justify-end">
+            <div className="relative flex-1 sm:flex-none">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                value={searchKeyword}
+                onChange={(event) => onSearchChange(event.target.value)}
+                placeholder="Tìm kiếm phiếu xuất..."
+                className="h-11 w-full sm:w-[280px] lg:w-[320px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
 
-        <div className="flex flex-wrap items-center gap-2 md:justify-end">
-          <button type="button" className={iconButtonClass} title="Tải lại">
-            <RefreshCcw size={20} />
-          </button>
+            <div className="flex items-center justify-center gap-2">
+              <button type="button" className={iconButtonClass} title="Tải lại">
+                <RefreshCcw size={17} className="text-gray-600" />
+              </button>
 
-          <button type="button" className={iconButtonClass} title="Xuất Excel">
-            <FileSpreadsheet size={20} />
-          </button>
+              <button type="button" className={iconButtonClass} title="Xuất Excel">
+                <FileSpreadsheet size={17} className="text-green-600" />
+              </button>
 
-          <button type="button" className={iconButtonClass} title="Thiết lập">
-            <Settings size={20} />
-          </button>
+              <button type="button" className={iconButtonClass} title="Thiết lập">
+                <Settings size={17} className="text-gray-600" />
+              </button>
 
-          <div className="inline-flex flex-1 overflow-hidden rounded-full shadow-sm sm:flex-none">
-  <button
-    type="button"
-    onClick={() => navigate("/stock-out/create")}
-    className="inline-flex h-9 flex-1 items-center justify-center gap-2 bg-cyan-600 px-4 text-sm font-bold text-white transition hover:bg-cyan-700 sm:flex-none"
-  >
-    <Plus size={17} />
-    Thêm
-  </button>
+              <div className="relative flex-shrink-0">
+                <div className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/stock-out/create")}
+                    className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
+                  >
+                    <Plus size={18} />
+                    Thêm phiếu
+                  </button>
 
-  <button
-    type="button"
-    className="inline-flex h-9 w-9 shrink-0 items-center justify-center border-l border-white/30 bg-cyan-600 text-white transition hover:bg-cyan-700"
-    title="Tùy chọn thêm"
-  >
-    <ChevronDown size={16} />
-  </button>
-</div>
-
-           
+                  <button
+                    type="button"
+                    className="w-10 h-10 bg-indigo-600 border-l border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition"
+                    title="Tùy chọn thêm"
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

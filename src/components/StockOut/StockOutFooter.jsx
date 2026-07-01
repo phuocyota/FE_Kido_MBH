@@ -1,21 +1,21 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Paperclip,
-} from "lucide-react";
+import { Paperclip } from "lucide-react";
 
-export default function StockOutFooter({ onBack }) {
-       const navigate = useNavigate();
+export default function StockOutFooter({ onSave, onCancel, loading }) {
+  const navigate = useNavigate();
+
   return (
     <div className="p-4 space-y-6">
-
       <div>
         <label className="block mb-2 font-medium">
           Địa điểm giao hàng
         </label>
 
-        <select className="w-full lg:w-96 h-10 border border-gray-300 px-3 rounded-lg">
+        <select className="w-full lg:w-96 h-10 border border-gray-300 px-3 rounded-lg bg-white">
           <option>Chọn địa điểm</option>
+          <option>Kho tổng</option>
+          <option>Cửa hàng chính</option>
         </select>
       </div>
 
@@ -35,25 +35,27 @@ export default function StockOutFooter({ onBack }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 -mx-4 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
-  <div className="flex justify-end gap-2">
-    <button
-      type="button"
-      onClick={() => navigate("/stock-out")}
-      className="rounded-lg border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-    >
-      Hủy
-    </button>
+      <div className="sticky bottom-0 -mx-4 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-25">
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel || (() => navigate("/stock-out"))}
+            disabled={loading}
+            className="rounded-lg border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Hủy
+          </button>
 
-    <button
-      type="submit"
-      className="rounded-lg bg-cyan-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-cyan-700"
-    >
-      Lưu
-    </button>
-  </div>
-</div>
-
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={loading}
+            className="rounded-lg bg-cyan-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Đang lưu..." : "Lưu"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
