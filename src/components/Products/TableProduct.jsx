@@ -111,6 +111,8 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
         cost: parseFloat(p.costPrice),
         unit: p.unit || "",
         isActive: p.isActive,
+        isCanteenItem: p.isCanteenItem,
+        isBoarding: p.isCanteenItem === false,
         stock: 0, // Stock not available in products table, use inventory API if needed
       }));
       setProducts(mappedData);
@@ -357,6 +359,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               categoryId: data.categoryId || undefined,
               unit: data.unit || undefined,
               isActive: data.active,
+              isCanteenItem: !data.isBoarding,
             };
 
             if (isEdit && productId) {

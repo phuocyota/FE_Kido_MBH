@@ -14,7 +14,9 @@ const emptyForm = {
   location: "",
   weight: "",
   active: true,
+  isBoarding: false,
   unit: "",
+  imageUrl: "",
 };
 
 export default function AddProductModal({
@@ -25,6 +27,8 @@ export default function AddProductModal({
 }) {
   const isEditMode = !!initialData;
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [categories, setCategories] = useState([]);
 
@@ -43,7 +47,9 @@ export default function AddProductModal({
       location: initialData?.location || "",
       weight: initialData?.weight || "",
       active: initialData?.isActive ?? initialData?.active ?? true,
+      isBoarding: initialData?.isBoarding ?? false,
       unit: initialData?.unit || "",
+      imageUrl: initialData?.imageUrl || "",
     });
   }, [initialData, open]);
 
@@ -73,6 +79,7 @@ export default function AddProductModal({
     const file = event.target.files[0];
     if (!file) return;
     setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
   };
 
   const handleSubmit = async (keepOpen = false) => {
@@ -81,10 +88,27 @@ export default function AddProductModal({
       return;
     }
 
-    const saved = await onSave(form, isEditMode, initialData?.id, keepOpen);
+    let finalImageUrl = form.imageUrl;
+
+    if (imageFile) {
+      setIsUploading(true);
+      try {
+        const res = await productApi.uploadImage(imageFile);
+        finalImageUrl = res.imageUrl;
+      } catch (err) {
+        toast.error("Lỗi khi tải ảnh lên");
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    const payload = { ...form, imageUrl: finalImageUrl };
+    const saved = await onSave(payload, isEditMode, initialData?.id, keepOpen);
     if (saved && keepOpen && !isEditMode) {
       setForm(emptyForm);
       setImagePreview(null);
+      setImageFile(null);
     }
   };
 
@@ -280,16 +304,31 @@ export default function AddProductModal({
         </div>
 
         <div className="border-t border-gray-300 px-4 md:px-6 py-4 flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-start md:items-center">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={() =>
-                setForm((prev) => ({ ...prev, active: !prev.active }))
-              }
-            />
-            Cho phép bán
-          </label>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={() =>
+                  setForm((prev) => ({ ...prev, active: !prev.active }))
+                }
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              Cho phép bán
+            </label>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.isBoarding}
+                onChange={() =>
+                  setForm((prev) => ({ ...prev, isBoarding: !prev.isBoarding }))
+                }
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              Bán trú
+            </label>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <button
@@ -310,9 +349,10 @@ export default function AddProductModal({
 
             <button
               onClick={() => handleSubmit(false)}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl"
+              disabled={isUploading}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl disabled:opacity-50"
             >
-              {isEditMode ? "Cập nhật" : "Lưu"}
+              {isUploading ? "Đang tải..." : (isEditMode ? "Cập nhật" : "Lưu")}
             </button>
           </div>
         </div>

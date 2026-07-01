@@ -10,6 +10,7 @@ import {
   Utensils,
   X,
 } from "lucide-react";
+import CustomSelect from "../ui/CustomSelect";
 
 export default function BoardingMealModal({
   context,
@@ -32,6 +33,7 @@ export default function BoardingMealModal({
     note: context.order?.note ?? "",
     applyMode: context.applyMode ?? "day",
     meal: context.meal ?? meals[0] ?? "",
+    imageFile: null,
   }));
 
   const selectedTemplate = foodTemplates.find((item) => item.id === draft.templateId);
@@ -64,6 +66,7 @@ export default function BoardingMealModal({
       imageName: "",
       name: template?.name ?? current.name,
       image: template?.image ?? current.image,
+      imageFile: null,
       description: template?.description ?? current.description,
       ingredientsText: template?.ingredients?.join(", ") ?? current.ingredientsText,
     }));
@@ -79,6 +82,7 @@ export default function BoardingMealModal({
         image: typeof reader.result === "string" ? reader.result : current.image,
         imageName: file.name,
         templateId: "",
+        imageFile: file,
       }));
     };
     reader.readAsDataURL(file);
@@ -95,6 +99,7 @@ export default function BoardingMealModal({
           id: initialFood?.id ?? makeFoodId(previewFood.name, context.day?.key, draft.meal),
           name: previewFood.name,
           image: previewFood.image,
+          imageFile: draft.imageFile,
           description: previewFood.description,
           ingredients: previewFood.ingredients,
         },
@@ -139,46 +144,39 @@ export default function BoardingMealModal({
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-slate-700">Bữa ăn</span>
-                <select
+                <CustomSelect
                   value={draft.meal}
-                  onChange={(event) => updateDraft("meal", event.target.value)}
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 font-medium text-slate-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                >
-                  {meals.map((meal) => (
-                    <option key={meal} value={meal}>
-                      {meal}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => updateDraft("meal", val)}
+                  options={meals.map(meal => ({ value: meal, label: meal }))}
+                  themeColor="emerald"
+                />
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-slate-700">Phạm vi áp dụng</span>
-                <select
+                <CustomSelect
                   value={draft.applyMode}
-                  onChange={(event) => updateDraft("applyMode", event.target.value)}
-                  className="h-11 w-full rounded-lg border border-sky-200 bg-sky-50 px-3 font-medium text-slate-800 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                >
-                  <option value="day">Chỉ ngày đang chọn</option>
-                  <option value="week">Áp dụng cả tuần</option>
-                </select>
+                  onChange={(val) => updateDraft("applyMode", val)}
+                  options={[
+                    { value: "day", label: "Chỉ ngày đang chọn" },
+                    { value: "week", label: "Áp dụng cả tuần" }
+                  ]}
+                  themeColor="sky"
+                />
               </label>
             </div>
 
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Chọn nhanh món ăn mẫu</span>
-              <select
+              <CustomSelect
                 value={draft.templateId}
-                onChange={(event) => selectTemplate(event.target.value)}
-                className="h-11 w-full rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 font-medium text-slate-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-              >
-                <option value="">Tự nhập món mới</option>
-                {foodTemplates.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => selectTemplate(val)}
+                options={[
+                  { value: "", label: "Tự nhập món mới" },
+                  ...foodTemplates.map((item) => ({ value: item.id, label: item.name }))
+                ]}
+                themeColor="emerald"
+              />
             </label>
 
             <label className="block">
