@@ -13,6 +13,7 @@ import { orderApi } from "../../api";
 import { getBranchIdFromToken } from "../../api/authSession";
 import OrdersSidebar from "../../components/Orders/OrdersSidebar";
 import OrdersContent from "../../components/Orders/OrdersContent";
+import OrderDetailModal from "../../components/Orders/OrderDetailModal";
 
 const mapStatusToVN = (statusNum) => {
   switch (Number(statusNum)) {
@@ -56,6 +57,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   // Filter states
   const [search, setSearch] = useState("");
@@ -298,9 +300,17 @@ export default function Orders() {
             itemsPerPage={itemsPerPage}
             setItemsPerPage={setItemsPerPage}
             onResetFilters={resetFilters}
+            onOrderClick={(orderId) => setSelectedOrderId(orderId)}
           />
         )}
       </div>
+
+      {selectedOrderId && (
+        <OrderDetailModal
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
+      )}
     </div>
   );
 }

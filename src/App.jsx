@@ -29,6 +29,7 @@ import StockTransfer from "./pages/Stock/StockTransfer";
 import PaymentVoucher from "./pages/CashManagement/PaymentVoucher";
 import CashManagement from "./pages/CashManagement/CashManagement";
 import MealItems from "./pages/MealItems/MealItems";
+import Customers from "./pages/Customers/Customers";
 import { authApi } from "./api";
 
 const PrivateRoute = ({ children }) => {
@@ -73,6 +74,7 @@ const App = () => {
                   <Route path="/time-keeping" element={<TimeKeeping />} />
                   <Route path="/pay-sheet" element={<PaySheet />} />
                   <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/customers" element={<Customers />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/boarding-orders" element={<BoardingOrder />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />

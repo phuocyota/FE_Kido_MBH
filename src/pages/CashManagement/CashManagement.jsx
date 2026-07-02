@@ -43,22 +43,24 @@ export default function CashManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-3 md:p-4">
-      <CashHeader />
+    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
+      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+        <CashHeader />
 
-      <CashToolbar
-        onAddPaymentVoucher={() =>
-          setScreen("paymentVoucher")
-        }
-        onAddReceiptVoucher={() =>
-          setScreen("receiptVoucher")
-        }
-        onAddInternalTransfer={() =>
-          setScreen("internalTransfer")
-        }
-      />
+        <CashToolbar
+          onAddPaymentVoucher={() =>
+            setScreen("paymentVoucher")
+          }
+          onAddReceiptVoucher={() =>
+            setScreen("receiptVoucher")
+          }
+          onAddInternalTransfer={() =>
+            setScreen("internalTransfer")
+          }
+        />
 
-      <CashTable />
+        <CashTable />
+      </div>
     </div>
   );
 }

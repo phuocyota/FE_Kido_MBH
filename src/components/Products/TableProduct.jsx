@@ -85,12 +85,13 @@ function EditableCell({ value, onSave, type = "text", align = "left" }) {
 export default function TableProduct({ filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" } }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const ITEMS_PER_PAGE = 22;
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 22;
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [filters, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -99,9 +100,17 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const data = await productApi.getAll();
+      const payload = {
+        ...filters,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE
+      };
+      const responseData = await productApi.getAll(payload);
+      const items = responseData.items || [];
+      const totalPagesServer = responseData.totalPages || 1;
+
       // Map BE fields to FE format
-      const mappedData = data.map(p => {
+      const mappedData = items.map(p => {
         let imageUrl = p.imageUrl || "";
         if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
           const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
@@ -123,10 +132,11 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
           isCanteenItem: p.isCanteenItem,
           isBoarding: p.isCanteenItem === false,
           imageUrl,
-          stock: 0, // Stock not available in products table, use inventory API if needed
+          stock: p.remain || 0,
         };
       });
       setProducts(mappedData);
+      setTotalPages(totalPagesServer);
     } catch (error) {
       toast.error("Không thể tải danh sách sản phẩm");
     } finally {
@@ -134,45 +144,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
     }
   };
 
-  const filteredProducts = products.filter(p => {
-    if (filters.search) {
-      const q = filters.search.toLowerCase().trim();
-      const matchSku = p.code?.toLowerCase().includes(q);
-      const matchName = p.name?.toLowerCase().includes(q);
-      if (!matchSku && !matchName) return false;
-    }
-
-    if (filters.categoryId && p.categoryId !== filters.categoryId) {
-      return false;
-    }
-
-    if (filters.displayStatus === "active" && !p.isActive) {
-      return false;
-    }
-    if (filters.displayStatus === "inactive" && p.isActive) {
-      return false;
-    }
-
-    if (filters.stockStatus === "inStock" && p.stock <= 0) {
-      return false;
-    }
-    if (filters.stockStatus === "outOfStock" && p.stock > 0) {
-      return false;
-    }
-    if (filters.stockStatus === "under" && p.stock >= 5) {
-      return false;
-    }
-    if (filters.stockStatus === "over" && p.stock <= 100) {
-      return false;
-    }
-
-    return true;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentData = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentData = products;
 
   const handleUpdateProduct = async (productId, field, value) => {
     try {
@@ -372,6 +344,8 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               isActive: data.active,
               isCanteenItem: !data.isBoarding,
               imageUrl: data.imageUrl || undefined,
+              ingredients: data.ingredients || undefined,
+              description: data.description || undefined,
             };
 
             if (isEdit && productId) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import StockHeader from "../../components/Stock/StockHeader";
 import StockTransferDetailPanel from "../../components/StockTransfer/StockTransferDetailPanel";
 import StockTransferListTable from "../../components/StockTransfer/StockTransferListTable";
 import StockTransferListToolbar from "../../components/StockTransfer/StockTransferListToolbar";
@@ -70,25 +71,41 @@ export default function StockTransferList() {
     setSelectedTransferId("");
   };
 
+  const totalQuantity = useMemo(() => {
+    return filteredTransfers.reduce((sum, transfer) => {
+      const items = transfer.items || [];
+      return sum + items.reduce((s, item) => s + Number(item.quantity || 0), 0);
+    }, 0);
+  }, [filteredTransfers]);
+
   return (
-    <div className="min-h-screen bg-cyan-50 sm:p-2">
-      <div className="mx-auto flex max-w-[1800px] min-w-0 flex-col overflow-hidden border-cyan-200 bg-white shadow-sm sm:border">
-        <StockTransferListToolbar
-          searchKeyword={searchKeyword}
-          onSearchChange={handleSearchChange}
-          onCreateClick={() => navigate("/stock-transfer/create")}
-          onReload={loadTransfers}
+    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
+      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+        <StockHeader
+          activeTab="transfer"
+          onRefresh={loadTransfers}
+          totalCount={filteredTransfers.length}
+          totalAmount={totalQuantity}
         />
 
-        <StockTransferListTable
-          transfers={filteredTransfers}
-          selectedTransfer={selectedTransfer}
-          onSelectTransfer={setSelectedTransferId}
-          loading={loading}
-          error={error}
-        />
+        <div className="mt-4 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+          <StockTransferListToolbar
+            searchKeyword={searchKeyword}
+            onSearchChange={handleSearchChange}
+            onCreateClick={() => navigate("/stock-transfer/create")}
+            onReload={loadTransfers}
+          />
 
-        <StockTransferDetailPanel transfer={selectedTransfer} />
+          <StockTransferListTable
+            transfers={filteredTransfers}
+            selectedTransfer={selectedTransfer}
+            onSelectTransfer={setSelectedTransferId}
+            loading={loading}
+            error={error}
+          />
+
+          <StockTransferDetailPanel transfer={selectedTransfer} />
+        </div>
       </div>
     </div>
   );

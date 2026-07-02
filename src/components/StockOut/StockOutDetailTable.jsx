@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import StockInPagination from "./StockInPagination";
+import StockOutPagination from "./StockOutPagination";
 
 const formatNumber = (value) => new Intl.NumberFormat("vi-VN").format(value);
 const formatDecimal = (value) =>
@@ -23,7 +23,7 @@ const detailColumns = [
   { label: "Tiền chiết khấu", className: "min-w-[150px] text-right" },
 ];
 
-export default function StockInDetailTable({ receipt }) {
+export default function StockOutDetailTable({ receipt }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const details = receipt?.details || [];
@@ -111,7 +111,7 @@ export default function StockInDetailTable({ receipt }) {
 
         {details.length === 0 && (
           <div className="rounded-xl border border-dashed border-gray-300 bg-white px-3 py-10 text-center text-sm text-gray-500">
-            Chưa có hàng hóa trong phiếu nhập kho
+            Chưa có hàng hóa trong phiếu xuất kho
           </div>
         )}
 
@@ -185,7 +185,7 @@ export default function StockInDetailTable({ receipt }) {
                   colSpan={detailColumns.length}
                   className="px-4 py-16 text-center text-gray-500"
                 >
-                  Chưa có hàng hóa trong phiếu nhập kho
+                  Chưa có hàng hóa trong phiếu xuất kho
                 </td>
               </tr>
             )}
@@ -209,7 +209,7 @@ export default function StockInDetailTable({ receipt }) {
         </table>
       </div>
 
-      <StockInPagination
+      <StockOutPagination
         total={details.length}
         currentPage={safeCurrentPage}
         pageSize={pageSize}

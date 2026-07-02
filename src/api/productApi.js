@@ -3,13 +3,9 @@ import axiosInstance from "./axiosConfig";
 export const productApi = {
   // Get all products
   getAll: async (filters = {}) => {
-    const params = {};
-    if (filters.categoryId) params.categoryId = filters.categoryId;
-    if (filters.minPrice) params.minPrice = filters.minPrice;
-    if (filters.maxPrice) params.maxPrice = filters.maxPrice;
-    
+    const params = { ...filters };
     const response = await axiosInstance.get("/products", { params });
-    return response.data.data;
+    return response.data.data || response.data;
   },
 
   // Get products with categories (for POS)

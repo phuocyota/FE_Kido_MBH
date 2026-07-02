@@ -2,7 +2,7 @@ import React from "react";
 import StockOutEmptyState from "../StockOut/StockOutEmptyState";
 
 const detailColumns = [
-  { label: "#", className: "w-10 min-w-10 text-center" },
+  { label: "#", className: "w-12 text-center" },
   { label: "Mã hàng", className: "min-w-[150px]" },
   { label: "Tên hàng", className: "min-w-[280px]" },
   { label: "Kho xuất", className: "min-w-[190px]" },
@@ -25,7 +25,6 @@ const getProduct = (item) => item.product || item.inventoryItem || {};
 
 const getUnitPrice = (item) => {
   const product = getProduct(item);
-
   return item.unitPrice || item.price || product.costPerUnit || product.price || 0;
 };
 
@@ -45,41 +44,42 @@ export default function StockTransferDetailPanel({ transfer }) {
     transfer?.toBranch?.name || transfer?.toBranchName || transfer?.toBranchId || "";
 
   return (
-    <div className="min-h-[320px] border-t-8 border-cyan-100 bg-white">
-      <div className="flex justify-center bg-cyan-50">
-        <div className="-mt-1 h-3 w-12 rounded-b bg-slate-300"></div>
+    <div className="min-h-[320px] border-t-8 border-gray-300 bg-white">
+      <div className="flex justify-center bg-gray-50">
+        <div className="-mt-1 h-3 w-12 rounded-b bg-gray-300"></div>
       </div>
 
-      <div className="px-3 pt-2 sm:px-4">
-        <span className="inline-flex rounded-t-md border border-b-0 border-amber-300 bg-amber-100 px-4 py-2 text-sm font-bold text-slate-900">
-          Chi tiết
+      <div className="px-4 pt-3 sm:px-5">
+        <span className="inline-flex rounded-t-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm">
+          Chi tiết hàng hóa chuyển
         </span>
       </div>
 
-      <div className="grid gap-3 border-t border-cyan-500 bg-white p-3 lg:hidden">
+      {/* Mobile/Tablet view */}
+      <div className="grid gap-3 border-t border-gray-300 bg-gray-100 p-3 lg:hidden">
         {details.map((item, index) => {
           const product = getProduct(item);
 
           return (
             <div
               key={item.id || `${item.productId}-${index}`}
-              className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+              className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold text-slate-500">
+                  <div className="text-xs font-semibold text-gray-400">
                     #{index + 1}
                   </div>
-                  <div className="mt-1 font-bold text-sky-700">
+                  <div className="mt-1 font-bold text-indigo-600">
                     {product.sku || item.productCode || item.productId}
                   </div>
                 </div>
-                <div className="shrink-0 text-right text-sm font-bold tabular-nums text-slate-950">
+                <div className="shrink-0 text-right text-sm font-bold tabular-nums text-gray-900">
                   {formatNumber(getAmount(item))}
                 </div>
               </div>
 
-              <p className="mt-3 text-sm leading-5 text-slate-800">
+              <p className="mt-3 text-sm leading-5 text-gray-800 font-medium">
                 {product.name || item.productName || ""}
               </p>
             </div>
@@ -89,17 +89,18 @@ export default function StockTransferDetailPanel({ transfer }) {
         {details.length === 0 && <StockOutEmptyState minHeight="min-h-[260px]" />}
       </div>
 
-      <div className="hidden overflow-x-auto border-t border-cyan-500 lg:block">
+      {/* Desktop view */}
+      <div className="hidden overflow-x-auto border-t border-gray-300 lg:block">
         {details.length === 0 ? (
           <StockOutEmptyState minHeight="min-h-[300px]" />
         ) : (
-          <table className="w-full min-w-[1500px] border-separate border-spacing-0 text-[13px]">
+          <table className="w-full min-w-[1500px] border-collapse text-sm">
             <thead>
-              <tr className="bg-cyan-200 text-slate-950">
+              <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                 {detailColumns.map((column) => (
                   <th
                     key={column.label}
-                    className={`border-r border-cyan-300 px-3 py-2 font-bold ${column.className}`}
+                    className={`border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 ${column.className}`}
                   >
                     {column.label}
                   </th>
@@ -115,33 +116,33 @@ export default function StockTransferDetailPanel({ transfer }) {
                 return (
                   <tr
                     key={item.id || `${item.productId}-${index}`}
-                    className="bg-white hover:bg-cyan-50"
+                    className="border-b border-gray-300 hover:bg-indigo-50/60 transition-colors bg-white"
                   >
-                    <td className="border-r border-slate-200 px-3 py-2 text-center">
+                    <td className="px-4 py-3 text-center text-gray-500">
                       {index + 1}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2 font-semibold">
+                    <td className="px-4 py-3 font-semibold text-indigo-600">
                       {product.sku || item.productCode || item.productId}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2 leading-5">
+                    <td className="px-4 py-3 leading-5 text-gray-800">
                       {product.name || item.productName || ""}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2">
+                    <td className="px-4 py-3 text-gray-700">
                       {item.fromWarehouseName || fromWarehouse}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2">
+                    <td className="px-4 py-3 text-gray-700">
                       {item.toWarehouseName || toWarehouse}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2">
+                    <td className="px-4 py-3 text-gray-700">
                       {product.unit || item.unit || ""}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2 text-right tabular-nums">
+                    <td className="px-4 py-3 text-right text-gray-700 tabular-nums">
                       {formatDecimal(item.quantity)}
                     </td>
-                    <td className="border-r border-slate-200 px-3 py-2 text-right tabular-nums">
+                    <td className="px-4 py-3 text-right text-gray-700 tabular-nums">
                       {formatDecimal(unitPrice)}
                     </td>
-                    <td className="px-3 py-2 text-right font-semibold tabular-nums">
+                    <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
                       {formatNumber(getAmount(item))}
                     </td>
                   </tr>
@@ -150,15 +151,15 @@ export default function StockTransferDetailPanel({ transfer }) {
             </tbody>
 
             <tfoot>
-              <tr className="bg-slate-200 font-bold">
-                <td colSpan={6} className="border-r border-slate-300 px-3 py-2">
-                  Tổng
+              <tr className="bg-gray-50 font-bold text-gray-800">
+                <td colSpan={6} className="px-4 py-3 border-t border-gray-300">
+                  Tổng cộng
                 </td>
-                <td className="border-r border-slate-300 px-3 py-2 text-right tabular-nums">
+                <td className="px-4 py-3 text-right tabular-nums border-t border-gray-300 text-indigo-600">
                   {formatDecimal(totalQuantity)}
                 </td>
-                <td className="border-r border-slate-300 px-3 py-2"></td>
-                <td className="px-3 py-2 text-right tabular-nums">
+                <td className="px-4 py-3 border-t border-gray-300"></td>
+                <td className="px-4 py-3 text-right tabular-nums border-t border-gray-300 text-indigo-600">
                   {formatNumber(totalAmount)}
                 </td>
               </tr>

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
+import SupplierDebtDetail from "./SupplierDebtDetail";
 
 export default function SuppliersContent({
   suppliers,
@@ -14,6 +15,7 @@ export default function SuppliersContent({
   onBulkDelete,
 }) {
   const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedDebtSupplier, setSelectedDebtSupplier] = useState(null);
 
   const selectedSuppliers = useMemo(
     () => suppliers.filter((supplier) => selectedIds.includes(supplier.id)),
@@ -48,12 +50,12 @@ export default function SuppliersContent({
   };
 
   return (
-    <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-fit">
+    <div className="flex-1 bg-white overflow-hidden h-fit">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px]">
+        <table className="w-full min-w-[980px] border-collapse text-sm">
           <thead>
-            <tr className="bg-[#eaf2ff] border-b border-gray-200">
-              <th className="p-3 text-center w-12">
+            <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
+              <th className="border-b border-indigo-200 px-4 py-3 w-12 text-center">
                 <input
                   type="checkbox"
                   checked={
@@ -61,35 +63,35 @@ export default function SuppliersContent({
                     currentSuppliers.every((supplier) => selectedIds.includes(supplier.id))
                   }
                   onChange={handleToggleAll}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                 />
               </th>
 
-              <th className="p-3 text-left font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Mã nhà cung cấp
               </th>
 
-              <th className="p-3 text-left font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Tên nhà cung cấp
               </th>
 
-              <th className="p-3 text-left font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Điện thoại
               </th>
 
-              <th className="p-3 text-left font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Email
               </th>
 
-              <th className="p-3 text-right font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Nợ cần trả hiện tại
               </th>
 
-              <th className="p-3 text-right font-semibold text-gray-900 text-[14px] whitespace-nowrap">
+              <th className="border-b border-indigo-200 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-indigo-900">
                 Tổng mua
               </th>
 
-              <th className="p-3 text-center font-semibold text-gray-900 text-[14px] whitespace-nowrap w-28">
+              <th className="border-b border-indigo-200 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-indigo-900 w-28">
                 Thao tác
               </th>
             </tr>
@@ -99,64 +101,70 @@ export default function SuppliersContent({
             {currentSuppliers.map((supplier) => (
               <tr
                 key={supplier.id}
-                className="border-b border-gray-100 hover:bg-slate-50/50 transition-colors"
+                className={`border-b border-gray-300 transition-colors ${
+                  selectedDebtSupplier?.id === supplier.id
+                    ? "bg-indigo-50"
+                    : "hover:bg-indigo-50/60 bg-white"
+                }`}
               >
-                <td className="p-3 text-center w-12">
+                <td className="px-4 py-3 text-center w-12">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(supplier.id)}
                     onChange={() => handleToggleRow(supplier.id)}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                   />
                 </td>
 
-                <td 
+                <td
                   onClick={() => onEdit?.(supplier)}
-                  className="p-3 text-sm text-blue-600 font-medium hover:underline cursor-pointer"
+                  className="px-4 py-3 font-medium text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
                 >
                   {supplier.code}
                 </td>
 
-                <td className="p-3 text-sm text-gray-900 font-medium">
+                <td className="px-4 py-3 text-gray-800 font-semibold">
                   {supplier.name}
                 </td>
 
-                <td className="p-3 text-sm text-gray-700">
-                  {supplier.phone || ""}
+                <td className="px-4 py-3 text-gray-700">
+                  {supplier.phone || "-"}
                 </td>
 
-                <td className="p-3 text-sm text-gray-700">
-                  {supplier.email || ""}
+                <td className="px-4 py-3 text-gray-700">
+                  {supplier.email || "-"}
                 </td>
 
-                <td className="p-3 text-sm text-right text-gray-900 font-medium">
-                  {Number(supplier.debt || 0).toLocaleString("vi-VN")}
+                <td 
+                  onClick={() => setSelectedDebtSupplier(supplier)}
+                  className="px-4 py-3 text-right text-[#5b45ff] font-semibold cursor-pointer hover:underline"
+                  title="Nhấn để xem chi tiết công nợ"
+                >
+                  {Number(supplier.debt || 0).toLocaleString("vi-VN")} ₫
                 </td>
 
-                <td className="p-3 text-sm text-right text-gray-900 font-medium">
-                  {Number(supplier.totalPurchase || 0).toLocaleString("vi-VN")}
+                <td className="px-4 py-3 text-right text-gray-700 font-medium">
+                  {Number(supplier.totalPurchase || 0).toLocaleString("vi-VN")} ₫
                 </td>
 
-                <td className="p-3">
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-center gap-2">
                     <button
                       type="button"
                       onClick={() => onEdit?.(supplier)}
-                      title="Sửa nhà cung cấp"
-                      aria-label="Sửa nhà cung cấp"
-                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition font-medium"
                     >
-                      <Edit2 size={15} />
+                      <Edit2 size={13} />
+                      Sửa
                     </button>
 
                     <button
                       type="button"
                       onClick={() => onDelete?.(supplier)}
-                      title="Xoá nhà cung cấp"
-                      aria-label="Xoá nhà cung cấp"
-                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition font-medium"
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={13} />
+                      Xoá
                     </button>
                   </div>
                 </td>
@@ -167,9 +175,9 @@ export default function SuppliersContent({
       </div>
 
       {selectedSuppliers.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-slate-50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-gray-300 bg-indigo-50/50">
           <span className="text-sm font-medium text-gray-700">
-            Đã chọn {selectedSuppliers.length} nhà cung cấp
+            Đã chọn <span className="font-semibold">{selectedSuppliers.length}</span> nhà cung cấp
           </span>
 
           <button
@@ -189,13 +197,13 @@ export default function SuppliersContent({
       )}
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200 bg-white">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 border-t border-gray-300 bg-gray-50">
+        <div className="flex items-center gap-2 text-sm text-gray-700">
           <span>Hiển thị</span>
           <select
             value={itemsPerPage}
             onChange={(e) => setItemsPerPage?.(Number(e.target.value))}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 outline-none cursor-pointer text-xs font-semibold"
+            className="h-9 border border-gray-300 rounded-md px-3 bg-white text-gray-700 outline-none cursor-pointer text-sm font-medium"
           >
             <option value={10}>10 dòng</option>
             <option value={15}>15 dòng</option>
@@ -205,43 +213,56 @@ export default function SuppliersContent({
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-            className="h-9 px-4 text-xs font-semibold border border-gray-300 rounded-lg text-gray-700 bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition cursor-pointer"
-          >
-            Trước
-          </button>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-700">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              className="h-9 w-9 border border-gray-300 rounded-md bg-white flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              &lt;
+            </button>
 
-          {[...Array(totalPages)].map((_, index) => {
-            const page = index + 1;
+            {[...Array(totalPages)].map((_, index) => {
+              const page = index + 1;
 
-            return (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`h-9 w-9 rounded-lg border text-xs font-bold transition cursor-pointer flex items-center justify-center
-                ${
-                  currentPage === page
-                    ? "bg-[#0f62fe] text-white border-[#0f62fe] shadow-sm"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`h-9 w-9 rounded-md border text-sm font-semibold transition flex items-center justify-center
+                  ${
+                    currentPage === page
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
 
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            className="h-9 px-4 text-xs font-semibold border border-gray-300 rounded-lg text-gray-700 bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition cursor-pointer"
-          >
-            Sau
-          </button>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              className="h-9 w-9 border border-gray-300 rounded-md bg-white flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              &gt;
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Debt Detail Panel */}
+      {selectedDebtSupplier && (
+        <SupplierDebtDetail 
+          supplier={selectedDebtSupplier} 
+          onClose={() => setSelectedDebtSupplier(null)} 
+        />
+      )}
     </div>
   );
 }

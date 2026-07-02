@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Package, Plus, Search, Upload } from "lucide-react";
+import { Download, Plus, Search, Upload, RefreshCw, Users, Wallet } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { supplierApi } from "../../api";
@@ -138,126 +138,186 @@ export default function Suppliers() {
     currentPage * itemsPerPage
   );
 
-  return (
-    <div className="min-h-screen bg-[#f3f5f7] p-4">
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-400 p-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="whitespace-nowrap text-2xl font-bold text-gray-900">
-              Nhà cung cấp
-            </h1>
+  const totalDebt = useMemo(() => {
+    return filteredSuppliers.reduce((sum, s) => sum + Number(s.debt || 0), 0);
+  }, [filteredSuppliers]);
 
-            <ToolbarFilterDropdown panelClassName="sm:w-[520px]">
-              <SuppliersSidebar
-                status={status}
-                setStatus={setStatus}
-                selectedTime={selectedTime}
-                showTimeFilter={showTimeFilter}
-                setShowTimeFilter={setShowTimeFilter}
-                showCustomDate={showCustomDate}
-                setShowCustomDate={setShowCustomDate}
-                setSelectedTime={setSelectedTime}
-                selectedGroup={selectedGroup}
-                setSelectedGroup={setSelectedGroup}
-                purchaseFrom={purchaseFrom}
-                setPurchaseFrom={setPurchaseFrom}
-                purchaseTo={purchaseTo}
-                setPurchaseTo={setPurchaseTo}
-                debtFrom={debtFrom}
-                setDebtFrom={setDebtFrom}
-                debtTo={debtTo}
-                setDebtTo={setDebtTo}
-                groups={groups}
-              />
-            </ToolbarFilterDropdown>
+  return (
+    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
+      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
+            Quản lý nhà cung cấp
+          </h1>
+          <button
+            onClick={loadSuppliers}
+            className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 transition self-start lg:self-auto"
+          >
+            <RefreshCw size={14} />
+            Dữ liệu mới
+          </button>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+          {/* Card 1 */}
+          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center">
+                <Users size={28} className="text-violet-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-gray-500 text-sm">Tổng số nhà cung cấp</p>
+                <h2 className="text-2xl font-bold text-gray-800 mt-1">
+                  {filteredSuppliers.length} nhà cung cấp
+                </h2>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
-            <div className="relative w-full max-w-xl">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Theo mã, tên, số điện thoại"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="h-11 w-full rounded-lg border border-gray-300 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
-              />
+          {/* Card 2 */}
+          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center">
+                <Wallet size={28} className="text-rose-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-gray-500 text-sm">Tổng nợ cần trả nhà cung cấp</p>
+                <h2 className="text-2xl font-bold text-rose-600 mt-1">
+                  {Number(totalDebt).toLocaleString("vi-VN")} ₫
+                </h2>
+              </div>
             </div>
-
-            <button
-              onClick={openCreateModal}
-              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 font-medium text-white hover:bg-blue-700"
-            >
-              <Plus size={18} />
-              Nhà cung cấp
-            </button>
-
-            <button className="flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 hover:bg-gray-50">
-              <Upload size={18} />
-              Import
-            </button>
-
-            <button className="flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 hover:bg-gray-50">
-              <Download size={18} />
-              Xuất file
-            </button>
           </div>
         </div>
 
-        <div className="p-3">
-          {loading ? (
-            <div className="flex min-h-[650px] items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 shadow-sm">
-              Đang tải danh sách nhà cung cấp...
-            </div>
-          ) : error ? (
-            <div className="flex min-h-[650px] items-center justify-center rounded-xl border border-gray-200 bg-white text-red-500 shadow-sm">
-              {error}
-            </div>
-          ) : suppliers.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex min-h-[650px] flex-col items-center justify-center">
-                <div className="mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-blue-50 text-blue-500">
-                  <Package size={48} />
+        {/* Content Container */}
+        <div className="flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+          {/* Toolbar */}
+          <div className="bg-white border-b border-gray-300 p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              {/* Search & Filters */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1 w-full lg:w-auto">
+                <div className="relative">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Theo mã, tên, số điện thoại..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="h-11 w-full sm:w-[280px] lg:w-[320px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
                 </div>
 
-                <h3 className="mb-3 text-3xl font-semibold text-gray-900">
-                  Chưa có nhà cung cấp nào
-                </h3>
+                <ToolbarFilterDropdown panelClassName="sm:w-[520px]">
+                  <SuppliersSidebar
+                    status={status}
+                    setStatus={setStatus}
+                    selectedTime={selectedTime}
+                    showTimeFilter={showTimeFilter}
+                    setShowTimeFilter={setShowTimeFilter}
+                    showCustomDate={showCustomDate}
+                    setShowCustomDate={setShowCustomDate}
+                    setSelectedTime={setSelectedTime}
+                    selectedGroup={selectedGroup}
+                    setSelectedGroup={setSelectedGroup}
+                    purchaseFrom={purchaseFrom}
+                    setPurchaseFrom={setPurchaseFrom}
+                    purchaseTo={purchaseTo}
+                    setPurchaseTo={setPurchaseTo}
+                    debtFrom={debtFrom}
+                    setDebtFrom={setDebtFrom}
+                    debtTo={debtTo}
+                    setDebtTo={setDebtTo}
+                    groups={groups}
+                  />
+                </ToolbarFilterDropdown>
+              </div>
 
-                <p className="mb-6 max-w-md text-center text-gray-500">
-                  Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung cấp
-                  một cách hiệu quả
-                </p>
+              {/* Actions */}
+              <div className="flex items-center gap-2 justify-end">
+                <button
+                  onClick={loadSuppliers}
+                  className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
+                  title="Tải lại"
+                >
+                  <RefreshCw size={17} className="text-gray-600" />
+                </button>
+
+                <button
+                  className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
+                  title="Import"
+                >
+                  <Upload size={17} className="text-indigo-600" />
+                </button>
+
+                <button
+                  className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
+                  title="Xuất file"
+                >
+                  <Download size={17} className="text-green-600" />
+                </button>
 
                 <button
                   onClick={openCreateModal}
-                  className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-white hover:bg-blue-700"
+                  className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition rounded-xl whitespace-nowrap shadow-sm"
                 >
                   <Plus size={18} />
-                  Thêm nhà cung cấp
+                  Nhà cung cấp
                 </button>
               </div>
             </div>
-          ) : (
-            <SuppliersContent
-              suppliers={filteredSuppliers}
-              currentSuppliers={currentSuppliers}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              setItemsPerPage={setItemsPerPage}
-              onEdit={(supplier) => {
-                setSelectedSupplier(supplier);
-                setOpenAddSupplier(true);
-              }}
-              onDelete={handleDeleteSupplier}
-              onBulkDelete={handleDeleteSuppliers}
-            />
-          )}
+          </div>
+
+          <div className="p-0">
+            {loading ? (
+              <div className="flex min-h-[400px] items-center justify-center bg-white text-gray-500">
+                Đang tải danh sách nhà cung cấp...
+              </div>
+            ) : error ? (
+              <div className="flex min-h-[400px] items-center justify-center bg-white text-red-500">
+                {error}
+              </div>
+            ) : suppliers.length === 0 ? (
+              <div className="bg-white">
+                <div className="flex min-h-[400px] flex-col items-center justify-center">
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
+                    <Users size={36} />
+                  </div>
+                  <h3 className="mb-2 text-xl font-bold text-gray-800">
+                    Chưa có nhà cung cấp nào
+                  </h3>
+                  <p className="mb-4 max-w-sm text-center text-sm text-gray-500">
+                    Hệ thống sẽ giúp bạn quản lý và ghi nhớ thông tin nhà cung cấp một cách hiệu quả
+                  </p>
+                  <button
+                    onClick={openCreateModal}
+                    className="flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-5 text-white hover:bg-indigo-700 transition font-medium"
+                  >
+                    <Plus size={18} />
+                    Thêm nhà cung cấp
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <SuppliersContent
+                suppliers={filteredSuppliers}
+                currentSuppliers={currentSuppliers}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                onEdit={(supplier) => {
+                  setSelectedSupplier(supplier);
+                  setOpenAddSupplier(true);
+                }}
+                onDelete={handleDeleteSupplier}
+                onBulkDelete={handleDeleteSuppliers}
+              />
+            )}
+          </div>
         </div>
       </div>
 

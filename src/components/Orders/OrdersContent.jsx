@@ -11,6 +11,7 @@ export default function OrdersContent({
   itemsPerPage,
   setItemsPerPage,
   onResetFilters,
+  onOrderClick,
 }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [favorites, setFavorites] = useState(() => {
@@ -174,7 +175,10 @@ export default function OrdersContent({
                       </button>
                     </td>
 
-                    <td className="p-3 text-sm text-blue-600 font-medium hover:underline cursor-pointer">
+                    <td 
+                      onClick={() => onOrderClick?.(order.id)}
+                      className="p-3 text-sm text-blue-600 font-medium hover:underline cursor-pointer"
+                    >
                       {order.code}
                     </td>
 
