@@ -53,13 +53,16 @@ axiosInstance.interceptors.request.use(
     if (token) {
       const authorization = `Bearer ${token}`;
 
-      if (config.headers?.set) {
+      if (!config.headers) {
+        config.headers = {};
+      }
+
+      if (typeof config.headers.set === "function") {
+        config.headers.set("Authorization", authorization);
         config.headers.set("authorization", authorization);
       } else {
-        config.headers = {
-          ...(config.headers || {}),
-          authorization,
-        };
+        config.headers.Authorization = authorization;
+        config.headers.authorization = authorization;
       }
     }
 
@@ -79,9 +82,48 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+const parsePaginatedData = (resData) => {
+  if (
+    resData &&
+    typeof resData === "object" &&
+    "data" in resData &&
+    Array.isArray(resData.data) &&
+    "page" in resData &&
+    "size" in resData
+  ) {
+    const arr = [...resData.data];
+    const page = Number(resData.page) || 1;
+    const size = Number(resData.size) || 10;
+    const total = Number(resData.total) || 0;
+    Object.defineProperties(arr, {
+      data: { value: arr, writable: true, enumerable: false },
+      page: { value: page, writable: true, enumerable: false },
+      size: { value: size, writable: true, enumerable: false },
+      total: { value: total, writable: true, enumerable: false },
+      items: { value: arr, writable: true, enumerable: false },
+      totalPages: {
+        value: Math.ceil(total / (size || 10)),
+        writable: true,
+        enumerable: false,
+      },
+    });
+    return arr;
+  }
+  return resData;
+};
+
 // Response interceptor to handle errors
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data) {
+      if (response.data.data && typeof response.data.data === "object") {
+        response.data.data = parsePaginatedData(response.data.data);
+      } else if (typeof response.data === "object") {
+        response.data = parsePaginatedData(response.data);
+      }
+    }
+    return response;
+  },
   (error) => {
     return Promise.reject(error);
   }

@@ -3,9 +3,20 @@ import axiosInstance from "./axiosConfig";
 export const employeeApi = {
   // Get all employees
   getAll: async (status) => {
-    const params = status && status !== "all" ? { status } : {};
+    const params = { page: 1, size: 100000 };
+    if (status && status !== "all") {
+      params.status = status;
+    }
+    const branchId = localStorage.getItem("branchId");
+    if (branchId) {
+      params.branchId = branchId;
+    }
     const response = await axiosInstance.get("/employees", { params });
-    return response.data.data || response.data;
+    const resData = response.data.data || response.data;
+    if (resData && typeof resData === "object" && "data" in resData && Array.isArray(resData.data)) {
+      return resData.data;
+    }
+    return Array.isArray(resData) ? resData : [];
   },
 
   // Get employee by ID
