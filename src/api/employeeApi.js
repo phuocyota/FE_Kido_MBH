@@ -11,19 +11,19 @@ export const employeeApi = {
   // Get employee by ID
   getById: async (id) => {
     const response = await axiosInstance.get(`/employees/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Create new employee
   create: async (data) => {
     const response = await axiosInstance.post("/employees", data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Update employee
   update: async (id, data) => {
     const response = await axiosInstance.put(`/employees/${id}`, data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Delete employee

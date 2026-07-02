@@ -5,13 +5,29 @@ export const productApi = {
   getAll: async (filters = {}) => {
     const params = { ...filters };
     const response = await axiosInstance.get("/products", { params });
-    return response.data.data || response.data;
+    const resData = response.data.data || response.data;
+    if (resData && typeof resData === "object" && "data" in resData && Array.isArray(resData.data)) {
+      const arr = [...resData.data];
+      Object.defineProperties(arr, {
+        page: { value: resData.page, writable: true, enumerable: false },
+        size: { value: resData.size, writable: true, enumerable: false },
+        total: { value: resData.total, writable: true, enumerable: false },
+        items: { value: arr, writable: true, enumerable: false },
+        totalPages: { 
+          value: Math.ceil((resData.total || 0) / (resData.size || filters.limit || filters.size || 10)), 
+          writable: true, 
+          enumerable: false 
+        }
+      });
+      return arr;
+    }
+    return resData;
   },
 
   // Get products with categories (for POS)
   getFull: async () => {
     const response = await axiosInstance.get("/products/full");
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Get all categories

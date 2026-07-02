@@ -24,25 +24,25 @@ export const workScheduleApi = {
     const params = { year, month };
     if (employeeId) params.employeeId = employeeId;
     const response = await axiosInstance.get("/work-schedules/monthly", { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Get schedule by ID
   getById: async (id) => {
     const response = await axiosInstance.get(`/work-schedules/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Create schedule
   create: async (data) => {
     const response = await axiosInstance.post("/work-schedules", data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Update schedule
   update: async (id, data) => {
     const response = await axiosInstance.put(`/work-schedules/${id}`, data);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Delete schedule
