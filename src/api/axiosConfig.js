@@ -53,13 +53,16 @@ axiosInstance.interceptors.request.use(
     if (token) {
       const authorization = `Bearer ${token}`;
 
-      if (config.headers?.set) {
+      if (!config.headers) {
+        config.headers = {};
+      }
+
+      if (typeof config.headers.set === "function") {
+        config.headers.set("Authorization", authorization);
         config.headers.set("authorization", authorization);
       } else {
-        config.headers = {
-          ...(config.headers || {}),
-          authorization,
-        };
+        config.headers.Authorization = authorization;
+        config.headers.authorization = authorization;
       }
     }
 
