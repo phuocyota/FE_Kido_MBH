@@ -7,6 +7,10 @@ export const employeeApi = {
     if (status && status !== "all") {
       params.status = status;
     }
+    const branchId = localStorage.getItem("branchId");
+    if (branchId) {
+      params.branchId = branchId;
+    }
     const response = await axiosInstance.get("/employees", { params });
     const resData = response.data.data || response.data;
     if (resData && typeof resData === "object" && "data" in resData && Array.isArray(resData.data)) {

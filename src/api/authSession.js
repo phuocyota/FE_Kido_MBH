@@ -1,5 +1,5 @@
 const TOKEN_KEYS = ["accessToken", "token", "authToken"];
-const AUTH_KEYS = [...TOKEN_KEYS, "userId", "role", "branchId", "branchName", "isLogin"];
+const AUTH_KEYS = [...TOKEN_KEYS, "userId", "role", "branchId", "branchName", "isLogin", "fullName", "email"];
 
 export const clearAuthSession = () => {
   AUTH_KEYS.forEach((key) => localStorage.removeItem(key));
@@ -14,7 +14,7 @@ export const getAccessToken = () => {
   return null;
 };
 
-export const saveAuthSession = ({ accessToken, userId, role, branchId, branchName }) => {
+export const saveAuthSession = ({ accessToken, userId, role, branchId, branchName, fullName, email }) => {
   if (accessToken) {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("token", accessToken);
@@ -24,10 +24,12 @@ export const saveAuthSession = ({ accessToken, userId, role, branchId, branchNam
   if (role) localStorage.setItem("role", role);
   if (branchId) localStorage.setItem("branchId", branchId);
   if (branchName) localStorage.setItem("branchName", branchName);
+  if (fullName) localStorage.setItem("fullName", fullName);
+  if (email) localStorage.setItem("email", email);
   localStorage.setItem("isLogin", "true");
 };
 
-const getTokenPayload = () => {
+export const getTokenPayload = () => {
   const token = getAccessToken();
   if (!token) return null;
 
@@ -40,6 +42,10 @@ const getTokenPayload = () => {
   } catch {
     return null;
   }
+};
+
+export const getDecodedToken = () => {
+  return getTokenPayload();
 };
 
 export const isTokenExpired = (token) => {

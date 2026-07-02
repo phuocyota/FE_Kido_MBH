@@ -101,6 +101,7 @@ export default function Header() {
 
   // biến giả lập đăng nhập
   const isLoggedIn = localStorage.getItem("isLogin") === "true";
+  const user = authApi.getUserInfo();
 
   const isParentActive = (item) => {
 
@@ -397,8 +398,14 @@ export default function Header() {
                   <div className="bg-gray-100 rounded-xl shadow-lg w-64 py-2">
 
                     {/* HEADER */}
-                    <div className="px-4 py-3 border-b font-semibold text-black">
-                      0979370077
+                    <div className="px-4 py-3 border-b text-black">
+                      <div className="font-bold text-gray-900 truncate">{user.fullName || "Admin"}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 truncate">{user.email || user.role || ""}</div>
+                      {user.branchName && (
+                        <div className="text-[11px] font-semibold text-blue-600 mt-1.5 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 inline-block truncate max-w-full">
+                          {user.branchName}
+                        </div>
+                      )}
                     </div>
 
                     {/* MENU */}
@@ -546,8 +553,11 @@ export default function Header() {
 ">
               {/* HEADER */}
               <div className="p-4 border-b flex items-center justify-between">
-                <span className="font-semibold">0979370077</span>
-                <button onClick={() => setOpenUser(false)}>✕</button>
+                <div>
+                  <div className="font-semibold text-gray-900">{user.fullName || "Admin"}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{user.email || user.role || ""}</div>
+                </div>
+                <button onClick={() => setOpenUser(false)} className="text-gray-400 hover:text-gray-600">✕</button>
               </div>
 
               {/* MENU */}
