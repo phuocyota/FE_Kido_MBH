@@ -47,3 +47,11 @@ export const cancelParentOrder = async (
 
   return res?.data ?? res;
 };
+
+export const getWalletTransactions = async (customerId, page = 1, size = 50) => {
+  const res = await apiRequest(
+    API.WALLETS.TRANSACTIONS(customerId) + `?page=${page}&size=${size}`
+  );
+
+  return res?.data ?? res;
+};
