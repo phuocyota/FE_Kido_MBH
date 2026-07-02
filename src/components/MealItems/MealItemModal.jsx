@@ -176,7 +176,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
                     <option value="">Chọn món ăn</option>
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.code || p.sku} - {p.name}
+                        {p.code} - {p.name}
                       </option>
                     ))}
                   </select>

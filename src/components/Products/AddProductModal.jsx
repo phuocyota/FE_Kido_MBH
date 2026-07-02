@@ -52,7 +52,7 @@ export default function AddProductModal({
       categoryId: initialData?.categoryId || "",
       tag: initialData?.tag || "",
       type: initialData?.type || "Đồ ăn",
-      code: initialData?.sku || initialData?.code || "",
+      code: initialData?.code || "",
       cost: initialData?.costPrice || initialData?.cost || "",
       price: initialData?.price || "",
       location: initialData?.location || "",

@@ -386,7 +386,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
 
               <tbody>
                 {paginatedDetails.map((item, index) => {
-                  const prodCode = item.product?.sku || "N/A";
+                  const prodCode = item.product?.code || "N/A";
                   const prodName = item.product?.name || "N/A";
                   return (
                     <tr key={item.id} className="border-b border-gray-300 hover:bg-indigo-50/60 transition-colors bg-white">

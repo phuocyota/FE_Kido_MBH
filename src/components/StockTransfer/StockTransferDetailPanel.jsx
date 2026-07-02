@@ -71,7 +71,7 @@ export default function StockTransferDetailPanel({ transfer }) {
                     #{index + 1}
                   </div>
                   <div className="mt-1 font-bold text-indigo-600">
-                    {product.sku || item.productCode || item.productId}
+                    {product.code || item.productCode || item.productId}
                   </div>
                 </div>
                 <div className="shrink-0 text-right text-sm font-bold tabular-nums text-gray-900">
@@ -122,7 +122,7 @@ export default function StockTransferDetailPanel({ transfer }) {
                       {index + 1}
                     </td>
                     <td className="px-4 py-3 font-semibold text-indigo-600">
-                      {product.sku || item.productCode || item.productId}
+                      {product.code || item.productCode || item.productId}
                     </td>
                     <td className="px-4 py-3 leading-5 text-gray-800">
                       {product.name || item.productName || ""}

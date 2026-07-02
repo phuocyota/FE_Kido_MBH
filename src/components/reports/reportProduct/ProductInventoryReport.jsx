@@ -44,7 +44,7 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId }) {
       const mappedData = inventoryItems.map((item, index) => ({
         stt: index + 1,
         group: item.group || "",
-        code: item.code || item.sku || item.inventoryItemId || "",
+        code: item.code || item.inventoryItemId || "",
         name: item.name,
         unit: item.unit,
         value: formatMoney(item.value || item.totalValue || 0),

@@ -22,7 +22,7 @@ export default function PriceTable() {
       // Map BE fields to FE format
       const mappedData = data.map(p => ({
         id: p.id,
-        code: p.sku,
+        code: p.code,
         name: p.name,
         price: parseFloat(p.price),
         cost: parseFloat(p.costPrice),
