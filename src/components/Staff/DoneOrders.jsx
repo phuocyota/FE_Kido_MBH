@@ -1,5 +1,5 @@
 import React from "react";
-import bgXanhLa from "../../assets/bg_xanhla.png";
+import bgXanhLa from "../../assets/bg_xanhla.webp";
 
 export default function DoneOrders({ orders, onPickup, onSelect }) {
   function OrderDoneCard({ order }) {

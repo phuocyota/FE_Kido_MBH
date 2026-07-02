@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import bg from "../../assets/anh-can-tin-so-2.jpg";
+import bg from "../../assets/anh-can-tin-so-2.webp";
 
 import QRVerify from "../../components/FaceId/QRVerify";
 import { loginByCard } from "../../api/auth";

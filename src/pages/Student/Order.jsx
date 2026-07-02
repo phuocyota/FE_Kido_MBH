@@ -15,7 +15,7 @@ import {
   updateCartItem,
   // getMyCartItems,
 } from "../../api/cart";
-import bgImg from "../../assets/anh-can-tin-so-2.jpg";
+import bgImg from "../../assets/anh-can-tin-so-2.webp";
 import {
   getProductsByPrice,
 } from "../../api/products";

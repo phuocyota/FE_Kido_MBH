@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import bgXanhDuong from "../../assets/bg_XanhDuong.png";
+import bgXanhDuong from "../../assets/bg_XanhDuong.webp";
 
 export default function PendingOrders({ orders, onSelect, onDone }) {
   function OrderCard({ order }) {

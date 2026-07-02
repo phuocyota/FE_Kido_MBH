@@ -1,5 +1,5 @@
 import React from "react";
-import bgCam from "../../assets/bg_cam.png";
+import bgCam from "../../assets/bg_cam.webp";
 
 export default function CashOrders({ orders, onSelect, onPaid }) {
   function CashOrderCard({ order }) {

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import { Mail } from "lucide-react";
-import logo from "../../assets/kido.jpg";
+import logo from "../../assets/kido.webp";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 // import RegisterFace from "../../components/FaceId/RegisterFace";
 import { loginByCard } from "../../api/auth";
-import bgImage from "../../assets/anh-can-tin-so-2.jpg";
+import bgImage from "../../assets/anh-can-tin-so-2.webp";
 import { loginCashier } from "../../api/auth";
 import { isKitchenToken, saveAuthSession } from "../../api/session";
 

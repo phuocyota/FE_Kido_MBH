@@ -4,7 +4,7 @@ import React, {
 } from "react";
 
 import banhmi from "../../assets/banhmi.jpg";
-import bg_left from "../../assets/left_order.png";
+import bg_left from "../../assets/left_order.webp";
 
 export default function Left({
   categories = [],

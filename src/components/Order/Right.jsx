@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.jpg";
-import bg_right from "../../assets/right_order.png";
+import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.webp";
+import bg_right from "../../assets/right_order.webp";
 import {
   updateCartItem,
 } from "../../api/cart";

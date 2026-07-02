@@ -1,7 +1,13 @@
 import { apiRequest, buildAssetUrl } from "./client";
 import { API } from "./endpoint";
 
-const unwrap = (response) => response?.data || response || [];
+const unwrap = (response) => {
+  const payload = response?.data ?? response;
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  if (payload && Array.isArray(payload.items)) return payload.items;
+  return [];
+};
 
 const toNumber = (value) => {
   const number = Number(value);
