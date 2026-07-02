@@ -35,7 +35,7 @@ export default function StockOutTable({ items = [], setItems }) {
 
   const filteredProducts = products.filter((p) =>
     (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.sku || "").toLowerCase().includes(search.toLowerCase())
+    (p.code || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAddProduct = (product) => {
@@ -50,7 +50,7 @@ export default function StockOutTable({ items = [], setItems }) {
         {
           id: Date.now(),
           productId: product.id,
-          code: product.sku || product.code || "",
+          code: product.code || "",
           name: product.name || "",
           unit: product.unit || "Cái",
           quantity: 1,
@@ -126,7 +126,7 @@ export default function StockOutTable({ items = [], setItems }) {
                     onClick={() => handleAddProduct(product)}
                   >
                     <div className="font-semibold text-sm text-gray-900">{product.name}</div>
-                    <div className="text-xs text-gray-500">{product.sku || product.code}</div>
+                    <div className="text-xs text-gray-500">{product.code}</div>
                   </button>
                 ))
               )}

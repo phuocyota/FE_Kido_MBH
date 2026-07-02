@@ -26,7 +26,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
         setProducts(
           items.map((item) => ({
             id: item.id,
-            code: item.sku,
+            code: item.code,
             name: item.name,
             stock: Number(item.quantity || 0),
             actual: Number(item.quantity || 0),

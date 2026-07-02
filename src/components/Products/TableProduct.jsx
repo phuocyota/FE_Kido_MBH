@@ -122,7 +122,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
         return {
           id: p.id,
           categoryId: p.categoryId,
-          code: p.sku,
+          code: p.code,
           name: p.name,
           category: p.category?.name || "",
           price: parseFloat(p.price),
@@ -245,7 +245,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
                     <td className="p-2">
                       <EditableCell
                         value={item.code}
-                        onSave={(val) => handleUpdateProduct(item.id, "sku", val)}
+                        onSave={(val) => handleUpdateProduct(item.id, "code", val)}
                       />
                     </td>
                     <td className="p-2">
@@ -366,7 +366,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               name: data.name.trim(),
               price: Number(data.price || 0),
               costPrice: Number(data.cost || 0),
-              sku: data.code || undefined,
+              code: data.code || undefined,
               categoryId: data.categoryId || undefined,
               unit: data.unit || undefined,
               isActive: data.active,

@@ -88,7 +88,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
                 mealItems.map((item, index) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50">
                     <td className="p-3 text-center">{index + 1}</td>
-                    <td className="p-3">{item.product?.sku || ""}</td>
+                    <td className="p-3">{item.product?.code || ""}</td>
                     <td className="p-3 font-medium text-gray-800">{item.product?.name || "N/A"}</td>
                     <td className="p-3 text-center">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-semibold">

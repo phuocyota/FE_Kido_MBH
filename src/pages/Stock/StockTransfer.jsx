@@ -261,7 +261,7 @@ export default function StockTransfer() {
                           <option value="">Chọn hàng hóa</option>
                           {products.map((product) => (
                             <option key={product.id} value={product.id}>
-                              {product.sku}
+                              {product.code}
                             </option>
                           ))}
                         </select>

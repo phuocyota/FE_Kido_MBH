@@ -31,7 +31,7 @@ const normalizeDetail = (detail, index) => {
 
   return {
     id: detail.id || `${detail.productId || product.id || "item"}-${index}`,
-    productCode: product.sku || detail.productCode || detail.sku || "",
+    productCode: product.code || detail.productCode || detail.code || "",
     productName: product.name || detail.productName || detail.name || "",
     warehouse: "Kho mặc định",
     warehouseAccount: "1561",
