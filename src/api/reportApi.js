@@ -11,7 +11,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/revenue", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Daily revenue
@@ -22,7 +22,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/revenue/daily", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   getCustomerStats: async (filter = "7days", branchId) => {
@@ -30,7 +30,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
 
     const response = await axiosInstance.get("/reports/customer", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Top selling products
@@ -41,7 +41,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/top-products", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Bottom selling products
@@ -52,7 +52,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/bottom-products", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // End of day report
@@ -61,7 +61,7 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/end-of-day", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Inventory report
@@ -70,13 +70,13 @@ export const reportApi = {
     if (branchId) params.branchId = branchId;
     
     const response = await axiosInstance.get("/reports/inventory", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   // Shift summary
   getShiftSummary: async (shiftId) => {
     const response = await axiosInstance.get(`/reports/shifts/${shiftId}/summary`);
-    return response.data;
+    return unwrap(response);
   },
 
   // Monthly order plan (Ke hoach dat hang hoa trong Thang)
@@ -90,7 +90,7 @@ export const reportApi = {
     if (maxRate !== undefined) params.maxRate = maxRate;
 
     const response = await axiosInstance.get("/reports/monthly-order-plan", { params });
-    return response.data;
+    return unwrap(response);
   },
 
   getEmployeeReport: async ({ filter = "7days", from, to, branchId, employeeId, limit = 10 } = {}) => {

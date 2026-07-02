@@ -15,6 +15,7 @@ export { stockTransferApi } from "./stockTransferApi";
 export { stockInApi } from "./stockInApi";
 export { stockOutApi } from "./stockOutApi";
 export { customerApi } from "./customerApi";
+export { walletApi } from "./walletApi";
 export { orderApi } from "./orderApi";
 export { mealItemApi } from "./mealItemApi";
 export * from "./socketClient";

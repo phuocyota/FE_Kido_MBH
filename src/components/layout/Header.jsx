@@ -23,7 +23,11 @@ const menu = [
     name: "Nhà cung cấp", path: "/suppliers",
   },
   {
-    name: "Khách hàng", path: "/customers",
+    name: "Khách hàng",
+    children: [
+      { name: "Danh sách khách hàng", path: "/customers" },
+      { name: "Lịch sử ví thành viên", path: "/wallet-transactions" },
+    ],
   },
 
   {
