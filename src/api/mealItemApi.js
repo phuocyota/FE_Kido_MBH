@@ -3,14 +3,14 @@ import axiosInstance from "./axiosConfig";
 export const mealItemApi = {
   // Get meal items with filters (branchId, mealPeriod, status)
   getAll: async (filters = {}) => {
-    const params = {};
-    if (filters.branchId) params.branchId = filters.branchId;
-    if (filters.mealPeriod) params.mealPeriod = filters.mealPeriod;
-    if (filters.status) params.status = filters.status;
+    const params = { page: 1, size: 100000, ...filters };
     
     const response = await axiosInstance.get("/meal-items", { params });
-    // BE returns data wrapped in data: { data: [...] } if standard structure applies
-    return response.data.data || response.data;
+    const resData = response.data.data || response.data;
+    if (resData && typeof resData === "object" && "data" in resData && Array.isArray(resData.data)) {
+      return resData.data;
+    }
+    return Array.isArray(resData) ? resData : [];
   },
 
   // Get meal item details by id

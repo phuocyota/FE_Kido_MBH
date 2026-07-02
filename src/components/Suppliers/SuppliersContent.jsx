@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Edit2, Trash2 } from "lucide-react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Edit2, Trash2, ChevronDown } from "lucide-react";
 import SupplierDebtDetail from "./SupplierDebtDetail";
 
 export default function SuppliersContent({
@@ -16,6 +16,18 @@ export default function SuppliersContent({
 }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedDebtSupplier, setSelectedDebtSupplier] = useState(null);
+  const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
+  const sizeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (sizeDropdownRef.current && !sizeDropdownRef.current.contains(e.target)) {
+        setIsSizeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, []);
 
   const selectedSuppliers = useMemo(
     () => suppliers.filter((supplier) => selectedIds.includes(supplier.id)),
@@ -200,17 +212,40 @@ export default function SuppliersContent({
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 border-t border-gray-300 bg-gray-50">
         <div className="flex items-center gap-2 text-sm text-gray-700">
           <span>Hiển thị</span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => setItemsPerPage?.(Number(e.target.value))}
-            className="h-9 border border-gray-300 rounded-md px-3 bg-white text-gray-700 outline-none cursor-pointer text-sm font-medium"
-          >
-            <option value={10}>10 dòng</option>
-            <option value={15}>15 dòng</option>
-            <option value={20}>20 dòng</option>
-            <option value={30}>30 dòng</option>
-            <option value={50}>50 dòng</option>
-          </select>
+          <div className="relative inline-block" ref={sizeDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsSizeDropdownOpen(!isSizeDropdownOpen)}
+              className="h-9 min-w-[95px] rounded-lg border border-gray-300 px-3 py-1.5 text-sm bg-white hover:bg-gray-50 flex items-center justify-between gap-1.5 font-medium text-gray-700 transition"
+            >
+              <span>{itemsPerPage} dòng</span>
+              <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isSizeDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isSizeDropdownOpen && (
+              <div className="absolute bottom-[calc(100%+6px)] left-0 z-50 min-w-[105px] bg-white border border-gray-200 rounded-xl shadow-lg py-1 overflow-hidden">
+                {[10, 15, 20, 30, 50].map((size) => {
+                  const isSelected = itemsPerPage === size;
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage?.(size);
+                        setCurrentPage(1);
+                        setIsSizeDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 text-sm text-left transition-colors hover:bg-gray-50 ${
+                        isSelected ? "bg-indigo-50 text-indigo-600 font-semibold" : "text-gray-700"
+                      }`}
+                    >
+                      {size} dòng
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4">

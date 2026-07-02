@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Search, RefreshCw, Wallet, ArrowDownLeft, ArrowUpRight, RotateCcw } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { Search, RefreshCw, Wallet, ArrowDownLeft, ArrowUpRight, RotateCcw, ChevronDown, Sliders } from "lucide-react";
 import toast from "react-hot-toast";
 import { walletApi } from "../../api";
+
+const typeOptions = [
+  { value: "all", label: "Tất cả loại giao dịch", icon: Wallet, colorBg: "bg-indigo-50", colorText: "text-indigo-600", colorBorder: "border-indigo-200" },
+  { value: "TOPUP", label: "Nạp tiền", icon: ArrowDownLeft, colorBg: "bg-emerald-50", colorText: "text-emerald-600", colorBorder: "border-emerald-200" },
+  { value: "PAYMENT", label: "Thanh toán", icon: ArrowUpRight, colorBg: "bg-rose-50", colorText: "text-rose-600", colorBorder: "border-rose-200" },
+  { value: "REFUND", label: "Hoàn tiền", icon: RotateCcw, colorBg: "bg-blue-50", colorText: "text-blue-600", colorBorder: "border-blue-200" },
+  { value: "ADJUSTMENT", label: "Điều chỉnh số dư", icon: Sliders, colorBg: "bg-amber-50", colorText: "text-amber-600", colorBorder: "border-amber-200" },
+];
 
 const formatNumber = (value) => new Intl.NumberFormat("vi-VN").format(Number(value || 0));
 
@@ -59,6 +67,23 @@ export default function WalletTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const typeDropdownRef = useRef(null);
+  const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
+  const sizeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target)) {
+        setIsTypeDropdownOpen(false);
+      }
+      if (sizeDropdownRef.current && !sizeDropdownRef.current.contains(e.target)) {
+        setIsSizeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -215,21 +240,62 @@ export default function WalletTransactions() {
                 </div>
 
                 {/* Type Filter */}
-                <div className="w-full sm:w-[200px]">
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => {
-                      setTypeFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                <div className="w-full sm:w-[250px] relative" ref={typeDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                    className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 flex items-center justify-between transition hover:bg-gray-50 active:scale-[0.99]"
                   >
-                    <option value="all">Tất cả loại giao dịch</option>
-                    <option value="TOPUP">Nạp tiền</option>
-                    <option value="PAYMENT">Thanh toán</option>
-                    <option value="REFUND">Hoàn tiền</option>
-                    <option value="ADJUSTMENT">Điều chỉnh số dư</option>
-                  </select>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const selectedOption = typeOptions.find(opt => opt.value === typeFilter);
+                        if (!selectedOption) return null;
+                        const Icon = selectedOption.icon;
+                        return (
+                          <>
+                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-lg ${selectedOption.colorBg} ${selectedOption.colorText}`}>
+                              <Icon size={14} />
+                            </span>
+                            <span className="font-medium text-gray-700">{selectedOption.label}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <ChevronDown size={16} className={`text-gray-400 transition-transform duration-200 ${isTypeDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isTypeDropdownOpen && (
+                    <div className="absolute left-0 right-0 mt-1.5 z-[100] bg-white border border-gray-200 rounded-xl shadow-lg py-1 overflow-hidden">
+                      {typeOptions.map((option) => {
+                        const Icon = option.icon;
+                        const isSelected = typeFilter === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => {
+                              setTypeFilter(option.value);
+                              setCurrentPage(1);
+                              setIsTypeDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2.5 text-sm flex items-center gap-3 transition-colors hover:bg-gray-50 text-left ${
+                              isSelected ? "bg-indigo-50/50 font-semibold" : ""
+                            }`}
+                          >
+                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg border ${option.colorBg} ${option.colorText} ${option.colorBorder}`}>
+                              <Icon size={14} />
+                            </span>
+                            <span className={`flex-1 ${isSelected ? "text-indigo-600" : "text-gray-700"}`}>
+                              {option.label}
+                            </span>
+                            {isSelected && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -331,19 +397,40 @@ export default function WalletTransactions() {
             <div className="bg-white px-4 py-3 border-t border-gray-300 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-700">Hiển thị</span>
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-lg border border-gray-300 px-2 py-1 text-sm bg-white"
-                >
-                  <option value={10}>10 dòng</option>
-                  <option value={15}>15 dòng</option>
-                  <option value={25}>25 dòng</option>
-                  <option value={50}>50 dòng</option>
-                </select>
+                <div className="relative inline-block" ref={sizeDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeDropdownOpen(!isSizeDropdownOpen)}
+                    className="h-8 min-w-[90px] rounded-lg border border-gray-300 px-2.5 py-1 text-sm bg-white hover:bg-gray-50 flex items-center justify-between gap-1.5 font-medium text-gray-700 transition"
+                  >
+                    <span>{itemsPerPage} dòng</span>
+                    <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isSizeDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isSizeDropdownOpen && (
+                    <div className="absolute bottom-[calc(100%+6px)] left-0 z-[100] min-w-[100px] bg-white border border-gray-200 rounded-xl shadow-lg py-1 overflow-hidden">
+                      {[10, 15, 25, 50].map((size) => {
+                        const isSelected = itemsPerPage === size;
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => {
+                              setItemsPerPage(size);
+                              setCurrentPage(1);
+                              setIsSizeDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50 ${
+                              isSelected ? "bg-indigo-50 text-indigo-600 font-semibold" : "text-gray-700"
+                            }`}
+                          >
+                            {size} dòng
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
                 <span className="text-sm text-gray-500">
                   trong tổng số {totalItems} giao dịch
                 </span>

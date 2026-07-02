@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Save, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Save, Trash2, X, Image } from "lucide-react";
 import AddProductModal from "./AddProductModal";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
@@ -249,10 +249,38 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
                       />
                     </td>
                     <td className="p-2">
-                      <EditableCell
-                        value={item.name}
-                        onSave={(val) => handleUpdateProduct(item.id, "name", val)}
-                      />
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                          {item.imageUrl ? (
+                            <>
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = "none";
+                                  const placeholder = e.target.parentNode.querySelector(".img-placeholder");
+                                  if (placeholder) placeholder.style.display = "flex";
+                                }}
+                              />
+                              <div className="img-placeholder hidden w-full h-full items-center justify-center text-gray-400">
+                                <Image size={18} />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <Image size={18} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <EditableCell
+                            value={item.name}
+                            onSave={(val) => handleUpdateProduct(item.id, "name", val)}
+                          />
+                        </div>
+                      </div>
                     </td>
                     <td className="p-2 text-center">{item.category}</td>
                     <td className="p-2">
