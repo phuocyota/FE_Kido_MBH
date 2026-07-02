@@ -47,5 +47,8 @@ export const API = {
     CREATE: (orderId) => withApiPrefix(`/momo/create/${orderId}`),
     TOPUP: withApiPrefix("/momo/topup"),
   },
- 
+
+  WALLETS: {
+    TRANSACTIONS: (customerId) => withApiPrefix(`/wallets/customer/${customerId}/transactions`),
+  },
 };

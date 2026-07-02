@@ -113,6 +113,12 @@ export default function Order() {
           maxPrice: advanceAmount || undefined,
         });
 
+        console.log("🔍 [DEBUG] branchId:", branchId);
+        console.log("🔍 [DEBUG] advanceAmount:", advanceAmount);
+        console.log("🔍 [DEBUG] raw data from API:", data);
+        console.log("🔍 [DEBUG] isArray:", Array.isArray(data));
+        console.log("🔍 [DEBUG] data length:", data?.length);
+
         if (!ignore) {
           setMenuData(Array.isArray(data) ? data : []);
         }
@@ -196,6 +202,11 @@ export default function Order() {
         }))
     );
   }, [advanceAmount, menuData]);
+
+  console.log("🔍 [DEBUG] menuData:", menuData);
+  console.log("🔍 [DEBUG] menuData.length:", menuData.length);
+  console.log("🔍 [DEBUG] products.length:", products.length);
+  console.log("🔍 [DEBUG] products:", products);
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
