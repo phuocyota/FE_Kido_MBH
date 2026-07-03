@@ -7,15 +7,18 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Order/Header";
 import Left from "../../components/Order/Left";
 import Right from "../../components/Order/Right";
-import { getProductsFull } from "../../api/products";
 import {
   addCartItem,
   completeCart,
   deleteCartItem,
   getMyCart,
   updateCartItem,
+  // getMyCartItems,
 } from "../../api/cart";
-import bgImg from "../../assets/anh-can-tin-so-2.png";
+import bgImg from "../../assets/anh-can-tin-so-2.webp";
+import {
+  getProductsByPrice,
+} from "../../api/products";
 
 export default function Order() {
   const location = useLocation();
@@ -64,105 +67,194 @@ export default function Order() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
+  const [cardPrice,setCardPrice]=useState(10000);
 
+  // console.log("LOCAL TOKEN:", localStorage.getItem("accessToken"));
+  // console.log("STUDENT:", localStorage.getItem("student"));
+
+  // const syncCart = (nextCart) => {
+  //   if (Array.isArray(nextCart?.items)) {
+  //     setCart(nextCart.items);
+  //   }
+  // };
   const syncCart = (nextCart) => {
-    if (Array.isArray(nextCart?.items)) {
-      setCart(nextCart.items);
+
+  console.log("SYNC CART:", nextCart);
+
+  if (Array.isArray(nextCart?.items)) {
+    setCart(nextCart.items);
+  }
+};
+
+  const originalAmount =
+  Number(localStorage.getItem("amount")) || amount;
+
+  // const reloadCart = async () => {
+  //   const nextCart = await getMyCart();
+  //   syncCart(nextCart);
+  //   return nextCart;
+  // };
+const reloadCart = async () => {
+
+  const nextCart = await getMyCart();
+
+  console.log("GET MY CART:", nextCart);
+
+  syncCart(nextCart);
+
+  return nextCart;
+};
+
+useEffect(() => {
+  if (!student) return;
+
+  reloadCart().catch((error) => {
+    console.error("LOAD CART ERROR:", error);
+  });
+}, [student]);
+
+  // LOADING PRODUCTS
+  const [loadingProducts, setLoadingProducts] =
+  useState(false);
+ 
+ 
+
+useEffect(() => {
+
+  if (!cardPrice) return;
+
+  if (loadingProducts) return;
+
+  const loadOrderingData = async () => {
+
+    try {
+
+      setLoadingProducts(true);
+
+      const maxPrice =
+        Number(cardPrice);
+
+      const fullCategories =
+        await getProductsByPrice(
+          0,
+          maxPrice
+        );
+
+      const normalized =
+        Array.isArray(fullCategories)
+          ? fullCategories
+          : [];
+
+      setApiCategories(normalized);
+
+      setApiProducts(
+        normalized.flatMap(
+          (category) =>
+            category.products || []
+        )
+      );
+
+    } catch (error) {
+
+      console.error(
+        "LOAD PRODUCT ERROR:",
+        error
+      );
+
+    } finally {
+
+      setLoadingProducts(false);
+
     }
+
   };
 
-  const reloadCart = async () => {
-    const nextCart = await getMyCart();
-    syncCart(nextCart);
-    return nextCart;
-  };
+  loadOrderingData();
 
-  useEffect(() => {
-    const loadOrderingData = async () => {
-      const token = localStorage.getItem("accessToken");
-
-      try {
-        const fullCategories = await getProductsFull();
-        setApiCategories(fullCategories);
-        setApiProducts(fullCategories.flatMap((category) => category.products || []));
-        if (token) {
-          await reloadCart();
-        }
-      } catch (error) {
-        console.error("Không tải được dữ liệu order từ API", error);
-        alert(error?.message || "Không tải được danh sách sản phẩm");
-      }
-    };
-
-    loadOrderingData();
-  }, []);
-
+}, [cardPrice]);
   const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
   const products = apiProducts;
 
-  //   useEffect(() => {
-  //   const data = JSON.parse(localStorage.getItem("student") || "null");
-  //   const qrAmount = localStorage.getItem("amount");
+ 
 
-  //   if (qrAmount) {
-  //     const amountNumber = Number(qrAmount);
+// console.log("CARD PRICE:", cardPrice);
+const filteredProducts =
+  products.filter((p) => {
 
-  //     setAmount(amountNumber);        
-  //     setRemaining(amountNumber);    
-  //     setStudent(null);
-  //   } else if (data) {
-  //     setStudent(data);
-  //     setAmount(null);
-  //   } else {
+    const categoryName =
+      p.category?.name ||
+      p.categoryName ||
+      p.category ||
+      "";
 
-  //     console.warn("Không có dữ liệu từ scan");
-  //   }
-  // }, []);
-
-  const filteredProducts = products.filter((p) => {
-    // 👉 lọc theo category
     const matchCategory =
-      activeCategory === "Tất cả" || p.category === activeCategory;
+      activeCategory === "Tất cả" ||
+      categoryName === activeCategory;
 
-    // 👉 lọc theo tiền QR
     const matchPrice =
-      !amount || p.price <= Number(amount);
+      Number(cardPrice) === 5000
+        ? Number(p.price) <= 5000
+        : true;
 
-    return matchCategory && matchPrice;
+    return (
+      matchCategory &&
+      matchPrice
+    );
+
   });
 
+  useEffect(() => {
+
+    console.log(
+      "CART STATE:",
+      cart
+    );
+
+  }, [cart]);
+
+   
 
   const addToCart = async (item) => {
-    // 👉 Nếu đang dùng QR
-    if (amount) {
-      if (remaining < item.price) {
-        alert("❌ Bạn không đủ tiền để mua món này");
-        return;
-      }
-    }
 
-    try {
+  try {
+
+    console.log("CLICK ITEM:", item);
+
+      // 👇 ADD API
       await addCartItem({
         productId: item.id,
         quantity: 1,
-        note: item.note || "",
+        note: "",
       });
+
       await reloadCart();
 
-      if (amount) {
-        setRemaining((prev) => (prev ?? 0) - item.price);
-      }
-    } catch (error) {
-      alert(error?.message || "Không thêm được sản phẩm vào giỏ");
+  } catch (error) {
+
+    console.log(
+      "ADD CART ERROR:",
+      error
+    );
+
     }
   };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const isWalletBalanceInsufficient = () =>
+    paymentMethod !== "cash" &&
+    !amount &&
+    student &&
+    total > Number(student.balance || 0);
 
   const handlePayment = () => {
     if (cart.length === 0) {
       alert("Chưa có món");
+      return;
+    }
+
+    if (isWalletBalanceInsufficient()) {
+      alert("Số dư ví không đủ");
       return;
     }
 
@@ -190,21 +282,22 @@ export default function Order() {
     try {
       setIsSubmitting(true);
 
-      if (paymentMethod !== "cash" && !amount && student && total > Number(student.balance || 0)) {
-        alert("Không đủ tiền");
+      if (isWalletBalanceInsufficient()) {
+        alert("Số dư ví không đủ");
         return;
       }
 
       const result = await completeCart({
-        branchId: localStorage.getItem("branchId") || import.meta.env.VITE_BRANCH_ID || "branch-id",
-        posDeviceId:
-          localStorage.getItem("posDeviceId") ||
-          localStorage.getItem("deviceId") ||
-          import.meta.env.VITE_POS_DEVICE_ID ||
-          "student-app",
-        paymentMethod: paymentMethod === "cash" ? "CASH" : "WALLET",
+
+        paymentMethod:
+          paymentMethod === "cash"
+            ? "CASH"
+            : "WALLET",
+
         orderType: "TAKEAWAY",
+
         note: pickupType,
+
       });
 
       const payload = result?.data || result;
@@ -278,7 +371,12 @@ export default function Order() {
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        if (item.qty <= 1) {
+          await deleteCartItem(item.cartItemId);
+        } else {
+          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        }
+
         await reloadCart();
       } else {
         setCart((prev) =>
@@ -308,18 +406,26 @@ export default function Order() {
       style={{ backgroundImage: `url(${bgImg})` }}
     >
 
-      <Header student={student} amount={remaining ?? amount} />
+      {/* <Header student={student} amount={remaining ?? amount} setCardPrice={setCardPrice}/> */}
+      <Header
+  
+  student={student}
+  amount={remaining ?? amount}
+  originalAmount={originalAmount}
+  setCardPrice={setCardPrice}
+/>
 
 
       <div className="flex flex-1 overflow-hidden">
 
         <Left
+        key={cardPrice}
           categories={categories}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
           products={filteredProducts}
           addToCart={addToCart}
-        />
+         />
 
         <Right
           cart={cart}

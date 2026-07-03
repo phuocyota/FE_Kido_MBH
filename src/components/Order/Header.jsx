@@ -3,7 +3,7 @@ import React  from "react";
 import header1 from "../../assets/header1.png";
 import header2 from "../../assets/header2.png";
 import header3 from "../../assets/header3.png";
-import header4 from "../../assets/header4.png";
+import header4 from "../../assets/header4.webp";
 
 export default function Header({ student, amount }) {
   return (

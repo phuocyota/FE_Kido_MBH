@@ -2,6 +2,7 @@ import React from "react";
 
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { clearAuthSession } from "../../api/session";
 
 import { FaBars, FaUserCircle } from "react-icons/fa";
 
@@ -161,7 +162,7 @@ export default function Header() {
             {!isLoggedIn ? (
               // ===== CHƯA ĐĂNG NHẬP =====
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/")}
                 className="bg-white text-black px-4 py-2 rounded-xl border border-gray-300 font-medium hover:bg-gray-100 transition"
               >
                 Đăng nhập
@@ -195,7 +196,7 @@ export default function Header() {
                       </div>
                       <div
                         onClick={() => {
-                          localStorage.removeItem("isLogin");
+                          clearAuthSession();
                           navigate("/");
                         }}
                         className="px-4 py-2 text-red-500 cursor-pointer"
