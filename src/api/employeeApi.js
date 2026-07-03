@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosConfig";
+import { getBranchIdFromToken } from "./authSession";
 
 export const employeeApi = {
   // Get all employees
@@ -7,7 +8,7 @@ export const employeeApi = {
     if (status && status !== "all") {
       params.status = status;
     }
-    const branchId = localStorage.getItem("branchId");
+    const branchId = getBranchIdFromToken();
     if (branchId) {
       params.branchId = branchId;
     }

@@ -13,6 +13,22 @@ const levels = [
   { value: "primary", label: "Tiểu học", meals: ["Ăn trưa", "Ăn xế"] },
 ];
 
+const monthsOptions = [
+  { value: "all", label: "Tất cả các tháng" },
+  { value: "1", label: "Tháng 1" },
+  { value: "2", label: "Tháng 2" },
+  { value: "3", label: "Tháng 3" },
+  { value: "4", label: "Tháng 4" },
+  { value: "5", label: "Tháng 5" },
+  { value: "6", label: "Tháng 6" },
+  { value: "7", label: "Tháng 7" },
+  { value: "8", label: "Tháng 8" },
+  { value: "9", label: "Tháng 9" },
+  { value: "10", label: "Tháng 10" },
+  { value: "11", label: "Tháng 11" },
+  { value: "12", label: "Tháng 12" },
+];
+
 const dayThemes = [
   { label: "Thứ 2", header: "from-rose-500 to-pink-500", cell: "bg-rose-50", button: "from-rose-400 via-pink-400 to-orange-300" },
   { label: "Thứ 3", header: "from-orange-500 to-amber-400", cell: "bg-orange-50", button: "from-orange-400 via-amber-300 to-yellow-300" },
@@ -38,14 +54,89 @@ const toDateKey = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const getWeekDays = (week) => {
+const getSchoolYearStart = () => {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-indexed: 0 is Jan, 7 is Aug
+  return currentMonth >= 7 ? currentYear : currentYear - 1;
+};
+
+const getThisMondayStr = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const dayOfWeek = today.getDay();
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(today);
-  monday.setDate(today.getDate() + diffToMonday + (week === "next" ? 7 : 0));
+  monday.setDate(today.getDate() + diffToMonday);
+  return toDateKey(monday);
+};
+
+const getSchoolYearWeeks = () => {
+  const startYear = getSchoolYearStart();
+  
+  // Find Monday of the week containing Aug 1st
+  const aug1 = new Date(startYear, 7, 1);
+  const day = aug1.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const startMonday = new Date(startYear, 7, 1 + diffToMonday);
+
+  // Find July 31st of next year
+  const nextJuly31 = new Date(startYear + 1, 6, 31);
+  
+  const weeks = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Monday of this week
+  const todayDay = today.getDay();
+  const todayDiffToMonday = todayDay === 0 ? -6 : 1 - todayDay;
+  const thisMonday = new Date(today);
+  thisMonday.setDate(today.getDate() + todayDiffToMonday);
+
+  // Monday of next week
+  const nextMonday = new Date(thisMonday);
+  nextMonday.setDate(thisMonday.getDate() + 7);
+
+  let currentMonday = new Date(startMonday);
+  while (currentMonday <= nextJuly31) {
+    const sunday = new Date(currentMonday);
+    sunday.setDate(currentMonday.getDate() + 6);
+
+    const isThisWeek = currentMonday.getTime() === thisMonday.getTime();
+    const isNextWeek = currentMonday.getTime() === nextMonday.getTime();
+
+    let suffix = "";
+    if (isThisWeek) suffix = " (Tuần này)";
+    else if (isNextWeek) suffix = " (Tuần tới)";
+
+    const label = `${formatDate(currentMonday)} - ${formatDate(sunday)}${suffix}`;
+    
+    weeks.push({
+      value: toDateKey(currentMonday),
+      label,
+    });
+
+    currentMonday.setDate(currentMonday.getDate() + 7);
+    // Loop safety safeguard based on dates
+    if (weeks.length > 60) break;
+  }
+
+  return weeks;
+};
+
+const getWeekDays = (week) => {
+  let monday;
+  if (week === "this" || week === "next") {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dayOfWeek = today.getDay();
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    monday = new Date(today);
+    monday.setDate(today.getDate() + diffToMonday + (week === "next" ? 7 : 0));
+  } else {
+    const parts = week.split("-");
+    monday = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  }
 
   return dayThemes.map((theme, index) => {
     const date = new Date(monday);
@@ -89,11 +180,65 @@ const enumToMeal = {
 
 export default function BoardingOrderAdmin() {
   const [level, setLevel] = useState("preschool");
-  const [week, setWeek] = useState("this");
+  const [week, setWeek] = useState(getThisMondayStr());
   const [schedule, setSchedule] = useState({});
   const [modalContext, setModalContext] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [foodTemplates, setFoodTemplates] = useState([]);
+
+  const today = new Date();
+  const [selectedYear, setSelectedYear] = useState(String(today.getFullYear()));
+  const [selectedMonth, setSelectedMonth] = useState(String(today.getMonth() + 1));
+
+  const weekOptions = useMemo(() => getSchoolYearWeeks(), []);
+
+  const yearOptions = useMemo(() => {
+    const startYear = getSchoolYearStart();
+    return [
+      { value: String(startYear), label: `Năm ${startYear}` },
+      { value: String(startYear + 1), label: `Năm ${startYear + 1}` }
+    ];
+  }, []);
+
+  const filteredWeeks = useMemo(() => {
+    let list = weekOptions;
+    if (selectedYear) {
+      list = list.filter((w) => {
+        const parts = w.value.split("-");
+        return parts[0] === selectedYear;
+      });
+    }
+    if (selectedMonth && selectedMonth !== "all") {
+      list = list.filter((w) => {
+        const parts = w.value.split("-");
+        const monMonth = Number(parts[1]);
+
+        // Calculate Sunday's month to support overlapping weeks
+        const monday = new Date(Number(parts[0]), monMonth - 1, Number(parts[2]));
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const sunMonth = sunday.getMonth() + 1;
+
+        const targetMonth = Number(selectedMonth);
+        return monMonth === targetMonth || sunMonth === targetMonth;
+      });
+    }
+    return list;
+  }, [weekOptions, selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    if (filteredWeeks.length > 0) {
+      const isCurrentWeekInList = filteredWeeks.some((w) => w.value === week);
+      if (!isCurrentWeekInList) {
+        const thisWeekItem = filteredWeeks.find((w) => w.value === getThisMondayStr());
+        if (thisWeekItem) {
+          setWeek(thisWeekItem.value);
+        } else {
+          setWeek(filteredWeeks[0].value);
+        }
+      }
+    }
+  }, [filteredWeeks, week]);
 
   const currentLevel = levels.find((item) => item.value === level) ?? levels[0];
   const meals = currentLevel.meals;
@@ -349,8 +494,8 @@ export default function BoardingOrderAdmin() {
   return (
     <div className="min-h-screen bg-slate-100 p-3 sm:p-4">
       <div className="mx-auto flex max-w-[1800px] flex-col gap-4">
-        <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="grid gap-4 border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 p-4 lg:grid-cols-[1fr_auto] lg:items-center lg:p-5">
+        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 p-4 lg:p-5">
             <div>
               <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
                 <ChefHat size={16} />
@@ -364,28 +509,9 @@ export default function BoardingOrderAdmin() {
                 Thực đơn được lưu theo ngày, bữa ăn và khối lớp để phụ huynh xem đúng lịch trong trang đặt món bán trú.
               </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:flex">
-              <button
-                type="button"
-                onClick={() => openModal({ applyMode: "week" })}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700"
-              >
-                <Plus size={17} />
-                Thêm cả tuần
-              </button>
-              <button
-                type="button"
-                onClick={clearWeek}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-              >
-                <RefreshCcw size={16} />
-                Làm mới tuần
-              </button>
-            </div>
           </div>
 
-          <div className="grid gap-4 border-b border-slate-200 p-4 sm:grid-cols-2 xl:grid-cols-[220px_220px_1fr] xl:items-end xl:p-5">
+          <div className="rounded-b-2xl grid gap-4 border-b border-slate-200 p-4 sm:grid-cols-2 xl:grid-cols-[180px_150px_180px_280px_1fr] xl:items-end xl:p-5">
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Khối lớp</span>
               <CustomSelect
@@ -397,14 +523,31 @@ export default function BoardingOrderAdmin() {
             </label>
 
             <label className="block">
+              <span className="mb-2 block text-sm font-bold text-slate-700">Chọn Năm</span>
+              <CustomSelect
+                value={selectedYear}
+                onChange={setSelectedYear}
+                options={yearOptions}
+                themeColor="amber"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-bold text-slate-700">Chọn Tháng</span>
+              <CustomSelect
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+                options={monthsOptions}
+                themeColor="teal"
+              />
+            </label>
+
+            <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700">Tuần áp dụng</span>
               <CustomSelect
                 value={week}
                 onChange={setWeek}
-                options={[
-                  { value: "this", label: "Tuần này" },
-                  { value: "next", label: "Tuần tới" },
-                ]}
+                options={filteredWeeks}
                 themeColor="sky"
               />
             </label>

@@ -75,6 +75,7 @@ const menu = [
       { name: "Cuối ngày", path: "/report-end-day" },
       { name: "Hàng hóa", path: "/report-product" },
       { name: "Nhân viên", path: "/report-employee" },
+      { name: "Bán trú", path: "/report-boarding" },
       // { name: "Kênh bán hàng", path: "/bao-cao/kenh-ban-hang" },
 
     ],

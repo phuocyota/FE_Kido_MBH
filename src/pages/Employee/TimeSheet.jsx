@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { workScheduleApi } from "../../api";
+import { workScheduleApi, employeeApi } from "../../api";
 import ShiftCell from "../../components/Employee/ShiftCell";
 import AddScheduleModal from "../../components/Employee/AddScheduleModal";
 
@@ -135,11 +135,23 @@ const getTimeRangeFromString = (shift) => {
   };
 };
 
+const formatTimeStr = (timeStr) => {
+  if (typeof timeStr !== "string") return timeStr;
+  const parts = timeStr.split(":");
+  if (parts.length >= 2) {
+    return `${parts[0]}:${parts[1]}`;
+  }
+  return timeStr;
+};
+
 const getShiftTimeRange = (shift) => {
   const stringRange = getTimeRangeFromString(shift);
 
   if (stringRange) {
-    return stringRange;
+    return {
+      start: formatTimeStr(stringRange.start),
+      end: formatTimeStr(stringRange.end),
+    };
   }
 
   const start = getTimeValue(shift, TIME_RANGE_START_KEYS);
@@ -150,8 +162,8 @@ const getShiftTimeRange = (shift) => {
   }
 
   return {
-    start,
-    end,
+    start: formatTimeStr(start),
+    end: formatTimeStr(end),
   };
 };
 
@@ -289,8 +301,9 @@ const getShiftInfo = (shift) => {
 const getEmployeeWeekHours = (employee, weekDays) => {
   return weekDays.reduce((total, date) => {
     const shift = employee.shifts?.[date.getDate()];
+    const shiftDetail = employee.shiftDetails?.[date.getDate()];
 
-    return total + getShiftHours(shift);
+    return total + getShiftHours(shiftDetail || shift);
   }, 0);
 };
 
@@ -338,6 +351,8 @@ export default function TimeSheet() {
   const [deleteInfo, setDeleteInfo] = useState(null);
 
   const [selectedShift, setSelectedShift] = useState("");
+  const [selectedShiftDetail, setSelectedShiftDetail] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // API data state
   const [timeSheetData, setTimeSheetData] = useState([]);
@@ -350,18 +365,25 @@ export default function TimeSheet() {
     
     setLoading(true);
     try {
-      const data = await workScheduleApi.getTimeSheet(from, to);
-      if (!Array.isArray(data)) {
-        throw new Error("Invalid timesheet data");
-      }
-      // Map BE fields to FE format
-      const mappedData = data.map(emp => ({
-        id: emp.id,
-        code: emp.code,
-        name: emp.name,
-        debt: emp.debt || 0,
-        shifts: emp.shifts || {},
-      }));
+      const [employeesList, timesheetData] = await Promise.all([
+        employeeApi.getAll("working"),
+        workScheduleApi.getTimeSheet(from, to).catch(() => []),
+      ]);
+
+      const mappedData = employeesList.map((emp) => {
+        const tsEntry = (Array.isArray(timesheetData) ? timesheetData : []).find(
+          (item) => item.id === emp.id || item.code === emp.code
+        );
+        return {
+          id: emp.id,
+          code: emp.code,
+          name: emp.fullName || emp.name,
+          debt: emp.debt || 0,
+          shifts: tsEntry?.shifts || {},
+          shiftDetails: tsEntry?.shiftDetails || {},
+        };
+      });
+
       setTimeSheetData(mappedData);
     } catch {
       toast.error("Không thể tải bảng chấm công");
@@ -374,21 +396,26 @@ export default function TimeSheet() {
     if (!deleteInfo) return;
 
     try {
-      const scheduleData = await workScheduleApi.getMonthly(
-        deleteInfo.year,
-        deleteInfo.month,
-        deleteInfo.employeeId
-      );
-      const schedule = (Array.isArray(scheduleData) ? scheduleData : []).find(
-        (item) => item.workDate?.slice(0, 10) === deleteInfo.workDate
-      );
+      let scheduleId = deleteInfo.scheduleId;
 
-      if (!schedule?.id) {
+      if (!scheduleId) {
+        const scheduleData = await workScheduleApi.getMonthly(
+          deleteInfo.year,
+          deleteInfo.month,
+          deleteInfo.employeeId
+        );
+        const schedule = (Array.isArray(scheduleData) ? scheduleData : []).find(
+          (item) => item.workDate?.slice(0, 10) === deleteInfo.workDate
+        );
+        scheduleId = schedule?.id;
+      }
+
+      if (!scheduleId) {
         throw new Error("Schedule not found");
       }
 
-      await workScheduleApi.delete(schedule.id);
-      toast.success("Xoa lich lam viec thanh cong");
+      await workScheduleApi.delete(scheduleId);
+      toast.success("Xóa lịch làm việc thành công");
       setOpenDelete(false);
       setDeleteInfo(null);
       fetchTimeSheet();
@@ -427,11 +454,17 @@ export default function TimeSheet() {
     "Thứ bảy",
   ];
 
-  const dailyTotalHours = weekDays.map((date) =>
-    timeSheetData.reduce((total, employee) => {
-      const shift = employee.shifts?.[date.getDate()];
+  const filteredTimeSheetData = timeSheetData.filter((emp) =>
+    emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.code?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-      return total + getShiftHours(shift);
+  const dailyTotalHours = weekDays.map((date) =>
+    filteredTimeSheetData.reduce((total, employee) => {
+      const shift = employee.shifts?.[date.getDate()];
+      const shiftDetail = employee.shiftDetails?.[date.getDate()];
+
+      return total + getShiftHours(shiftDetail || shift);
     }, 0)
   );
 
@@ -460,7 +493,9 @@ export default function TimeSheet() {
 
               <input
                 placeholder="Tìm kiếm nhân viên"
-                className="w-[280px] h-[42px] pl-10 pr-4 rounded-xl border border-gray-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-[280px] h-[42px] pl-10 pr-4 rounded-xl border border-gray-300 outline-none focus:border-blue-500 transition"
               />
             </div>
 
@@ -592,7 +627,7 @@ export default function TimeSheet() {
                 </tr>
               ) : (
                 <>
-                {timeSheetData.map((employee) => (
+                {filteredTimeSheetData.map((employee) => (
 
                 <tr
                   key={employee.id}
@@ -613,7 +648,8 @@ export default function TimeSheet() {
 
                   {weekDays.map((date) => {
                     const shift = employee.shifts?.[date.getDate()];
-                    const shiftInfo = getShiftInfo(shift);
+                    const shiftDetail = employee.shiftDetails?.[date.getDate()];
+                    const shiftInfo = getShiftInfo(shiftDetail || shift);
 
                     return (
 
@@ -630,30 +666,44 @@ export default function TimeSheet() {
                         }}
 
                         onAdd={() => {
-                        setSelectedEmployee(employee);
+                          setSelectedEmployee(employee);
 
-                        setSelectedDate(
-                              `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
-                        );
+                          setSelectedDate(
+                            `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+                          );
+                          setSelectedShiftDetail(null);
+                          setOpenSchedule(true);
+                        }}
 
-                        setOpenSchedule(true);
+                        onEdit={() => {
+                          setSelectedEmployee(employee);
+
+                          setSelectedDate(
+                            `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+                          );
+                          setSelectedShiftDetail({
+                            ...shiftDetail,
+                            workDate: formatDateISO(date),
+                          });
+                          setOpenSchedule(true);
                         }}
 
                         onDelete={() => {
+                          const info = getShiftInfo(shiftDetail || shift);
+                          setSelectedShift(
+                            info.timeRange ? `${info.label} (${info.timeRange})` : info.label || "ca làm"
+                          );
 
-                        setSelectedShift(
-                              getShiftInfo(shift).label || "ca làm"
-                        );
+                          setDeleteInfo({
+                            employeeId: employee.id,
+                            day: date.getDate(),
+                            month: date.getMonth() + 1,
+                            year: date.getFullYear(),
+                            workDate: formatDateISO(date),
+                            scheduleId: shiftDetail?.id,
+                          });
 
-                        setDeleteInfo({
-                              employeeId: employee.id,
-                              day: date.getDate(),
-                              month: date.getMonth() + 1,
-                              year: date.getFullYear(),
-                              workDate: formatDateISO(date),
-                        });
-
-                        setOpenDelete(true);
+                          setOpenDelete(true);
                         }}
                         />
 
@@ -713,6 +763,7 @@ export default function TimeSheet() {
         onClose={() => setOpenSchedule(false)}
         employee={selectedEmployee}
         date={selectedDate}
+        existingShift={selectedShiftDetail}
         onSuccess={() => {
           fetchTimeSheet();
           setOpenSchedule(false);

@@ -39,6 +39,12 @@ export const workScheduleApi = {
     return response.data.data || response.data;
   },
 
+  // Create schedule weekly repeat
+  createWeeklyRepeat: async (data) => {
+    const response = await axiosInstance.post("/work-schedules/weekly-repeat", data);
+    return response.data.data || response.data;
+  },
+
   // Update schedule
   update: async (id, data) => {
     const response = await axiosInstance.put(`/work-schedules/${id}`, data);

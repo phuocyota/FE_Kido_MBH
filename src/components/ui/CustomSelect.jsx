@@ -36,6 +36,22 @@ export default function CustomSelect({ value, onChange, options, themeColor = "e
       focusRing: "focus:ring-sky-100",
       activeBg: "bg-sky-50 text-sky-800",
       hoverBg: "hover:bg-sky-50",
+    },
+    amber: {
+      border: "border-amber-200",
+      bg: "bg-amber-50/70",
+      focusBorder: "focus:border-amber-500",
+      focusRing: "focus:ring-amber-100",
+      activeBg: "bg-amber-50 text-amber-800",
+      hoverBg: "hover:bg-amber-50",
+    },
+    teal: {
+      border: "border-teal-200",
+      bg: "bg-teal-50/70",
+      focusBorder: "focus:border-teal-500",
+      focusRing: "focus:ring-teal-100",
+      activeBg: "bg-teal-50 text-teal-800",
+      hoverBg: "hover:bg-teal-50",
     }
   };
 
@@ -54,7 +70,7 @@ export default function CustomSelect({ value, onChange, options, themeColor = "e
 
       {isOpen && (
         <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-100">
-          <ul className="max-h-60 overflow-auto py-1">
+          <ul className="max-h-80 overflow-auto py-1">
             {options.map((option) => (
               <li
                 key={option.value}

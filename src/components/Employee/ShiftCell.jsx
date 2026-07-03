@@ -5,6 +5,7 @@ export default function ShiftCell({
   shift,
   shiftInfo,
   onAdd,
+  onEdit,
   onDelete,
 }) {
   const [hover, setHover] = useState(false);
@@ -45,7 +46,10 @@ export default function ShiftCell({
             </div>
           )}
 
-          <div className={`rounded-md px-3 py-2 text-sm font-medium ${info.colorClass}`}>
+          <div 
+            onClick={onEdit}
+            className={`rounded-md px-3 py-2 text-sm font-medium cursor-pointer hover:brightness-95 transition ${info.colorClass}`}
+          >
 
             <div className="flex items-start justify-between gap-2">
               <span className="min-w-0 break-words">
@@ -55,8 +59,11 @@ export default function ShiftCell({
               {hover && (
                 <button
                   type="button"
-                  onClick={onDelete}
-                  className="mt-0.5 shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="mt-0.5 shrink-0 hover:scale-110 transition"
                 >
                   <X size={14} />
                 </button>

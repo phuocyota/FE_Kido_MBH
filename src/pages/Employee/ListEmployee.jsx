@@ -254,7 +254,7 @@ export default function ListEmployee() {
           </td>
 
           <td className="px-4 py-4">
-            {item.debt.toLocaleString()}
+            {(item.debt || 0).toLocaleString()}
           </td>
 
           <td className="px-4 py-4">
