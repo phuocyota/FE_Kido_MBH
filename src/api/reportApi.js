@@ -103,4 +103,17 @@ export const reportApi = {
     const response = await axiosInstance.get("/reports/employee", { params });
     return unwrap(response);
   },
+
+  // Boarding statistics report
+  getBoardingStats: async (from, to, branchId, level, mealPeriod) => {
+    const params = {};
+    if (from) params.from = from;
+    if (to) params.to = to;
+    if (branchId) params.branchId = branchId;
+    if (level) params.level = level;
+    if (mealPeriod) params.mealPeriod = mealPeriod;
+
+    const response = await axiosInstance.get("/reports/meal-items", { params });
+    return unwrap(response);
+  },
 };

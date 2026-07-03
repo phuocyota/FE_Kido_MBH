@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { workScheduleApi } from "../../api";
@@ -8,6 +8,7 @@ export default function AddScheduleModal({
   onClose,
   employee,
   date,
+  existingShift,
   onSuccess,
 }) {
   const [morning, setMorning] = useState(false);
@@ -26,6 +27,41 @@ const [customShift, setCustomShift] = useState(false);
 const [startTime, setStartTime] = useState("08:00");
 const [endTime, setEndTime] = useState("17:00");
 const [saving, setSaving] = useState(false);
+const [note, setNote] = useState("");
+
+useEffect(() => {
+  if (open) {
+    if (existingShift) {
+      const currentShift = existingShift.shift;
+      setMorning(currentShift === "morning");
+      setAfternoon(currentShift === "afternoon");
+      setFullDay(currentShift === "full");
+      setCustomShift(currentShift === "custom");
+      
+      const formatTime = (t) => {
+        if (!t) return "";
+        const parts = t.split(":");
+        return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : t;
+      };
+
+      setStartTime(formatTime(existingShift.startTime) || "08:00");
+      setEndTime(formatTime(existingShift.endTime) || "17:00");
+      setNote(existingShift.note || "");
+      setRepeatWeekly(false);
+      setRepeatWeeks(4);
+    } else {
+      setMorning(false);
+      setAfternoon(false);
+      setFullDay(false);
+      setCustomShift(false);
+      setStartTime("08:00");
+      setEndTime("17:00");
+      setNote("");
+      setRepeatWeekly(false);
+      setRepeatWeeks(4);
+    }
+  }
+}, [open, existingShift]);
 
 const parseDate = (value) => {
   const [day, month, year] = value.split("/");
@@ -41,25 +77,89 @@ const getSelectedShift = () => {
 };
 
 const handleSave = async () => {
-  const shift = getSelectedShift();
+  const shift = customShift ? "custom" : getSelectedShift();
 
   if (!employee?.id || !date || !shift) {
-    toast.error("Vui long chon ca lam viec");
+    toast.error("Vui lòng chọn ca làm việc");
     return;
   }
 
   setSaving(true);
   try {
-    await workScheduleApi.create({
-      employeeId: employee.id,
-      workDate: parseDate(date),
-      shift,
-      note: customShift ? `${startTime} - ${endTime}` : "",
-    });
-    toast.success("Them lich lam viec thanh cong");
+    const parsedWorkDate = parseDate(date);
+
+    if (repeatWeekly) {
+      const startDate = new Date(parsedWorkDate);
+      const endDate = new Date(startDate);
+      endDate.setUTCDate(startDate.getUTCDate() + 7 * (repeatWeeks - 1));
+
+      const formatDate = (d) => {
+        return d.toISOString().split("T")[0];
+      };
+
+      const weeklyShiftItem = {
+        dayOfWeek: startDate.getUTCDay(),
+        shift,
+        note: note,
+      };
+
+      if (customShift) {
+        weeklyShiftItem.startTime = startTime;
+        weeklyShiftItem.endTime = endTime;
+      }
+
+      const repeatPayload = {
+        employeeId: employee.id,
+        fromDate: parsedWorkDate,
+        toDate: formatDate(endDate),
+        replaceExisting: true,
+        weeklyShifts: [weeklyShiftItem],
+      };
+
+      await workScheduleApi.createWeeklyRepeat(repeatPayload);
+      toast.success("Thêm lịch lặp lại hàng tuần thành công");
+    } else {
+      const payload = {
+        employeeId: employee.id,
+        workDate: parsedWorkDate,
+        shift,
+        note: note,
+      };
+
+      if (customShift) {
+        payload.startTime = startTime;
+        payload.endTime = endTime;
+      }
+
+      if (existingShift) {
+        let scheduleId = existingShift.id;
+        if (!scheduleId) {
+          const [year, month, day] = parsedWorkDate.split("-");
+          const scheduleData = await workScheduleApi.getMonthly(
+            Number(year),
+            Number(month),
+            employee.id
+          );
+          const schedule = (Array.isArray(scheduleData) ? scheduleData : []).find(
+            (item) => item.workDate?.slice(0, 10) === parsedWorkDate
+          );
+          scheduleId = schedule?.id;
+        }
+
+        if (!scheduleId) {
+          throw new Error("Không tìm thấy ID lịch làm việc cần cập nhật");
+        }
+
+        await workScheduleApi.update(scheduleId, payload);
+        toast.success("Cập nhật lịch làm việc thành công");
+      } else {
+        await workScheduleApi.create(payload);
+        toast.success("Thêm lịch làm việc thành công");
+      }
+    }
     onSuccess?.();
   } catch (error) {
-    toast.error(error.response?.data?.message || "Khong the them lich lam viec");
+    toast.error(error.response?.data?.message || error.message || "Không thể lưu lịch làm việc");
   } finally {
     setSaving(false);
   }
@@ -77,7 +177,7 @@ const handleSave = async () => {
           <div>
 
             <h2 className="text-[30px] font-semibold">
-              Thêm lịch làm việc
+              {existingShift ? "Cập nhật lịch làm việc" : "Thêm lịch làm việc"}
             </h2>
 
             <div className="mt-2 text-gray-500 text-sm flex gap-3">
@@ -129,6 +229,7 @@ const handleSave = async () => {
 
           if (value) {
             setFullDay(false);
+            setCustomShift(false);
           }
         }}
         className="mt-1"
@@ -162,6 +263,7 @@ const handleSave = async () => {
 
           if (value) {
             setFullDay(false);
+            setCustomShift(false);
           }
         }}
         className="mt-1"
@@ -196,6 +298,7 @@ const handleSave = async () => {
           if (value) {
             setMorning(false);
             setAfternoon(false);
+            setCustomShift(false);
           }
         }}
         className="mt-1"
@@ -325,6 +428,32 @@ const handleSave = async () => {
 
 </div>
 
+{/* GHI CHÚ */}
+<div className="mt-5 bg-gray-50 rounded-2xl p-5">
+  <label className="block font-medium text-[16px] text-gray-800 mb-3">
+    Ghi chú
+  </label>
+  <textarea
+    value={note}
+    onChange={(e) => setNote(e.target.value)}
+    placeholder="Nhập ghi chú cho ca làm việc (ví dụ: Làm nửa buổi, trực nhật...)"
+    className="
+      w-full
+      border
+      border-gray-300
+      rounded-xl
+      px-4
+      py-3
+      outline-none
+      focus:ring-2
+      focus:ring-blue-500
+      bg-white
+      resize-none
+    "
+    rows={2}
+  />
+</div>
+
 
 
 
@@ -414,7 +543,7 @@ const handleSave = async () => {
             disabled={saving}
             className="h-[42px] px-6 rounded-xl bg-blue-600 text-white disabled:opacity-50"
           >
-            Lưu
+            {existingShift ? "Cập nhật" : "Lưu"}
           </button>
 
         </div>

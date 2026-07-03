@@ -20,6 +20,7 @@ import Suppliers from "./pages/Suppliers/Suppliers";
 import Orders from "./pages/Orders/Orders";
 import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
 import ReportEmployee from "./pages/reports/ReportEmployee";
+import ReportBoarding from "./pages/reports/ReportBoarding";
 import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
 import StockOutList from "./pages/Stock/StockOutList";
@@ -70,6 +71,7 @@ const App = () => {
                   <Route path="/store-info" element={<StoreInfo />} />
                   <Route path="/report-end-day" element={<ReportEndDay />} />
                   <Route path="/report-product" element={<ReportProduct />} />
+                  <Route path="/report-boarding" element={<ReportBoarding />} />
                   <Route path="/employees" element={<ListEmployee />} />
                   <Route path="/time-sheet" element={<TimeSheet />} />
                   <Route path="/time-keeping" element={<TimeKeeping />} />
