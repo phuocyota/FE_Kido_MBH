@@ -111,6 +111,7 @@ export default function Order() {
         const data = await getProductsFull({
           branchId,
           maxPrice: advanceAmount || undefined,
+          isCanteenItem: true,
         });
 
         console.log("🔍 [DEBUG] branchId:", branchId);

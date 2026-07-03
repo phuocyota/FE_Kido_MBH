@@ -1,7 +1,7 @@
 import { apiRequest } from "./client";
 import { API } from "./endpoint";
 
-export const getProductsFull = async ({ branchId, maxPrice } = {}) => {
+export const getProductsFull = async ({ branchId, maxPrice, isCanteenItem } = {}) => {
   const params = new URLSearchParams();
 
   if (branchId) {
@@ -10,6 +10,10 @@ export const getProductsFull = async ({ branchId, maxPrice } = {}) => {
 
   if (maxPrice !== undefined && maxPrice !== null) {
     params.set("maxPrice", maxPrice);
+  }
+
+  if (isCanteenItem !== undefined && isCanteenItem !== null) {
+    params.set("isCanteenItem", isCanteenItem);
   }
 
   // Set size to 1000 to fetch all active categories from the backend pagination default
