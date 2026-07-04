@@ -284,6 +284,7 @@ export default function BoardingOrderAdmin() {
             },
             note: item.note || "",
             sortOrder: item.sortOrder || 0,
+            expectedQuantity: item.expectedQuantity || 0,
             scope: "day",
             dateKey: dateKey,
             meal,
@@ -430,6 +431,7 @@ export default function BoardingOrderAdmin() {
             dateKey: day.key,
             note: order.note,
             sortOrder: order.sortOrder || 0,
+            expectedQuantity: order.expectedQuantity || 0,
             status: "ACTIVE",
           });
         })

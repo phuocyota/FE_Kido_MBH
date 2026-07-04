@@ -70,6 +70,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
                 <th className="p-3 text-left">Tên món</th>
                 <th className="p-3 text-center">Buổi</th>
                 <th className="p-3 text-center">Thứ tự</th>
+                <th className="p-3 text-center">Dự kiến</th>
                 <th className="p-3 text-left">Ghi chú</th>
                 <th className="p-3 text-center">Trạng thái</th>
                 <th className="p-3 text-center">Thao tác</th>
@@ -78,11 +79,11 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-gray-500">Đang tải...</td>
+                  <td colSpan={9} className="text-center py-10 text-gray-500">Đang tải...</td>
                 </tr>
               ) : mealItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-gray-500">Không có dữ liệu</td>
+                  <td colSpan={9} className="text-center py-10 text-gray-500">Không có dữ liệu</td>
                 </tr>
               ) : (
                 mealItems.map((item, index) => (
@@ -96,6 +97,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
                       </span>
                     </td>
                     <td className="p-3 text-center">{item.sortOrder}</td>
+                    <td className="p-3 text-center font-semibold text-gray-700">{item.expectedQuantity || 0}</td>
                     <td className="p-3">{item.note || ""}</td>
                     <td className="p-3 text-center">
                       <button 
