@@ -1,8 +1,11 @@
 import React from "react";
 import { Edit3, Plus, StickyNote } from "lucide-react";
 
-export default function BoardingMealCell({ accent, compact = false, onOpen, selection }) {
-  if (!selection) {
+export default function BoardingMealCell({ accent, compact = false, onOpen, selection, defaultFood }) {
+  const isDefault = !selection;
+  const finalSelection = selection || (defaultFood ? { food: defaultFood } : null);
+
+  if (!finalSelection) {
     return (
       <button
         type="button"
@@ -21,7 +24,7 @@ export default function BoardingMealCell({ accent, compact = false, onOpen, sele
     );
   }
 
-  const { food, note } = selection;
+  const { food, note } = finalSelection;
 
   if (compact) {
     return (
@@ -44,14 +47,21 @@ export default function BoardingMealCell({ accent, compact = false, onOpen, sele
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpen}
-          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-md transition hover:bg-amber-100 hover:text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
-          aria-label={`Chỉnh sửa ${food.name}`}
-        >
-          <Edit3 size={14} />
-        </button>
+        <div className="absolute right-2 top-2 flex items-center gap-1.5">
+          {isDefault && (
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 shadow-sm border border-slate-200">
+              Mặc định
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onOpen}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-md transition hover:bg-amber-100 hover:text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+            aria-label={`Chỉnh sửa ${food.name}`}
+          >
+            <Edit3 size={14} />
+          </button>
+        </div>
 
         {note && (
           <p className="mt-2 flex gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[11px] leading-4 text-amber-700">
@@ -71,6 +81,13 @@ export default function BoardingMealCell({ accent, compact = false, onOpen, sele
           alt={food.name}
           className="h-24 w-full object-cover"
         />
+        {isDefault && (
+          <div className="absolute left-2 top-2 flex items-center gap-1.5">
+            <span className="rounded bg-slate-900/60 backdrop-blur-[2px] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+              Mặc định
+            </span>
+          </div>
+        )}
         <button
           type="button"
           onClick={onOpen}

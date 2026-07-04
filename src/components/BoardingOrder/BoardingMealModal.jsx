@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { CalendarDays, Check, ListChecks, StickyNote, Utensils, X } from "lucide-react";
+import CustomSelect from "./CustomSelect";
 
 export default function BoardingMealModal({
   day,
@@ -7,14 +8,33 @@ export default function BoardingMealModal({
   meal,
   onCancel,
   onSave,
+  onDelete,
   options,
 }) {
-  const [selectedId, setSelectedId] = useState(initialOrder?.food?.id ?? "");
+  const [selectedId, setSelectedId] = useState(
+    initialOrder?.food?.id ?? (options[0]?.id ?? "")
+  );
   const [note, setNote] = useState(initialOrder?.note ?? "");
 
+  const uniqueOptions = useMemo(() => {
+    const seen = new Set();
+    return options.filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [options]);
+
+  const selectOptions = useMemo(() => {
+    return uniqueOptions.map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+  }, [uniqueOptions]);
+
   const selectedFood = useMemo(
-    () => options.find((item) => item.id === selectedId),
-    [options, selectedId],
+    () => uniqueOptions.find((item) => item.id === selectedId),
+    [uniqueOptions, selectedId],
   );
 
   const handleSave = () => {
@@ -63,18 +83,15 @@ export default function BoardingMealModal({
               Chọn món theo buổi
             </label>
 
-            <select
+            <CustomSelect
               value={selectedId}
-              onChange={(event) => setSelectedId(event.target.value)}
-              className="h-11 w-full rounded-lg border border-emerald-200 bg-white px-3 font-medium text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-            >
-              <option value="">Chọn món ăn</option>
-              {options.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedId}
+              options={selectOptions}
+              placeholder="Chọn món ăn"
+              className="border-emerald-200"
+              activeColorClass="bg-emerald-50 text-emerald-700"
+              focusColorClass="focus:border-emerald-500 focus:ring-emerald-100"
+            />
 
             <label className="mb-2 mt-4 flex items-center gap-2 text-sm font-bold text-slate-700">
               <StickyNote size={16} className="text-amber-600" />
@@ -138,25 +155,39 @@ export default function BoardingMealModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:flex sm:justify-end sm:px-5">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200"
-          >
-            <X size={16} />
-            Hủy
-          </button>
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+          <div>
+            {initialOrder && onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-600 transition hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"
+              >
+                Xóa lựa chọn
+              </button>
+            )}
+          </div>
 
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!selectedFood}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
-          >
-            <Check size={17} />
-            Lưu
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200"
+            >
+              <X size={16} />
+              Hủy
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!selectedFood}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+            >
+              <Check size={17} />
+              Lưu
+            </button>
+          </div>
         </div>
       </div>
     </div>

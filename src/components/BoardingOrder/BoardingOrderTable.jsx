@@ -1,9 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { ChefHat } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
+import toast from "react-hot-toast";
 
-import { boardingMealOptions, boardingOrderData } from "../../datas/boardingOrderData";
+import { boardingOrderData } from "../../datas/boardingOrderData";
 import BoardingMealCell from "./BoardingMealCell";
 import BoardingMealModal from "./BoardingMealModal";
+import { getMealItems, selectCustomerMealItemMe, deleteCustomerMealItem } from "../../api/parent";
+import { buildAssetUrl } from "../../api/client";
+
+import banhMi from "../../assets/banhmi.jpg";
+import banhNgot from "../../assets/banhngot.jpeg";
+import comGaSotNam from "../../assets/comgasotnam.jpg";
+import comThitKhoTrung from "../../assets/comthitkhotrung.jpg";
+import traSua from "../../assets/trasua.jpg";
+import yaourt from "../../assets/Yaourt.png";
 
 const dayAccents = [
   {
@@ -65,15 +76,8 @@ const formatDate = (date) =>
     year: "numeric",
   }).format(date);
 
-const getWeekDays = (week) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const dayOfWeek = today.getDay();
-  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diffToMonday + (week === "next" ? 7 : 0));
-
+const getWeekDays = (monday) => {
+  if (!monday) return [];
   return dayAccents.map((accent, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
@@ -87,22 +91,80 @@ const getWeekDays = (week) => {
   });
 };
 
-export default function BoardingOrderTable({ level, week }) {
+const MEAL_PERIOD_MAP = {
+  "Ăn sáng": "BREAKFAST",
+  "Ăn trưa": "LUNCH",
+  "Ăn xế": "AFTERNOON",
+};
+
+export default function BoardingOrderTable({ level, activeWeek }) {
   const meals = boardingOrderData[level]?.meals ?? [];
-  const weekDays = useMemo(() => getWeekDays(week), [week]);
-  const [orders, setOrders] = useState({});
+  const weekDays = useMemo(() => getWeekDays(activeWeek?.start), [activeWeek]);
   const [editingCell, setEditingCell] = useState(null);
 
-  const getOrderKey = (meal, day) => `${day.key}-${meal}`;
+  const [loading, setLoading] = useState(true);
+  const [daysData, setDaysData] = useState([]);
+  const { homeData } = useOutletContext() || {};
+  const customerId = homeData?.user?.id;
+
+  const from = weekDays[0]?.key || "";
+  const to = weekDays[6]?.key || "";
+
+  const fetchMenu = async () => {
+    if (!from || !to) return;
+    setLoading(true);
+    try {
+      const data = await getMealItems({ from, to, level });
+      setDaysData(data?.days || []);
+    } catch (err) {
+      console.error("Fetch meal items error:", err);
+      toast.error("Không tải được thực đơn bán trú");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMenu();
+  }, [from, to, level]);
+
+  const getCellDetails = (meal, day) => {
+    const period = MEAL_PERIOD_MAP[meal];
+    const dayData = daysData.find((d) => d.dateKey === day.key);
+    const mealData = dayData?.meals?.find((m) => m.mealPeriod === period);
+    const items = mealData?.items || [];
+    
+    const sortedItems = [...items].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+    const options = sortedItems.map((item) => ({
+      id: item.product.id,
+      mealItemId: item.id,
+      name: item.product.name,
+      image: buildAssetUrl(item.product.imageUrl) || comGaSotNam,
+      description: item.product.description || "Món ăn ngon miệng, bổ dưỡng.",
+      ingredients: item.product.ingredients ? item.product.ingredients.split(",").map(i => i.trim()) : [],
+      price: item.product.price,
+      customerMealItem: item.customerMealItem,
+    }));
+
+    const selectedOption = options.find((opt) => opt.customerMealItem);
+    const selection = selectedOption
+      ? { food: selectedOption, note: selectedOption.customerMealItem.note }
+      : null;
+
+    const defaultFood = options[0] || null;
+
+    return { options, selection, defaultFood };
+  };
 
   const openMealModal = (meal, day) => {
-    const orderKey = getOrderKey(meal, day);
+    const { options, selection } = getCellDetails(meal, day);
 
     setEditingCell({
       day,
       meal,
-      orderKey,
-      order: orders[orderKey] ?? null,
+      options,
+      selection,
     });
   };
 
@@ -110,15 +172,46 @@ export default function BoardingOrderTable({ level, week }) {
     setEditingCell(null);
   };
 
-  const saveMeal = (nextOrder) => {
+  const saveMeal = async (nextOrder) => {
     if (!editingCell) return;
 
-    setOrders((current) => ({
-      ...current,
-      [editingCell.orderKey]: nextOrder,
-    }));
-    closeMealModal();
+    try {
+      await selectCustomerMealItemMe({
+        mealItemId: nextOrder.food.mealItemId,
+        note: nextOrder.note,
+      });
+
+      toast.success("Lưu lựa chọn món ăn thành công");
+      fetchMenu();
+      closeMealModal();
+    } catch (error) {
+      toast.error("Không thể lưu lựa chọn món ăn");
+    }
   };
+
+  const deleteMeal = async () => {
+    if (!editingCell || !editingCell.selection?.food?.customerMealItem?.id) return;
+
+    try {
+      await deleteCustomerMealItem(editingCell.selection.food.customerMealItem.id);
+      toast.success("Xóa lựa chọn món ăn thành công");
+      fetchMenu();
+      closeMealModal();
+    } catch (error) {
+      toast.error("Không thể xóa lựa chọn món ăn");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center rounded-xl border border-slate-200 bg-white">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-emerald-600" />
+          <p className="text-sm font-semibold text-slate-500">Đang tải thực đơn bán trú...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -138,10 +231,10 @@ export default function BoardingOrderTable({ level, week }) {
 
               <div className="divide-y divide-slate-100">
                 {meals.map((meal) => {
-                  const orderKey = getOrderKey(meal, day);
+                  const { selection, defaultFood } = getCellDetails(meal, day);
 
                   return (
-                    <div key={orderKey} className="grid grid-cols-[6rem_1fr] gap-3 p-3">
+                    <div key={`${day.key}-${meal}`} className="grid grid-cols-[6rem_1fr] gap-3 p-3">
                       <div className="flex min-w-0 items-center gap-2">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                           <ChefHat size={17} />
@@ -155,7 +248,8 @@ export default function BoardingOrderTable({ level, week }) {
                         <BoardingMealCell
                           compact
                           accent={day}
-                          selection={orders[orderKey]}
+                          selection={selection}
+                          defaultFood={defaultFood}
                           onOpen={() => openMealModal(meal, day)}
                         />
                       </div>
@@ -213,16 +307,17 @@ export default function BoardingOrderTable({ level, week }) {
                     </td>
 
                     {weekDays.map((day) => {
-                      const orderKey = getOrderKey(meal, day);
+                      const { selection, defaultFood } = getCellDetails(meal, day);
 
                       return (
                         <td
-                          key={orderKey}
+                          key={`${day.key}-${meal}`}
                           className={`h-48 border-b border-r border-white ${day.cell} p-3 align-middle`}
                         >
                           <BoardingMealCell
                             accent={day}
-                            selection={orders[orderKey]}
+                            selection={selection}
+                            defaultFood={defaultFood}
                             onOpen={() => openMealModal(meal, day)}
                           />
                         </td>
@@ -238,13 +333,14 @@ export default function BoardingOrderTable({ level, week }) {
 
       {editingCell && (
         <BoardingMealModal
-          key={editingCell.orderKey}
+          key={`${editingCell.day.key}-${editingCell.meal}`}
           day={editingCell.day}
           meal={editingCell.meal}
-          options={boardingMealOptions[editingCell.meal] ?? []}
-          initialOrder={editingCell.order}
+          options={editingCell.options}
+          initialOrder={editingCell.selection}
           onCancel={closeMealModal}
           onSave={saveMeal}
+          onDelete={deleteMeal}
         />
       )}
     </>
