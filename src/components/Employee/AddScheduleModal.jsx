@@ -19,7 +19,7 @@ export default function AddScheduleModal({
   const [repeatWeekly, setRepeatWeekly] = useState(false);
 
 const [repeatWeeks, setRepeatWeeks] = useState(4);
-
+const [selectedDays, setSelectedDays] = useState([]);
 
 // ca làm theo khung giờ 
 const [customShift, setCustomShift] = useState(false);
@@ -28,6 +28,12 @@ const [startTime, setStartTime] = useState("08:00");
 const [endTime, setEndTime] = useState("17:00");
 const [saving, setSaving] = useState(false);
 const [note, setNote] = useState("");
+
+const parseDate = (value) => {
+  if (!value) return "";
+  const [day, month, year] = value.split("/");
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
 
 useEffect(() => {
   if (open) {
@@ -49,6 +55,14 @@ useEffect(() => {
       setNote(existingShift.note || "");
       setRepeatWeekly(false);
       setRepeatWeeks(4);
+      
+      if (date) {
+        const parsedWorkDate = parseDate(date);
+        const startDate = new Date(parsedWorkDate);
+        setSelectedDays([startDate.getUTCDay()]);
+      } else {
+        setSelectedDays([]);
+      }
     } else {
       setMorning(false);
       setAfternoon(false);
@@ -59,14 +73,17 @@ useEffect(() => {
       setNote("");
       setRepeatWeekly(false);
       setRepeatWeeks(4);
+      
+      if (date) {
+        const parsedWorkDate = parseDate(date);
+        const startDate = new Date(parsedWorkDate);
+        setSelectedDays([startDate.getUTCDay()]);
+      } else {
+        setSelectedDays([]);
+      }
     }
   }
-}, [open, existingShift]);
-
-const parseDate = (value) => {
-  const [day, month, year] = value.split("/");
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-};
+}, [open, existingShift, date]);
 
 const getSelectedShift = () => {
   if (fullDay) return "full";
@@ -89,6 +106,11 @@ const handleSave = async () => {
     const parsedWorkDate = parseDate(date);
 
     if (repeatWeekly) {
+      if (selectedDays.length === 0) {
+        toast.error("Vui lòng chọn ít nhất một ngày trong tuần");
+        return;
+      }
+
       const startDate = new Date(parsedWorkDate);
       const endDate = new Date(startDate);
       endDate.setUTCDate(startDate.getUTCDate() + 7 * (repeatWeeks - 1));
@@ -98,10 +120,15 @@ const handleSave = async () => {
       };
 
       const weeklyShiftItem = {
-        dayOfWeek: startDate.getUTCDay(),
         shift,
         note: note,
       };
+
+      if (selectedDays.length > 1) {
+        weeklyShiftItem.dayOfWeeks = selectedDays;
+      } else {
+        weeklyShiftItem.dayOfWeek = selectedDays[0];
+      }
 
       if (customShift) {
         weeklyShiftItem.startTime = startTime;
@@ -483,38 +510,79 @@ const handleSave = async () => {
 
     {repeatWeekly && (
 
-      <div className="mt-4 pl-7">
+      <div className="mt-4 pl-7 flex flex-col gap-4">
 
-        <label className="text-sm text-gray-600 block mb-2">
-          Số tuần lặp lại
-        </label>
+        <div>
+          <label className="text-sm text-gray-600 block mb-2">
+            Số tuần lặp lại
+          </label>
 
-        <select
-          value={repeatWeeks}
-          onChange={(e) =>
-            setRepeatWeeks(Number(e.target.value))
-          }
-          className="
-            w-[180px]
-            border
-            border-gray-300
-            rounded-xl
-            px-3
-            py-2
-            outline-none
-          "
-        >
-          <option value={1}>1 tuần</option>
-          <option value={2}>2 tuần</option>
-          <option value={3}>3 tuần</option>
-          <option value={4}>4 tuần</option>
-          <option value={8}>8 tuần</option>
-          <option value={12}>12 tuần</option>
-        </select>
+          <select
+            value={repeatWeeks}
+            onChange={(e) =>
+              setRepeatWeeks(Number(e.target.value))
+            }
+            className="
+              w-[180px]
+              border
+              border-gray-300
+              rounded-xl
+              px-3
+              py-2
+              outline-none
+              bg-white
+            "
+          >
+            <option value={1}>1 tuần</option>
+            <option value={2}>2 tuần</option>
+            <option value={3}>3 tuần</option>
+            <option value={4}>4 tuần</option>
+          </select>
+        </div>
 
-        <p className="text-xs text-gray-500 mt-2">
-          Hệ thống sẽ tự tạo lịch làm việc vào cùng
-          thứ và cùng ca trong các tuần tiếp theo.
+        <div>
+          <label className="text-sm text-gray-600 block mb-2">
+            Áp dụng cho các ngày trong tuần
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "T2", value: 1 },
+              { label: "T3", value: 2 },
+              { label: "T4", value: 3 },
+              { label: "T5", value: 4 },
+              { label: "T6", value: 5 },
+              { label: "T7", value: 6 },
+              { label: "CN", value: 0 },
+            ].map((day) => {
+              const isChecked = selectedDays.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => {
+                    if (isChecked) {
+                      if (selectedDays.length > 1) {
+                        setSelectedDays(selectedDays.filter((d) => d !== day.value));
+                      }
+                    } else {
+                      setSelectedDays([...selectedDays, day.value]);
+                    }
+                  }}
+                  className={`w-10 h-10 rounded-full font-semibold text-sm transition flex items-center justify-center cursor-pointer border ${
+                    isChecked
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-1">
+          Hệ thống sẽ tự tạo lịch làm việc vào các thứ đã chọn và cùng ca trong các tuần tiếp theo.
         </p>
 
       </div>

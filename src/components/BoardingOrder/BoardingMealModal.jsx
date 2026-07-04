@@ -31,6 +31,7 @@ export default function BoardingMealModal({
     description: initialFood?.description ?? "",
     ingredientsText: initialFood?.ingredients?.join(", ") ?? "",
     sortOrder: context.order?.sortOrder ?? 0,
+    expectedQuantity: context.order?.expectedQuantity ?? 0,
     applyMode: context.applyMode ?? "day",
     meal: context.meal ?? meals[0] ?? "",
     imageFile: null,
@@ -89,6 +90,7 @@ export default function BoardingMealModal({
           ingredients: previewFood.ingredients,
         },
         sortOrder: Number(draft.sortOrder) || 0,
+        expectedQuantity: Number(draft.expectedQuantity) || 0,
         updatedAt: new Date().toISOString(),
       },
     });
@@ -195,16 +197,30 @@ export default function BoardingMealModal({
               />
             </label>
 
-            <label className="block">
-              <span className="mb-2 block text-sm font-bold text-slate-700">Thứ tự ưu tiên</span>
-              <input
-                type="number"
-                value={draft.sortOrder}
-                onChange={(event) => updateDraft("sortOrder", event.target.value)}
-                placeholder="Ví dụ: 0, 1, 2..."
-                className="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-              />
-            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700">Thứ tự ưu tiên</span>
+                <input
+                  type="number"
+                  value={draft.sortOrder}
+                  onChange={(event) => updateDraft("sortOrder", event.target.value)}
+                  placeholder="Ví dụ: 0, 1, 2..."
+                  className="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700">Số lượng dự kiến</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={draft.expectedQuantity}
+                  onChange={(event) => updateDraft("expectedQuantity", event.target.value)}
+                  placeholder="Ví dụ: 50, 100..."
+                  className="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                />
+              </label>
+            </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">

@@ -12,6 +12,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
     productId: "",
     mealPeriod: "BREAKFAST",
     sortOrder: 0,
+    expectedQuantity: 0,
     status: "ACTIVE",
     note: "",
   });
@@ -28,6 +29,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
           productId: initialData.productId,
           mealPeriod: initialData.mealPeriod,
           sortOrder: initialData.sortOrder || 0,
+          expectedQuantity: initialData.expectedQuantity || 0,
           status: initialData.status || "ACTIVE",
           note: initialData.note || "",
         });
@@ -36,6 +38,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
           productId: "",
           mealPeriod: "BREAKFAST",
           sortOrder: 0,
+          expectedQuantity: 0,
           status: "ACTIVE",
           note: "",
         });
@@ -73,12 +76,14 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
         ...formData,
         branchId, // required by backend for creating
         sortOrder: Number(formData.sortOrder),
+        expectedQuantity: Number(formData.expectedQuantity) || 0,
       };
 
       if (isEdit) {
         const updatePayload = {
           mealPeriod: formData.mealPeriod,
           sortOrder: payload.sortOrder,
+          expectedQuantity: payload.expectedQuantity,
           status: formData.status,
           note: formData.note,
         };
@@ -110,6 +115,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
         ...formData,
         branchId,
         sortOrder: Number(formData.sortOrder),
+        expectedQuantity: Number(formData.expectedQuantity) || 0,
       };
 
       await mealItemApi.create(payload);
@@ -120,6 +126,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
         productId: "",
         mealPeriod: "BREAKFAST",
         sortOrder: 0,
+        expectedQuantity: 0,
         status: "ACTIVE",
         note: "",
       });
@@ -182,7 +189,7 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
                   </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {/* Buổi bán */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -213,6 +220,21 @@ export default function MealItemModal({ open, onClose, initialData, onSuccess })
                       className="w-full h-11 border border-gray-300 rounded-lg px-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       value={formData.sortOrder}
                       onChange={(e) => handleChange("sortOrder", e.target.value)}
+                    />
+                  </div>
+
+                  {/* Số lượng dự kiến */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Số lượng dự kiến
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      className="w-full h-11 border border-gray-300 rounded-lg px-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      value={formData.expectedQuantity}
+                      onChange={(e) => handleChange("expectedQuantity", e.target.value)}
                     />
                   </div>
                 </div>

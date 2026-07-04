@@ -24,19 +24,21 @@ export default function StockOutTable({ items = [], setItems }) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await productApi.getAll();
-        setProducts(data);
+        const data = await productApi.getAll({ search });
+        setProducts(data || []);
       } catch (error) {
         console.error("Failed to load products", error);
       }
     };
-    fetchProducts();
-  }, []);
 
-  const filteredProducts = products.filter((p) =>
-    (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.code || "").toLowerCase().includes(search.toLowerCase())
-  );
+    const delayDebounceFn = setTimeout(() => {
+      fetchProducts();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
+  const filteredProducts = products;
 
   const handleAddProduct = (product) => {
     const existingIndex = items.findIndex((item) => item.productId === product.id);
@@ -63,6 +65,61 @@ export default function StockOutTable({ items = [], setItems }) {
     }
     setSearch("");
     setShowSearch(false);
+  };
+
+  const handleAddNewRow = () => {
+    setItems([
+      ...items,
+      {
+        id: `temp-${Date.now()}`,
+        productId: "",
+        code: "",
+        name: "",
+        unit: "",
+        quantity: 1,
+        price: 0,
+        warehouse: "Kho mặc định",
+        debit: "632",
+        credit: "1561",
+        searchText: "",
+        isSearchOpen: true,
+        filteredList: products,
+      },
+    ]);
+  };
+
+  const handleRowSearchChange = (index, value) => {
+    const newItems = [...items];
+    newItems[index].searchText = value;
+    newItems[index].filteredList = products.filter((p) =>
+      (p.name || "").toLowerCase().includes(value.toLowerCase()) ||
+      (p.code || "").toLowerCase().includes(value.toLowerCase())
+    );
+    setItems(newItems);
+  };
+
+  const handleRowSearchFocus = (index, isOpen) => {
+    const newItems = [...items];
+    newItems[index].isSearchOpen = isOpen;
+    if (isOpen && (!newItems[index].filteredList || newItems[index].filteredList.length === 0)) {
+      newItems[index].filteredList = products;
+    }
+    setItems(newItems);
+  };
+
+  const handleSelectProductForRow = (index, product) => {
+    const newItems = [...items];
+    newItems[index] = {
+      ...newItems[index],
+      productId: product.id,
+      code: product.code || "",
+      name: product.name || "",
+      unit: product.unit || "Cái",
+      quantity: 1,
+      price: product.price || 0,
+      isSearchOpen: false,
+    };
+    setItems(newItems);
   };
 
   const handleUpdateItem = (index, field, value) => {
@@ -114,7 +171,7 @@ export default function StockOutTable({ items = [], setItems }) {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
-          {showSearch && search && (
+          {showSearch && (
             <div className="absolute top-full left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg z-50">
               {filteredProducts.length === 0 ? (
                 <div className="p-3 text-sm text-gray-500">Không tìm thấy sản phẩm</div>
@@ -158,24 +215,62 @@ export default function StockOutTable({ items = [], setItems }) {
                 </td>
               </tr>
             ) : (
-              items.map((item, index) => (
-                <tr
-                  key={item.id}
-                  className={`transition-colors hover:bg-cyan-50/50 ${
-                    index % 2 === 0 ? "bg-white" : "bg-cyan-50/10"
-                  }`}
-                >
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-center text-slate-500">
-                    {index + 1}
-                  </td>
+              items.map((item, index) => {
+                const isNewRow = !item.productId;
+                return (
+                  <tr
+                    key={item.id}
+                    className={`transition-colors hover:bg-cyan-50/50 ${
+                      index % 2 === 0 ? "bg-white" : "bg-cyan-50/10"
+                    }`}
+                  >
+                    <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-center text-slate-500">
+                      {index + 1}
+                    </td>
 
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 font-medium text-sky-700">
-                    {item.code}
-                  </td>
+                    <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 font-medium text-sky-700">
+                      {item.code}
+                    </td>
 
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 font-semibold text-slate-900">
-                    {item.name}
-                  </td>
+                    <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 font-semibold text-slate-900 relative">
+                      {isNewRow ? (
+                        <div className="relative w-full">
+                          <input
+                            type="text"
+                            placeholder="Nhập để tìm sản phẩm..."
+                            value={item.searchText || ""}
+                            onChange={(e) => handleRowSearchChange(index, e.target.value)}
+                            onFocus={() => handleRowSearchFocus(index, true)}
+                            className="w-full px-2 py-1 text-sm border border-cyan-300 rounded focus:outline-none focus:ring-1 focus:ring-cyan-500 bg-white font-medium text-slate-800"
+                            autoFocus
+                          />
+                          {item.isSearchOpen && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => handleRowSearchFocus(index, false)}></div>
+                              <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                                {item.filteredList && item.filteredList.length === 0 ? (
+                                  <div className="p-3 text-xs text-gray-500">Không tìm thấy sản phẩm</div>
+                                ) : (
+                                  (item.filteredList || products).slice(0, 50).map((product) => (
+                                    <button
+                                      key={product.id}
+                                      type="button"
+                                      className="w-full text-left p-2 hover:bg-cyan-50 border-b border-gray-100 last:border-0 text-xs cursor-pointer"
+                                      onClick={() => handleSelectProductForRow(index, product)}
+                                    >
+                                      <div className="font-semibold text-gray-900">{product.name}</div>
+                                      <div className="text-[10px] text-gray-500">{product.code}</div>
+                                    </button>
+                                  ))
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        item.name
+                      )}
+                    </td>
 
                   <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-slate-600">
                     {item.warehouse}
@@ -221,14 +316,15 @@ export default function StockOutTable({ items = [], setItems }) {
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
                       title="Xóa hàng này"
                     >
                       <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
 
@@ -257,12 +353,10 @@ export default function StockOutTable({ items = [], setItems }) {
       <div className="mt-3 flex gap-3 relative z-10">
         <button
           type="button"
-          onClick={() => {
-            if (products.length > 0) handleAddProduct(products[0]);
-          }}
-          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 text-sm transition font-medium"
+          onClick={handleAddNewRow}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 text-sm transition font-medium cursor-pointer"
         >
-          Thêm dòng nhanh
+          Thêm dòng
         </button>
 
         <button

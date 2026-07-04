@@ -44,6 +44,11 @@ function MealCard({ compact = false, day, meal, options = [], onOpen }) {
             <h4 className="truncate text-xs font-bold text-slate-800" title={opt.food.name}>
               {opt.food.name}
             </h4>
+            {opt.expectedQuantity > 0 && (
+              <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                Dự kiến: <span className="font-semibold text-slate-700">{opt.expectedQuantity}</span>
+              </p>
+            )}
           </div>
 
           <button
