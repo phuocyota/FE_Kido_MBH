@@ -51,4 +51,16 @@ export const API = {
   WALLETS: {
     TRANSACTIONS: (customerId) => withApiPrefix(`/wallets/customer/${customerId}/transactions`),
   },
+
+  MEAL_ITEMS: {
+    WEEK_PLAN: withApiPrefix("/meal-items/week-plan"),
+  },
+
+  CUSTOMER_MEAL_ITEMS: {
+    LIST: withApiPrefix("/customer-meal-items"),
+    CREATE: withApiPrefix("/customer-meal-items"),
+    SELECT_ME: withApiPrefix("/customer-meal-items/me/select"),
+    UPDATE: (id) => withApiPrefix(`/customer-meal-items/${id}`),
+    DELETE: (id) => withApiPrefix(`/customer-meal-items/${id}`),
+  },
 };
