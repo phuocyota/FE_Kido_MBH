@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
 import bg from "../../assets/anh-can-tin-so-2.png";
@@ -92,7 +92,7 @@ export default function ParentHome() {
 const [previewAvatar, setPreviewAvatar] = useState(null);
 const [avatarError, setAvatarError] = useState("");
 
-  const fetchHome = async () => {
+  const fetchHome = useCallback(async () => {
     try {
       setError("");
       const data = await getParentHome();
@@ -103,11 +103,11 @@ const [avatarError, setAvatarError] = useState("");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHome();
-  }, []);
+  }, [fetchHome]);
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");

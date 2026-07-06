@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Calendar, ArrowDownLeft, ArrowUpRight, RefreshCcw, Coins, FileText, CheckCircle2 } from "lucide-react";
+import { Calendar, ArrowDownLeft, ArrowUpRight, RefreshCcw, Coins, FileText, CheckCircle2, Clock, User, CreditCard, ShoppingBag, ClipboardList, ChevronRight } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import banhngot from "../../assets/banhngot.jpeg";
-import { normalizeParentHistory } from "../../api/parentData";
+import { normalizeParentHistory, ORDER_STATUS } from "../../api/parentData";
 import { getParentHome, getWalletTransactions } from "../../api/parent";
+import { getOrderStatusLogs } from "../../api/orderApi";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -107,16 +108,11 @@ function DatePickerField({ value, onChange, label }) {
 
 export default function History() {
   const {
-    homeData: layoutHomeData,
-    loading: layoutLoading,
-    error: layoutError,
+    homeData,
+    loading,
+    error,
+    refreshHome,
   } = useOutletContext() || {};
-  const [historyHomeData, setHistoryHomeData] = useState(null);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyError, setHistoryError] = useState("");
-  const homeData = historyHomeData ?? layoutHomeData;
-  const loading = historyLoading || (layoutLoading && !homeData);
-  const error = historyError || layoutError;
   const customerId = homeData?.user?.id;
 
   const ordersData = useMemo(() => normalizeParentHistory(homeData), [homeData]);
@@ -138,35 +134,60 @@ export default function History() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const observerTarget = useRef(null);
 
+  const [statusLogs, setStatusLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState("");
+
+  const hasInitialData = useRef(!!homeData);
+
   useEffect(() => {
+    if (hasInitialData.current && refreshHome) {
+      refreshHome();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!selectedOrder?.orderId) {
+      setStatusLogs([]);
+      return;
+    }
+
     let ignore = false;
-
-    const fetchHistory = async () => {
+    const fetchLogs = async () => {
       try {
-        setHistoryLoading(true);
-        setHistoryError("");
-        const data = await getParentHome();
-
+        setLogsLoading(true);
+        setLogsError("");
+        const data = await getOrderStatusLogs(selectedOrder.orderId);
         if (!ignore) {
-          setHistoryHomeData(data);
+          setStatusLogs(data || []);
         }
       } catch (err) {
         if (!ignore) {
-          setHistoryError(err.message || "Không tải được lịch sử order");
+          setLogsError(err.message || "Không tải được lịch sử thay đổi");
         }
       } finally {
         if (!ignore) {
-          setHistoryLoading(false);
+          setLogsLoading(false);
         }
       }
     };
 
-    fetchHistory();
+    fetchLogs();
+
+    const handleStatusChanged = (e) => {
+      const updatedOrder = e.detail?.order || e.detail;
+      if (updatedOrder && String(updatedOrder.id) === String(selectedOrder.orderId)) {
+        fetchLogs();
+      }
+    };
+    window.addEventListener("order:status-changed", handleStatusChanged);
 
     return () => {
       ignore = true;
+      window.removeEventListener("order:status-changed", handleStatusChanged);
     };
-  }, []);
+  }, [selectedOrder]);
 
   // Fetch wallet transactions for advance history
   useEffect(() => {
@@ -478,36 +499,34 @@ export default function History() {
       {/* Order Detail Modal */}
       {selectedOrder && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-[6px] flex items-center justify-center z-50 transition-opacity duration-300"
           onClick={() => setSelectedOrder(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-[92%] sm:w-[420px] rounded-3xl shadow-2xl overflow-hidden"
+            className="bg-white/95 backdrop-blur-md w-[92%] sm:w-[440px] rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden max-h-[90vh] overflow-y-auto flex flex-col scale-100 transform transition-transform duration-300"
           >
-            <div className="relative">
-              <img src={banhngot} alt="" className="w-full h-44 object-cover" />
+            {/* Header Image section */}
+            <div className="relative group shrink-0">
+              <img src={banhngot} alt="" className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
 
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="absolute top-3 right-3 bg-white/80 backdrop-blur px-2 py-1 rounded-full text-sm hover:bg-white"
+                className="absolute top-4 right-4 bg-white/20 hover:bg-white/35 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors border border-white/10 text-lg font-bold"
               >
                 ×
               </button>
 
-              <div className="absolute bottom-3 left-3">
+              <div className="absolute bottom-4 left-4">
                 <span
-                  className={`text-xs px-3 py-1 rounded-full shadow ${
-                    selectedOrder.status === "cancel"
-                      ? "bg-red-500 text-white"
-                      : selectedOrder.status === "completed"
-                      ? "bg-emerald-500 text-white"
-                      : selectedOrder.status === "ready"
-                      ? "bg-amber-500 text-white"
-                      : selectedOrder.status === "payment"
-                      ? "bg-indigo-500 text-white"
-                      : "bg-blue-500 text-white"
+                  className={`text-[10px] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider shadow border border-white/10 ${
+                    selectedOrder.status === "cancel" ? "bg-rose-500 text-white" :
+                    selectedOrder.status === "completed" ? "bg-emerald-500 text-white" :
+                    selectedOrder.status === "ready" ? "bg-amber-500 text-white" :
+                    selectedOrder.status === "payment" ? "bg-indigo-500 text-white" :
+                    "bg-blue-500 text-white"
                   }`}
                 >
                   {statusText[selectedOrder.status] || "Chờ chế biến"}
@@ -515,39 +534,233 @@ export default function History() {
               </div>
             </div>
 
-            <div className="p-5 space-y-4">
-              <div className="flex justify-between items-center gap-3">
-                <h2 className="text-lg font-bold">{selectedOrder.name}</h2>
-                <p className="text-blue-600 font-semibold">
-                  {formatMoney(selectedOrder.price)}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <p className="text-gray-400 text-xs">Số lượng</p>
-                  <p className="font-medium">x{selectedOrder.quantity}</p>
+            {/* Content area */}
+            <div className="p-6 space-y-5 text-left flex-1">
+              
+              {/* Product title and cost */}
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <span className="text-[10px] font-extrabold tracking-wider text-blue-600 uppercase bg-blue-50/80 px-2 py-1 rounded-md border border-blue-100/50">
+                    Chi tiết đơn hàng
+                  </span>
+                  <h2 className="text-xl font-extrabold text-slate-800 mt-2 leading-snug">{selectedOrder.name}</h2>
                 </div>
-
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <p className="text-gray-400 text-xs">Ngày</p>
-                  <p className="font-medium">{formatDate(selectedOrder.date)}</p>
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <p className="text-gray-400 text-xs">Nhận hàng</p>
-                  <p className="font-medium">{selectedOrder.pickupType || "-"}</p>
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded-xl">
-                  <p className="text-gray-400 text-xs">Thanh toán</p>
-                  <p className="font-medium">{selectedOrder.paymentMethod || "-"}</p>
+                <div className="text-right shrink-0 bg-blue-50 px-3.5 py-2 rounded-2xl border border-blue-100/50">
+                  <p className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Tổng tiền</p>
+                  <p className="text-blue-600 font-black text-lg mt-0.5 whitespace-nowrap">
+                    {formatMoney(selectedOrder.price * selectedOrder.quantity)}
+                  </p>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 p-3 rounded-xl text-sm">
-                <p className="text-gray-400 text-xs mb-1">Ghi chú</p>
-                <p>{selectedOrder.note || "Không có ghi chú"}</p>
+              {/* Specs Grid */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-50/60 border border-slate-100 p-3.5 rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                  <div className="p-2 bg-blue-50 text-blue-500 rounded-xl">
+                    <ShoppingBag size={16} />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 font-medium text-[9px] uppercase tracking-wider">Số lượng</p>
+                    <p className="font-extrabold text-slate-700 mt-0.5">x{selectedOrder.quantity}</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/60 border border-slate-100 p-3.5 rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                  <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl">
+                    <Calendar size={16} />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 font-medium text-[9px] uppercase tracking-wider">Ngày đặt</p>
+                    <p className="font-extrabold text-slate-700 mt-0.5">{formatDate(selectedOrder.date)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/60 border border-slate-100 p-3.5 rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                  <div className="p-2 bg-amber-50 text-amber-500 rounded-xl">
+                    <Clock size={16} />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 font-medium text-[9px] uppercase tracking-wider">Nhận hàng</p>
+                    <p className="font-extrabold text-slate-700 mt-0.5">{selectedOrder.pickupType || "Tại quầy"}</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50/60 border border-slate-100 p-3.5 rounded-2xl flex items-center gap-3 hover:bg-slate-50 transition-colors">
+                  <div className="p-2 bg-indigo-50 text-indigo-500 rounded-xl">
+                    <CreditCard size={16} />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 font-medium text-[9px] uppercase tracking-wider">Thanh toán</p>
+                    <p className="font-extrabold text-slate-700 mt-0.5">{selectedOrder.paymentMethod || "Ví"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Note section */}
+              <div className="bg-amber-50/30 border border-amber-100/50 p-4 rounded-2xl flex gap-3 text-xs text-amber-800">
+                <div className="p-2 bg-amber-100 text-amber-600 rounded-xl shrink-0 h-fit">
+                  <ClipboardList size={16} />
+                </div>
+                <div>
+                  <p className="font-bold text-amber-900 mb-0.5">Ghi chú từ bạn</p>
+                  <p className="leading-relaxed text-amber-800/80 font-medium">{selectedOrder.note || "Không có ghi chú nào được thêm."}</p>
+                </div>
+              </div>
+
+              {/* Status Change Timeline */}
+              <div className="border-t border-slate-100 pt-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                    <FileText size={14} />
+                  </div>
+                  <h3 className="font-bold text-slate-800 text-sm">Lịch sử trạng thái</h3>
+                </div>
+
+                {logsLoading && (
+                  <div className="flex justify-center items-center py-6">
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+
+                {logsError && (
+                  <div className="bg-rose-50 border border-rose-100 text-xs text-rose-600 text-center py-3 px-4 rounded-xl">{logsError}</div>
+                )}
+
+                {!logsLoading && !logsError && statusLogs.length === 0 && (
+                  <div className="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                    <p className="text-xs text-slate-400 font-medium">Chưa có lịch sử trạng thái</p>
+                  </div>
+                )}
+
+                {!logsLoading && !logsError && statusLogs.length > 0 && (
+                  <div className="relative pl-6 space-y-4">
+                    {/* Vertical connector line */}
+                    <div className="absolute left-[9px] top-2.5 bottom-2.5 w-[2px] bg-slate-100"></div>
+
+                    {[...statusLogs]
+                      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                      .map((log, idx, arr) => {
+                        const isLatest = idx === arr.length - 1;
+                        const formattedTime = new Date(log.createdAt).toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        }) + " - " + new Date(log.createdAt).toLocaleDateString("vi-VN");
+
+                        // Status helpers
+                        const mapStatusNumToText = (status) => {
+                          const code = Number(status);
+                          switch (code) {
+                            case ORDER_STATUS.CANCELLED: return "Đã hủy";
+                            case ORDER_STATUS.PREPARING: return "Đang chế biến";
+                            case ORDER_STATUS.PENDING: return "Chờ chế biến";
+                            case ORDER_STATUS.PENDING_PAYMENT: return "Chờ thanh toán";
+                            case ORDER_STATUS.READY_TO_PICKUP: return "Chờ lấy món";
+                            case ORDER_STATUS.DONE: return "Hoàn thành chế biến";
+                            case ORDER_STATUS.REFUNDED: return "Đã hoàn tiền";
+                            case ORDER_STATUS.DRAFT: return "Bản nháp";
+                            case ORDER_STATUS.WAITING: return "Chờ xử lý";
+                            case ORDER_STATUS.READY: return "Chờ lấy món";
+                            case ORDER_STATUS.RECEIVED: return "Đã nhận món";
+                            case ORDER_STATUS.COMPLETED: return "Hoàn thành";
+                            default: return `Trạng thái ${status}`;
+                          }
+                        };
+
+                        const mapReasonText = (reason) => {
+                          const map = {
+                            MANUAL: "Thao tác thủ công",
+                            PAYMENT: "Thanh toán hệ thống",
+                            INITIAL_PAYMENT: "Khởi tạo thanh toán",
+                            CASH_PAYMENT: "Thanh toán tiền mặt",
+                            MOMO_PAYMENT: "Thanh toán MoMo",
+                            COMPLETE: "Hoàn thành đơn hàng",
+                            CANCEL: "Hủy đơn hàng",
+                            REFUND: "Hoàn tiền",
+                          };
+                          return map[reason] || reason || "Không có lý do";
+                        };
+
+                        // Dot and text styling helpers
+                        const getStatusClasses = (status) => {
+                          const code = Number(status);
+                          if (code === ORDER_STATUS.RECEIVED || code === ORDER_STATUS.COMPLETED) {
+                            return {
+                              dot: "bg-emerald-500 border-emerald-100 ring-emerald-500/20",
+                              badge: "bg-emerald-50 text-emerald-700 border-emerald-100/50",
+                            };
+                          }
+                          if (code === ORDER_STATUS.READY || code === ORDER_STATUS.READY_TO_PICKUP || code === ORDER_STATUS.DONE) {
+                            return {
+                              dot: "bg-amber-500 border-amber-100 ring-amber-500/20",
+                              badge: "bg-amber-50 text-amber-700 border-amber-100/50",
+                            };
+                          }
+                          if (code === ORDER_STATUS.PENDING_PAYMENT || code === ORDER_STATUS.DRAFT) {
+                            return {
+                              dot: "bg-indigo-500 border-indigo-100 ring-indigo-500/20",
+                              badge: "bg-indigo-50 text-indigo-700 border-indigo-100/50",
+                            };
+                          }
+                          if (code === ORDER_STATUS.CANCELLED || code === ORDER_STATUS.REFUNDED) {
+                            return {
+                              dot: "bg-rose-500 border-rose-100 ring-rose-500/20",
+                              badge: "bg-rose-50 text-rose-700 border-rose-100/50",
+                            };
+                          }
+                          return {
+                            dot: "bg-blue-500 border-blue-100 ring-blue-500/20",
+                            badge: "bg-blue-50 text-blue-700 border-blue-100/50",
+                          };
+                        };
+
+                        const oldStyle = log.oldStatus !== null && log.oldStatus !== undefined ? getStatusClasses(log.oldStatus) : null;
+                        const newStyle = getStatusClasses(log.newStatus);
+
+                        return (
+                          <div key={log.id || idx} className="relative flex flex-col gap-1.5 text-xs text-left group/item">
+                            
+                            {/* Bullet indicator */}
+                            <div className={`absolute -left-[22px] top-1 w-3.5 h-3.5 rounded-full border-2 transition-all ${
+                              isLatest ? `${newStyle.dot} ring-4 scale-110` : `${newStyle.dot} scale-90`
+                            }`}></div>
+
+                            {/* Status transition chips */}
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {log.oldStatus !== null && log.oldStatus !== undefined && (
+                                <>
+                                  <span className={`inline-block px-2 py-0.5 rounded-md border font-semibold text-[10px] uppercase ${oldStyle.badge}`}>
+                                    {mapStatusNumToText(log.oldStatus)}
+                                  </span>
+                                  <ChevronRight size={12} className="text-slate-300" />
+                                </>
+                              )}
+                              <span className={`inline-block px-2 py-0.5 rounded-md border font-bold text-[10px] uppercase ${newStyle.badge} ${isLatest ? 'ring-2 ring-blue-500/10' : ''}`}>
+                                {mapStatusNumToText(log.newStatus)}
+                              </span>
+                            </div>
+
+                            {/* Actor & Reason info box */}
+                            <div className="flex flex-col gap-0.5 pl-0.5">
+                              <div className="text-[10px] text-slate-400 font-medium">
+                                {formattedTime}
+                              </div>
+                              <div className="text-[11px] text-slate-600 flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <span className="font-semibold text-slate-700">
+                                  {log.changedByUser?.fullName 
+                                    ? `${log.changedByUser.fullName} (${log.changedByUser.role})` 
+                                    : log.changedBy === "system" ? "Hệ thống" : log.changedBy || "Hệ thống"}
+                                </span>
+                                <span className="text-slate-300">•</span>
+                                <span className="text-slate-500 font-medium italic">
+                                  Lý do: {mapReasonText(log.reason)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,10 +1,45 @@
+export const ORDER_STATUS = {
+  CANCELLED: 0,
+  PREPARING: 1,
+  PENDING: 2,
+  PENDING_PAYMENT: 3,
+  READY_TO_PICKUP: 4,
+  DONE: 5,
+  REFUNDED: 6,
+  DRAFT: 7,
+  WAITING: 8,
+  READY: 9,
+  RECEIVED: 10,
+  COMPLETED: 11,
+};
+
+export const ORDER_STATUS_VALUES = Object.values(ORDER_STATUS);
+
 const COMPLETED_STATUSES = new Set(["COMPLETED", "RECEIVED", "DELIVERED", "PAID"]);
 const READY_STATUSES = new Set(["DONE", "READY", "PREPARED"]);
 const PAYMENT_STATUSES = new Set(["CASH", "WAITING_PAYMENT", "PENDING_PAYMENT"]);
 const CANCELLED_STATUSES = new Set(["CANCELLED", "CANCELED", "FAILED", "REJECTED"]);
 
 export const mapParentStatus = (status) => {
-  const value = String(status || "").toUpperCase();
+  const numValue = status !== null && status !== undefined ? Number(status) : NaN;
+
+  if (!Number.isNaN(numValue)) {
+    if (numValue === ORDER_STATUS.RECEIVED || numValue === ORDER_STATUS.COMPLETED) {
+      return "completed";
+    }
+    if (numValue === ORDER_STATUS.READY || numValue === ORDER_STATUS.READY_TO_PICKUP || numValue === ORDER_STATUS.DONE) {
+      return "ready";
+    }
+    if (numValue === ORDER_STATUS.PENDING_PAYMENT || numValue === ORDER_STATUS.DRAFT) {
+      return "payment";
+    }
+    if (numValue === ORDER_STATUS.CANCELLED || numValue === ORDER_STATUS.REFUNDED) {
+      return "cancel";
+    }
+    return "pending"; // PREPARING, PENDING, WAITING
+  }
+
+  const value = String(status ?? "").toUpperCase();
 
   if (COMPLETED_STATUSES.has(value)) return "completed";
   if (READY_STATUSES.has(value)) return "ready";
@@ -48,6 +83,9 @@ export const normalizeParentHistory = (homeData) => {
   }
 
   (homeData?.recentHistory || []).forEach((item) => {
+    if (todayOrder && item.orderId === todayOrder.id) {
+      return;
+    }
     const amount = Math.abs(Number(item.amount || 0));
 
     orders.push({
