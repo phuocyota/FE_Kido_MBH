@@ -47,8 +47,8 @@ export default function BoardingMealModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 p-2 sm:items-center sm:p-4">
-      <div className="flex max-h-[calc(100dvh-1rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/45 p-2 pb-0 sm:items-center sm:p-4">
+      <div className="flex max-h-[calc(100dvh-0.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl rounded-b-none bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-sky-50 to-amber-50 px-4 py-4 sm:px-5">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
@@ -155,18 +155,18 @@ export default function BoardingMealModal({
           </div>
         </div>
 
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
-          <div>
-            {initialOrder && onDelete && (
-              <button
-                type="button"
-                onClick={onDelete}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-600 transition hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"
-              >
-                Xóa lựa chọn
-              </button>
-            )}
-          </div>
+        <div className="flex w-full flex-wrap items-center justify-end sm:justify-between gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:pb-4 sm:px-5">
+          {initialOrder && onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-600 transition hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"
+            >
+              Xóa lựa chọn
+            </button>
+          ) : (
+            <div className="hidden sm:block" />
+          )}
 
           <div className="flex gap-3">
             <button
