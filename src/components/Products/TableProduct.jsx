@@ -120,6 +120,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
           imageUrl = `${baseUrl}${imageUrl}`;
         }
         return {
+          ...p,
           id: p.id,
           categoryId: p.categoryId,
           code: p.code,
