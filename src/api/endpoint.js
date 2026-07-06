@@ -35,6 +35,7 @@ export const API = {
 
   ORDERS: {
     CANCEL: (id) => withApiPrefix(`/orders/${id}/cancel`),
+    STATUS_LOGS: (orderId) => withApiPrefix(`/orders/${orderId}/status-logs`),
   },
 
   CART: {
