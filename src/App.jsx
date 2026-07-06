@@ -13,6 +13,7 @@ import Order from "./pages/Parent/Order";
 import Payment from "./pages/Parent/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import BoardingOrder from "./pages/Parent/BoardingOrder";
+import NutritionAI from "./pages/Parent/NutritionAI";
 import ProtectedRoute from "./api/ProtectedRoute";
 
 
@@ -44,6 +45,7 @@ const App = () => {
           <Route path="topup" element={<Topup />} />
           <Route path="order" element={<Order />} />
           <Route path="boarding-order" element={<BoardingOrder />} />
+          <Route path="nutrition-ai" element={<NutritionAI />} />
           <Route path="order/payment" element={<Payment />} />
           
         </Route>
