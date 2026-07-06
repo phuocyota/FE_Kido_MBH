@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, User, DollarSign, Tag, FileText, CheckCircle2, AlertCircle, ShoppingBag } from "lucide-react";
+import { X, Calendar, User, DollarSign, Tag, FileText, CheckCircle2, AlertCircle, ShoppingBag, History } from "lucide-react";
 import toast from "react-hot-toast";
 import { orderApi } from "../../api";
+import OrderStatusLogsDrawer from "./OrderStatusLogsDrawer";
 
 const mapStatusToVN = (statusNum) => {
   switch (Number(statusNum)) {
@@ -78,6 +79,7 @@ const formatDateTime = (dateStr) => {
 export default function OrderDetailModal({ orderId, onClose }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showStatusLogs, setShowStatusLogs] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -187,6 +189,14 @@ export default function OrderDetailModal({ orderId, onClose }) {
                         {order.cashier?.fullName || "Hệ thống"}
                       </span>
                     </div>
+
+                    <button
+                      onClick={() => setShowStatusLogs(true)}
+                      className="mt-4 w-full py-2 px-3 border border-slate-200 hover:border-indigo-200 rounded-xl text-xs font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer shadow-sm hover:shadow"
+                    >
+                      <History size={13} className="text-slate-400" />
+                      Lịch sử đổi trạng thái
+                    </button>
                   </div>
                 </div>
               </div>
@@ -385,6 +395,14 @@ export default function OrderDetailModal({ orderId, onClose }) {
           </button>
         </div>
       </div>
+
+      {showStatusLogs && (
+        <OrderStatusLogsDrawer
+          orderId={orderId}
+          orderCode={order?.orderCode}
+          onClose={() => setShowStatusLogs(false)}
+        />
+      )}
     </div>
   );
 }

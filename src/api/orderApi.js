@@ -64,4 +64,10 @@ export const orderApi = {
   delete: async (id) => {
     await axiosInstance.delete(`/orders/${id}`);
   },
+
+  // Get order status change logs
+  getStatusLogs: async (id) => {
+    const response = await axiosInstance.get(`/orders/${id}/status-logs`);
+    return response.data.data || response.data;
+  },
 };
