@@ -5,6 +5,8 @@ import banhngot from "../../assets/banhngot.jpeg";
 import { normalizeParentHistory, ORDER_STATUS } from "../../api/parentData";
 import { getParentHome, getWalletTransactions } from "../../api/parent";
 import { getOrderStatusLogs } from "../../api/orderApi";
+import { Calendar as DateRangeCalendar } from "react-date-range";
+import { vi } from "date-fns/locale";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -65,43 +67,55 @@ const statusClass = {
   cancel: "bg-rose-100 text-rose-500",
 };
 
-function DatePickerField({ value, onChange, label }) {
-  const inputRef = useRef(null);
+function DatePickerField({ value, onChange, label, align = "left" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
 
-  const openPicker = () => {
-    const input = inputRef.current;
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
 
-    if (!input) return;
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    if (typeof input.showPicker === "function") {
-      input.showPicker();
-      return;
-    }
+  const parsedDate = value ? new Date(value) : new Date();
 
-    input.focus();
-    input.click();
-  };
+  const alignClass = align === "right"
+    ? "left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0"
+    : "left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0";
 
   return (
-    <div className="relative">
+    <div className="relative z-30" ref={containerRef}>
       <button
         type="button"
-        onClick={openPicker}
-        className="flex w-full min-w-[164px] items-center justify-between gap-3 rounded-lg border border-gray-400 bg-white px-3 py-2 text-left text-sm text-gray-900"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full min-w-[164px] items-center justify-between gap-3 rounded-lg border border-gray-400 bg-white px-3 py-2 text-left text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer hover:bg-slate-50"
         aria-label={label}
       >
         <span>{formatDateInput(value)}</span>
         <Calendar size={16} className="text-gray-700" />
       </button>
-      <input
-        ref={inputRef}
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="sr-only"
-        tabIndex={-1}
-        aria-hidden="true"
-      />
+
+      {isOpen && (
+        <div className={`absolute top-full ${alignClass} mt-2 bg-white rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.12)] border border-slate-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 scale-[0.85] min-[375px]:scale-[0.9] sm:scale-100 origin-top`}>
+          <DateRangeCalendar
+            date={parsedDate}
+            onChange={(date) => {
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, "0");
+              const day = String(date.getDate()).padStart(2, "0");
+              onChange(`${year}-${month}-${day}`);
+              setIsOpen(false);
+            }}
+            color="#2563eb"
+            locale={vi}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -326,17 +340,19 @@ export default function History() {
       {showErrorMessage && <p className="text-sm text-red-500">{showErrorMessage}</p>}
 
       {/* Filters Box */}
-      <div className="flex flex-col lg:flex-row justify-between gap-4 bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
+      <div className="relative z-40 flex flex-col lg:flex-row justify-between gap-4 bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60">
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           <DatePickerField
             label="Chọn ngày bắt đầu"
             value={fromDate}
             onChange={updateDate(setFromDate)}
+            align="left"
           />
           <DatePickerField
             label="Chọn ngày kết thúc"
             value={toDate}
             onChange={updateDate(setToDate)}
+            align="right"
           />
         </div>
 
