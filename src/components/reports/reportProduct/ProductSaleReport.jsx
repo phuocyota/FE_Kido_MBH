@@ -25,7 +25,7 @@ export default function ProductSaleReport({ fromDate, toDate, branchId }) {
       const to = toDate ? new Date(toDate).toISOString() : undefined;
       // Get monthly order plan report with date range
       const response = await reportApi.getMonthlyOrderPlan(null, from, to, branchId);
-      const result = unwrapData(response);
+      const result = response;
       
       setReportData(result);
       

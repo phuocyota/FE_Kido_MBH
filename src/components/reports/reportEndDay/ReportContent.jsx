@@ -65,8 +65,8 @@ export default function ReportContent({
       const effectiveToDate = dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
       const branchId = selectedBranch.id;
       const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate, branchId);
-      // Map BE data to FE format - result.data.data contains the items array
-      const mappedData = result.data?.data?.map(item => ({
+      // Map BE data to FE format - result.data contains the items array
+      const mappedData = result.data?.map(item => ({
         date: new Date(item.date).toLocaleDateString("vi-VN"),
         code: item.code,
         name: item.name,
