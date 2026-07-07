@@ -39,7 +39,7 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId }) {
       ]);
       const result = unwrapData(inventoryResponse);
       const revenue = unwrapData(revenueResponse);
-      const inventoryItems = Array.isArray(result.data) ? result.data : [];
+      const inventoryItems = Array.isArray(result) ? result : (Array.isArray(result.data) ? result.data : []);
       // Map BE data to FE format
       const mappedData = inventoryItems.map((item, index) => ({
         stt: index + 1,
