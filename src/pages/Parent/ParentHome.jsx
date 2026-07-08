@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
-import bg from "../../assets/anh-can-tin-so-2.png";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
 import { Pencil } from "lucide-react";

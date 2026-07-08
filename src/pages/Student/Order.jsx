@@ -10,7 +10,7 @@ import trasuaImg from "../../assets/trasua.jpg";
 import cocaImg from "../../assets/coca.jpg";
 import banhngotImg from "../../assets/banhngot.jpeg";
 import banhmiImg from "../../assets/banhmi.jpg";
-import bgImg from "../../assets/anh-can-tin-so-2.png";
+import bgImg from "../../assets/anh-can-tin-so-2.jpg";
 
 export default function Order() {
 

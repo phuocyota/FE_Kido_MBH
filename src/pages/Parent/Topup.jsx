@@ -21,6 +21,11 @@ export default function Topup() {
   const customerId = homeData?.user?.id;
   const walletBalance = homeData?.wallet?.balance ?? 0;
 
+  // Trạng thái cho iframe Modal
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [payUrl, setPayUrl] = useState("");
+
+
   useEffect(() => {
     const currentLimit =
       homeData?.statistics?.month?.limit ?? homeData?.statistics?.week?.limit;
@@ -29,6 +34,51 @@ export default function Topup() {
       setAdvanceAmount(Number(currentLimit));
     }
   }, [homeData]);
+
+  // Tự động cập nhật lại số dư ví khi người dùng quay lại tab ứng dụng
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshHome?.();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshHome?.();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshHome]);
+
+  const handleCloseQrModal = () => {
+    setShowQrModal(false);
+    setPayUrl("");
+  };
+
+  // Lắng nghe postMessage từ iframe / popup thanh toán MoMo để đóng modal tức thì
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === "MOMO_PAYMENT_SUCCESS") {
+        setShowQrModal(false);
+        setPayUrl("");
+        refreshHome?.();
+        toast.success("Nạp tiền thành công! 🎉");
+      } else if (event.data?.type === "MOMO_PAYMENT_FAILED") {
+        setShowQrModal(false);
+        setPayUrl("");
+        toast.error(event.data?.message || "Thanh toán thất bại");
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [refreshHome]);
 
   const handleSaveAdvanceAmount = async (nextAmount) => {
     if (!customerId) {
@@ -67,7 +117,8 @@ export default function Topup() {
         setPaying(true);
         const res = await createMomoTopup(customerId, amount);
         if (res?.payUrl) {
-          window.location.href = res.payUrl;
+          setPayUrl(res.payUrl);
+          setShowQrModal(true);
         } else {
           toast.error("Không tạo được link thanh toán MoMo");
         }
@@ -240,16 +291,72 @@ export default function Topup() {
       </button>
 
       <AdvanceAmountModal
-  open={openAdvanceModal}
-  value={advanceAmount}
-  saving={savingAdvance}
-  onClose={() => {
-    if (!savingAdvance) {
-      setOpenAdvanceModal(false);
-    }
-  }}
-  onSave={handleSaveAdvanceAmount}
-/>
+        open={openAdvanceModal}
+        value={advanceAmount}
+        saving={savingAdvance}
+        onClose={() => {
+          if (!savingAdvance) {
+            setOpenAdvanceModal(false);
+          }
+        }}
+        onSave={handleSaveAdvanceAmount}
+      />
+
+      {/* MoMo IFRAME MODAL */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="relative w-full max-w-4xl h-[85vh] bg-white rounded-3xl p-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 animate-[zoomIn_0.25s_ease-out] flex flex-col">
+            
+            {/* CLOSE BUTTON */}
+            <button
+              onClick={handleCloseQrModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors cursor-pointer z-10"
+              aria-label="Đóng"
+            >
+              ✕
+            </button>
+
+            {/* HEADER */}
+            <div className="text-left mb-3">
+              <h2 className="text-lg font-bold text-gray-800">Thanh toán qua MoMo</h2>
+              <p className="text-xs text-gray-500">Vui lòng quét mã QR hoặc hoàn tất thanh toán bên dưới</p>
+            </div>
+
+            {/* IFRAME CONTAINER */}
+            <div className="flex-1 w-full bg-slate-50 border border-gray-100 rounded-2xl overflow-hidden relative">
+              <iframe
+                src={payUrl}
+                title="MoMo Payment Gateway"
+                className="w-full h-full border-none"
+                allow="payment"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+              />
+            </div>
+            
+            {/* IN-APP STATUS */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-600">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#a50064]"></span>
+              </span>
+              <span className="font-semibold animate-pulse">Vui lòng quét mã và hoàn tất thanh toán trên MoMo...</span>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* INJECT ANIMATION STYLES */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes zoomIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
 
     </div>
   );

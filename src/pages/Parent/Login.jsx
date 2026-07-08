@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import bg from "../../assets/anh-can-tin-so-2.png";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
 import logo from "../../assets/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";

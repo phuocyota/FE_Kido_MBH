@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import bg from "../../assets/anh-can-tin-so-2.png";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
 import scanner from "../../assets/dau-doc-the-tu.jpeg";
 import avatar1 from "../../assets/avatar.png";
 import avatar2 from "../../assets/avatar2.png";
