@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, Check, ChevronRight, Wallet } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -56,6 +57,15 @@ export default function Payment() {
   const [successOrder, setSuccessOrder] = useState(null);
   const [paying, setPaying] = useState(false);
 
+  const clearCartPromise = useRef(null);
+
+  useEffect(() => {
+    // Kích hoạt xóa giỏ hàng cũ chạy ngầm ngay khi mở màn hình thanh toán
+    clearCartPromise.current = clearMyCart().catch((err) => {
+      console.error("Pre-clear cart error:", err);
+    });
+  }, []);
+
   const selectedMethod = useMemo(
     () => methods.find((item) => item.id === method) || methods[0],
     [method]
@@ -79,15 +89,24 @@ export default function Payment() {
 
     try {
       setPaying(true);
-      await clearMyCart();
-
-      for (const item of items) {
-        await addMyCartItem({
-          productId: item.id,
-          quantity: item.qty,
-          note: item.note || undefined,
-        });
+      
+      // Chờ tiến trình xóa giỏ hàng chạy trước đó hoàn tất
+      if (clearCartPromise.current) {
+        await clearCartPromise.current;
+      } else {
+        await clearMyCart();
       }
+
+      // Thêm tất cả các món trong giỏ hàng song song (Parallel)
+      await Promise.all(
+        items.map((item) =>
+          addMyCartItem({
+            productId: item.id,
+            quantity: item.qty,
+            note: item.note || undefined,
+          })
+        )
+      );
 
       const result = await completeMyCart({
         branchId: checkout?.branchId || student.branchId,
@@ -295,7 +314,7 @@ export default function Payment() {
         </div>
       </div>
 
-      {successOrder && (
+      {successOrder && createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
@@ -316,7 +335,8 @@ export default function Payment() {
               OK
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

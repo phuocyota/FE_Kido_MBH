@@ -71,7 +71,6 @@ export default function Welcome() {
 ];
 
  const handleScan = (cardId) => {
-  console.log("📌 Card:", cardId);
 
   // 👉 random 1 user
   const randomStudent =

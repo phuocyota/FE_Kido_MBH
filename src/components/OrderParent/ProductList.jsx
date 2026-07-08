@@ -54,6 +54,8 @@ export default function ProductList({
                 <img
                   src={buildAssetUrl(item.image)}
                   alt={item.name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-32 w-full object-cover transition-transform duration-500 group-hover:scale-110 sm:h-40 md:h-44"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
