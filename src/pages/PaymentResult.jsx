@@ -7,6 +7,22 @@ export default function PaymentResult() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("processing");
   const [message, setMessage] = useState("");
+  const [countdown, setCountdown] = useState(5);
+
+  const orderId = searchParams.get("orderId") || "";
+  const orderInfo = searchParams.get("orderInfo") || "";
+  const isTopup =
+    orderId.startsWith("TOPUP-") ||
+    orderInfo.toLowerCase().includes("nap tien") ||
+    orderInfo.toLowerCase().includes("nạp tiền");
+
+  const targetPath = isTopup ? "/topup" : "/";
+  
+  // Dynamic button labels based on transaction type and status
+  let buttonText = "Trở về trang chủ";
+  if (isTopup) {
+    buttonText = status === "success" ? "Quay lại trang nạp tiền" : "Thử lại nạp tiền";
+  }
 
   useEffect(() => {
     const resultCode = searchParams.get("resultCode");
@@ -20,6 +36,24 @@ export default function PaymentResult() {
       setMessage(momoMessage || "Giao dịch bị từ chối hoặc có lỗi xảy ra");
     }
   }, [searchParams]);
+
+  // Automatic redirect countdown on success
+  useEffect(() => {
+    if (status !== "success") return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate(targetPath);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [status, navigate, targetPath]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -35,13 +69,19 @@ export default function PaymentResult() {
         </h2>
         
         <p className="mt-2 text-sm text-gray-600">{message}</p>
+
+        {status === "success" && (
+          <p className="mt-3 text-xs text-gray-400">
+            Tự động chuyển hướng sau {countdown} giây...
+          </p>
+        )}
         
         <button
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(targetPath)}
           className="mt-6 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
         >
-          Trở về trang chủ
+          {buttonText}
         </button>
       </div>
     </div>
