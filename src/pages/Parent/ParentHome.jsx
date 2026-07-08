@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed,  Sparkles, } from "lucide-react";
-import bg from "../../assets/anh-can-tin-so-2.jpg";
+// Moved to public/images/ to avoid bundling (430KB)
+const bg = "/images/anh-can-tin-so-2.jpg";
 import defaultAvatar from "../../assets/avatar.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";

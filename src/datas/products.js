@@ -1,13 +1,10 @@
-import coca from "../assets/coca.jpg";
-import trasua from "../assets/trasua.jpg";
-import banhmi from "../assets/banhmi.jpg";
-import banhngot from "../assets/banhngot.jpeg";
+
 
  const products = [
   {
     id: 1,
     name: "Trà sữa truyền thống",
-    image: trasua,
+    image: "",
     category: "Nước",
     price: 20000,
     oldPrice: 30000,
@@ -19,7 +16,7 @@ import banhngot from "../assets/banhngot.jpeg";
   {
     id: 2,
     name: "Coca Cola",
-    image: coca,
+    image: "",
     category: "Nước",
     price: 10000,
     sold: 200,
@@ -30,7 +27,7 @@ import banhngot from "../assets/banhngot.jpeg";
   {
     id: 3,
     name: "Bánh ngọt",
-    image: banhngot,
+    image: "",
     category: "Bánh",
     price: 15000,
     sold: 180,
@@ -41,7 +38,7 @@ import banhngot from "../assets/banhngot.jpeg";
   {
     id: 4,
     name: "Bánh mì xúc xích",
-    image: banhmi,
+    image: "",
     category: "Bánh mì",
     price: 25000,
     sold: 520,

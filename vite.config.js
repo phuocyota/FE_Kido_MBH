@@ -10,12 +10,26 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-charts': ['recharts'],
-          'vendor-icons': ['lucide-react'],
-          'vendor-date': ['date-fns', 'react-date-range'],
-          'vendor-state': ['@reduxjs/toolkit', 'react-redux'],
+        manualChunks(id) {
+          // React core — cached long-term
+          if (id.includes('node_modules/react/') || 
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router')) {
+            return 'vendor-react';
+          }
+          // Date libraries — only loaded by History page
+          if (id.includes('node_modules/date-fns') || 
+              id.includes('node_modules/react-date-range')) {
+            return 'vendor-date';
+          }
+          // Icons — loaded on demand by pages
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+          // Toast — small, used by most pages
+          if (id.includes('node_modules/react-hot-toast')) {
+            return 'vendor-toast';
+          }
         },
       },
     },

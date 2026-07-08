@@ -104,12 +104,16 @@ export default function Topup() {
         setPaying(true);
         const res = await createMomoTopup(customerId, amount);
         if (res?.payUrl) {
-          // Kiểm tra nếu chạy trong Zalo WebView / Zalo Mini App
           const isZalo = /Zalo/i.test(navigator.userAgent);
           if (isZalo) {
-            window.location.href = res.payUrl; // Chuyển hướng trực tiếp
+            const link = document.createElement("a");
+            link.href = res.payUrl;
+            link.target = "_parent"; 
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           } else {
-            window.open(res.payUrl, "_blank"); // Mở tab mới trên trình duyệt thường
+            window.location.href = res.payUrl;
           }
         } else {
           toast.error("Không tạo được link thanh toán MoMo");
