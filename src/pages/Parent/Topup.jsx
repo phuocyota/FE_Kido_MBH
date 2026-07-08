@@ -30,6 +30,43 @@ export default function Topup() {
     }
   }, [homeData]);
 
+  // Tự động cập nhật lại số dư ví khi người dùng quay lại tab ứng dụng
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshHome?.();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshHome?.();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshHome]);
+
+  // Lắng nghe postMessage từ cửa sổ thanh toán MoMo (tab mới) để cập nhật và thông báo
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === "MOMO_PAYMENT_SUCCESS") {
+        setAmount(0); // Reset số tiền về 0 sau khi nạp thành công
+        refreshHome?.();
+        toast.success("Nạp tiền thành công! 🎉");
+      } else if (event.data?.type === "MOMO_PAYMENT_FAILED") {
+        toast.error(event.data?.message || "Thanh toán thất bại");
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [refreshHome]);
+
   const handleSaveAdvanceAmount = async (nextAmount) => {
     if (!customerId) {
       toast.error("Khong tim thay thong tin hoc sinh");
@@ -67,7 +104,13 @@ export default function Topup() {
         setPaying(true);
         const res = await createMomoTopup(customerId, amount);
         if (res?.payUrl) {
-          window.location.href = res.payUrl;
+          // Kiểm tra nếu chạy trong Zalo WebView / Zalo Mini App
+          const isZalo = /Zalo/i.test(navigator.userAgent);
+          if (isZalo) {
+            window.location.href = res.payUrl; // Chuyển hướng trực tiếp
+          } else {
+            window.open(res.payUrl, "_blank"); // Mở tab mới trên trình duyệt thường
+          }
         } else {
           toast.error("Không tạo được link thanh toán MoMo");
         }
@@ -240,16 +283,18 @@ export default function Topup() {
       </button>
 
       <AdvanceAmountModal
-  open={openAdvanceModal}
-  value={advanceAmount}
-  saving={savingAdvance}
-  onClose={() => {
-    if (!savingAdvance) {
-      setOpenAdvanceModal(false);
-    }
-  }}
-  onSave={handleSaveAdvanceAmount}
-/>
+        open={openAdvanceModal}
+        value={advanceAmount}
+        saving={savingAdvance}
+        onClose={() => {
+          if (!savingAdvance) {
+            setOpenAdvanceModal(false);
+          }
+        }}
+        onSave={handleSaveAdvanceAmount}
+      />
+
+
 
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, XCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function PaymentResult() {
   const [searchParams] = useSearchParams();
@@ -14,7 +15,8 @@ export default function PaymentResult() {
   const isTopup =
     orderId.startsWith("TOPUP-") ||
     orderInfo.toLowerCase().includes("nap tien") ||
-    orderInfo.toLowerCase().includes("nạp tiền");
+    orderInfo.toLowerCase().includes("nạp tiền") ||
+    Array.from(searchParams.values()).some((val) => val.includes("TOPUP"));
 
   const targetPath = isTopup ? "/topup" : "/";
   
@@ -25,21 +27,67 @@ export default function PaymentResult() {
   }
 
   useEffect(() => {
+    const success = searchParams.get("success");
+    const statusParam = searchParams.get("status");
     const resultCode = searchParams.get("resultCode");
     const momoMessage = searchParams.get("message");
     
-    if (resultCode === "0") {
+    const isSuccess =
+      success === "true" ||
+      statusParam === "SUCCESS" ||
+      resultCode === "0";
+
+    if (isSuccess) {
       setStatus("success");
-      setMessage("Thanh toán thành công!");
+      setMessage(momoMessage || "Thanh toán thành công!");
+
+      // 1. Nếu đang chạy trong iframe (Modal)
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: "MOMO_PAYMENT_SUCCESS" }, "*");
+        return;
+      }
+
+      // 2. Nếu đang chạy trong cửa sổ popup riêng biệt
+      if (window.opener) {
+        try {
+          window.opener.postMessage({ type: "MOMO_PAYMENT_SUCCESS" }, "*");
+        } catch (e) {
+          console.error("postMessage error:", e);
+        }
+        window.close();
+        return;
+      }
+
+      if (isTopup) {
+        toast.success("Nạp tiền thành công!");
+        navigate("/topup", { replace: true });
+      }
     } else {
       setStatus("error");
       setMessage(momoMessage || "Giao dịch bị từ chối hoặc có lỗi xảy ra");
-    }
-  }, [searchParams]);
 
-  // Automatic redirect countdown on success
+      // 1. Nếu đang chạy trong iframe (Modal)
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: "MOMO_PAYMENT_FAILED", message: momoMessage }, "*");
+        return;
+      }
+
+      // 2. Nếu đang chạy trong cửa sổ popup riêng biệt
+      if (window.opener) {
+        try {
+          window.opener.postMessage({ type: "MOMO_PAYMENT_FAILED", message: momoMessage }, "*");
+        } catch (e) {
+          console.error("postMessage error:", e);
+        }
+        window.close();
+        return;
+      }
+    }
+  }, [searchParams, isTopup, navigate]);
+
+  // Automatic redirect countdown on success for non-topup transactions
   useEffect(() => {
-    if (status !== "success") return;
+    if (status !== "success" || isTopup) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -53,7 +101,7 @@ export default function PaymentResult() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [status, navigate, targetPath]);
+  }, [status, navigate, targetPath, isTopup]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -70,7 +118,7 @@ export default function PaymentResult() {
         
         <p className="mt-2 text-sm text-gray-600">{message}</p>
 
-        {status === "success" && (
+        {status === "success" && !isTopup && (
           <p className="mt-3 text-xs text-gray-400">
             Tự động chuyển hướng sau {countdown} giây...
           </p>
