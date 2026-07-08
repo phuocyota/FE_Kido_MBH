@@ -3,9 +3,10 @@ import { BarChart3, Wallet, Utensils, Clock } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { normalizeParentHistory } from "../../api/parentData";
 
-import bang from "../../assets/bang.png";
-import vuot from "../../assets/vuot.png";
-import tietkiem from "../../assets/tietkiem.png";
+// Moved to public/images/ to avoid bundling (3.8MB each)
+const bang = "/images/bang.png";
+const vuot = "/images/vuot.png";
+const tietkiem = "/images/tietkiem.png";
 
 export default function Stats() {
   const { homeData } = useOutletContext() || {};
@@ -606,15 +607,17 @@ const FEEDBACK = getFeedback(diff);
   {/* IMAGE */}
   <div className="flex justify-center">
     <img
-  src={
-    diff < 0
-      ? tietkiem
-      : diff > 0
-      ? vuot
-      : bang
-  }
-  className="w-40"
-/>
+      src={
+        diff < 0
+          ? tietkiem
+          : diff > 0
+          ? vuot
+          : bang
+      }
+      alt="So sánh chi tiêu"
+      loading="lazy"
+      className="w-40"
+    />
   </div>
 
 </div>

@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed,  Sparkles, } from "lucide-react";
-import bg from "../../assets/anh-can-tin-so-2.png";
+import bg from "../../assets/anh-can-tin-so-2.jpg";
+import defaultAvatar from "../../assets/avatar.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
 import { Pencil } from "lucide-react";
 
-const DEFAULT_AVATAR = "https://i.pravatar.cc/100";
+const DEFAULT_AVATAR = defaultAvatar;
 
 export default function ParentHome() {
   const [open, setOpen] = useState(false);
@@ -17,18 +18,9 @@ export default function ParentHome() {
   const location = useLocation();
   const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
-
   const fabRef = useRef(null);
   const isDragging = useRef(false);
 
-  // Force stop momentum scroll on tap
-  const handleStopScroll = () => {
-    if (scrollRef.current) {
-      scrollRef.current.style.overflowY = 'hidden';
-      void scrollRef.current.offsetHeight; 
-      scrollRef.current.style.overflowY = 'auto';
-    }
-  };
   const dragStartPos = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = (e) => {
@@ -96,6 +88,11 @@ const [avatarError, setAvatarError] = useState("");
       setError("");
       const data = await getParentHome();
       setHomeData(data);
+      if (data?.user?.branchId) {
+        localStorage.setItem("parent_branch_id", data.user.branchId);
+      }
+      const limit = data?.statistics?.month?.limit ?? data?.statistics?.week?.limit ?? 0;
+      localStorage.setItem("parent_advance_limit", String(limit));
     } catch (err) {
       console.error("Fetch parent home error:", err);
       setError(err.message || "Không tải được dữ liệu");
@@ -111,6 +108,8 @@ const [avatarError, setAvatarError] = useState("");
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
+    localStorage.removeItem("parent_branch_id");
+    localStorage.removeItem("parent_advance_limit");
     navigate("/login");
   };
 
@@ -179,7 +178,7 @@ const [avatarError, setAvatarError] = useState("");
       </div>
 
       <div className="relative min-h-[100dvh] flex items-center justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:p-4">
-        <div className="w-full max-w-6xl h-[calc(100dvh-1.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100dvh-2rem)] flex gap-2">
+        <div className="w-full max-w-6xl min-h-0 h-[calc(100dvh-1.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] sm:h-[calc(100dvh-2rem)] flex gap-2">
           <div className="hidden md:flex w-64 bg-white rounded-2xl p-4 flex-col shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100">
             <div className="flex flex-col items-center mb-6 border-b border-gray-200 pb-4">
 
@@ -253,7 +252,7 @@ const [avatarError, setAvatarError] = useState("");
             </div>
           </div>
 
-          <div className="relative flex-1 flex flex-col bg-white/60 backdrop-blur-3xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden">
+          <div className="relative min-h-0 flex-1 flex flex-col bg-white/60 backdrop-blur-sm md:backdrop-blur-3xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-white/50 overflow-hidden">
             {/* Ambient Background Blobs */}
             <div className="absolute top-0 left-0 w-80 h-80 bg-purple-300/40 rounded-full blur-3xl pointer-events-none -translate-x-1/4 -translate-y-1/4"></div>
             <div className="absolute top-1/3 right-0 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none translate-x-1/3"></div>
@@ -261,9 +260,7 @@ const [avatarError, setAvatarError] = useState("");
 
             <div 
               ref={scrollRef}
-              onTouchStart={handleStopScroll}
-              onMouseDown={handleStopScroll}
-              className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain"
+              className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6 [WebkitOverflowScrolling:touch]"
             >
               <Outlet context={{ homeData, loading, error, refreshHome: fetchHome }} />
             </div>
@@ -273,7 +270,7 @@ const [avatarError, setAvatarError] = useState("");
         {/* Floating Speed Dial Container (Mobile Only) */}
         <div
           ref={fabRef}
-          className={`md:hidden touch-none fixed right-6 z-50 flex flex-col items-end ${
+          className={`md:hidden fixed right-6 z-50 flex flex-col items-end pointer-events-none ${
             location.pathname.includes("/order") ? "bottom-[80px]" : "bottom-6"
           }`}
           style={{ transition: "all 0.2s" }}
@@ -281,7 +278,7 @@ const [avatarError, setAvatarError] = useState("");
           {/* Speed Dial Menu Items */}
           <div
             className={`flex flex-col gap-3 mb-4 transition-all duration-150 origin-bottom ${
-              open ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
+              open ? "scale-100 opacity-100 pointer-events-auto" : "scale-0 opacity-0 pointer-events-none"
             }`}
           >
             {mobileMenu.map((item) => {
@@ -329,7 +326,7 @@ const [avatarError, setAvatarError] = useState("");
               setOpen(false);
               navigate("nutrition-ai");
             }}
-            className={`mb-3 flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-[0_8px_30px_rgba(16,185,129,0.35)] ring-2 ring-emerald-200 transition-all duration-150 hover:scale-105 active:scale-95 ${
+            className={`mb-3 flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-[0_8px_30px_rgba(16,185,129,0.35)] ring-2 ring-emerald-200 transition-all duration-150 hover:scale-105 active:scale-95 pointer-events-auto ${
               location.pathname.includes("/nutrition-ai") ? "bg-emerald-600 ring-emerald-300" : ""
             }`}
             aria-label="Mở AI Dinh dưỡng"
@@ -343,8 +340,8 @@ const [avatarError, setAvatarError] = useState("");
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onClick={handleClick}
-            className={`w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(0,0,0,0.15)] border-2 border-white ring-2 ring-blue-500 transition-all duration-150 overflow-hidden ${
-              open ? "scale-90 opacity-80" : "hover:scale-105 active:scale-95"
+            className={`w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(0,0,0,0.15)] border-2 border-white ring-2 ring-blue-500 transition-all duration-150 overflow-hidden touch-none pointer-events-auto ${
+              open ? "scale-90 opacity-80 pointer-events-auto" : "hover:scale-105 active:scale-95"
             }`}
           >
             <img src="/kido.jpg" alt="Menu" className="w-full h-full object-cover pointer-events-none" />

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -85,20 +86,24 @@ export default function Order() {
   const [menuData, setMenuData] = useState([]);
   const [menuLoading, setMenuLoading] = useState(false);
   const [menuError, setMenuError] = useState("");
-  const branchId = homeData?.user?.branchId || storedStudent?.branchId || "";
+  const cachedBranchId = localStorage.getItem("parent_branch_id") || "";
+  const cachedLimit = Number(localStorage.getItem("parent_advance_limit") || 0);
+
+  const branchId = homeData?.user?.branchId || storedStudent?.branchId || cachedBranchId;
   const advanceAmount = Number(
     homeData?.statistics?.month?.limit ??
     homeData?.statistics?.week?.limit ??
     storedStudent?.advanceAmount ??
-    0
+    cachedLimit
   );
 
   useEffect(() => {
-    if (loading) return;
+    // Nếu chưa có branchId từ cache mà trang đang tải thông tin chung thì đợi tải xong
+    if (!branchId && loading) return;
 
     if (!branchId) {
       setMenuData([]);
-      setMenuError("Khong tim thay chi nhanh cua hoc sinh");
+      setMenuError("Không tìm thấy chi nhánh của học sinh");
       return;
     }
 
@@ -114,12 +119,6 @@ export default function Order() {
           isCanteenItem: true,
         });
 
-        console.log("🔍 [DEBUG] branchId:", branchId);
-        console.log("🔍 [DEBUG] advanceAmount:", advanceAmount);
-        console.log("🔍 [DEBUG] raw data from API:", data);
-        console.log("🔍 [DEBUG] isArray:", Array.isArray(data));
-        console.log("🔍 [DEBUG] data length:", data?.length);
-
         if (!ignore) {
           setMenuData(Array.isArray(data) ? data : []);
         }
@@ -128,8 +127,8 @@ export default function Order() {
 
         if (!ignore) {
           setMenuData([]);
-          setMenuError(err.message || "Khong tai duoc danh sach san pham");
-          toast.error(err.message || "Khong tai duoc danh sach san pham");
+          setMenuError(err.message || "Không tải được danh sách sản phẩm");
+          toast.error(err.message || "Không tải được danh sách sản phẩm");
         }
       } finally {
         if (!ignore) {
@@ -204,10 +203,7 @@ export default function Order() {
     );
   }, [advanceAmount, menuData]);
 
-  console.log("🔍 [DEBUG] menuData:", menuData);
-  console.log("🔍 [DEBUG] menuData.length:", menuData.length);
-  console.log("🔍 [DEBUG] products.length:", products.length);
-  console.log("🔍 [DEBUG] products:", products);
+
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -401,7 +397,7 @@ export default function Order() {
         onClearCart={clearCart}
       />
 
-      {noteModal && (
+      {noteModal && createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
             <h2 className="text-lg font-bold text-gray-800">Ghi chú món</h2>
@@ -443,8 +439,11 @@ export default function Order() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
+
+
     </div>
   );
 }
