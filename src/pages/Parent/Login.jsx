@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import bg from "../../assets/anh-can-tin-so-2.jpg";
-import logo from "../../assets/kido.jpg";
+// Moved to public/ to avoid bundling (430KB + 436KB)
+const bg = "/images/anh-can-tin-so-2.jpg";
+const logo = "/kido.jpg";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";

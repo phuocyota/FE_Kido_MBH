@@ -77,6 +77,7 @@ export const normalizeParentHistory = (homeData) => {
         date: todayOrder.orderedAt || todayOrder.createdAt,
         pickupType: todayOrder.pickupType || "",
         paymentMethod: todayOrder.paymentMethod || "Ví",
+        image: item.imageUrl || item.image || "",
         isFoodOrder: true,
       });
     });
@@ -98,8 +99,10 @@ export const normalizeParentHistory = (homeData) => {
       status: mapParentStatus(item.status),
       statusText: item.statusText,
       date: item.createdAt,
-      pickupType: "",
-      paymentMethod: item.type === "TOPUP" ? "Nạp tiền" : "Ví",
+      pickupType: item.pickupType || "",
+      paymentMethod: item.paymentMethod || "Ví",
+      image: item.imageUrl || item.image || "",
+      isFoodOrder: false,
     });
   });
 

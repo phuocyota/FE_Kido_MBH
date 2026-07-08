@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Calendar, ArrowDownLeft, ArrowUpRight, RefreshCcw, Coins, FileText, CheckCircle2, Clock, User, CreditCard, ShoppingBag, ClipboardList, ChevronRight } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import banhngot from "../../assets/banhngot.jpeg";
 import { normalizeParentHistory, ORDER_STATUS } from "../../api/parentData";
 import { getParentHome, getWalletTransactions } from "../../api/parent";
+import { buildAssetUrl } from "../../api/client";
 import { getOrderStatusLogs } from "../../api/orderApi";
 import { Calendar as DateRangeCalendar } from "react-date-range";
 import { vi } from "date-fns/locale";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -415,7 +417,7 @@ export default function History() {
             >
               <div className="flex items-center gap-4 min-w-0">
                 <img
-                  src={banhngot}
+                  src={order.image ? buildAssetUrl(order.image) : ""}
                   alt=""
                   className="w-14 h-14 rounded-2xl object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
                 />
@@ -524,7 +526,7 @@ export default function History() {
           >
             {/* Header Image section */}
             <div className="relative group shrink-0">
-              <img src={banhngot} alt="" className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={selectedOrder.image ? buildAssetUrl(selectedOrder.image) : ""} alt="" className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
 
               <button

@@ -8,13 +8,8 @@ import BoardingMealCell from "./BoardingMealCell";
 import BoardingMealModal from "./BoardingMealModal";
 import { getMealItems, selectCustomerMealItemMe, deleteCustomerMealItem } from "../../api/parent";
 import { buildAssetUrl } from "../../api/client";
-
-import banhMi from "../../assets/banhmi.jpg";
-import banhNgot from "../../assets/banhngot.jpeg";
-import comGaSotNam from "../../assets/comgasotnam.jpg";
-import comThitKhoTrung from "../../assets/comthitkhotrung.jpg";
-import traSua from "../../assets/trasua.jpg";
-import yaourt from "../../assets/Yaourt.png";
+// Moved to public/images/ to avoid bundling (878KB)
+const yaourt = "/images/Yaourt.png";
 
 const dayAccents = [
   {
@@ -140,7 +135,7 @@ export default function BoardingOrderTable({ level, activeWeek }) {
       id: item.product.id,
       mealItemId: item.id,
       name: item.product.name,
-      image: buildAssetUrl(item.product.imageUrl) || comGaSotNam,
+      image: item.product.imageUrl ? buildAssetUrl(item.product.imageUrl) : "",
       description: item.product.description || "Món ăn ngon miệng, bổ dưỡng.",
       ingredients: item.product.ingredients ? item.product.ingredients.split(",").map(i => i.trim()) : [],
       price: item.product.price,

@@ -120,7 +120,17 @@ export default function Payment() {
       if (selectedMethod.id === "MOMO") {
         const res = await createMomoPayment(result.order.id);
         if (res?.payUrl) {
-          window.location.href = res.payUrl;
+          const isZalo = /Zalo/i.test(navigator.userAgent);
+          if (isZalo) {
+            const link = document.createElement("a");
+            link.href = res.payUrl;
+            link.target = "_parent"; 
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            window.location.href = res.payUrl;
+          }
           return;
         } else {
           throw new Error("Không lấy được đường dẫn thanh toán MoMo");
