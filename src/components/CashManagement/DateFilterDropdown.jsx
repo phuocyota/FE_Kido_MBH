@@ -10,13 +10,20 @@ import {
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-export default function DateFilterDropdown() {
+export default function DateFilterDropdown({ onApply }) {
   const [open, setOpen] = useState(false);
 
   const [selected, setSelected] =
     useState("Tháng này");
 
-  const [range, setRange] = useState();
+  const [range, setRange] = useState(() => {
+    const today = new Date();
+    const from = new Date(today.getFullYear(), today.getMonth(), 1);
+    return {
+      from,
+      to: today,
+    };
+  });
 
   const dropdownRef = useRef(null);
 
@@ -291,7 +298,15 @@ const handleToggle = () => {
 
     <button
       className="h-10 px-5 rounded-lg bg-indigo-600 text-white"
-      onClick={() => setOpen(false)}
+      onClick={() => {
+        if (range?.from && range?.to) {
+          onApply?.({
+            from: range.from,
+            to: range.to
+          }, selected);
+        }
+        setOpen(false);
+      }}
     >
       Áp dụng
     </button>

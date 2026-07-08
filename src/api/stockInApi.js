@@ -110,7 +110,7 @@ export const stockInApi = {
   },
 
   create: async (data) => {
-    const response = await axiosInstance.post("/stock-vouchers/imports", data);
+    const response = await axiosInstance.post("/stock-vouchers", data);
     const receipts = groupImportReceipts(toList(unwrap(response)));
     return receipts[0] || null;
   },

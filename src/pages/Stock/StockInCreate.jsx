@@ -6,6 +6,7 @@ import StockInInfo from "../../components/StockIn/StockInInfo";
 import StockInTable from "../../components/StockIn/StockInTable";
 import StockInFooter from "../../components/StockIn/StockInFooter";
 import { stockInApi } from "../../api";
+import { getBranchIdFromToken } from "../../api/authSession";
 
 export default function StockInCreate() {
   const navigate = useNavigate();
@@ -31,7 +32,9 @@ export default function StockInCreate() {
       setLoading(true);
       const payload = {
         type: "IMPORT",
-        supplierId: supplier.id,
+        branchId: getBranchIdFromToken() || undefined,
+        sourceId: supplier.id,
+        sourceType: "SUPPLIER",
         paymentStatus: paymentStatus,
         note: reference ? `[Tham chiếu: ${reference}] ${note}` : note,
         items: items.map((item) => ({

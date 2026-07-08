@@ -19,7 +19,10 @@ import DateFilterDropdown from "./DateFilterDropdown";
 export default function CashToolbar({
   onAddPaymentVoucher,
   onAddReceiptVoucher,
-    onAddInternalTransfer,
+  onAddInternalTransfer,
+  filters,
+  setFilters,
+  onRefresh,
 }) {
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] =
@@ -71,18 +74,42 @@ const [menuPosition, setMenuPosition] =
               <input
                 placeholder="Nhập số phiếu, đối tượng"
                 className="h-11 w-full sm:w-[320px] lg:w-[420px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                value={filters?.search || ""}
+                onChange={(e) =>
+                  setFilters?.((prev) => ({
+                    ...prev,
+                    search: e.target.value,
+                  }))
+                }
               />
             </div>
  
 
-<div className="flex flex-col sm:flex-row gap-2">
-      <DateFilterDropdown />
-    </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <DateFilterDropdown
+                onApply={(range) => {
+                  const formatDateStr = (d) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    return `${year}-${month}-${day}`;
+                  };
+                  setFilters?.((prev) => ({
+                    ...prev,
+                    from: formatDateStr(range.from),
+                    to: formatDateStr(range.to),
+                  }));
+                }}
+              />
+            </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <button className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition">
+            <button
+              onClick={onRefresh}
+              className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
+            >
               <RefreshCw size={17} className="text-gray-600" />
             </button>
 

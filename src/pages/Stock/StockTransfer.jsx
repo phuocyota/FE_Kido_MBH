@@ -90,6 +90,7 @@ export default function StockTransfer() {
   };
 
   const buildPayload = () => ({
+    type: "TRANSFER",
     fromBranchId,
     toBranchId,
     transferredAt: new Date().toISOString(),
