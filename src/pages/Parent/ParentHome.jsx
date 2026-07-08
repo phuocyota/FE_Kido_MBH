@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed } from "lucide-react";
-import bg from "../../assets/anh-can-tin-so-2.jpg";
+import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed,  Sparkles, } from "lucide-react";
+import bg from "../../assets/anh-can-tin-so-2.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
 import { Pencil } from "lucide-react";
@@ -30,7 +30,6 @@ export default function ParentHome() {
     }
   };
   const dragStartPos = useRef({ x: 0, y: 0 });
-  const touchOffset = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = (e) => {
     isDragging.current = false;
@@ -120,16 +119,23 @@ const [avatarError, setAvatarError] = useState("");
 
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
-   { name: "Đặt món", path: "order", icon: UtensilsCrossed,  },
-{
-  name: "Đặt món bán trú",
-  path: "boarding-order",
-  icon: UtensilsCrossed,
-},
+    { name: "Đặt món", path: "order", icon: UtensilsCrossed,  },
+    {
+      name: "Đặt món bán trú",
+      path: "boarding-order",
+      icon: UtensilsCrossed,
+    },
+    {
+        name: "AI Dinh dưỡng",
+        path: "nutrition-ai",
+        icon: Sparkles,
+    },
     { name: "Lịch sử", path: "history", icon: History },
     { name: "Thống kê", path: "stats", icon: BarChart },
     { name: "Nạp tiền", path: "topup", icon: CreditCard },
   ];
+
+  const mobileMenu = menu.filter((item) => item.path !== "nutrition-ai");
 
   const handleAvatarChange = (event) => {
   const file = event.target.files?.[0];
@@ -278,7 +284,7 @@ const [avatarError, setAvatarError] = useState("");
               open ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"
             }`}
           >
-            {menu.map((item) => {
+            {mobileMenu.map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.name} className="flex items-center gap-3 justify-end">
@@ -315,6 +321,21 @@ const [avatarError, setAvatarError] = useState("");
               </button>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              navigate("nutrition-ai");
+            }}
+            className={`mb-3 flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-[0_8px_30px_rgba(16,185,129,0.35)] ring-2 ring-emerald-200 transition-all duration-150 hover:scale-105 active:scale-95 ${
+              location.pathname.includes("/nutrition-ai") ? "bg-emerald-600 ring-emerald-300" : ""
+            }`}
+            aria-label="Mở AI Dinh dưỡng"
+          >
+            <Sparkles size={24} />
+          </button>
 
           {/* Main FAB */}
           <button
