@@ -12,6 +12,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
     address: "",
     debt: 0,
     status: "active",
+    debtLimit: 50000,
   });
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
         address: initialData.address || "",
         debt: initialData.debt || 0,
         status: initialData.status || "active",
+        debtLimit: initialData.debtLimit ?? 50000,
       });
     } else {
       setFormData({
@@ -35,6 +37,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
         address: "",
         debt: 0,
         status: "active",
+        debtLimit: 50000,
       });
     }
   }, [initialData, open]);
@@ -45,7 +48,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "debt" ? Number(value) : value,
+      [name]: (name === "debt" || name === "debtLimit") ? Number(value) : value,
     }));
   };
 
@@ -187,18 +190,33 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Trạng thái
+                Hạn mức nợ (₫)
               </label>
-              <select
-                name="status"
-                value={formData.status}
+              <input
+                type="number"
+                name="debtLimit"
+                value={formData.debtLimit}
                 onChange={handleChange}
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none bg-white"
-              >
-                <option value="active">Đang hoạt động</option>
-                <option value="inactive">Ngừng hoạt động</option>
-              </select>
+                placeholder="50000"
+                min="0"
+                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+              />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+              Trạng thái
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none bg-white font-medium text-gray-700"
+            >
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Ngừng hoạt động</option>
+            </select>
           </div>
 
           {/* Footer actions */}

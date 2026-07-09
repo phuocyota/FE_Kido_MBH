@@ -30,19 +30,27 @@ export default function StockInCreate() {
 
     try {
       setLoading(true);
+      const defaultNote = paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
+      const finalNote = note ? (reference ? `[Tham chiếu: ${reference}] ${note}` : note) : defaultNote;
+
       const payload = {
         type: "IMPORT",
         branchId: getBranchIdFromToken() || undefined,
         sourceId: supplier.id,
         sourceType: "SUPPLIER",
         paymentStatus: paymentStatus,
-        note: reference ? `[Tham chiếu: ${reference}] ${note}` : note,
-        items: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          note: "",
-        })),
+        note: finalNote,
+        items: items.map((item) => {
+          const itemPayload = {
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.price,
+          };
+          if (paymentStatus === "PAID") {
+            itemPayload.note = item.note || "Ghi chu dong hang";
+          }
+          return itemPayload;
+        }),
       };
 
       await stockInApi.create(payload);

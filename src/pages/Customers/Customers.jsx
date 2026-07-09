@@ -193,6 +193,9 @@ export default function Customers() {
                   <th className="border-b border-indigo-200 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-indigo-900">
                     Dư nợ khách hàng
                   </th>
+                  <th className="border-b border-indigo-200 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-indigo-900">
+                    Hạn mức nợ còn lại
+                  </th>
                   <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900">
                     Trạng thái
                   </th>
@@ -205,7 +208,7 @@ export default function Customers() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={9} className="py-16 text-center text-gray-500 bg-white">
+                    <td colSpan={10} className="py-16 text-center text-gray-500 bg-white">
                       Đang tải danh sách khách hàng...
                     </td>
                   </tr>
@@ -213,7 +216,7 @@ export default function Customers() {
 
                 {!loading && error && (
                   <tr>
-                    <td colSpan={9} className="py-16 text-center text-red-500 bg-white">
+                    <td colSpan={10} className="py-16 text-center text-red-500 bg-white">
                       {error}
                     </td>
                   </tr>
@@ -248,6 +251,9 @@ export default function Customers() {
                         <td className={`px-4 py-3 text-right font-bold ${hasDebt ? "text-red-600" : "text-gray-700"}`}>
                           {formatNumber(cust.debt)} ₫
                         </td>
+                        <td className="px-4 py-3 text-right font-bold text-gray-700">
+                          {formatNumber(cust.debtLimit)} ₫
+                        </td>
                         <td className="px-4 py-3">
                           <span
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -276,7 +282,7 @@ export default function Customers() {
 
                 {!loading && !error && filteredCustomers.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="py-16 text-center text-gray-500 bg-white">
+                    <td colSpan={10} className="py-16 text-center text-gray-500 bg-white">
                       Không tìm thấy khách hàng nào phù hợp
                     </td>
                   </tr>
