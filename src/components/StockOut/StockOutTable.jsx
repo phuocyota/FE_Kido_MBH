@@ -7,8 +7,6 @@ const columns = [
   { label: "Mã hàng", className: "w-44 min-w-[120px]" },
   { label: "Tên hàng", className: "min-w-[200px]" },
   { label: "Kho", className: "w-32 min-w-[100px]" },
-  { label: "TK Nợ", className: "w-28 min-w-[80px]" },
-  { label: "TK Có", className: "w-28 min-w-[80px]" },
   { label: "ĐVT", className: "w-28 min-w-[80px]" },
   { label: "Số lượng", className: "w-40 min-w-[100px] text-right" },
   { label: "Đơn giá", className: "w-40 min-w-[120px] text-right" },
@@ -58,8 +56,6 @@ export default function StockOutTable({ items = [], setItems }) {
           quantity: 1,
           price: product.price || 0,
           warehouse: "Kho mặc định",
-          debit: "632",
-          credit: "1561",
         },
       ]);
     }
@@ -79,8 +75,6 @@ export default function StockOutTable({ items = [], setItems }) {
         quantity: 1,
         price: 0,
         warehouse: "Kho mặc định",
-        debit: "632",
-        credit: "1561",
         searchText: "",
         isSearchOpen: true,
         filteredList: products,
@@ -272,21 +266,13 @@ export default function StockOutTable({ items = [], setItems }) {
                       )}
                     </td>
 
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-slate-600">
-                    {item.warehouse}
-                  </td>
+                    <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-slate-600">
+                      {item.warehouse}
+                    </td>
 
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-center text-slate-600">
-                    {item.debit}
-                  </td>
-
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-center text-slate-600">
-                    {item.credit}
-                  </td>
-
-                  <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-slate-500">
-                    {item.unit}
-                  </td>
+                    <td className="border-r border-dashed border-cyan-200 px-3 py-1.5 text-slate-500">
+                      {item.unit}
+                    </td>
 
                   <td className="border-r border-dashed border-cyan-200 px-3 py-1 text-right">
                     <input
@@ -330,7 +316,7 @@ export default function StockOutTable({ items = [], setItems }) {
 
           <tfoot>
             <tr className="bg-gray-100 font-bold border-t border-cyan-200">
-              <td colSpan={7} className="border-r border-cyan-300 px-3 py-2 text-right text-emerald-800">
+              <td colSpan={5} className="border-r border-cyan-300 px-3 py-2 text-right text-emerald-800">
                 Tổng cộng
               </td>
 

@@ -34,8 +34,6 @@ const normalizeDetail = (detail, index) => {
     productCode: product.code || detail.productCode || detail.code || "",
     productName: product.name || detail.productName || detail.name || "",
     warehouse: "Kho mặc định",
-    warehouseAccount: "1561",
-    payableAccount: "632",
     unit: product.unit || detail.unit || "",
     quantity,
     unitPrice,
@@ -110,7 +108,7 @@ export const stockOutApi = {
   },
 
   create: async (data) => {
-    const response = await axiosInstance.post("/stock-vouchers/exports", data);
+    const response = await axiosInstance.post("/stock-vouchers", data);
     const receipts = groupExportReceipts(toList(unwrap(response)));
     return receipts[0] || null;
   },

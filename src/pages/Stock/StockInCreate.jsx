@@ -6,6 +6,7 @@ import StockInInfo from "../../components/StockIn/StockInInfo";
 import StockInTable from "../../components/StockIn/StockInTable";
 import StockInFooter from "../../components/StockIn/StockInFooter";
 import { stockInApi } from "../../api";
+import { getBranchIdFromToken } from "../../api/authSession";
 
 export default function StockInCreate() {
   const navigate = useNavigate();
@@ -29,17 +30,27 @@ export default function StockInCreate() {
 
     try {
       setLoading(true);
+      const defaultNote = paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
+      const finalNote = note ? (reference ? `[Tham chiếu: ${reference}] ${note}` : note) : defaultNote;
+
       const payload = {
         type: "IMPORT",
-        supplierId: supplier.id,
+        branchId: getBranchIdFromToken() || undefined,
+        sourceId: supplier.id,
+        sourceType: "SUPPLIER",
         paymentStatus: paymentStatus,
-        note: reference ? `[Tham chiếu: ${reference}] ${note}` : note,
-        items: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          note: "",
-        })),
+        note: finalNote,
+        items: items.map((item) => {
+          const itemPayload = {
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.price,
+          };
+          if (paymentStatus === "PAID") {
+            itemPayload.note = item.note || "Ghi chu dong hang";
+          }
+          return itemPayload;
+        }),
       };
 
       await stockInApi.create(payload);

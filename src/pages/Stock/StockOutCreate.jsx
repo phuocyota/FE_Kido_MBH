@@ -6,6 +6,7 @@ import StockOutInfo from "../../components/StockOut/StockOutInfo";
 import StockOutTable from "../../components/StockOut/StockOutTable";
 import StockOutFooter from "../../components/StockOut/StockOutFooter";
 import { stockOutApi } from "../../api";
+import { getBranchIdFromToken } from "../../api/authSession";
 
 export default function StockOutCreate() {
   const navigate = useNavigate();
@@ -29,7 +30,9 @@ export default function StockOutCreate() {
       setLoading(true);
       const payload = {
         type: "EXPORT",
-        supplierId: customer.id, // For EXPORT, backend stores dto.supplierId into details toId
+        branchId: getBranchIdFromToken() || undefined,
+        sourceId: customer.id,
+        sourceType: "CUSTOMER",
         note: note,
         items: items.map((item) => ({
           productId: item.productId,

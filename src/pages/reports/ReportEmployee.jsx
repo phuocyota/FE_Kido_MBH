@@ -26,7 +26,7 @@ export default function ReportEmployee() {
   // TIME
   // =========================
   const [period, setPeriod] =
-    useState("lastWeek");
+    useState("Hôm nay");
 
   // =========================
   // EMPLOYEE
@@ -38,6 +38,25 @@ export default function ReportEmployee() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const mapPeriodToFilter = (periodName) => {
+    switch (periodName) {
+      case "Hôm nay":
+        return "today";
+      case "Hôm qua":
+        return "yesterday";
+      case "Tháng này":
+        return "thisMonth";
+      case "Tháng trước":
+        return "lastMonth";
+      case "7 ngày qua":
+      case "lastWeek":
+      case "Tuần trước":
+      case "Tuần này":
+      default:
+        return "7days";
+    }
+  };
+
   useEffect(() => {
     let active = true;
 
@@ -46,7 +65,7 @@ export default function ReportEmployee() {
         setLoading(true);
         setError("");
         const data = await reportApi.getEmployeeReport({
-          filter: "7days",
+          filter: mapPeriodToFilter(period),
           employeeId: employee,
           limit: 10,
         });
@@ -70,7 +89,7 @@ export default function ReportEmployee() {
     return () => {
       active = false;
     };
-  }, [employee]);
+  }, [employee, period]);
 
   const employees =
     reportData?.employees?.map((item) => ({

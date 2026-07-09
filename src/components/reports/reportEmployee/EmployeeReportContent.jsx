@@ -73,31 +73,31 @@ export default function EmployeeReportContent({
       </div>
 
       {/* PREVIEW */}
-      <div className="h-full overflow-auto p-5 bg-gray-200">
+      <div className="relative h-[75vh] overflow-x-auto overflow-y-auto p-2 sm:p-5 flex justify-start lg:justify-center bg-gray-200">
         {loading && (
-          <div className="mb-3 rounded-lg bg-white p-3 text-sm text-gray-500">
+          <div className="absolute top-20 left-10 mb-3 rounded-lg bg-white p-3 text-sm text-gray-500 shadow-md z-10">
             Đang tải báo cáo...
           </div>
         )}
         {error && (
-          <div className="mb-3 rounded-lg bg-white p-3 text-sm text-red-600">
+          <div className="absolute top-20 left-10 mb-3 rounded-lg bg-white p-3 text-sm text-red-600 shadow-md z-10">
             {error}
           </div>
         )}
         <div
-  ref={(el) => {
-    previewRef.current = el;
-    exportRef.current = el;
-  }}
-  style={{
-    transform:
-      window.innerWidth < 768
-        ? "scale(1)"
-        : `scale(${zoom})`,
-    transformOrigin: "top left",
-  }}
-  className="inline-block transition-all duration-300 shadow-xl border bg-white"
->
+          ref={(el) => {
+            previewRef.current = el;
+            exportRef.current = el;
+          }}
+          style={{
+            transform:
+              window.innerWidth < 768
+                ? "scale(1)"
+                : `scale(${zoom})`,
+            transformOrigin: "top center",
+          }}
+          className="min-w-max transition-all duration-300 shadow-xl border bg-white"
+        >
           {/* Render report sau */}
 
           {focusType === "time" &&

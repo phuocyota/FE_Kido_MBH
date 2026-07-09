@@ -13,7 +13,7 @@ const emptyForm = {
   price: "",
   location: "",
   weight: "",
-  active: true,
+  isCanteenItem: true,
   isBoarding: false,
   unit: "",
   imageUrl: "",
@@ -57,7 +57,7 @@ export default function AddProductModal({
       price: initialData?.price || "",
       location: initialData?.location || "",
       weight: initialData?.weight || "",
-      active: initialData?.isActive ?? initialData?.active ?? true,
+      isCanteenItem: initialData?.isCanteenItem ?? true,
       isBoarding: initialData?.isBoarding ?? false,
       unit: initialData?.unit || "",
       imageUrl: initialData?.imageUrl || "",
@@ -347,9 +347,13 @@ export default function AddProductModal({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={form.active}
+                checked={form.isCanteenItem}
                 onChange={() =>
-                  setForm((prev) => ({ ...prev, active: !prev.active }))
+                  setForm((prev) => ({
+                    ...prev,
+                    isCanteenItem: !prev.isCanteenItem,
+                    isBoarding: prev.isCanteenItem,
+                  }))
                 }
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
@@ -361,7 +365,11 @@ export default function AddProductModal({
                 type="checkbox"
                 checked={form.isBoarding}
                 onChange={() =>
-                  setForm((prev) => ({ ...prev, isBoarding: !prev.isBoarding }))
+                  setForm((prev) => ({
+                    ...prev,
+                    isBoarding: !prev.isBoarding,
+                    isCanteenItem: prev.isBoarding,
+                  }))
                 }
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
               />

@@ -13,8 +13,6 @@ const detailColumns = [
   { label: "Mã hàng", className: "min-w-[150px]" },
   { label: "Tên hàng", className: "min-w-[280px]" },
   { label: "Kho", className: "min-w-[190px]" },
-  { label: "TK Kho", className: "min-w-[150px]" },
-  { label: "TK Công nợ", className: "min-w-[120px]" },
   { label: "ĐVT", className: "min-w-[100px]" },
   { label: "Số lượng", className: "min-w-[120px] text-right" },
   { label: "Đơn giá", className: "min-w-[140px] text-right" },
@@ -95,16 +93,6 @@ export default function StockInDetailTable({ receipt }) {
                 <span className="font-semibold text-gray-700">Đơn giá:</span>{" "}
                 {formatDecimal(item.unitPrice)}
               </div>
-              <div>
-                <span className="font-semibold text-gray-700">TK Kho:</span>{" "}
-                {item.warehouseAccount}
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">
-                  TK Công nợ:
-                </span>{" "}
-                {item.payableAccount}
-              </div>
             </div>
           </div>
         ))}
@@ -153,12 +141,6 @@ export default function StockInDetailTable({ receipt }) {
                   {item.warehouse}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
-                  {item.warehouseAccount}
-                </td>
-                <td className="px-4 py-3 text-gray-700">
-                  {item.payableAccount}
-                </td>
-                <td className="px-4 py-3 text-gray-700">
                   {item.unit}
                 </td>
                 <td className="px-4 py-3 text-right text-gray-700 tabular-nums">
@@ -193,7 +175,7 @@ export default function StockInDetailTable({ receipt }) {
 
           <tfoot>
             <tr className="bg-gray-50 font-bold text-gray-800">
-              <td colSpan={7} className="px-4 py-3 border-t border-gray-300">
+              <td colSpan={5} className="px-4 py-3 border-t border-gray-300">
                 Tổng cộng
               </td>
               <td className="px-4 py-3 text-right tabular-nums border-t border-gray-300 text-indigo-600">

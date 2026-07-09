@@ -3,8 +3,13 @@ import axiosInstance from "./axiosConfig";
 const unwrap = (response) => response.data?.data || response.data;
 
 export const financeApi = {
-  getMoneyVouchers: async () => {
-    const response = await axiosInstance.get("/finance/money-vouchers");
+  getMoneyVouchers: async (params) => {
+    const response = await axiosInstance.get("/finance/money-vouchers", { params });
+    return unwrap(response);
+  },
+
+  getFinanceSummary: async (params) => {
+    const response = await axiosInstance.get("/finance/summary", { params });
     return unwrap(response);
   },
 

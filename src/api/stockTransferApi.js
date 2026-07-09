@@ -18,7 +18,7 @@ export const stockTransferApi = {
   },
 
   create: async (data) => {
-    const response = await axiosInstance.post("/stock-transfers", data);
+    const response = await axiosInstance.post("/stock-vouchers", data);
     return unwrap(response);
   },
 
