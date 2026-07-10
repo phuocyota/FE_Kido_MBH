@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bell, Wallet, Utensils, BarChart3, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -60,6 +60,21 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { homeData, loading, error, refreshHome } = useOutletContext();
   const [cancellingOrder, setCancellingOrder] = useState(false);
+
+  useEffect(() => {
+    if (homeData && typeof refreshHome === "function") {
+      refreshHome();
+    }
+
+    const interval = setInterval(() => {
+      if (typeof refreshHome === "function") {
+        refreshHome();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshHome]);
 
   const walletBalance = homeData?.wallet?.balance ?? 0;
   const notifications = homeData?.notifications ?? [];
