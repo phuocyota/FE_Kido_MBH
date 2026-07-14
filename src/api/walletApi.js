@@ -9,4 +9,9 @@ export const walletApi = {
     const response = await axiosInstance.get("/wallet-transactions", { params });
     return response.data.data || response.data;
   },
+
+  clearCustomerDebt: async (data) => {
+    const response = await axiosInstance.post("/wallet/customer-debt/clearance", data);
+    return response.data.data || response.data;
+  },
 };

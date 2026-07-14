@@ -6,6 +6,11 @@ export const customerApi = {
     return response.data.data || response.data;
   },
 
+  getAllWithDebt: async () => {
+    const response = await axiosInstance.get("/customers", { params: { getDebt: true } });
+    return response.data.data || response.data;
+  },
+
   search: async (keyword, limit = 50) => {
     const response = await axiosInstance.get("/customers/search", {
       params: { keyword, limit },
