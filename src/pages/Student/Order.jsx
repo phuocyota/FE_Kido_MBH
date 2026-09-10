@@ -241,20 +241,10 @@ const filteredProducts =
   };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const isWalletBalanceInsufficient = () =>
-    paymentMethod !== "cash" &&
-    !amount &&
-    student &&
-    total > Number(student.balance || 0);
 
   const handlePayment = () => {
     if (cart.length === 0) {
       alert("Chưa có món");
-      return;
-    }
-
-    if (isWalletBalanceInsufficient()) {
-      alert("Số dư ví không đủ");
       return;
     }
 
@@ -281,11 +271,6 @@ const filteredProducts =
 
     try {
       setIsSubmitting(true);
-
-      if (isWalletBalanceInsufficient()) {
-        alert("Số dư ví không đủ");
-        return;
-      }
 
       const result = await completeCart({
 
