@@ -290,7 +290,16 @@ const filteredProducts =
       const orderNumber = order?.orderNumber || order?.code || order?.id || generateOrderNumber();
 
       if (paymentMethod !== "cash" && student) {
-        const updated = { ...student, balance: Number(student.balance || 0) - total };
+        const balanceBefore = Number(student.balance || 0);
+        const balanceAfter = balanceBefore - total;
+        const debtIncrease = Math.max(0, -balanceAfter) - Math.max(0, -balanceBefore);
+        const updated = {
+          ...student,
+          balance: balanceAfter,
+          ...(student.debtLimit != null && {
+            debtLimit: Math.max(0, Number(student.debtLimit) - debtIncrease),
+          }),
+        };
         localStorage.setItem("student", JSON.stringify(updated));
         setStudent(updated);
       }

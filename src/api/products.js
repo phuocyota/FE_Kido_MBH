@@ -56,7 +56,7 @@ export const getProductsByPrice = async (
 ) => {
 
   const response = await apiRequest(
-    `${API.PRODUCTS.FULL}?minPrice=${minPrice}&maxPrice=${maxPrice}`
+    `${API.PRODUCTS.FULL}?minPrice=${minPrice}&maxPrice=${maxPrice}&isCanteenItem=true&hasInventory=true`
   );
 
   const categories = unwrap(response);

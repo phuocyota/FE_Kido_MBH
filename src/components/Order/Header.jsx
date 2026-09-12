@@ -62,6 +62,11 @@ export default function Header({ student, amount }) {
       <p className="text-gray-200 font-bold">
         Lớp: {student.class}
       </p>
+      {student.debtLimit != null && (
+        <p className="col-span-2 text-yellow-300 font-bold">
+          💳 {Number(student.debtLimit).toLocaleString("vi-VN")}đ
+        </p>
+      )}
     </div>
   </>
 )}

@@ -1,3 +1,4 @@
+import OrderColumnHeader from "./OrderColumnHeader";
 import React from "react";
 import bgCam from "../../assets/bg_cam.webp";
 
@@ -6,7 +7,7 @@ export default function CashOrders({ orders, onSelect, onPaid }) {
     return (
       <div
         onClick={() => onSelect(order)}
-        className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl p-4 shadow-[0_2px_12px_-4px_rgba(234,88,12,0.15)] hover:shadow-[0_8px_24px_-6px_rgba(234,88,12,0.2)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-[260px] flex-shrink-0 relative group"
+        className="bg-white/95 backdrop-blur-sm border-0 rounded-2xl p-4 shadow-[0_2px_12px_-4px_rgba(234,88,12,0.15)] hover:shadow-[0_8px_24px_-6px_rgba(234,88,12,0.2)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col min-w-0 h-[260px] flex-shrink-0 relative group"
       >
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -76,41 +77,36 @@ export default function CashOrders({ orders, onSelect, onPaid }) {
 
   return (
     <div className="w-full sm:w-1/2 lg:w-1/3 p-2 flex flex-col min-h-0">
-      <div className="flex flex-col flex-1 bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden relative">
+      <div className="flex flex-col flex-1 bg-orange-50 rounded-2xl shadow-lg shadow-orange-900/10 border border-orange-200 overflow-hidden relative">
         
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-5 py-3.5 font-bold sticky top-0 z-20 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-2 text-lg">
-            <span>💵</span>
-            <span>Thanh toán tiền mặt</span>
-          </div>
-          <span className="bg-white/25 px-3 py-0.5 rounded-full text-sm backdrop-blur-sm shadow-inner">
-            {orders.length}
-          </span>
-        </div>
+        <OrderColumnHeader variant="cash" title="Thanh toán tiền mặt" count={orders.length} />
 
         {/* BODY */}
-        <div className="relative flex-1 min-h-0 overflow-hidden bg-gray-50/50">
+        <div className="relative flex-1 min-h-0 overflow-hidden bg-gradient-to-br from-orange-200 via-amber-100 to-yellow-200">
           
           {/* BACKGROUND PATTERN */}
           <div
-            className="absolute inset-0 z-0 pointer-events-none opacity-[0.07]"
+            className="absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-multiply"
             style={{
               backgroundImage: `url(${bgCam})`,
               backgroundRepeat: "repeat",
               backgroundSize: "180px"
             }}
           />
+          <div aria-hidden="true" className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-orange-400/40 blur-3xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-yellow-400/40 blur-3xl pointer-events-none" />
 
           {/* CONTENT */}
-          <div className="relative z-10 grid grid-cols-1 gap-3 p-3.5 overflow-y-auto h-full [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+          <div style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", alignContent: orders.length > 0 ? "start" : "stretch" }} className="relative z-10 grid gap-3 p-3.5 overflow-y-auto h-full [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
             {orders.map(order => (
               <CashOrderCard key={order.orderKey} order={order} />
             ))}
             {orders.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-70">
-                <span className="text-4xl mb-2">🍃</span>
-                <p>Chưa có đơn hàng nào</p>
+              <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+                <div className="flex flex-col items-center rounded-3xl border border-white/80 bg-white/55 px-6 py-8 shadow-lg shadow-orange-900/5 backdrop-blur-sm">
+                  <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-200 to-amber-100 text-4xl shadow-sm ring-4 ring-white/60 mb-5">🍃</span>
+                  <p className="font-semibold text-orange-900">Chưa có đơn hàng nào</p>
+                </div>
               </div>
             )}
           </div>

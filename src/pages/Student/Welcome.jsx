@@ -41,6 +41,7 @@ export default function Welcome() {
         school: authData.school,
         class: authData.class,
         balance: authData.walletBalance,
+        debtLimit: authData.debtLimit,
       };
 
       localStorage.setItem("student", JSON.stringify(student));
@@ -86,6 +87,7 @@ export default function Welcome() {
         school: authData.school,
         class: authData.class,
         balance: authData.walletBalance,
+        debtLimit: authData.debtLimit,
       };
 
       localStorage.setItem("student", JSON.stringify(student));
