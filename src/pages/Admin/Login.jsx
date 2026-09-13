@@ -82,6 +82,14 @@ localStorage.setItem("avatar", authData.avatar || "");
     const CARD_KEY_PATTERN = /^[a-z0-9]$/i;
 
     const onKeyDown = (event) => {
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest("input, textarea, select, [contenteditable]")
+      ) {
+        scanBufferRef.current = [];
+        return;
+      }
+
       if (event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;
 
       const now = Date.now();

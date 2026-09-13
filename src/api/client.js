@@ -6,7 +6,9 @@ const RAW_BASE_URL =
   "";
  
 
-const RAW_API_PREFIX = import.meta.env.VITE_API_PREFIX || "/api";
+// Direct backend URLs have no prefix; relative requests use the /api proxy.
+const RAW_API_PREFIX =
+  import.meta.env.VITE_API_PREFIX ?? (RAW_BASE_URL ? "" : "/api");
 
 const normalizeBaseUrl = (url) => url.replace(/\/$/, "");
 
