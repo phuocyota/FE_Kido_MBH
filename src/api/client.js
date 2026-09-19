@@ -32,7 +32,30 @@ export const buildAssetUrl = (path) => {
 
   return `${BASE_URL}${normalizedPath}`;
 };
- 
+
+const CUSTOMER_NOT_FOUND_MESSAGE = "customer not found for this user";
+
+const clearParentSession = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("parent_branch_id");
+  localStorage.removeItem("parent_advance_limit");
+};
+
+const redirectToLoginIfCustomerIsMissing = (message) => {
+  if (
+    typeof message !== "string" ||
+    message.trim().toLowerCase() !== CUSTOMER_NOT_FOUND_MESSAGE
+  ) {
+    return;
+  }
+
+  clearParentSession();
+
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login");
+  }
+};
 
 export const fetch = async (
   url,
@@ -60,6 +83,8 @@ export const parseResponse = async (response) => {
       payload?.error ||
       (typeof payload === "string" && payload) ||
       "Request failed";
+
+    redirectToLoginIfCustomerIsMissing(message);
 
     throw new Error(message);
   }
