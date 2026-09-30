@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import logo from "../../assets/kido.jpg";
+import canTinSoBg from "../../assets/can-tin-so.png";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -21,10 +22,14 @@ const handleLogin = () => {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div
+      className="relative min-h-screen flex items-center justify-center bg-gray-100 bg-cover bg-center bg-no-repeat px-4"
+      style={{ backgroundImage: `url(${canTinSoBg})` }}
+    >
+      <div className="absolute inset-0 bg-black/25" />
       
       {/* CARD */}
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
+      <div className="relative z-10 bg-white/95 w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
 
         {/* LOGO TRÒN */}
         <div className="flex flex-col items-center mb-6">
