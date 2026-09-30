@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-// Moved to public/ to avoid bundling (430KB + 436KB)
-const bg = "/images/anh-can-tin-so-2.jpg";
-const logo = "/kido.jpg";
+import bg from "../../assets/can-tin-so.png";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { loginStudent } from "../../api/auth"; // sửa đúng path của bạn
+import { loginStudent } from "../../api/auth"; 
+
+const logo = "/kido.jpg";
 
 export default function Login() {
       const [studentId, setStudentId] = useState("");
