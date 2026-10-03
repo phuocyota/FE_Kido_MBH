@@ -1,7 +1,16 @@
 import { apiRequest, buildAssetUrl } from "./client";
 import { API } from "./endpoint";
 
-const unwrap = (response) => response?.data || response || {};
+const unwrap = (response) => {
+  let data = response;
+
+  // Some responses wrap the cart in more than one data envelope.
+  while (data && typeof data === "object" && data.data != null) {
+    data = data.data;
+  }
+
+  return data || {};
+};
 
 const toNumber = (value) => {
   const number = Number(value);
@@ -21,7 +30,7 @@ export const normalizeCartItem = (item) => {
     id: productId,
     cartItemId: item.id,
     productId,
-    name: product.name || item.name,
+    name: product.name || item.productName || item.name,
     image: buildAssetUrl(product.imageUrl || item.imageUrl),
     price,
     qty: quantity,
