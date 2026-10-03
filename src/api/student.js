@@ -1,6 +1,8 @@
 import { fetch, parseResponse } from "./client";
 import { API } from "./endpoint";
 
+ 
+
 export const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -39,6 +41,29 @@ export const updateStudentProfile = async (userId, data) => {
 
 export const getUserById = async (userId) => {
   const res = await fetch(API.STUDENT.DETAIL(userId));
-
   return parseResponse(res);
+};
+
+// đăng nhập bằng thẻ và qr
+export const loginStudent = async (cardId) => {
+
+  const res = await fetch(
+    API.STUDENT.LOGIN,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        cardId,
+      }),
+    }
+  );
+
+  const data = await parseResponse(res);
+
+console.log("LOGIN RESPONSE:", data);
+
+return data;
 };

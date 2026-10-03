@@ -4,8 +4,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [
-    tailwindcss(),
-    basicSsl()
+    tailwindcss()
   ],
   server: {
     host: '0.0.0.0',

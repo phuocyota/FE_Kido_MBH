@@ -1,7 +1,16 @@
 import { apiRequest, buildAssetUrl } from "./client";
 import { API } from "./endpoint";
 
-const unwrap = (response) => response?.data || response || {};
+const unwrap = (response) => {
+  let data = response;
+
+  // Some responses wrap the cart in more than one data envelope.
+  while (data && typeof data === "object" && data.data != null) {
+    data = data.data;
+  }
+
+  return data || {};
+};
 
 const toNumber = (value) => {
   const number = Number(value);
@@ -21,7 +30,7 @@ export const normalizeCartItem = (item) => {
     id: productId,
     cartItemId: item.id,
     productId,
-    name: product.name || item.name,
+    name: product.name || item.productName || item.name,
     image: buildAssetUrl(product.imageUrl || item.imageUrl),
     price,
     qty: quantity,
@@ -33,7 +42,14 @@ export const normalizeCartItem = (item) => {
 
 export const normalizeCart = (response) => {
   const cart = unwrap(response);
-  const items = getCartItems(cart).map(normalizeCartItem);
+  const cartItems = getCartItems(cart);
+  const items = (
+    cartItems.length > 0
+      ? cartItems
+      : cart?.product || cart?.productId || cart?.name
+        ? [cart]
+        : []
+  ).map(normalizeCartItem);
 
   return {
     ...cart,
@@ -56,15 +72,30 @@ export const addCartItem = async ({ productId, quantity = 1, note = "" }) => {
   return normalizeCart(response);
 };
 
-export const updateCartItem = async (itemId, { quantity }) => {
-  const response = await apiRequest(API.CART.ITEM(itemId), {
-    method: "PUT",
-    body: JSON.stringify({ quantity }),
-  });
+export const updateCartItem =
+  async (
+    itemId,
+    {
+      quantity,
+      note = "",
+    }
+  ) => {
 
-  return normalizeCart(response);
-};
+    const response =
+      await apiRequest(
+        API.CART.ITEM(itemId),
+        {
+          method: "PUT",
 
+          body: JSON.stringify({
+            quantity,
+            note,
+          }),
+        }
+      );
+
+    return normalizeCart(response);
+  };
 export const deleteCartItem = async (itemId) => {
   const response = await apiRequest(API.CART.ITEM(itemId), {
     method: "DELETE",
