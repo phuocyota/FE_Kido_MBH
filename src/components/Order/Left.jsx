@@ -1,6 +1,4 @@
 import React from "react";
-import banhmi from "../../assets/banhmi.jpg";
-import { ShoppingCart } from "lucide-react";
 import bg_left from "../../assets/left_order.png";
 
 export default function Left({

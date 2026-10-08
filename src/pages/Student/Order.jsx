@@ -7,28 +7,10 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Order/Header";
 import Left from "../../components/Order/Left";
 import Right from "../../components/Order/Right";
-import trasuaImg from "../../assets/trasua.jpg";
-import cocaImg from "../../assets/coca.jpg";
-import banhngotImg from "../../assets/banhngot.jpeg";
-import banhmiImg from "../../assets/banhmi.jpg";
 import bgImg from "../../assets/anh-can-tin-so-2.png";
 
+const PRODUCT_PLACEHOLDER_IMAGE = "/images/product-placeholder.svg";
 
-import butChiImg from "../../assets/but_chi.jpg";
-import butQuatImg from "../../assets/but_quat.jpg";
-import butThuImg from "../../assets/but_thu.jpg";
-import ghimCaiAoImg from "../../assets/ghim_cai_ao.jpg";
-import keomutImg from "../../assets/keo_mut.jpg";
-import keovienImg from "../../assets/keo_vien.jpg";
-import mohinhLapRapImg from "../../assets/mo_hinh_lap_rap.jpg";
-import nuocSuoiImg from "../../assets/nuoc_suoi.jpg";
-import quatCamTayImg from "../../assets/quat_cam_tay.jpg";
-import snackImg from "../../assets/snack.jpg";
-import stickerImg from "../../assets/sticker.jpg";
-import suachuanoImg from "../../assets/sua_chua_nho.jpg";
-import tapImg from "../../assets/tap.jpg";
-import thachraucauImg from "../../assets/thach_rau_cau.jpg";
-import thuocConThuImg from "../../assets/thuoc_con_thu.jpg";
 export default function Order() {
   const location = useLocation();
    
@@ -94,28 +76,28 @@ useEffect(() => {
     name: "Kẹo mút",
     price: 5000,
     category: "Kẹo",
-    image: keomutImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 2,
     name: "Kẹo viên",
     price: 5000,
     category: "Kẹo",
-    image: keovienImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 3,
     name: "Sticker",
     price: 5000,
     category: "Phụ kiện",
-    image: stickerImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 4,
     name: "Ghim cài áo",
     price: 5000,
     category: "Phụ kiện",
-    image: ghimCaiAoImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
 
   // ===== 10K =====
@@ -124,28 +106,28 @@ useEffect(() => {
     name: "Bánh snack",
     price: 10000,
     category: "Snack",
-    image: snackImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 6,
     name: "Thạch rau câu",
     price: 10000,
     category: "Ăn vặt",
-    image: thachraucauImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 7,
     name: "Sữa chua nhỏ",
     price: 10000,
     category: "Sữa",
-    image: suachuanoImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 8,
     name: "Nước suối",
     price: 10000,
     category: "Nước",
-    image: nuocSuoiImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
 
   // ===== Học tập =====
@@ -154,21 +136,21 @@ useEffect(() => {
     name: "Tập",
     price: 10000,
     category: "Học tập",
-    image: tapImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 10,
     name: "Bút chì",
     price: 10000,
     category: "Học tập",
-    image: butChiImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 11,
     name: "Bút thú",
     price: 10000,
     category: "Học tập",
-    image: butThuImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
 
   // ===== Tiện ích / đồ chơi =====
@@ -177,28 +159,28 @@ useEffect(() => {
     name: "Quạt cầm tay",
     price: 5000,
     category: "Tiện ích",
-    image: quatCamTayImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 13,
     name: "Bút quạt",
     price: 10000,
     category: "Tiện ích",
-    image: butQuatImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 14,
     name: "Mô hình lắp ráp",
     price: 10000,
     category: "Đồ chơi",
-    image: mohinhLapRapImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
   {
     id: 15,
     name: "Thước con thú",
     price: 5000,
     category: "Học tập",
-    image: thuocConThuImg,
+    image: PRODUCT_PLACEHOLDER_IMAGE,
   },
 ];
 
