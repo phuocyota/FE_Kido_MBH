@@ -1,9 +1,16 @@
 export const BOARDING_DEMO_PATH = "/boarding-orders/demo";
+const DEMO_TOKEN_KEY = "boardingDemoToken";
+
+export const saveBoardingDemoToken = (token) => {
+  sessionStorage.setItem(DEMO_TOKEN_KEY, token.trim());
+};
 
 export const getBoardingDemoToken = () => {
-  if (!import.meta.env.DEV) return null;
   if (window.location.pathname.replace(/\/$/, "") !== BOARDING_DEMO_PATH) return null;
-  return import.meta.env.VITE_BOARDING_DEMO_TOKEN?.trim() || null;
+  const sessionToken = sessionStorage.getItem(DEMO_TOKEN_KEY);
+  if (sessionToken) return sessionToken;
+  if (import.meta.env.DEV) return import.meta.env.VITE_BOARDING_DEMO_TOKEN?.trim() || null;
+  return null;
 };
 
 export const decodeBoardingDemoToken = (token) => {

@@ -54,9 +54,7 @@ const App = () => {
       <Routes>
         {/* LOGIN (KHÔNG CÓ HEADER) */}
         <Route path="/login" element={<Login />} />
-        {import.meta.env.DEV && (
-          <Route path="/boarding-orders/demo" element={<BoardingOrderDemo />} />
-        )}
+        <Route path="/boarding-orders/demo" element={<BoardingOrderDemo />} />
 
         {/* CÁC TRANG CÓ HEADER */}
         <Route
