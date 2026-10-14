@@ -19,6 +19,7 @@ import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import Orders from "./pages/Orders/Orders";
 import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
+import BoardingOrderDemo from "./pages/BoardingOrder/BoardingOrderDemo";
 import ReportEmployee from "./pages/reports/ReportEmployee";
 import ReportBoarding from "./pages/reports/ReportBoarding";
 import StockInList from "./pages/Stock/StockInList";
@@ -53,6 +54,9 @@ const App = () => {
       <Routes>
         {/* LOGIN (KHÔNG CÓ HEADER) */}
         <Route path="/login" element={<Login />} />
+        {import.meta.env.DEV && (
+          <Route path="/boarding-orders/demo" element={<BoardingOrderDemo />} />
+        )}
 
         {/* CÁC TRANG CÓ HEADER */}
         <Route

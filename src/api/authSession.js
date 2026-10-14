@@ -1,3 +1,5 @@
+import { decodeBoardingDemoToken, getBoardingDemoToken } from "./boardingDemoSession";
+
 const TOKEN_KEYS = ["accessToken", "token", "authToken"];
 const AUTH_KEYS = [...TOKEN_KEYS, "userId", "role", "branchId", "branchName", "isLogin", "fullName", "email"];
 
@@ -6,6 +8,9 @@ export const clearAuthSession = () => {
 };
 
 export const getAccessToken = () => {
+  const demoToken = getBoardingDemoToken();
+  if (demoToken) return demoToken;
+
   for (const key of TOKEN_KEYS) {
     const token = localStorage.getItem(key);
     if (token && token !== "undefined" && token !== "null") return token;
@@ -80,6 +85,9 @@ export const hasValidAuthSession = () => {
 };
 
 export const getBranchNameFromToken = () => {
+  const demoToken = getBoardingDemoToken();
+  if (demoToken) return decodeBoardingDemoToken(demoToken)?.branchName || null;
+
   const branchName = localStorage.getItem("branchName");
   if (branchName && branchName !== "undefined" && branchName !== "null") return branchName;
 
@@ -88,6 +96,9 @@ export const getBranchNameFromToken = () => {
 };
 
 export const getBranchIdFromToken = () => {
+  const demoToken = getBoardingDemoToken();
+  if (demoToken) return decodeBoardingDemoToken(demoToken)?.branchId || null;
+
   const branchId = localStorage.getItem("branchId");
   if (branchId && branchId !== "undefined" && branchId !== "null") return branchId;
 
