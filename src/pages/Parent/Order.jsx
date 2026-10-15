@@ -189,7 +189,7 @@ export default function Order() {
         .map((item) => ({
           id: item.id,
           name: item.name,
-          image: buildAssetUrl(item.imageUrl) || "/kido.jpg",
+          image: buildAssetUrl(item.imageUrl || item.image),
           category: category.name,
           categoryId: category.id,
           price: Number(item.price || 0),

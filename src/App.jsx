@@ -16,7 +16,8 @@ const Order = React.lazy(() => import("./pages/Parent/Order"));
 const Payment = React.lazy(() => import("./pages/Parent/Payment"));
 const PaymentResult = React.lazy(() => import("./pages/PaymentResult"));
 const BoardingOrder = React.lazy(() => import("./pages/Parent/BoardingOrder"));
-const NutritionAI = React.lazy(() => import("./pages/Parent/NutritionAI"));
+const FoodFeedback = React.lazy(() => import("./pages/Parent/FoodFeedback"));
+// const NutritionAI = React.lazy(() => import("./pages/Parent/NutritionAI"));
 
 const PageLoader = () => (
   <div className="flex h-screen items-center justify-center">
@@ -56,7 +57,8 @@ const App = () => {
             <Route path="topup" element={<Topup />} />
             <Route path="order" element={<Order />} />
             <Route path="boarding-order" element={<BoardingOrder />} />
-            <Route path="nutrition-ai" element={<NutritionAI />} />
+            <Route path="food-feedback" element={<FoodFeedback />} />
+            {/* <Route path="nutrition-ai" element={<NutritionAI />} /> */}
             <Route path="order/payment" element={<Payment />} />
             
           </Route>

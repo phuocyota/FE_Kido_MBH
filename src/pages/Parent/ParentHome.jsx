@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed,  Sparkles, } from "lucide-react";
+import { Home, History, BarChart, CreditCard, Menu, LogOut, UtensilsCrossed, MessageSquare } from "lucide-react";
+// import { Sparkles } from "lucide-react";
 // Moved to public/images/ to avoid bundling (430KB)
-const bg = "/images/anh-can-tin-so-2.jpg";
+// const bg = "/images/anh-can-tin-so-2.jpg";
+import bg from "../../assets/can-tin-so.png";
 import defaultAvatar from "../../assets/avatar.png";
 import { buildAssetUrl } from "../../api/client";
 import { getParentHome } from "../../api/parent";
@@ -119,17 +121,22 @@ const [avatarError, setAvatarError] = useState("");
 
   const menu = [
     { name: "Trang chủ", path: "", icon: Home },
-    { name: "Đặt món", path: "order", icon: UtensilsCrossed,  },
+    { name: "Đặt món căn tin", path: "order", icon: UtensilsCrossed,  },
     {
       name: "Đặt món bán trú",
       path: "boarding-order",
       icon: UtensilsCrossed,
     },
     {
-        name: "AI Dinh dưỡng",
-        path: "nutrition-ai",
-        icon: Sparkles,
+      name: "Phản ánh món ăn",
+      path: "food-feedback",
+      icon: MessageSquare,
     },
+    // {
+    //     name: "AI Dinh dưỡng",
+    //     path: "nutrition-ai",
+    //     icon: Sparkles,
+    // },
     { name: "Lịch sử", path: "history", icon: History },
     { name: "Thống kê", path: "stats", icon: BarChart },
     { name: "Nạp tiền", path: "topup", icon: CreditCard },
@@ -320,7 +327,7 @@ const [avatarError, setAvatarError] = useState("");
             </div>
           </div>
 
-          <button
+          {/* <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -333,7 +340,7 @@ const [avatarError, setAvatarError] = useState("");
             aria-label="Mở AI Dinh dưỡng"
           >
             <Sparkles size={24} />
-          </button>
+          </button> */}
 
           {/* Main FAB */}
           <button
