@@ -24,8 +24,6 @@ const ALL_CATEGORY = {
   icon: UtensilsCrossed,
 };
 
-const PRODUCT_PLACEHOLDER_IMAGE = "/images/food-placeholder.svg";
-
 const normalizeText = (value = "") =>
   value
     .normalize("NFD")
@@ -191,7 +189,7 @@ export default function Order() {
         .map((item) => ({
           id: item.id,
           name: item.name,
-          image: PRODUCT_PLACEHOLDER_IMAGE,
+          image: buildAssetUrl(item.imageUrl || item.image),
           category: category.name,
           categoryId: category.id,
           price: Number(item.price || 0),
