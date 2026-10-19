@@ -3,7 +3,7 @@ import { productApi } from "../../api";
 import { Search, Trash2 } from "lucide-react";
 import StockProductPicker from "./StockProductPicker";
 import { createStockProductCache } from "./stockProductCache";
-import { freshFoodExpiry } from "./stockDates";
+import { freshFoodExpiry, currentPurchaseDateTime } from "./stockDates";
 import { createStockLotCode } from "./stockLotCode";
 
 const baseColumns = [
@@ -61,7 +61,7 @@ export default function StockDocumentTable({
     serialMode: "NONE",
     serialText: "",
     lotCode: createStockLotCode(),
-    manufacturedAt: "",
+    manufacturedAt: currentPurchaseDateTime().slice(0, 10),
     expiresAt: product.isFreshFood ? freshFoodExpiry(purchasedAt) : "",
   } : {};
   const [loadProducts] = useState(() =>
