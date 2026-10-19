@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, History } from "lucide-react";
+import UnifiedTrace from "./UnifiedTrace";
 import StockSerials from "./StockSerials";
 import StockHeader from "../../components/Stock/StockHeader";
 import { stockLotApi } from "../../api/stockLotApi";
@@ -20,36 +21,52 @@ export default function WarehouseTrace() {
   const [params, setParams] = useSearchParams();
   const [refresh, setRefresh] = useState(0);
   const serialMode = params.get("mode") === "serial" || params.has("detailId");
+  const unified =
+    params.has("id") ||
+    (!params.has("mode") && !params.has("lotId") && !params.has("detailId"));
   return (
     <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
       <StockHeader
         activeTab="trace"
         onRefresh={() => setRefresh((value) => value + 1)}
       />
-      <nav
-        aria-label="Cách truy xuất nguồn gốc"
-        className="mb-4 flex gap-1 rounded-xl border border-slate-200 bg-white p-1"
-      >
-        {[
-          [false, "Theo lô hàng"],
-          [true, "Theo serial"],
-        ].map(([serial, label]) => (
-          <button
-            type="button"
-            key={label}
-            aria-pressed={serialMode === serial}
-            onClick={() => setParams(serial ? { mode: "serial" } : {})}
-            className={`rounded-lg px-5 py-2.5 text-sm font-semibold ${
-              serialMode === serial
-                ? "bg-indigo-50 text-indigo-700"
-                : "text-slate-500 hover:bg-slate-50"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {serialMode ? (
+      {!unified && (
+        <button
+          type="button"
+          onClick={() => setParams({})}
+          className="mb-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700"
+        >
+          Nhập ID lô hoặc số serial
+        </button>
+      )}
+      {!unified && (
+        <nav
+          aria-label="Cách truy xuất nguồn gốc"
+          className="mb-4 flex gap-1 rounded-xl border border-slate-200 bg-white p-1"
+        >
+          {[
+            [false, "Theo lô hàng"],
+            [true, "Theo serial"],
+          ].map(([serial, label]) => (
+            <button
+              type="button"
+              key={label}
+              aria-pressed={serialMode === serial}
+              onClick={() => setParams(serial ? { mode: "serial" } : {})}
+              className={`rounded-lg px-5 py-2.5 text-sm font-semibold ${
+                serialMode === serial
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "text-slate-500 hover:bg-slate-50"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
+      {unified ? (
+        <UnifiedTrace key={`${params.toString()}:${refresh}`} />
+      ) : serialMode ? (
         <StockSerials traceMode key={`${params.toString()}:${refresh}`} />
       ) : (
         <LotTrace key={`${params.toString()}:${refresh}`} />

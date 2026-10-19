@@ -16,12 +16,12 @@ export default function MealItems() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="mx-auto max-w-[1800px]">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
         {/* HEADER & FILTERS */}
-        <div className="bg-white p-4 rounded-xl shadow mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="erp-page-header">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-            <h1 className="text-xl font-semibold text-gray-800">Thiết lập món ăn theo buổi</h1>
+            <div className="min-w-0"><h1 className="text-xl font-semibold text-gray-800">Thiết lập món ăn theo buổi</h1><p className="mt-1 text-xs leading-5 text-slate-500">Thiết lập danh sách món ăn theo từng buổi và quản lý trạng thái phục vụ.</p></div>
             
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <select 
@@ -50,7 +50,7 @@ export default function MealItems() {
 
           <button
             onClick={() => setOpenModal(true)}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto justify-center"
           >
             <Plus size={18} />
             Thêm món

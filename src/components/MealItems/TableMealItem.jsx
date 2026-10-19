@@ -62,7 +62,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
     <div>
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm erp-data-table">
             <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
               <tr>
                 <th className="p-3 text-center">STT</th>

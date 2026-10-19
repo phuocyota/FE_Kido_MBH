@@ -5,7 +5,7 @@ export default function PaymentVoucherDetailTable({
   expenseType,
 }) {
   return (
-    <div className="h-full bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col overflow-hidden">
+    <div className="h-full bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col overflow-hidden erp-panel">
       <div className="px-4 py-3 border-b border-gray-400 flex items-center justify-between">
         <h2 className="font-semibold">
           Chi tiết phiếu chi
@@ -17,7 +17,7 @@ export default function PaymentVoucherDetailTable({
       <div className="flex-1 overflow-auto">
         <div className="min-w-[900px]">
           <div className="overflow-x-auto rounded-xl border border-gray-300">
-  <table className="w-full text-sm">
+  <table className="w-full text-sm erp-data-table">
     <thead>
       <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
         <th className="border-b border-indigo-200 px-4 py-3 text-center w-16 text-xs font-semibold uppercase tracking-wide text-indigo-900">

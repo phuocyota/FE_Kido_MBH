@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, X, Info } from "lucide-react";
+import { useSerialTrace } from "../../hooks/useSerialTrace";
 import { useWarehouseData } from "../../hooks/useWarehouseData";
 import {
   Panel,
@@ -220,9 +221,9 @@ export default function StockSerials({ traceMode = false }) {
                         <Link
                           title="Truy xuất nguồn gốc serial này"
                           className="text-indigo-700 hover:underline"
-                          to={`/warehouse/trace?mode=serial&detailId=${encodeURIComponent(
-                            row.detailId,
-                          )}&position=${row.position}`}
+                          to={`/warehouse/trace?id=${encodeURIComponent(
+                            row.serial,
+                          )}`}
                         >
                           {row.serial}
                         </Link>
@@ -298,12 +299,8 @@ export default function StockSerials({ traceMode = false }) {
 }
 function SerialDetails({ selected, onClose }) {
   const [refresh, setRefresh] = useState(0);
-  const state = useWarehouseData(
-    `serials/${selected.detailId}/${selected.position}`,
-    {},
-    refresh,
-  );
-  const row = state.data;
+  const state = useSerialTrace(selected, refresh);
+  const row = state.data?.serial;
   return (
     <div className="mt-4">
       <Panel
@@ -392,6 +389,10 @@ function SerialDetails({ selected, onClose }) {
               Serial được ghi nhận trên phiếu nhập này. Hệ thống chưa có lịch sử
               xuất/chuyển cho riêng serial.
             </p>
+            {state.data?.lotTrace?.movements?.length > 0 && <section aria-label="Lịch sử chung của lô chứa serial" className="rounded-lg border border-slate-200 p-3">
+              <h3 className="mb-2 text-sm font-semibold text-slate-800">Lịch sử chung của lô chứa serial</h3>
+              <div className="max-h-64 overflow-auto"><table className="w-full min-w-[500px] text-left text-xs"><thead className="bg-slate-50 text-slate-500"><tr><th className="p-2">Thời gian</th><th className="p-2">Giao dịch</th><th className="p-2">Số lượng</th><th className="p-2">Kho</th></tr></thead><tbody>{state.data.lotTrace.movements.map((move) => <tr key={move.id} className="border-t border-slate-100"><td className="p-2">{date(move.at)}</td><td className="p-2">{Number(move.quantity) >= 0 ? "Nhập" : "Xuất"}</td><td className="p-2">{number(move.quantity)}</td><td className="p-2">{move.stockName || "—"}</td></tr>)}</tbody></table></div>
+            </section>}
             {row.lotId && (
               <Link
                 className="inline-flex rounded-lg border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"

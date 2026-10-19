@@ -163,7 +163,7 @@ export default function ReceiptVoucher({
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
+    <div className="erp-page bg-gray-100">
 
       <button
         onClick={onBack}

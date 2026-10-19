@@ -7,29 +7,13 @@ import StaffAndCancelReport from "../components/Home/StaffAndCancelReport";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#f3f5f7]">
+    <div className="erp-page bg-[#f3f5f7]">
 
       {/* CONTAINER */}
-      <div className="
-        w-full
-        max-w-[1600px]
-        mx-auto
-        px-3
-        sm:px-4
-        lg:px-5
-        py-4
-        space-y-4
-      ">
+      <div className="erp-content space-y-4">
 
         {/* HEADER */}
-        <div className="
-          flex
-          flex-col
-          sm:flex-row
-          sm:items-center
-          sm:justify-between
-          gap-3
-        ">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 erp-page-header">
 
           <div>
             <h1 className="text-[24px] sm:text-[28px] font-bold text-gray-900">

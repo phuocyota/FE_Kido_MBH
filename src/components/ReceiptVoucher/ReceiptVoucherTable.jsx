@@ -60,8 +60,8 @@ export default function ReceiptVoucherTable({ items = [], setItems, selectedSour
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
-      <table className="w-full text-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm erp-panel">
+      <table className="w-full text-sm erp-data-table">
         <thead>
           <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 border-b border-indigo-200">

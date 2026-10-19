@@ -88,14 +88,14 @@ export default function ReportEndDay() {
   const handlePrint = () => printReport(exportRef.current, reportType === "landscape");
 
   return (
-    <div className="min-h-screen bg-gray-100 p-2 sm:p-4 lg:p-5">
-      <div className="max-w-[1800px] mx-auto">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
         {/* HEADER */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
+        <div className="erp-page-header">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
+            <div className="min-w-0"><h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
               Báo cáo cuối ngày
-            </h1>
+            </h1><p className="mt-1 text-xs leading-5 text-slate-500">Tổng hợp kết quả bán hàng và các khoản thu, chi để đối soát cuối ngày.</p></div>
 
             <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
               <ReportFilter

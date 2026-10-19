@@ -329,7 +329,7 @@ export default function WarehouseInventory() {
               </table>
             </div>
           ) : (
-            <Empty text="Không có tồn kho phù hợp bộ lọc. Các số dư được tạo từ nghiệp vụ nhập kho và kiểm kê." />
+            <Empty text="Không có tồn kho phù hợp bộ lọc. Các số dư được ghi nhận từ nghiệp vụ nhập, xuất và chuyển kho." />
           ))}
         {!result.loading && !result.error && (
           <StockInPagination

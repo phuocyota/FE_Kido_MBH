@@ -20,9 +20,9 @@ export default function OrdersSidebar({
   setRecipient,
 }) {
   return (
-    <div className="relative overflow-visible w-full lg:w-[280px] bg-white rounded-[20px] border border-gray-200 shadow-sm p-4 h-fit flex-shrink-0">
+    <div className="relative w-full space-y-4 bg-white p-1">
       {/* Title */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-5 px-1">
+      <h1 className="text-sm font-semibold text-slate-700">
         Đặt hàng
       </h1>
 

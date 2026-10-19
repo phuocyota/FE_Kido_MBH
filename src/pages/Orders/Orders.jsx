@@ -1,8 +1,9 @@
+import PageHeader from "../../components/Management/PageHeader";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
-  SlidersHorizontal,
   List,
   Settings,
   HelpCircle,
@@ -204,9 +205,33 @@ export default function Orders() {
   ]);
 
   return (
-    <div className="w-full min-h-screen bg-[#f4f6f8] p-4 flex flex-col lg:flex-row gap-4">
-      {/* SIDEBAR */}
-      <OrdersSidebar
+    <div className="erp-page space-y-4">
+      <PageHeader title="Đặt hàng" eyebrow="Bán hàng / Đơn hàng" description="Theo dõi đơn hàng, trạng thái xử lý và thanh toán." />
+
+
+      {/* CONTENT AREA */}
+      <div className="flex-1 flex flex-col gap-4">
+        {/* TOOLBAR */}
+        <div className="erp-toolbar erp-panel">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="relative w-full min-w-[200px]">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Theo mã phiếu đặt"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+              />
+
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <ToolbarFilterDropdown panelClassName="sm:w-[620px]">      <OrdersSidebar
         selectedTime={selectedTime}
         setSelectedTime={setSelectedTime}
         statusFilter={statusFilter}
@@ -224,32 +249,7 @@ export default function Orders() {
         recipient={recipient}
         setRecipient={setRecipient}
       />
-
-      {/* CONTENT AREA */}
-      <div className="flex-1 flex flex-col gap-4">
-        {/* TOOLBAR */}
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative w-full max-w-[400px]">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Theo mã phiếu đặt"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-              />
-              <SlidersHorizontal
-                size={16}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
+            </ToolbarFilterDropdown>
             <button className="h-10 px-4 border border-[#0f62fe] text-[#0f62fe] bg-white hover:bg-blue-50 rounded-lg flex items-center gap-1.5 font-medium text-sm transition cursor-pointer whitespace-nowrap">
               <Plus size={16} />
               Đặt hàng
@@ -282,11 +282,11 @@ export default function Orders() {
 
         {/* TABLE GRID / EMPTY STATE */}
         {loading ? (
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[500px] flex items-center justify-center text-gray-500">
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[500px] flex items-center justify-center text-gray-500 erp-panel">
             Đang tải danh sách đơn hàng...
           </div>
         ) : error ? (
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[500px] flex items-center justify-center text-red-500">
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[500px] flex items-center justify-center text-red-500 erp-panel">
             {error}
           </div>
         ) : (

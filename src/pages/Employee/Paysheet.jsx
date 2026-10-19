@@ -120,9 +120,9 @@ export default function PaySheet() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] p-3 sm:p-4 md:p-5">
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-3xl font-bold">Bảng lương</h1>
+    <div className="erp-page bg-[#f3f4f6]">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between erp-page-header">
+        <div className="min-w-0"><h1 className="text-3xl font-bold">Bảng lương</h1><p className="mt-1 text-xs leading-5 text-slate-500">Theo dõi các bảng tính lương theo kỳ và trạng thái xử lý.</p></div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -194,7 +194,7 @@ export default function PaySheet() {
 
       <div className="overflow-hidden rounded-xl border border-gray-300 bg-white">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1200px]">
+          <table className="w-full min-w-[1200px] erp-data-table">
             <thead className="bg-[#eef5ff]">
               <tr>
                 <th className="p-3">

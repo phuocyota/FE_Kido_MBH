@@ -1,3 +1,4 @@
+import PageHeader from "../../components/Management/PageHeader";
 import React, { useState, useMemo } from "react";
 import {
   Search,
@@ -7,7 +8,6 @@ import {
   Calendar,
   Clock3,
   Clock,
-  Sparkles,
 } from "lucide-react";
 
 // Mock Data
@@ -282,24 +282,13 @@ export default function TimeKeeping() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-3 sm:p-5 md:p-6 text-slate-800">
+    <div className="erp-page bg-slate-50/50 text-slate-800">
       {/* Header */}
-      <div className="mb-6">
-        <p className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1 text-sm font-bold text-blue-700 border border-blue-100">
-          <Sparkles size={14} />
-          Nhân sự & Chấm công
-        </p>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-3">
-          Bảng chấm công điện tử
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Theo dõi trạng thái check-in, check-out và phân ca làm việc chi tiết của nhân viên trong ngày.
-        </p>
-      </div>
+      <PageHeader title="Bảng chấm công điện tử" eyebrow="Nhân sự / Chấm công" description="Theo dõi check-in, check-out và phân ca làm việc của nhân viên." />
 
       {/* Toolbar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm mb-6 erp-panel">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 erp-toolbar">
           <div className="flex flex-wrap items-center gap-3">
             {/* Search Box */}
             <div className="relative">
@@ -358,7 +347,7 @@ export default function TimeKeeping() {
             {/* Today Button */}
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="h-11 px-5 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 rounded-xl text-sm font-bold text-slate-700 transition-all active:scale-95 shadow-sm"
+              className="h-11 px-5 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 rounded-xl text-sm font-bold text-slate-700 transition-all active:scale-95 shadow-sm erp-panel"
             >
               Hôm nay
             </button>
@@ -367,7 +356,7 @@ export default function TimeKeeping() {
       </div>
 
       {/* Grid Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6 erp-panel">
         <div className="overflow-x-auto">
           {/* Header ngày */}
           <div
@@ -521,7 +510,7 @@ export default function TimeKeeping() {
 
       {/* Legend */}
       <div className="mt-6">
-        <div className="bg-white border border-slate-200/80 shadow-sm rounded-2xl px-6 py-4 flex flex-wrap justify-center items-center gap-y-3 gap-x-6 md:gap-x-10 text-xs font-bold text-slate-600">
+        <div className="bg-white border border-slate-200/80 shadow-sm rounded-2xl px-6 py-4 flex flex-wrap justify-center items-center gap-y-3 gap-x-6 md:gap-x-10 text-xs font-bold text-slate-600 erp-panel">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-100" />
             Đúng giờ

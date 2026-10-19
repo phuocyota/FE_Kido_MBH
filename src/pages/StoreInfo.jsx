@@ -1,3 +1,4 @@
+import PageHeader from "../components/Management/PageHeader";
 import React from "react";
 import {
   Store,
@@ -8,33 +9,14 @@ import {
 
 export default function StoreInfo() {
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
 
         {/* CARD */}
         <div className="bg-white rounded-2xl shadow p-6">
 
           {/* HEADER */}
-          <div className="flex items-center gap-4 mb-8">
-
-            <div className="
-              w-20 h-20 rounded-2xl
-              bg-green-100
-              flex items-center justify-center
-            ">
-              <Store size={40} className="text-green-600" />
-            </div>
-
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Thông tin gian hàng
-              </h1>
-
-              <p className="text-gray-500">
-                Quản lý thông tin cửa hàng/căn tin
-              </p>
-            </div>
-          </div>
+          <PageHeader title="Thông tin gian hàng" eyebrow="Thiết lập" description="Quản lý thông tin cửa hàng và căn tin." />
 
           {/* INFO */}
           <div className="grid md:grid-cols-2 gap-5">

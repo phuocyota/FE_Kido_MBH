@@ -1,9 +1,9 @@
+import CashSidebarFilters from "../../components/CashManagement/CashSidebarFilters";
 import React, { useState } from "react";
 
 import CashHeader from "../../components/CashManagement/CashHeader";
 import CashToolbar from "../../components/CashManagement/CashToolbar";
 import CashTable from "../../components/CashManagement/CashTable";
-import CashSidebarFilters from "../../components/CashManagement/CashSidebarFilters";
 import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 import PaymentVoucher from "./PaymentVoucher";
@@ -28,7 +28,6 @@ export default function CashManagement() {
   });
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [isWideView, setIsWideView] = useState(false);
 
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -57,24 +56,15 @@ export default function CashManagement() {
   return (
     <div className="min-h-screen bg-[#f3f5f7]">
       <div
-        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
-          isWideView ? "max-w-none" : "max-w-[1600px]"
-        }`}
+        className="erp-page"
       >
         <CashHeader
           onRefresh={handleRefresh}
         />
 
         <div
-          className={`grid grid-cols-1 gap-4 ${
-            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
-          }`}
+          className="space-y-4"
         >
-          {!isWideView && (
-            <aside className="min-w-0">
-              <CashSidebarFilters filters={filters} setFilters={setFilters} />
-            </aside>
-          )}
 
           <main className="min-w-0">
             <CashToolbar
@@ -87,14 +77,10 @@ export default function CashManagement() {
               onAddReceiptVoucher={() =>
                 setScreen("receiptVoucher")
               }
-              isWideView={isWideView}
-              onToggleWideView={() => setIsWideView((current) => !current)}
               filterControl={
-                isWideView ? (
                   <ToolbarFilterDropdown panelClassName="sm:w-[420px]">
                     <CashSidebarFilters filters={filters} setFilters={setFilters} />
                   </ToolbarFilterDropdown>
-                ) : null
               }
             />
 

@@ -103,7 +103,7 @@ export default function CashTable({ filters, refreshTrigger }) {
   }, [filters, refreshTrigger, currentPage, pageSize, voucherType]);
 
   return (
-    <div className="w-full bg-white border border-gray-300 rounded-xl shadow-sm overflow-hidden mt-4">
+    <div className="w-full bg-white border border-gray-300 rounded-xl shadow-sm overflow-hidden mt-4 erp-panel">
       {/* Sub-tabs for Voucher Type */}
       <div className="flex border-b border-gray-300 bg-gray-50 px-4 pt-1">
         <button
@@ -139,7 +139,7 @@ export default function CashTable({ filters, refreshTrigger }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-[1200px] w-full text-sm">
+        <table className="min-w-[1200px] w-full text-sm erp-data-table">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               <th className="border-b border-indigo-200 px-4 py-3 w-12">

@@ -474,17 +474,17 @@ export default function TimeSheet() {
   );
 
   return (
-    <div className="p-5 bg-[#f5f6f8] min-h-screen">
+    <div className="erp-page bg-[#f5f6f8]">
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
 
-        <div className="p-4 border-b">
-          <h2 className="text-2xl font-semibold">
+        <div className="p-4 border-b erp-page-header">
+          <div className="min-w-0"><h2 className="text-2xl font-semibold">
             Lịch làm việc
-          </h2>
+          </h2><p className="mt-1 text-xs leading-5 text-slate-500">Xem lịch làm việc theo tuần và phân ca cho từng nhân viên.</p></div>
         </div>
 
-        <div className="p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 flex flex-wrap items-center justify-between gap-3 erp-toolbar">
 
           <div className="flex flex-wrap items-center gap-3">
 
@@ -570,7 +570,7 @@ export default function TimeSheet() {
 
         <div className="overflow-x-auto">
 
-          <table className="min-w-[1400px] w-full border-collapse border border-gray-00">
+          <table className="min-w-[1400px] w-full border-collapse border border-gray-00 erp-data-table">
 
             <thead>
 
@@ -603,7 +603,7 @@ export default function TimeSheet() {
 
                 ))}
 
-                <th className="w-[180px] border px-4 py-4 border-gray-300 ">
+                <th className="w-[180px] border px-4 py-4 border-gray-300">
                   Tổng giờ làm
                 </th>
 
@@ -812,7 +812,7 @@ export default function TimeSheet() {
 
         <button
           onClick={handleDeleteSchedule}
-          className="h-[40px] px-6 bg-blue-600 text-white rounded-xl"
+          className="h-[40px] px-6 bg-indigo-600 text-white rounded-xl"
         >
           Đồng ý
         </button>

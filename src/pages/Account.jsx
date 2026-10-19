@@ -1,3 +1,4 @@
+import PageHeader from "../components/Management/PageHeader";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -103,8 +104,8 @@ export default function Account() {
 
   if (loading) {
     return (
-      <div className="bg-gray-100 min-h-screen p-4 lg:p-6">
-        <div className="max-w-[1600px] mx-auto bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-gray-500">
+      <div className="erp-page">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-gray-500 erp-panel">
           Đang tải thông tin tài khoản...
         </div>
       </div>
@@ -112,30 +113,16 @@ export default function Account() {
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4 lg:p-6">
-      <div className="max-w-[1600px] mx-auto">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
 
          
 
         {/* MAIN CARD */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 lg:p-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 lg:p-8 erp-panel">
 
           {/* TITLE */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-20 h-20 rounded-3xl bg-blue-100 flex items-center justify-center">
-            <User size={40} className="text-blue-600" />
-          </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Thông tin tài khoản
-              </h2>
-
-              <p className="text-sm text-gray-500">
-                Cập nhật thông tin cá nhân của bạn
-              </p>
-            </div>
-          </div>
+          <PageHeader title="Thông tin tài khoản" eyebrow="Thiết lập" description="Cập nhật thông tin cá nhân và bảo mật tài khoản." />
 
           {/* FORM */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -160,22 +147,7 @@ export default function Account() {
                     value={form.fullName}
                     onChange={(event) => setField("fullName", event.target.value)}
                     disabled={!isEditing}
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -197,19 +169,7 @@ export default function Account() {
                     disabled
                     value={form.email || form.phone || form.userId || ""}
                     readOnly
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      bg-gray-100
-                      text-gray-500
-                      cursor-not-allowed
-                      opacity-80
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 bg-gray-100 text-gray-500 cursor-not-allowed opacity-80"
                   />
                 </div>
               </div>
@@ -231,19 +191,7 @@ export default function Account() {
                     disabled
                     value={form.role || ""}
                     readOnly
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      bg-gray-100
-                      text-gray-500
-                      cursor-not-allowed
-                      opacity-80
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 bg-gray-100 text-gray-500 cursor-not-allowed opacity-80"
                   />
                 </div>
               </div>
@@ -271,37 +219,14 @@ export default function Account() {
                     type={showPass ? "text" : "password"}
                     disabled={!isEditing}
                     placeholder="Nhập mật khẩu hiện tại"
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-12
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
 
                   <button
                     type="button"
                     disabled={!isEditing}
                     onClick={() => setShowPass(!showPass)}
-                    className="
-                      absolute
-                      right-4
-                      top-1/2
-                      -translate-y-1/2
-                      text-gray-500
-                      disabled:opacity-40
-                      disabled:cursor-not-allowed
-                    "
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {showPass ? (
                       <EyeOff size={18} />
@@ -328,37 +253,14 @@ export default function Account() {
                     type={showNewPass ? "text" : "password"}
                     disabled={!isEditing}
                     placeholder="Nhập mật khẩu mới"
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-12
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
 
                   <button
                     type="button"
                     disabled={!isEditing}
                     onClick={() => setShowNewPass(!showNewPass)}
-                    className="
-                      absolute
-                      right-4
-                      top-1/2
-                      -translate-y-1/2
-                      text-gray-500
-                      disabled:opacity-40
-                      disabled:cursor-not-allowed
-                    "
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {showNewPass ? (
                       <EyeOff size={18} />
@@ -386,22 +288,7 @@ export default function Account() {
                     disabled={!isEditing}
                     value={form.phone || ""}
                     onChange={(event) => setField("phone", event.target.value)}
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -423,22 +310,7 @@ export default function Account() {
                     disabled
                     value={form.email || ""}
                     readOnly
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -465,22 +337,7 @@ export default function Account() {
                     value={form.address || ""}
                     onChange={(event) => setField("address", event.target.value)}
                     placeholder="Nhập địa chỉ"
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -497,21 +354,7 @@ export default function Account() {
                   value={form.province || ""}
                   onChange={(event) => setField("province", event.target.value)}
                   placeholder="Tỉnh / Thành phố"
-                  className="
-                    w-full
-                    border
-                    border-gray-300
-                    rounded-2xl
-                    h-12
-                    px-4
-                    outline-none
-                    focus:border-blue-500
-                    focus:ring-4
-                    focus:ring-blue-100
-                    disabled:bg-gray-100
-                    disabled:text-gray-500
-                    disabled:cursor-not-allowed
-                  "
+                  className="w-full border border-gray-300 rounded-2xl h-12 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -527,21 +370,7 @@ export default function Account() {
                   value={form.district || ""}
                   onChange={(event) => setField("district", event.target.value)}
                   placeholder="Quận / Huyện"
-                  className="
-                    w-full
-                    border
-                    border-gray-300
-                    rounded-2xl
-                    h-12
-                    px-4
-                    outline-none
-                    focus:border-blue-500
-                    focus:ring-4
-                    focus:ring-blue-100
-                    disabled:bg-gray-100
-                    disabled:text-gray-500
-                    disabled:cursor-not-allowed
-                  "
+                  className="w-full border border-gray-300 rounded-2xl h-12 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -562,22 +391,7 @@ export default function Account() {
                     disabled={!isEditing}
                     value={form.birthday || ""}
                     onChange={(event) => setField("birthday", event.target.value)}
-                    className="
-                      w-full
-                      border
-                      border-gray-300
-                      rounded-2xl
-                      h-12
-                      pl-12
-                      pr-4
-                      outline-none
-                      focus:border-blue-500
-                      focus:ring-4
-                      focus:ring-blue-100
-                      disabled:bg-gray-100
-                      disabled:text-gray-500
-                      disabled:cursor-not-allowed
-                    "
+                    className="w-full border border-gray-300 rounded-2xl h-12 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -594,21 +408,7 @@ export default function Account() {
                   value={form.note || ""}
                   onChange={(event) => setField("note", event.target.value)}
                   placeholder="Nhập ghi chú..."
-                  className="
-                    w-full
-                    border
-                    border-gray-300
-                    rounded-2xl
-                    p-4
-                    outline-none
-                    resize-none
-                    focus:border-blue-500
-                    focus:ring-4
-                    focus:ring-blue-100
-                    disabled:bg-gray-100
-                    disabled:text-gray-500
-                    disabled:cursor-not-allowed
-                  "
+                  className="w-full border border-gray-300 rounded-2xl p-4 outline-none resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -619,17 +419,7 @@ export default function Account() {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="
-                  h-12
-                  px-6
-                  rounded-2xl
-                  bg-blue-600
-                  hover:bg-blue-700
-                  text-white
-                  transition-all
-                  font-medium
-                  flex items-center gap-2
-                "
+                className="h-12 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white transition-all font-medium flex items-center gap-2"
               >
                 <Pencil size={18} />
                 Chỉnh sửa
@@ -638,16 +428,7 @@ export default function Account() {
               <>
                 <button
                   onClick={handleCancel}
-                  className="
-                    h-12
-                    px-6
-                    rounded-2xl
-                    bg-gray-200
-                    hover:bg-gray-300
-                    transition-all
-                    font-medium
-                    flex items-center gap-2
-                  "
+                  className="h-12 px-6 rounded-2xl bg-gray-200 hover:bg-gray-300 transition-all font-medium flex items-center gap-2"
                 >
                   <Ban size={18} />
                   Bỏ qua
@@ -656,19 +437,7 @@ export default function Account() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="
-                    h-12
-                    px-6
-                    rounded-2xl
-                    bg-green-500
-                    hover:bg-green-600
-                    text-white
-                    transition-all
-                    font-medium
-                    flex items-center gap-2
-                    disabled:opacity-60
-                    disabled:cursor-not-allowed
-                  "
+                  className="h-12 px-6 rounded-2xl bg-green-500 hover:bg-indigo-600 text-white transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <Save size={18} />
                   {saving ? "Đang lưu..." : "Lưu thay đổi"}

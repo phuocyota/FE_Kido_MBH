@@ -1,3 +1,4 @@
+import "./components/Management/management.css";
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
@@ -7,7 +8,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
 import PriceBook from "./pages/PriceBook";
-import StockTakes from "./pages/Stock/StockTakes";
 import Account from "./pages/Account";
 import StoreInfo from "./pages/StoreInfo";
 import ReportEndDay from "./pages/reports/ReportEndDay";
@@ -72,7 +72,7 @@ const App = () => {
                   <Route path="/products" element={<Products />} />
                   <Route path="/meal-items" element={<MealItems />} />
                   <Route path="/price-book" element={<PriceBook />} />
-                  <Route path="/stock-takes" element={<StockTakes />} />
+                  <Route path="/stock-takes" element={<Navigate to="/warehouse/inventory" replace />} />
                   <Route path="/account" element={<Account />} />
                   <Route path="/store-info" element={<StoreInfo />} />
                   <Route path="/report-end-day" element={<ReportEndDay />} />

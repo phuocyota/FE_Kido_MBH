@@ -148,15 +148,16 @@ function StockLotList() {
   );
 }
 
-export function LotDetails({ lot, onClose }) {
+export function LotDetails({ lot, onClose, initialTrace }) {
   const panel = useRef(null);
-  const [trace, setTrace] = useState(null);
+  const [trace, setTrace] = useState(initialTrace || null);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
   useEffect(() => {
+    if (initialTrace) return;
     const controller = new AbortController();
     const load = async () => {
       try {
@@ -168,7 +169,7 @@ export function LotDetails({ lot, onClose }) {
     };
     load();
     return () => controller.abort();
-  }, [lot.id, retry]);
+  }, [lot.id, retry, initialTrace]);
   return (
     <section ref={panel} aria-label="Chi tiết lô hàng" className="mt-4 rounded-xl border border-blue-200 bg-white p-4 shadow-sm md:p-5">
       <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>

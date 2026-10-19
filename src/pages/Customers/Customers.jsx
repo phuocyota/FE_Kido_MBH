@@ -70,13 +70,13 @@ export default function Customers() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4 erp-page-header">
+          <div className="min-w-0"><h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
             Quản lý khách hàng
-          </h1>
+          </h1><p className="mt-1 text-xs leading-5 text-slate-500">Quản lý thông tin liên hệ, trạng thái hoạt động và công nợ của khách hàng.</p></div>
           <button
             onClick={loadCustomers}
             className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 transition self-start lg:self-auto"
@@ -89,10 +89,10 @@ export default function Customers() {
         {/* Stat Cards */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
           {/* Card 1 */}
-          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+          <div className="erp-stat">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center">
-                <Users size={28} className="text-violet-600" />
+              <div className="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <Users size={28} className="text-indigo-600" />
               </div>
               <div className="flex-1">
                 <p className="text-gray-500 text-sm">Tổng số khách hàng</p>
@@ -104,7 +104,7 @@ export default function Customers() {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+          <div className="erp-stat">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center">
                 <Wallet size={28} className="text-rose-600" />
@@ -120,10 +120,10 @@ export default function Customers() {
         </div>
 
         {/* Content Container */}
-        <div className="flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+        <div className="flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl erp-panel">
           {/* Toolbar */}
-          <div className="bg-white border-b border-gray-300 p-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="bg-white border-b border-slate-100">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between erp-toolbar">
               {/* Search */}
               <div className="relative flex-1 w-full lg:w-auto">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -135,7 +135,7 @@ export default function Customers() {
                     setSearch(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="h-11 w-full sm:w-[320px] lg:w-[420px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="h-11 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 />
               </div>
 
@@ -169,7 +169,7 @@ export default function Customers() {
 
           {/* Table list */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px] border-collapse text-sm">
+            <table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
               <thead>
                 <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                   <th className="border-b border-indigo-200 px-4 py-3 w-12 text-center">

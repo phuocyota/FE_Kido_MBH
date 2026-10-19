@@ -4,6 +4,10 @@ import { getBranchIdFromToken } from "./authSession";
 const unwrap = (response) => response.data?.data ?? response.data;
 
 export const stockLotApi = {
+  lookup: async (id, signal) => {
+    const response = await axiosInstance.get("/production-trace/lookup", { params: { id, branchId: getBranchIdFromToken() || undefined }, signal });
+    return unwrap(response);
+  },
   getAll: async (params, signal) => {
     const response = await axiosInstance.get("/stock-lots", {
       params: { branchId: getBranchIdFromToken() || undefined, ...params }, signal,
@@ -27,7 +31,8 @@ export const stockLotApi = {
     return unwrap(result);
   },
   getTrace: async (id, signal) => {
-    const response = await axiosInstance.get(`/production-trace/lots/${id}`, { signal });
-    return unwrap(response).trace;
+    const result = await stockLotApi.lookup(id, signal);
+    if (result.type !== "LOT") throw new Error("ID không phải lô hàng.");
+    return result.trace;
   },
 };

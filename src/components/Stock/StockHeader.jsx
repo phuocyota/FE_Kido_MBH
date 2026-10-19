@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   BarChart3,
   Boxes,
-  ClipboardCheck,
   History,
   Package,
   RefreshCcw,
@@ -57,18 +56,11 @@ const tabs = [
     hint: "Tồn lô, hạn dùng và nguồn nhập",
   },
   {
-    id: "takes",
-    label: "Kiểm kê",
-    path: "/stock-takes",
-    icon: ClipboardCheck,
-    hint: "Kiểm đếm và điều chỉnh chênh lệch",
-  },
-  {
     id: "trace",
     label: "Truy xuất nguồn gốc",
     path: "/warehouse/trace",
     icon: History,
-    hint: "Tra cứu nguồn nhập và lịch sử sử dụng của lô",
+    hint: "Tra cứu ngày nhập, hạn dùng và nguồn gốc theo ID lô hoặc số serial",
   },
 ];
 
@@ -83,6 +75,7 @@ export default function StockHeader({ activeTab, onRefresh }) {
           <h1 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">
             Quản lý kho
           </h1>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{activeTab === "sale" ? "Lập phiếu xuất bán và theo dõi hàng hóa đã xuất cho khách hàng." : tabs.find((tab) => tab.id === activeTab)?.hint || "Theo dõi tồn kho và quản lý các nghiệp vụ nhập, xuất, chuyển kho."}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link

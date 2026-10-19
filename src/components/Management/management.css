@@ -1,0 +1,42 @@
+/* Explicit opt-in primitives shared with the warehouse visual language.
+   Report print/export surfaces and modal forms keep their own layout. */
+.erp-page {
+  width: 100%; max-width: 1800px; min-height: 100vh;
+  margin-inline: auto; padding: 12px; color: #334155; background: #f3f5f7;
+}
+.erp-content { width: 100%; max-width: none; padding: 0; margin-inline: auto; }
+.erp-page-header {
+  display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 16px; padding: 16px 20px;
+  border: 1px solid #e2e8f0; border-radius: 12px; background: #fff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / .05);
+}
+.erp-page-header h1, .erp-page-header h2 { font-size: 20px; line-height: 28px; font-weight: 700; color: #0f172a; }
+.erp-toolbar {
+  display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 12px; border-bottom: 1px solid #f1f5f9; background: #fff;
+}
+.erp-toolbar input:not([type=checkbox]):not([type=radio]):not([type=file]), .erp-toolbar select {
+  min-height: 36px; height: 36px; border-color: #e2e8f0; border-radius: 8px;
+  background-color: #fff; color: #334155; font-size: 12px;
+}
+.erp-toolbar input:focus, .erp-toolbar select:focus { outline-color: #818cf8; }
+.erp-toolbar button { font-size: 12px; border-radius: 8px; }
+.erp-panel { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgb(15 23 42 / .04); }
+.erp-data-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #334155; }
+.erp-data-table > thead, .erp-data-table > thead > tr, .erp-data-table > thead > tr > th {
+  background: #f8fafc; color: #64748b; border-color: #e2e8f0;
+}
+.erp-data-table > thead > tr > th {
+  padding: 12px; font-size: 10px; line-height: 16px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .035em;
+}
+.erp-data-table > tbody > tr > td { border-color: #f1f5f9; }
+.erp-data-table > tbody > tr:hover { background-color: #eef2ff; }
+.erp-stat { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #fff; box-shadow: 0 1px 3px rgb(15 23 42 / .04); }
+@media (min-width: 768px) { .erp-page { padding: 20px; } }
+@media (max-width: 639px) { .erp-page-header { padding: 14px; } .erp-toolbar > .erp-search { width: 100%; } }
+@media print {
+  .erp-page { max-width: none; min-height: 0; padding: 0; background: white; }
+  .erp-page-header { box-shadow: none; }
+}

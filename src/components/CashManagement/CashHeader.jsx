@@ -1,22 +1,22 @@
 import React from "react";
 import { RefreshCcw } from "lucide-react";
-
+import PageHeader from "../Management/PageHeader";
 export default function CashHeader({ onRefresh }) {
   return (
-    <div className="mb-4">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
-          Quản lý tiền
-        </h1>
-
-        <button 
+    <PageHeader
+      eyebrow="Tài chính / Thu chi"
+      title="Quản lý tiền"
+      description="Theo dõi thu, chi và các phiếu giao dịch."
+      actions={
+        <button
+          type="button"
           onClick={onRefresh}
-          className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700"
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
         >
-          <RefreshCcw size={14} />
-          Dữ liệu mới
+          <RefreshCcw size={15} />
+          Làm mới
         </button>
-      </div>
-    </div>
+      }
+    />
   );
 }

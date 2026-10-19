@@ -153,10 +153,10 @@ export default function WalletTransactions() {
   }, [transactions]);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 md:py-6">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="erp-page bg-gray-100">
+      <div className="erp-content">
         {/* Header */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between erp-page-header">
           <div>
             <h1 className="text-2xl font-bold text-gray-800 md:text-3xl">Lịch sử giao dịch ví thành viên</h1>
             <p className="text-gray-500 text-sm mt-1">
@@ -174,7 +174,7 @@ export default function WalletTransactions() {
 
         {/* Summary Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
+          <div className="erp-stat">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
                 <ArrowDownLeft size={24} className="text-emerald-600" />
@@ -188,7 +188,7 @@ export default function WalletTransactions() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
+          <div className="erp-stat">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
                 <ArrowUpRight size={24} className="text-rose-600" />
@@ -202,7 +202,7 @@ export default function WalletTransactions() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
+          <div className="erp-stat">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center">
                 <RotateCcw size={24} className="text-blue-600" />
@@ -218,10 +218,10 @@ export default function WalletTransactions() {
         </div>
 
         {/* Filters and Table Container */}
-        <div className="flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+        <div className="flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl erp-panel">
           {/* Toolbar */}
-          <div className="bg-white border-b border-gray-300 p-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="bg-white border-b border-slate-100">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between erp-toolbar">
               {/* Left Filters */}
               <div className="flex flex-col sm:flex-row gap-3 flex-1">
                 {/* Search */}
@@ -303,7 +303,7 @@ export default function WalletTransactions() {
 
           {/* Table List */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px] border-collapse text-sm">
+            <table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
               <thead>
                 <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                   <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 w-44">

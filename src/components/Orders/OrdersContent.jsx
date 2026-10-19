@@ -74,7 +74,7 @@ export default function OrdersContent({
   };
 
   return (
-    <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-fit flex flex-col">
+    <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-fit flex flex-col erp-panel">
       {orders.length === 0 ? (
         // Empty State matching the screenshot
         <div className="flex-1 min-h-[500px] flex flex-col items-center justify-center p-8 bg-white">
@@ -98,7 +98,7 @@ export default function OrdersContent({
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-[900px] erp-data-table">
               <thead>
                 <tr className="bg-[#eaf2ff] border-b border-gray-200">
                   <th className="p-3 text-center w-12">

@@ -3,8 +3,6 @@ import {
   ChevronLeft,
   ChevronRight,
   FileSpreadsheet,
-  Maximize2,
-  Minimize2,
   RefreshCcw,
   Save,
   Search,
@@ -16,8 +14,6 @@ export default function PriceTable({
   filters,
   setFilters,
   filterControl,
-  isWideView = false,
-  onToggleWideView,
 }) {
   const requestId = useRef(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -106,18 +102,12 @@ export default function PriceTable({
 
   return (
     <div className="space-y-4">
-      {isWideView && (
-        <h1 className="text-2xl font-bold text-gray-800 lg:text-3xl">
-          Thiết lập giá
-        </h1>
-      )}
 
-      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-gray-300 p-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            {filterControl}
+      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm erp-panel">
+        <div className="erp-toolbar">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
 
-            <div className="relative min-w-0 md:w-[420px]">
+            <div className="relative min-w-[200px] flex-1">
               <Search
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -135,6 +125,7 @@ export default function PriceTable({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {filterControl}
             <button
               type="button"
               onClick={fetchProducts}
@@ -145,15 +136,6 @@ export default function PriceTable({
               <RefreshCcw size={17} />
             </button>
 
-            <button
-              type="button"
-              onClick={onToggleWideView}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
-              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-              aria-label={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-            >
-              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
 
             <button
               type="button"
@@ -175,8 +157,8 @@ export default function PriceTable({
           </div>
         </div>
 
-        <div className="max-h-[800px] overflow-y-auto">
-          <table className="w-full text-sm">
+        <div className="max-h-[800px] overflow-auto">
+          <table className="w-full text-sm erp-data-table">
 
             {/* HEADER */}
             <thead className="bg-blue-100 sticky top-0 z-10">

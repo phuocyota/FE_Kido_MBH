@@ -14,7 +14,7 @@ export default function PaymentVoucher({
     useState("purchase");
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6f7fb]">
+    <div className="erp-page flex flex-col bg-[#f6f7fb]">
       <button
   onClick={onBack}
   className="flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 mb-4 mt-4"

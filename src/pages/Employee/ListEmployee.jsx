@@ -1,3 +1,4 @@
+import PageHeader from "../../components/Management/PageHeader";
 import React, { useMemo, useState, useEffect } from "react";
 import {
   Search,
@@ -91,17 +92,18 @@ export default function ListEmployee() {
   }, [search, employees]);
 
   return (
-    <div className="w-full min-h-screen bg-[#f5f6f8] p-3 md:p-5">
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+    <div className="erp-page bg-[#f5f6f8]">
+      <PageHeader title="Nhân viên" eyebrow="Nhân sự / Danh sách" description="Quản lý hồ sơ và trạng thái làm việc của nhân viên." />
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm erp-panel">
 
         {/* HEADER */}
-        <div className="p-3 md:p-4 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+        <div className="p-3 md:p-4 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between erp-toolbar">
 
           {/* LEFT */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
 
             {/* SEARCH */}
-            <div className="relative w-full sm:w-[320px] md:w-[420px]">
+            <div className="relative min-w-[200px] flex-1">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 
               <input
@@ -164,7 +166,7 @@ export default function ListEmployee() {
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="min-w-[1100px] w-full border-collapse">
+          <table className="min-w-[1100px] w-full border-collapse erp-data-table">
 
             <thead>
               <tr className="bg-[#eaf2ff] text-gray-700 text-sm">

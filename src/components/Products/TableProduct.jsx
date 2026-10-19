@@ -5,8 +5,6 @@ import {
   Edit2,
   FileSpreadsheet,
   Image,
-  Maximize2,
-  Minimize2,
   Package,
   Plus,
   RefreshCcw,
@@ -102,8 +100,6 @@ export default function TableProduct({
   filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" },
   setFilters,
   filterControl,
-  isWideView = false,
-  onToggleWideView,
 }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -207,17 +203,12 @@ export default function TableProduct({
   const [selectedProduct, setSelectedProduct] = useState(null);
   return (
     <div className="space-y-4">
-      {isWideView && (
-        <h1 className="text-2xl font-bold text-gray-800 lg:text-3xl">
-          Danh mục hàng hóa
-        </h1>
-      )}
 
       <div>
-        <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm erp-panel">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-violet-100 to-violet-200">
-              <Package size={28} className="text-violet-600" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50">
+              <Package size={28} className="text-indigo-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Tổng số hàng hóa</p>
@@ -230,12 +221,11 @@ export default function TableProduct({
       </div>
 
       {/* TABLE */}
-      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-gray-300 p-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            {filterControl}
+      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm erp-panel">
+        <div className="erp-toolbar">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
 
-            <div className="relative min-w-0 md:w-[420px]">
+            <div className="relative min-w-[200px] flex-1">
               <Search
                 size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -255,6 +245,7 @@ export default function TableProduct({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {filterControl}
             <button
               type="button"
               onClick={fetchProducts}
@@ -265,15 +256,6 @@ export default function TableProduct({
               <RefreshCcw size={17} />
             </button>
 
-            <button
-              type="button"
-              onClick={onToggleWideView}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
-              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-              aria-label={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-            >
-              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
 
             <button
               type="button"
@@ -297,8 +279,8 @@ export default function TableProduct({
         </div>
       </div>
 
-        <div className="max-h-[900px] overflow-y-auto">
-          <table className="w-full text-sm">
+        <div className="max-h-[900px] overflow-auto">
+          <table className="w-full text-sm erp-data-table">
             
             {/* HEADER */}
             <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">

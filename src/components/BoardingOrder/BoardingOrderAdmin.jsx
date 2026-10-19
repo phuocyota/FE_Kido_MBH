@@ -494,10 +494,10 @@ export default function BoardingOrderAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-3 sm:p-4">
-      <div className="mx-auto flex max-w-[1800px] flex-col gap-4">
+    <div className="erp-page bg-slate-100">
+      <div className="erp-content flex flex-col gap-4">
         <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 p-4 lg:p-5">
+          <div className="rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 p-4 lg:p-5 erp-page-header">
             <div>
               <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
                 <ChefHat size={16} />

@@ -8,8 +8,6 @@ import {
   Plus,
   RefreshCw,
   FileSpreadsheet,
-  Maximize2,
-  Minimize2,
   Printer,
   ChevronDown,
 } from "lucide-react";
@@ -21,8 +19,6 @@ export default function CashToolbar({
   setFilters,
   onRefresh,
   filterControl,
-  isWideView = false,
-  onToggleWideView,
 }) {
   const [openMenu, setOpenMenu] =
 
@@ -76,18 +72,17 @@ const handleToggleMenu = () => {
  
   return (
     <div className="bg-white border-b border-gray-300">
-      <div className="p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="p-0">
+        <div className="erp-toolbar">
           {/* Filter */}
-          <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-            {filterControl}
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
 
             <div className="relative flex-1">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 
               <input
                 placeholder="Nhập số phiếu, đối tượng"
-                className="h-11 w-full sm:w-[320px] lg:w-[420px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="h-9 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 value={filters?.search || ""}
                 onChange={(e) =>
                   setFilters?.((prev) => ({
@@ -100,7 +95,8 @@ const handleToggleMenu = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex flex-wrap items-center gap-2">
+            {filterControl}
             <button
               onClick={onRefresh}
               className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
@@ -108,14 +104,6 @@ const handleToggleMenu = () => {
               <RefreshCw size={17} className="text-gray-600" />
             </button>
 
-            <button
-              type="button"
-              onClick={onToggleWideView}
-              className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
-              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-            >
-              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
 
             <button className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition">
               <FileSpreadsheet size={17} className="text-green-600" />

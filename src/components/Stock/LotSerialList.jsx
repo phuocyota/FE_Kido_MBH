@@ -68,9 +68,7 @@ export default function LotSerialList({ lotId }) {
                   </span>
                   <Link
                     title="Truy xuất nguồn gốc serial này"
-                    to={`/warehouse/trace?mode=serial&detailId=${encodeURIComponent(
-                      row.detailId,
-                    )}&position=${row.position}`}
+                    to={`/warehouse/trace?id=${encodeURIComponent(row.serial)}`}
                     className="min-w-0 break-all font-mono text-xs font-semibold text-indigo-700 hover:underline"
                   >
                     {row.serial}
