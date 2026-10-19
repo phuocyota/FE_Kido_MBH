@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { filterProductReportRows, validateReportDates } from "./productReportData";
+import {
+  filterProductReportRows,
+  validateReportDates,
+} from "./productReportData";
 import { reportApi } from "../../../api";
 
-export default function ProductSaleReport({ fromDate, toDate, branchId, branch, ...filters }) {
+export default function ProductSaleReport({
+  fromDate,
+  toDate,
+  branchId,
+  branch,
+  ...filters
+}) {
   const requestId = useRef(0);
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
@@ -128,7 +137,9 @@ export default function ProductSaleReport({ fromDate, toDate, branchId, branch, 
 
             <div className="mt-8 text-[38px] font-bold">
               {reportData?.title || "Kế hoạch đặt hàng hóa trong Tháng"}
-              <div className="mt-2 text-base font-normal">Từ {fromDate} đến {toDate}</div>
+              <div className="mt-2 text-base font-normal">
+                Từ {fromDate} đến {toDate}
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { unwrapProductReport, filterProductReportRows, validateReportDates } from "./productReportData";
+import {
+  unwrapProductReport,
+  filterProductReportRows,
+  validateReportDates,
+} from "./productReportData";
 import { reportApi } from "../../../api";
 
 const formatMoney = (value) => Number(value || 0).toLocaleString("vi-VN");
@@ -12,7 +16,13 @@ const getMonthLabel = (value) => {
   });
 };
 
-export default function ProductInventoryReport({ fromDate, toDate, branchId, branch, ...filters }) {
+export default function ProductInventoryReport({
+  fromDate,
+  toDate,
+  branchId,
+  branch,
+  ...filters
+}) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
@@ -28,11 +38,12 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
     setError("");
     try {
       validateReportDates(fromDate, toDate);
-      const [inventoryResponse, revenueResponse, planResponse] = await Promise.all([
-        reportApi.getInventory(branchId),
-        reportApi.getRevenue(fromDate, toDate, branchId),
-        reportApi.getMonthlyOrderPlan(null, fromDate, toDate, branchId),
-      ]);
+      const [inventoryResponse, revenueResponse, planResponse] =
+        await Promise.all([
+          reportApi.getInventory(branchId),
+          reportApi.getRevenue(fromDate, toDate, branchId),
+          reportApi.getMonthlyOrderPlan(null, fromDate, toDate, branchId),
+        ]);
       if (id !== requestId.current) return;
       const result = unwrapProductReport(inventoryResponse);
       const revenue = unwrapProductReport(revenueResponse);
@@ -43,46 +54,51 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
           : null;
       if (!inventoryItems)
         throw new Error("Dữ liệu báo cáo tồn kho không hợp lệ");
-      const planByProduct = new Map((planResponse?.data || []).map(item => [item.productId, item]));
+      const planByProduct = new Map(
+        (planResponse?.data || []).map((item) => [item.productId, item]),
+      );
       // Map BE data to the existing common form.
       const mappedData = inventoryItems.map((item, index) => {
         const plan = planByProduct.get(item.productId);
-        return ({
-        productId: item.productId,
-        categoryId: item.categoryId,
-        productType: item.productType,
-        stt: index + 1,
-        group: item.group || plan?.group || "",
-        code: item.code || item.inventoryItemId || "",
-        name: item.name,
-        unit: item.unit,
-        value: item.value == null && item.totalValue == null ? "" : formatMoney(item.value ?? item.totalValue),
-        stockStart: item.stockStart != null ? String(item.stockStart) : "",
-        week1: item.week1 != null ? String(item.week1) : "",
-        week2: item.week2 != null ? String(item.week2) : "",
-        week3: item.week3 != null ? String(item.week3) : "",
-        week4: item.week4 != null ? String(item.week4) : "",
-        week5: item.week5 != null ? String(item.week5) : "",
-        week6: item.week6 != null ? String(item.week6) : "",
-        outside: item.outside != null ? String(item.outside) : "",
-        totalImport: item.totalImport != null ? String(item.totalImport) : "",
-        destroy1: "",
-        destroy2: "",
-        destroy3: "",
-        destroy4: "",
-        destroy5: "",
-        stockEnd: String(item.quantity || 0),
-        sale: plan ? String(plan.monthlyUsage) : "0",
-        totalCost: item.totalCost == null ? "" : formatMoney(item.totalCost),
-        usagePer: item.usagePerMil != null ? String(item.usagePerMil) : "",
-        min: plan?.planSales?.min != null ? String(plan.planSales.min) : "",
-        max: plan?.planSales?.max != null ? String(plan.planSales.max) : "",
-        warning: item.quantity < 10 ? "Sắp hết hàng" : "",
-        order:
-          plan?.suggestedOrderQuantity != null
-            ? String(plan.suggestedOrderQuantity)
-            : "",
-      });
+        return {
+          productId: item.productId,
+          categoryId: item.categoryId,
+          productType: item.productType,
+          stt: index + 1,
+          group: item.group || plan?.group || "",
+          code: item.code || item.inventoryItemId || "",
+          name: item.name,
+          unit: item.unit,
+          value:
+            item.value == null && item.totalValue == null
+              ? ""
+              : formatMoney(item.value ?? item.totalValue),
+          stockStart: item.stockStart != null ? String(item.stockStart) : "",
+          week1: item.week1 != null ? String(item.week1) : "",
+          week2: item.week2 != null ? String(item.week2) : "",
+          week3: item.week3 != null ? String(item.week3) : "",
+          week4: item.week4 != null ? String(item.week4) : "",
+          week5: item.week5 != null ? String(item.week5) : "",
+          week6: item.week6 != null ? String(item.week6) : "",
+          outside: item.outside != null ? String(item.outside) : "",
+          totalImport: item.totalImport != null ? String(item.totalImport) : "",
+          destroy1: "",
+          destroy2: "",
+          destroy3: "",
+          destroy4: "",
+          destroy5: "",
+          stockEnd: String(item.quantity || 0),
+          sale: plan ? String(plan.monthlyUsage) : "0",
+          totalCost: item.totalCost == null ? "" : formatMoney(item.totalCost),
+          usagePer: item.usagePerMil != null ? String(item.usagePerMil) : "",
+          min: plan?.planSales?.min != null ? String(plan.planSales.min) : "",
+          max: plan?.planSales?.max != null ? String(plan.planSales.max) : "",
+          warning: item.quantity < 10 ? "Sắp hết hàng" : "",
+          order:
+            plan?.suggestedOrderQuantity != null
+              ? String(plan.suggestedOrderQuantity)
+              : "",
+        };
       });
       setRows(mappedData);
       setSummary({
@@ -143,7 +159,9 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
         width: "3200px",
       }}
     >
-      <div className="px-4 py-2 text-sm text-slate-600">{branch} · Từ {fromDate} đến {toDate} · Số tồn hiện tại khi tải báo cáo</div>
+      <div className="px-4 py-2 text-sm text-slate-600">
+        {branch} · Từ {fromDate} đến {toDate} · Số tồn hiện tại khi tải báo cáo
+      </div>
       {/* TOP */}
       <div className="grid grid-cols-12 border border-gray-400">
         {/* LEFT */}
@@ -170,7 +188,7 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              0
+              —
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 font-bold">
@@ -178,7 +196,7 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              0
+              —
             </div>
 
             <div className="border-b border-r border-gray-400 p-2 font-bold">
@@ -186,26 +204,26 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
             </div>
 
             <div className="border-b border-gray-400 p-2 text-right font-bold text-[#1F4E79]">
-              0
+              —
             </div>
 
             <div className="border-r border-gray-400 p-2 font-bold">
               CHI PHÍ SỬ DỤNG HÀNG KHÔ :
             </div>
 
-            <div className="p-2 text-right font-bold text-[#1F4E79]">0</div>
+            <div className="p-2 text-right font-bold text-[#1F4E79]">—</div>
           </div>
         </div>
 
         {/* CENTER */}
         <div className="col-span-1 flex flex-col justify-end pb-2 gap-4">
-          <div className="text-red-600 text-center">0%</div>
+          <div className="text-red-600 text-center">—</div>
 
-          <div className="text-red-600 text-center">0%</div>
+          <div className="text-red-600 text-center">—</div>
 
-          <div className="text-red-600 text-center">0%</div>
+          <div className="text-red-600 text-center">—</div>
 
-          <div className="text-red-600 text-center">0%</div>
+          <div className="text-red-600 text-center">—</div>
         </div>
 
         {/* RIGHT */}
