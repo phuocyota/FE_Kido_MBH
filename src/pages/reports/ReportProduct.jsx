@@ -1,3 +1,4 @@
+import { exportReportExcel, printReport } from "../../components/reports/reportActions";
 import React, { useEffect, useRef, useState } from "react";
 
 import { branchApi } from "../../api";
@@ -136,112 +137,8 @@ export default function ReportProduct() {
   // =========================
   // EXPORT EXCEL
   // =========================
-  const handleDownloadExcel = () => {
-    alert("Xuất Excel đang được phát triển");
-  };
-
-  // =========================
-  // PRINT
-  // =========================
-  const handlePrint = () => {
-    const printContents = previewRef.current.innerHTML;
-
-    const originalContents = document.body.innerHTML;
-
-    document.body.innerHTML = `
-    <html>
-
-      <head>
-
-        <title>Báo cáo</title>
-
-        <style>
-
-          *{
-            box-sizing:border-box;
-          }
-
-          html,
-          body{
-            width:100%;
-            height:100%;
-            margin:0;
-            padding:0;
-            background:white;
-            overflow:hidden;
-            font-family:Arial,sans-serif;
-          }
-
-          body{
-            display:flex;
-            justify-content:center;
-            align-items:flex-start;
-          }
-
-          .print-container{
-            width:100%;
-            padding:0;
-            margin:0;
-            background:white;
-          }
-
-          table{
-            width:100%;
-            border-collapse:collapse;
-            table-layout:fixed;
-          }
-
-          th,
-          td{
-            border:1px solid #94a3b8;
-            padding:8px;
-            font-size:12px;
-          }
-
-          @page{
-            size:A4 landscape;
-            margin:0;
-          }
-
-          @media print{
-
-            html,
-            body{
-              background:white !important;
-            }
-
-            body{
-              -webkit-print-color-adjust:exact;
-              print-color-adjust:exact;
-            }
-
-          }
-
-        </style>
-
-      </head>
-
-      <body>
-
-        <div class="print-container">
-
-          ${printContents}
-
-        </div>
-
-      </body>
-
-    </html>
-  `;
-
-    setTimeout(() => {
-      window.print();
-
-      document.body.innerHTML = originalContents;
-
-      window.location.reload();
-    }, 300);
-  };
+  const handleDownloadExcel = () => exportReportExcel(previewRef.current, "Bao_cao_hang_hoa.xlsx");
+  const handlePrint = () => printReport(previewRef.current, true);
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] p-2 sm:p-4 lg:p-5">

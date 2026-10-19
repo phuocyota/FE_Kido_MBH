@@ -1,3 +1,4 @@
+import { exportReportExcel, printReport } from "../../components/reports/reportActions";
 import React, { useRef, useState } from "react";
 
 import jsPDF from "jspdf";
@@ -79,49 +80,8 @@ export default function ReportEndDay() {
     pdf.save("Bao_cao_cuoi_ngay.pdf");
   };
 
-  const handlePrint = () => {
-    const printContents = exportRef.current.innerHTML;
-
-    const originalContents = document.body.innerHTML;
-
-    document.body.innerHTML = `
-    <div style="padding:20px;font-family:Arial">
-
-      <style>
-
-        table{
-          width:100%;
-          border-collapse:collapse;
-        }
-
-        th,
-        td{
-          border:1px solid #d1d5db;
-          padding:10px;
-          text-align:center;
-          font-size:14px;
-        }
-
-        h1{
-          text-align:center;
-          margin-bottom:10px;
-        }
-
-      </style>
-
-      ${printContents}
-
-    </div>
-  `;
-
-    window.print();
-
-    document.body.innerHTML = originalContents;
-
-    window.location.reload();
-  };
-
-  const handleDownloadExcel = () => {};
+  const handleDownloadExcel = () => exportReportExcel(exportRef.current, "Bao_cao_cuoi_ngay.xlsx");
+  const handlePrint = () => printReport(exportRef.current, reportType === "landscape");
 
   return (
     <div className="min-h-screen bg-gray-100 p-2 sm:p-4 lg:p-5">

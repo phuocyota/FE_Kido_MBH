@@ -1,3 +1,4 @@
+import { exportReportExcel, printReport } from "../../components/reports/reportActions";
 import React, {
   useEffect,
   useRef,
@@ -116,123 +117,9 @@ export default function ReportEmployee() {
   // =========================
   // EXPORT EXCEL
   // =========================
-  const handleDownloadExcel = () => {
-    alert(
-      "Xuất Excel đang được phát triển"
-    );
-  };
+  const handleDownloadExcel = () => exportReportExcel(exportRef.current, "Bao_cao_nhan_vien.xlsx");
+  const handlePrint = () => printReport(exportRef.current, viewType === "horizontal");
 
-  // =========================
-  // PRINT
-  // =========================
-  const handlePrint = () => {
-    const printContents =
-      exportRef.current?.innerHTML || "";
-
-      const pageOrientation =
-  viewType === "horizontal"
-    ? "landscape"
-    : "portrait";
-
-    const originalContents =
-      document.body.innerHTML;
-
-    document.body.innerHTML = `
-      <html>
-
-        <head>
-
-          <title>Báo cáo nhân viên</title>
-
-          <style>
-
-            *{
-              box-sizing:border-box;
-            }
-
-            html,
-            body{
-              width:100%;
-              height:100%;
-              margin:0;
-              padding:0;
-              background:white;
-              overflow:hidden;
-              font-family:Arial,sans-serif;
-            }
-
-            body{
-              display:flex;
-              justify-content:center;
-              align-items:flex-start;
-            }
-
-            .print-container{
-              width:100%;
-              background:white;
-            }
-
-            table{
-              width:100%;
-              border-collapse:collapse;
-            }
-
-            th,
-            td{
-              border:1px solid #94a3b8;
-              padding:8px;
-              font-size:12px;
-            }
-
-            @page{
-  size:A4 ${pageOrientation};
-  margin:10mm;
-}
-
-            @media print{
-
-              html,
-              body{
-                background:white !important;
-              }
-
-              body{
-                -webkit-print-color-adjust:exact;
-                print-color-adjust:exact;
-              }
-
-            }
-
-          </style>
-
-        </head>
-
-        <body>
-
-          <div class="print-container">
-
-            ${printContents}
-
-          </div>
-
-        </body>
-
-      </html>
-    `;
-
-    setTimeout(() => {
-      window.print();
-
-    
-
-      document.body.innerHTML =
-        originalContents;
-
-      window.location.reload();
-    }, 300);
-  };
-
-  
   return (
     <div className="min-h-screen bg-[#F3F4F6] p-2 sm:p-4 lg:p-5">
 
