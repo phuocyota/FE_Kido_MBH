@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Package, Plus, Search, X } from "lucide-react";
+import LotSerialList from "../../components/Stock/LotSerialList";
 import StockSerials from "./StockSerials";
 import StockHeader from "../../components/Stock/StockHeader";
 import StockInPagination from "../../components/StockIn/StockInPagination";
@@ -128,7 +129,7 @@ function StockLotList() {
               <thead className="bg-blue-600 text-xs uppercase text-white"><tr>{["Số lô", "Hàng hóa", "Kho", "Ngày sản xuất", "Hạn sử dụng", "Tồn còn lại", "Trạng thái", ""].map((title, index) => <th key={index} className="whitespace-nowrap px-4 py-3">{title}</th>)}</tr></thead>
               <tbody>{result.items.map((lot) => (
                 <tr key={lot.id} className={`border-b border-slate-100 hover:bg-blue-50 ${selected?.id === lot.id ? "bg-blue-50" : ""}`}>
-                  <td className="max-w-[240px] break-all px-4 py-4 font-medium text-blue-700">{lot.lotCode}</td>
+                  <td className="max-w-[240px] break-all px-4 py-4 font-medium text-blue-700"><button type="button" onClick={() => setSelected(lot)} className="break-all text-left hover:underline" aria-label={`Xem chi tiết và serial lô ${lot.lotCode}`}>{lot.lotCode}</button></td>
                   <td className="px-4 py-4"><div className="font-semibold text-slate-800">{lot.product?.name || "—"}</div><div className="mt-1 text-xs text-slate-500">{lot.product?.code} · {lotTypes[lot.product?.productType] || "Chưa phân loại"}{lot.product?.isFreshFood ? " · Tươi sống" : ""}</div></td>
                   <td className="px-4 py-4 text-slate-600">{lot.stock?.name || "—"}</td>
                   <td className="whitespace-nowrap px-4 py-4">{lotDate(lot.manufacturedAt)}</td><td className="whitespace-nowrap px-4 py-4">{lotDate(lot.expiresAt)}</td>
@@ -175,7 +176,7 @@ export function LotDetails({ lot, onClose }) {
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", lotDate(trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
-        <Link to={`/stock-lots?tab=serial&lotId=${encodeURIComponent(lot.id)}`} className="mb-5 inline-flex rounded-lg border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">Danh sách serial thuộc lô</Link>
+        <LotSerialList key={lot.id} lotId={lot.id} />
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>
         {trace.movements?.length ? <div className="max-h-[400px] overflow-auto"><table className="w-full min-w-[600px] text-left text-sm"><thead className="sticky top-0 bg-slate-100"><tr>{["Thời gian", "Giao dịch", "Số lượng", "Kho", "Tham chiếu"].map((label) => <th key={label} className="px-3 py-2">{label}</th>)}</tr></thead><tbody>{trace.movements.map((move) => <tr key={move.id} className="border-b border-slate-100"><td className="px-3 py-3">{move.at ? new Date(move.at).toLocaleString("vi-VN") : "—"}</td><td className="px-3 py-3">{Number(move.quantity) >= 0 ? "Nhập" : "Xuất"}</td><td className={`px-3 py-3 font-semibold tabular-nums ${Number(move.quantity) >= 0 ? "text-emerald-700" : "text-red-600"}`}>{Number(move.quantity) > 0 ? "+" : ""}{lotNumber(move.quantity)}</td><td className="px-3 py-3">{move.stockName || "—"}</td><td className="max-w-[240px] break-all px-3 py-3 text-xs text-slate-500">{move.referenceId || "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-slate-500">Chưa có giao dịch cho lô này.</p>}
         {trace.consumption?.consumedBy?.some((use) => use.referenceType === "PRODUCTION_BATCH") && (
