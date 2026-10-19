@@ -143,6 +143,7 @@ export default function ProductInventoryReport({ fromDate, toDate, branchId, bra
         width: "3200px",
       }}
     >
+      <div className="px-4 py-2 text-sm text-slate-600">{branch} · Từ {fromDate} đến {toDate} · Số tồn hiện tại khi tải báo cáo</div>
       {/* TOP */}
       <div className="grid grid-cols-12 border border-gray-400">
         {/* LEFT */}

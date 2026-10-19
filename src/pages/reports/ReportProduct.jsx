@@ -30,7 +30,7 @@ export default function ReportProduct() {
   const interests = [
     "Bán hàng",
     // "Lợi nhuận",
-    "Tồn kho hiện tại",
+    "Xuất nhập tồn",
     // "Xuất hủy",
   ];
 

@@ -131,7 +131,7 @@ export default function ReportProductContent({
             />
           )}
 
-          {interest === "Tồn kho hiện tại" && (
+          {interest === "Xuất nhập tồn" && (
             <ProductInventoryReport
               branch={branch}
               productKeyword={productKeyword}
