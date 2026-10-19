@@ -36,7 +36,7 @@ function ReceiptStatus({ value }) {
     </span>
   );
 }
-export default function StockSerials() {
+export default function StockSerials({ traceMode = false }) {
   const [params] = useSearchParams();
   const [filters, setFilters] = useState({
     search: "",
@@ -47,7 +47,11 @@ export default function StockSerials() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [refresh, setRefresh] = useState(0);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(() =>
+    traceMode && params.get("detailId") && params.get("position")
+      ? { detailId: params.get("detailId"), position: params.get("position") }
+      : null,
+  );
   const lotId = params.get("lotId") || "";
   const productId = params.get("productId") || "";
   const state = useWarehouseData(
@@ -62,10 +66,31 @@ export default function StockSerials() {
     setPage(1);
     setSelected(null);
   };
+  if (traceMode && selected)
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setSelected(null)}
+          className="mb-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+        >
+          Tra cứu serial khác
+        </button>
+        <SerialDetails
+          key={`${selected.detailId}:${selected.position}`}
+          selected={selected}
+          onClose={() => setSelected(null)}
+        />
+      </>
+    );
   return (
     <>
       <Panel
-        title="Danh sách serial nhập kho"
+        title={
+          traceMode
+            ? "Truy xuất nguồn gốc theo serial"
+            : "Danh sách serial nhập kho"
+        }
         description="Theo dõi từng serial đã khai báo khi nhập kho, nguồn nhà cung cấp và liên kết lô hàng."
         action={
           <span className="whitespace-nowrap text-xs text-slate-400">
@@ -192,7 +217,15 @@ export default function StockSerials() {
                       <td
                         className={`${cellClass} max-w-[240px] break-all font-mono text-xs`}
                       >
-                        {row.serial}
+                        <Link
+                          title="Truy xuất nguồn gốc serial này"
+                          className="text-indigo-700 hover:underline"
+                          to={`/warehouse/trace?mode=serial&detailId=${encodeURIComponent(
+                            row.detailId,
+                          )}&position=${row.position}`}
+                        >
+                          {row.serial}
+                        </Link>
                       </td>
                       <td className={cellClass}>
                         <div className="font-semibold">{row.productName}</div>
@@ -274,7 +307,7 @@ function SerialDetails({ selected, onClose }) {
   return (
     <div className="mt-4">
       <Panel
-        title="Chi tiết serial"
+        title="Truy xuất nguồn gốc serial"
         action={
           <button
             aria-label="Đóng chi tiết serial"
@@ -295,6 +328,27 @@ function SerialDetails({ selected, onClose }) {
             <p className="break-all font-mono text-sm font-semibold text-indigo-700">
               {row.serial}
             </p>
+            <dl
+              aria-label="Ngày nhập kho và ngày hết hạn"
+              className="grid gap-3 sm:grid-cols-2"
+            >
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+                <dt className="text-sm text-slate-500">Ngày nhập kho</dt>
+                <dd className="mt-2 text-xl font-bold text-slate-900">
+                  {row.purchasedAt || row.receivedAt
+                    ? date(row.purchasedAt || row.receivedAt)
+                    : "Chưa có thông tin"}
+                </dd>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <dt className="text-sm text-slate-500">Ngày hết hạn</dt>
+                <dd className="mt-2 text-xl font-bold text-slate-900">
+                  {row.expiresAt
+                    ? date(row.expiresAt)
+                    : "Chưa khai báo hạn dùng"}
+                </dd>
+              </div>
+            </dl>
             <dl className="grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ["Hàng hóa", row.productName],
@@ -302,9 +356,7 @@ function SerialDetails({ selected, onClose }) {
                 ["Nhà cung cấp", row.supplierName],
                 ["Phiếu nhập", row.receiptCode],
                 ["Kho nhập", row.stockName],
-                ["Ngày nhập", date(row.receivedAt)],
                 ["Số lô", row.lotCode],
-                ["Hạn dùng", date(row.expiresAt)],
               ].map(([label, value]) => (
                 <div key={label}>
                   <dt className="text-xs text-slate-500">{label}</dt>
@@ -314,6 +366,27 @@ function SerialDetails({ selected, onClose }) {
                 </div>
               ))}
             </dl>
+            <section
+              aria-label="Nguồn ghi nhận serial"
+              className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4"
+            >
+              <h3 className="text-sm font-semibold text-slate-800">
+                Nguồn ghi nhận serial này
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {row.supplierName || "Nhà cung cấp chưa ghi nhận"} → Phiếu{" "}
+                {row.receiptCode} →{" "}
+                {row.lotCode ? `Lô ${row.lotCode}` : row.productName} →{" "}
+                <span className="break-all font-mono font-semibold text-indigo-700">
+                  {row.serial}
+                </span>
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                Ghi nhận ngày {date(row.receivedAt)} tại{" "}
+                {row.stockName || "kho chưa ghi nhận"}. Thông tin lấy từ đúng
+                dòng phiếu nhập đã khai báo serial này.
+              </p>
+            </section>
             <ReceiptStatus value={row.receiptStatus} />
             <p className="text-xs text-slate-500">
               Serial được ghi nhận trên phiếu nhập này. Hệ thống chưa có lịch sử

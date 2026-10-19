@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, History } from "lucide-react";
+import StockSerials from "./StockSerials";
 import StockHeader from "../../components/Stock/StockHeader";
 import { stockLotApi } from "../../api/stockLotApi";
 import { LotDetails } from "./StockLots";
@@ -16,6 +17,48 @@ import {
 } from "../../components/Warehouse/warehouseFormat";
 
 export default function WarehouseTrace() {
+  const [params, setParams] = useSearchParams();
+  const [refresh, setRefresh] = useState(0);
+  const serialMode = params.get("mode") === "serial" || params.has("detailId");
+  return (
+    <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+      <StockHeader
+        activeTab="trace"
+        onRefresh={() => setRefresh((value) => value + 1)}
+      />
+      <nav
+        aria-label="Cách truy xuất nguồn gốc"
+        className="mb-4 flex gap-1 rounded-xl border border-slate-200 bg-white p-1"
+      >
+        {[
+          [false, "Theo lô hàng"],
+          [true, "Theo serial"],
+        ].map(([serial, label]) => (
+          <button
+            type="button"
+            key={label}
+            aria-pressed={serialMode === serial}
+            onClick={() => setParams(serial ? { mode: "serial" } : {})}
+            className={`rounded-lg px-5 py-2.5 text-sm font-semibold ${
+              serialMode === serial
+                ? "bg-indigo-50 text-indigo-700"
+                : "text-slate-500 hover:bg-slate-50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {serialMode ? (
+        <StockSerials traceMode key={`${params.toString()}:${refresh}`} />
+      ) : (
+        <LotTrace key={`${params.toString()}:${refresh}`} />
+      )}
+    </main>
+  );
+}
+
+function LotTrace() {
   const [params] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() =>
@@ -28,7 +71,6 @@ export default function WarehouseTrace() {
     error: "",
     items: null,
   });
-  const [refresh, setRefresh] = useState(0);
   const find = async (event) => {
     event?.preventDefault();
     if (!search.trim()) return;
@@ -56,11 +98,7 @@ export default function WarehouseTrace() {
     }
   };
   return (
-    <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
-      <StockHeader
-        activeTab="trace"
-        onRefresh={() => setRefresh((value) => value + 1)}
-      />
+    <>
       <Panel
         title="Truy xuất nguồn gốc"
         description="Tra cứu từ lô thực tế đến nguồn nhập, nhà cung cấp, lịch sử biến động và đầu ra chế biến đã ghi nhận."
@@ -131,11 +169,11 @@ export default function WarehouseTrace() {
       </Panel>
       {selected && (
         <LotDetails
-          key={`${selected.id}-${refresh}`}
+          key={selected.id}
           lot={selected}
           onClose={() => setSelected(null)}
         />
       )}
-    </main>
+    </>
   );
 }
