@@ -360,13 +360,7 @@ export default function AddProductModal({
               <input
                 type="checkbox"
                 checked={form.isCanteenItem}
-                onChange={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    isCanteenItem: !prev.isCanteenItem,
-                    isBoarding: prev.isCanteenItem,
-                  }))
-                }
+                onChange={(event) => setForm((prev) => ({ ...prev, isCanteenItem: event.target.checked }))}
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
               Cho phép bán
@@ -376,13 +370,7 @@ export default function AddProductModal({
               <input
                 type="checkbox"
                 checked={form.isBoarding}
-                onChange={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    isBoarding: !prev.isBoarding,
-                    isCanteenItem: prev.isBoarding,
-                  }))
-                }
+                onChange={(event) => setForm((prev) => ({ ...prev, isBoarding: event.target.checked }))}
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
               />
               Bán trú

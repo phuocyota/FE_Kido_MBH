@@ -147,7 +147,7 @@ export default function TableProduct({
           unit: p.unit || "",
           isActive: p.isActive,
           isCanteenItem: p.isCanteenItem,
-          isBoarding: p.isCanteenItem === false,
+          isBoarding: p.isBoarding ?? false,
           imageUrl,
           stock: p.remain || 0,
         };
@@ -462,6 +462,7 @@ export default function TableProduct({
               isActive: isEdit ? (selectedProduct?.isActive ?? true) : true,
               isCanteenItem: data.isCanteenItem,
               isFreshFood: data.isFreshFood,
+              isBoarding: data.isBoarding,
               imageUrl: data.imageUrl || undefined,
               ingredients: data.ingredients || undefined,
               description: data.description || undefined,
