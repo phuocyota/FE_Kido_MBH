@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { getStockInPurpose } from "../../components/StockIn/stockInPurposes";
 import StockInHeader from "../../components/StockIn/StockInHeader";
 import StockInInfo from "../../components/StockIn/StockInInfo";
 import StockInTable from "../../components/StockIn/StockInTable";
@@ -15,7 +16,13 @@ export default function StockInCreate() {
   const [loading, setLoading] = useState(false);
   const saveRequest = useRef(null);
 
-  const [reasonCode, setReasonCode] = useState("NHNCC");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const reasonCode = getStockInPurpose(searchParams.get("reasonCode")).code;
+  const setReasonCode = (code) => setSearchParams((current) => {
+    const next = new URLSearchParams(current);
+    next.set("reasonCode", getStockInPurpose(code).code);
+    return next;
+  }, { replace: true });
   const [paymentStatus, setPaymentStatus] = useState("DEBT");
   const [supplier, setSupplier] = useState(null);
   const [note, setNote] = useState("");
@@ -57,7 +64,7 @@ export default function StockInCreate() {
       const payload = {
         type: "IMPORT",
         purchasedAt: purchasedAt.slice(0, 10),
-        reasonCode: reasonCode === "OTHER" ? undefined : reasonCode,
+        reasonCode,
         branchId: getBranchIdFromToken() || undefined,
         sourceId: supplier.id,
         sourceType: "SUPPLIER",
@@ -114,7 +121,11 @@ export default function StockInCreate() {
 
         {/* Bảng chi tiết */}
         <div className="flex-1 overflow-hidden">
-          <StockInTable items={items} setItems={setItems} purchasedAt={purchasedAt.slice(0, 10)} />
+          <StockInTable
+            key={reasonCode === "NHNNL" ? "materials" : "all-products"}
+            productTypeFilter={reasonCode === "NHNNL" ? "INGREDIENT,FUEL" : ""}
+            items={items} setItems={setItems} purchasedAt={purchasedAt.slice(0, 10)}
+          />
         </div>
 
         {/* Footer */}

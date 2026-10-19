@@ -4,39 +4,32 @@ import {
   FileSpreadsheet,
   Maximize2,
   Minimize2,
-  Plus,
   RefreshCcw,
   Search,
   Settings,
-  Sparkles,
 } from "lucide-react";
+import { defaultStockInFilters } from "./stockInFilters";
 import StockFilterPanel from "../Stock/StockFilterPanel";
 
-const defaultFilterValues = {
-  postingStatus: "Tất cả",
-  documentType: "Tất cả",
-  secondaryStatus: "Tất cả",
-  reportPeriod: "Đầu năm đến hiện tại",
-  fromDate: "01/01/2026",
-  toDate: "22/06/2026",
-};
+const defaultFilterValues = defaultStockInFilters;
 
 export default function StockInListToolbar({
   searchKeyword,
   onSearchChange,
-  onCreateClick,
   showFilterButton = false,
   isWideView = false,
   onToggleWideView,
+  filters, onFiltersChange, onApplyFilters, onResetFilters,
 }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterValues, setFilterValues] = useState(defaultFilterValues);
+  const [localFilterValues, setFilterValues] = useState(defaultFilterValues);
+  const filterValues = filters || localFilterValues;
   const iconButtonClass =
     "min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition";
 
   const handleFilterChange = (field, value) => {
-    // Lưu lựa chọn lọc ở toolbar để sau này có thể nối API dễ dàng.
-    setFilterValues((current) => ({ ...current, [field]: value }));
+    if (onFiltersChange) onFiltersChange({ ...filterValues, [field]: value });
+    else setFilterValues((current) => ({ ...current, [field]: value }));
   };
 
   return (
@@ -65,16 +58,12 @@ export default function StockInListToolbar({
                   type="in"
                   values={filterValues}
                   onChange={handleFilterChange}
-                  onReset={() => setFilterValues(defaultFilterValues)}
-                  onApply={() => setIsFilterOpen(false)}
+                  onReset={() => onResetFilters ? onResetFilters() : setFilterValues(defaultFilterValues)}
+                  onApply={() => { if (onApplyFilters?.(filterValues) !== false) setIsFilterOpen(false); }}
                 />
               )}
             </div>}
 
-            {/* Khoảng thời gian đang xem của danh sách phiếu. */}
-            <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
-              {filterValues.reportPeriod}
-            </span>
           </div>
 
           {/* Search & Main Actions */}
@@ -111,26 +100,7 @@ export default function StockInListToolbar({
                 <Settings size={17} className="text-gray-600" />
               </button>
 
-              <div className="relative flex-shrink-0">
-                <div className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm">
-                  <button
-                    type="button"
-                    onClick={onCreateClick}
-                    className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
-                  >
-                    <Plus size={18} />
-                    Thêm phiếu
-                  </button>
 
-                  <button
-                    type="button"
-                    className="w-10 h-10 bg-indigo-600 border-l border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition"
-                    title="Tùy chọn thêm"
-                  >
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>

@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
+import { defaultStockInFilters, matchesStockInFilters, validateStockInFilters } from "../../components/StockIn/stockInFilters";
 import { useNavigate } from "react-router-dom";
 import { stockInApi } from "../../api";
 import StockHeader from "../../components/Stock/StockHeader";
 import StockInDetailTable from "../../components/StockIn/StockInDetailTable";
 import StockInListTable from "../../components/StockIn/StockInListTable";
+import StockInPurposeChoices from "../../components/StockIn/StockInPurposeChoices";
 import StockInListToolbar from "../../components/StockIn/StockInListToolbar";
 import StockInPagination from "../../components/StockIn/StockInPagination";
 import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
@@ -20,6 +23,20 @@ export default function StockInList() {
   const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
   const [error, setError] = useState("");
   const [isWideView, setIsWideView] = useState(false);
+  const [filterDraft, setFilterDraft] = useState(defaultStockInFilters);
+  const [appliedFilters, setAppliedFilters] = useState(defaultStockInFilters);
+  const applyFilters = (values) => {
+    const error = validateStockInFilters(values);
+    if (error) { toast.error(error); return false; }
+    setAppliedFilters({ ...values });
+    setCurrentPage(1);
+    return true;
+  };
+  const resetFilters = () => {
+    setFilterDraft(defaultStockInFilters);
+    setAppliedFilters(defaultStockInFilters);
+    setCurrentPage(1);
+  };
 
   const loadReceipts = async () => {
     try {
@@ -44,9 +61,10 @@ export default function StockInList() {
   const filteredReceipts = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
-    if (!keyword) return receipts;
+    const matchingReceipts = receipts.filter((receipt) => matchesStockInFilters(receipt, appliedFilters));
+    if (!keyword) return matchingReceipts;
 
-    return receipts.filter((receipt) =>
+    return matchingReceipts.filter((receipt) =>
       [
         receipt.postedDate,
         receipt.voucherNo,
@@ -59,7 +77,7 @@ export default function StockInList() {
         .toLowerCase()
         .includes(keyword)
     );
-  }, [receipts, searchKeyword]);
+  }, [receipts, searchKeyword, appliedFilters]);
 
   useEffect(() => {
     if (!filteredReceipts.length) {
@@ -132,8 +150,8 @@ export default function StockInList() {
     filteredReceipts[0] ||
     null;
 
-  const handleCreateClick = () => {
-    navigate("/stock-in/create");
+  const handleCreateClick = (reasonCode) => {
+    navigate(`/stock-in/create?reasonCode=${reasonCode}`);
   };
 
   const handleSearchChange = (value) => {
@@ -158,6 +176,8 @@ export default function StockInList() {
           onRefresh={loadReceipts}
         />
 
+        <StockInPurposeChoices onChoose={handleCreateClick} />
+
         <div
           className={`mt-4 grid grid-cols-1 gap-4 ${
             isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
@@ -165,15 +185,15 @@ export default function StockInList() {
         >
           {!isWideView && (
             <aside className="min-w-0">
-              <StockSidebarFilters type="in" />
+              <StockSidebarFilters type="in" filters={filterDraft} onFiltersChange={setFilterDraft} onApplyFilters={applyFilters} onResetFilters={resetFilters} />
             </aside>
           )}
 
           <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
             <StockInListToolbar
+              filters={filterDraft} onFiltersChange={setFilterDraft} onApplyFilters={applyFilters} onResetFilters={resetFilters}
               searchKeyword={searchKeyword}
               onSearchChange={handleSearchChange}
-              onCreateClick={handleCreateClick}
               showFilterButton={isWideView}
               isWideView={isWideView}
               onToggleWideView={() => setIsWideView((current) => !current)}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useId } from "react";
+import React, { useState, useEffect, useRef, useId, useMemo } from "react";
 import { productApi } from "../../api";
 import { Search, Trash2 } from "lucide-react";
 import StockProductPicker from "./StockProductPicker";
@@ -31,6 +31,7 @@ export default function StockDocumentTable({
   showRowNumbers = false,
   showLotFields = false,
   purchasedAt,
+  productTypeFilter = "",
 }) {
   const rowIdPrefix = useId();
   const nextRowId = useRef(0);
@@ -64,8 +65,9 @@ export default function StockDocumentTable({
     manufacturedAt: currentPurchaseDateTime().slice(0, 10),
     expiresAt: product.isFreshFood ? freshFoodExpiry(purchasedAt) : "",
   } : {};
-  const [loadProducts] = useState(() =>
-    createStockProductCache(productApi.getAll),
+  const loadProducts = useMemo(() =>
+    createStockProductCache(productApi.getAll, productTypeFilter ? { productType: productTypeFilter } : {}),
+    [productTypeFilter],
   );
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");

@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { stockInPurposes, getStockInPurpose } from "./stockInPurposes";
 import { useNavigate } from "react-router-dom";
 
 export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
@@ -32,9 +33,7 @@ export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentS
           {/* Loại nhập */}
           <div className="relative w-full sm:w-[240px]">
             <select aria-label="Lý do nhập kho" value={reasonCode} onChange={(event) => onChangeReasonCode(event.target.value)} className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
-              <option value="NHNCC">Nhập hàng từ nhà cung cấp</option>
-              <option value="NHNNL">Nhập nguyên, nhiên liệu</option>
-              <option value="OTHER">Khác</option>
+              {stockInPurposes.map((purpose) => <option key={purpose.code} value={purpose.code}>{purpose.optionLabel}</option>)}
             </select>
 
             <ChevronDown
@@ -83,6 +82,9 @@ export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentS
 
         </div>
       </div>
+      <p className="mt-3 text-sm leading-6 text-slate-600">
+        {getStockInPurpose(reasonCode).description} {getStockInPurpose(reasonCode).example}
+      </p>
     </div>
   );
 }

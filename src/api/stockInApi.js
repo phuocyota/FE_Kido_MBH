@@ -1,3 +1,4 @@
+import { getStockInPurpose } from "../components/StockIn/stockInPurposes";
 import axiosInstance from "./axiosConfig";
 import { stockInReceiptsData } from "../datas/stockInListData";
 
@@ -62,7 +63,8 @@ const normalizeImportReceipt = (header, details, index = 0) => {
     totalAmount,
     deliverer: header.supplier?.name || "",
     reasonCode: header.reasonCode || "",
-    voucherType: header.reasonCode === "NHNNL" ? "Nhập nguyên, nhiên liệu" : "Mua hàng trong nước nhập kho",
+    voucherType: getStockInPurpose(header.reasonCode).title,
+    paymentStatus: header.paymentStatus || "",
     branch: header.branch?.name || header.branchName || header.branchId || "",
     details: normalizedDetails,
   };

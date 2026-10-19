@@ -1,36 +1,10 @@
 import React, { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { DayPicker } from "react-day-picker";
+import { stockInPurposes } from "../StockIn/stockInPurposes";
 import StockFilterSelect from "./StockFilterSelect";
 
-const postingStatusOptions = ["Tất cả", "Đã ghi sổ", "Chưa ghi sổ"];
-
-const reportPeriodOptions = [
-  "Đầu năm đến hiện tại",
-  "Sáu tháng đầu năm",
-  "Sáu tháng cuối năm",
-  "Tháng 1",
-  "Tháng 2",
-  "Tháng 3",
-  "Tháng 4",
-  "Tháng 5",
-  "Tháng 6",
-  "Tháng 7",
-  "Tháng 8",
-  "Tháng 9",
-  "Tháng 10",
-  "Tháng 11",
-  "Tháng 12",
-];
-
-const stockInTypeOptions = [
-  "Tất cả",
-  "Mua hàng trong nước nhập kho",
-  "Nhập khẩu",
-  "Nhập kho khác",
-  "Nhập kho thành phẩm",
-  "Nhập kho điều chuyển",
-];
+const stockInTypeOptions = ["Tất cả", ...stockInPurposes.map((purpose) => purpose.title)];
 
 const stockOutTypeOptions = [
   "Tất cả",
@@ -106,7 +80,7 @@ function DateBox({
         className={`flex w-full items-center border bg-white ${
           sidebar ? "h-10 rounded-lg px-3" : "h-7 px-2"
         } ${
-          isOpen ? "border-cyan-600" : "border-slate-300"
+          isOpen ? "border-indigo-600" : "border-slate-300"
         }`}
       >
         <input
@@ -118,7 +92,7 @@ function DateBox({
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="ml-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-500 hover:text-cyan-700"
+          className="ml-1 inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-500 hover:text-indigo-700"
           title={`Chọn ${label.toLowerCase()}`}
         >
           <CalendarDays size={15} />
@@ -153,10 +127,10 @@ function DateBox({
               weekday: "h-8 w-8 text-xs font-semibold text-slate-500",
               day: "h-8 w-8 p-0 text-center text-sm",
               day_button:
-                "h-8 w-8 rounded text-sm transition hover:bg-cyan-50",
+                "h-8 w-8 rounded text-sm transition hover:bg-indigo-50",
               selected:
-                "rounded bg-teal-600 font-bold text-white hover:bg-teal-600",
-              today: "font-bold text-cyan-700",
+                "rounded bg-indigo-600 font-bold text-white hover:bg-indigo-600",
+              today: "font-bold text-indigo-700",
             }}
           />
         </div>
@@ -199,16 +173,6 @@ export default function StockFilterPanel({
   if (embedded) {
     return (
       <div className="w-full space-y-4">
-        <div className="rounded-xl bg-white p-4 shadow">
-          <StockFilterSelect
-            label="Trạng thái ghi sổ"
-            value={values.postingStatus}
-            options={postingStatusOptions}
-            onChange={(value) => onChange("postingStatus", value)}
-            sidebar
-          />
-        </div>
-
         <div className="space-y-4 rounded-xl bg-white p-4 shadow">
           <StockFilterSelect
             label={typeLabel}
@@ -228,13 +192,6 @@ export default function StockFilterPanel({
         </div>
 
         <div className="space-y-4 rounded-xl bg-white p-4 shadow">
-          <StockFilterSelect
-            label="Kỳ báo cáo"
-            value={values.reportPeriod}
-            options={reportPeriodOptions}
-            onChange={(value) => onChange("reportPeriod", value)}
-            sidebar
-          />
 
           <DateBox
             label="Từ ngày"
@@ -249,13 +206,6 @@ export default function StockFilterPanel({
             onChange={(value) => onChange("toDate", value)}
             sidebar
           />
-
-          <button
-            type="button"
-            className="text-sm font-medium text-sky-700 hover:underline"
-          >
-            Lọc nâng cao
-          </button>
 
           <div className="flex items-center justify-between border-t border-gray-100 pt-3">
             <button
@@ -282,13 +232,6 @@ export default function StockFilterPanel({
   return (
     <div className="absolute left-0 top-[calc(100%+4px)] z-[60] w-[calc(100vw-1.5rem)] border border-slate-300 bg-white p-4 shadow-xl sm:w-[560px]">
       <div className="grid gap-3">
-        <StockFilterSelect
-          label="Trạng thái ghi sổ"
-          value={values.postingStatus}
-          options={postingStatusOptions}
-          onChange={(value) => onChange("postingStatus", value)}
-        />
-
         <div className={`grid gap-3 ${embedded ? "" : "sm:grid-cols-2"}`}>
           <StockFilterSelect
             label={typeLabel}
@@ -307,15 +250,9 @@ export default function StockFilterPanel({
 
         <div
           className={`grid gap-3 ${
-            embedded ? "" : "sm:grid-cols-[1fr_128px_128px]"
+            embedded ? "" : "sm:grid-cols-2"
           }`}
         >
-          <StockFilterSelect
-            label="Kỳ báo cáo"
-            value={values.reportPeriod}
-            options={reportPeriodOptions}
-            onChange={(value) => onChange("reportPeriod", value)}
-          />
 
           <DateBox
             label="Từ ngày"
@@ -331,18 +268,11 @@ export default function StockFilterPanel({
           />
         </div>
 
-        <button
-          type="button"
-          className="w-fit text-sm font-medium text-sky-700 hover:underline"
-        >
-          Lọc nâng cao
-        </button>
-
         <div className="mt-6 flex items-center justify-between">
           <button
             type="button"
             onClick={onReset}
-            className="h-8 rounded border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-cyan-500 hover:text-cyan-700"
+            className="h-8 rounded border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-700"
           >
             Đặt lại
           </button>
@@ -350,7 +280,7 @@ export default function StockFilterPanel({
           <button
             type="button"
             onClick={onApply}
-            className="h-8 rounded bg-cyan-600 px-6 text-sm font-bold text-white transition hover:bg-cyan-700"
+            className="h-8 rounded bg-indigo-600 px-6 text-sm font-bold text-white transition hover:bg-indigo-700"
           >
             Lọc
           </button>

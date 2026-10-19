@@ -14,10 +14,8 @@ import {
 import StockFilterPanel from "../Stock/StockFilterPanel";
 
 const defaultFilterValues = {
-  postingStatus: "Tất cả",
   documentType: "Tất cả",
   secondaryStatus: "Tất cả",
-  reportPeriod: "Đầu năm đến hiện tại",
   fromDate: "01/01/2026",
   toDate: "22/06/2026",
 };
@@ -74,9 +72,6 @@ export default function StockOutToolbar({
             </div>}
 
             {/* Khoảng thời gian lọc chứng từ xuất kho đang xem. */}
-            <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
-              {filterValues.reportPeriod}
-            </span>
           </div>
 
           {/* Search & Main Actions */}
