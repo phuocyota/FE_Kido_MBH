@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
-import { defaultStockInFilters, matchesStockInFilters, validateStockInFilters } from "../../components/StockIn/stockInFilters";
+import {
+  defaultStockInFilters,
+  matchesStockInFilters,
+  validateStockInFilters,
+} from "../../components/StockIn/stockInFilters";
 import { useNavigate } from "react-router-dom";
 import { stockInApi } from "../../api";
 import StockHeader from "../../components/Stock/StockHeader";
@@ -9,7 +13,6 @@ import StockInListTable from "../../components/StockIn/StockInListTable";
 import StockInPurposeChoices from "../../components/StockIn/StockInPurposeChoices";
 import StockInListToolbar from "../../components/StockIn/StockInListToolbar";
 import StockInPagination from "../../components/StockIn/StockInPagination";
-import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
 export default function StockInList() {
   const navigate = useNavigate();
@@ -22,12 +25,14 @@ export default function StockInList() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
   const [error, setError] = useState("");
-  const [isWideView, setIsWideView] = useState(false);
   const [filterDraft, setFilterDraft] = useState(defaultStockInFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultStockInFilters);
   const applyFilters = (values) => {
     const error = validateStockInFilters(values);
-    if (error) { toast.error(error); return false; }
+    if (error) {
+      toast.error(error);
+      return false;
+    }
     setAppliedFilters({ ...values });
     setCurrentPage(1);
     return true;
@@ -46,7 +51,8 @@ export default function StockInList() {
       setReceipts(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(
-        err?.response?.data?.message || "Không thể tải danh sách phiếu nhập kho"
+        err?.response?.data?.message ||
+          "Không thể tải danh sách phiếu nhập kho",
       );
       setReceipts([]);
     } finally {
@@ -61,7 +67,9 @@ export default function StockInList() {
   const filteredReceipts = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
 
-    const matchingReceipts = receipts.filter((receipt) => matchesStockInFilters(receipt, appliedFilters));
+    const matchingReceipts = receipts.filter((receipt) =>
+      matchesStockInFilters(receipt, appliedFilters),
+    );
     if (!keyword) return matchingReceipts;
 
     return matchingReceipts.filter((receipt) =>
@@ -75,7 +83,7 @@ export default function StockInList() {
       ]
         .join(" ")
         .toLowerCase()
-        .includes(keyword)
+        .includes(keyword),
     );
   }, [receipts, searchKeyword, appliedFilters]);
 
@@ -86,7 +94,7 @@ export default function StockInList() {
     }
 
     const selectedStillVisible = filteredReceipts.some(
-      (receipt) => receipt.id === selectedReceiptId
+      (receipt) => receipt.id === selectedReceiptId,
     );
 
     if (!selectedStillVisible) {
@@ -96,7 +104,7 @@ export default function StockInList() {
 
   useEffect(() => {
     const selectedReceipt = receipts.find(
-      (receipt) => receipt.id === selectedReceiptId
+      (receipt) => receipt.id === selectedReceiptId,
     );
 
     if (
@@ -120,13 +128,14 @@ export default function StockInList() {
           prev.map((receipt) =>
             receipt.id === selectedReceipt.id
               ? { ...receipt, ...receiptDetail }
-              : receipt
-          )
+              : receipt,
+          ),
         );
       } catch (err) {
         if (!ignore) {
           setError(
-            err?.response?.data?.message || "Không thể tải chi tiết phiếu nhập kho"
+            err?.response?.data?.message ||
+              "Không thể tải chi tiết phiếu nhập kho",
           );
         }
       } finally {
@@ -143,7 +152,7 @@ export default function StockInList() {
 
   const visibleReceipts = filteredReceipts.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
   const selectedReceipt =
     filteredReceipts.find((receipt) => receipt.id === selectedReceiptId) ||
@@ -166,64 +175,47 @@ export default function StockInList() {
 
   return (
     <div className="min-h-screen bg-[#f3f5f7]">
-      <div
-        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
-          isWideView ? "max-w-none" : "max-w-[1600px]"
-        }`}
-      >
-        <StockHeader
-          activeTab="in"
-          onRefresh={loadReceipts}
-        />
+      <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+        <StockHeader activeTab="in" onRefresh={loadReceipts} />
 
         <StockInPurposeChoices onChoose={handleCreateClick} />
 
-        <div
-          className={`mt-4 grid grid-cols-1 gap-4 ${
-            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
-          }`}
-        >
-          {!isWideView && (
-            <aside className="min-w-0">
-              <StockSidebarFilters type="in" filters={filterDraft} onFiltersChange={setFilterDraft} onApplyFilters={applyFilters} onResetFilters={resetFilters} />
-            </aside>
-          )}
-
+        <div className="mt-4">
           <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
             <StockInListToolbar
-              filters={filterDraft} onFiltersChange={setFilterDraft} onApplyFilters={applyFilters} onResetFilters={resetFilters}
+              filters={filterDraft}
+              onFiltersChange={setFilterDraft}
+              onApplyFilters={applyFilters}
+              onResetFilters={resetFilters}
               searchKeyword={searchKeyword}
               onSearchChange={handleSearchChange}
-              showFilterButton={isWideView}
-              isWideView={isWideView}
-              onToggleWideView={() => setIsWideView((current) => !current)}
             />
 
-          {(loading || detailLoading || error) && (
-            <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
-              {loading && (
-                <span className="text-slate-500">Đang tải dữ liệu...</span>
-              )}
-              {!loading && detailLoading && (
-                <span className="text-slate-500">Đang tải chi tiết...</span>
-              )}
-              {error && <span className="text-red-600">{error}</span>}
-            </div>
-          )}
+            {(loading || detailLoading || error) && (
+              <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
+                {loading && (
+                  <span className="text-slate-500">Đang tải dữ liệu...</span>
+                )}
+                {!loading && detailLoading && (
+                  <span className="text-slate-500">Đang tải chi tiết...</span>
+                )}
+                {error && <span className="text-red-600">{error}</span>}
+              </div>
+            )}
 
-          <StockInListTable
-            receipts={visibleReceipts}
-            selectedReceipt={selectedReceipt}
-            onSelectReceipt={setSelectedReceiptId}
-          />
+            <StockInListTable
+              receipts={visibleReceipts}
+              selectedReceipt={selectedReceipt}
+              onSelectReceipt={setSelectedReceiptId}
+            />
 
-          <StockInPagination
-            total={filteredReceipts.length}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-          />
+            <StockInPagination
+              total={filteredReceipts.length}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
 
             <StockInDetailTable receipt={selectedReceipt} />
           </div>

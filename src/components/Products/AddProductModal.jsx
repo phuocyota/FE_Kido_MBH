@@ -12,6 +12,7 @@ const emptyForm = {
   type: "Đồ ăn",
   productType: "",
   baseUnitId: "",
+  minimumStock: "",
   code: "",
   cost: "",
   price: "",
@@ -65,6 +66,7 @@ export default function AddProductModal({
       type: initialData?.type || "Đồ ăn",
       productType: initialData?.productType || "",
       baseUnitId: initialData?.baseUnitId || "",
+      minimumStock: initialData?.minimumStock ?? "",
       code: initialData?.code || "",
       cost: initialData?.costPrice || initialData?.cost || "",
       price: initialData?.price || "",
@@ -128,6 +130,10 @@ export default function AddProductModal({
 
     if (["INGREDIENT", "FUEL"].includes(form.productType) && !form.baseUnitId) {
       toast.error("Vui lòng chọn đơn vị cơ sở cho nguyên liệu / nhiên liệu.");
+      return;
+    }
+    if (form.minimumStock !== "" && (!Number.isFinite(Number(form.minimumStock)) || Number(form.minimumStock) < 0)) {
+      toast.error("Định mức tồn tối thiểu phải là số không âm.");
       return;
     }
     let finalImageUrl = form.imageUrl;
@@ -288,6 +294,10 @@ export default function AddProductModal({
                 {unitError && <span className="mt-1 block text-xs text-red-600">{unitError}</span>}
               </label>
             </div>
+            <label className="mt-4 block text-sm font-medium">Định mức tồn tối thiểu mỗi kho
+              <input name="minimumStock" type="number" min="0" step="0.0001" value={form.minimumStock} onChange={handleChange} placeholder="Chưa thiết lập" className="mt-2 w-full rounded-xl border border-gray-300 bg-white p-3" />
+              <span className="mt-1 block text-xs font-normal text-slate-500">Theo đơn vị cơ sở, áp dụng từng kho. Để trống khi chưa có định mức.</span>
+            </label>
             <p className="mt-3 text-xs text-slate-600">Nhập nguyên, nhiên liệu cần loại Nguyên liệu hoặc Nhiên liệu, có đơn vị cơ sở và bật theo dõi lô. Hàng tươi sống là tùy chọn tính hạn dùng.</p>
             {isEditMode && ["INGREDIENT", "FUEL"].includes(initialData.productType) && initialData.baseUnitId && (
               trackingEnabled ? <p className="mt-3 text-sm font-medium text-emerald-700">Đã bật theo dõi lô.</p> : <button type="button" disabled={enablingTracking || form.productType !== initialData.productType || form.baseUnitId !== initialData.baseUnitId} onClick={async () => {

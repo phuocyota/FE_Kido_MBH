@@ -16,7 +16,7 @@ const menu = [
     children: [
       { name: "Danh mục", path: "/products" },
       { name: "Thiết lập giá", path: "/price-book" },
-      { name: "Kho", path: "/stock-in" },
+      { name: "Kho", path: "/warehouse" },
       { name: "Thu chi", path: "/cash-management" },
     ],
   },

@@ -22,6 +22,9 @@ import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
 import BoardingOrderDemo from "./pages/BoardingOrder/BoardingOrderDemo";
 import ReportEmployee from "./pages/reports/ReportEmployee";
 import ReportBoarding from "./pages/reports/ReportBoarding";
+import WarehouseOverview from "./pages/Stock/WarehouseOverview";
+import WarehouseInventory from "./pages/Stock/WarehouseInventory";
+import WarehouseTrace from "./pages/Stock/WarehouseTrace";
 import StockLots from "./pages/Stock/StockLots";
 import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
@@ -85,6 +88,9 @@ const App = () => {
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/boarding-orders" element={<BoardingOrder />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />
+                  <Route path="/warehouse" element={<WarehouseOverview />} />
+                  <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
+                  <Route path="/warehouse/trace" element={<WarehouseTrace />} />
                   <Route path="/stock-lots" element={<StockLots />} />
                   <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />

@@ -462,6 +462,8 @@ export default function TableProduct({
               unit: data.unit || undefined,
               productType: data.productType || undefined,
               baseUnitId: data.baseUnitId || undefined,
+              minimumStock: data.minimumStock === "" ? undefined : Number(data.minimumStock),
+              clearMinimumStock: data.minimumStock === "",
               isActive: isEdit ? (selectedProduct?.isActive ?? true) : true,
               isCanteenItem: data.isCanteenItem,
               isFreshFood: data.isFreshFood,

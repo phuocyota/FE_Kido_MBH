@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Package, Plus, Search, X } from "lucide-react";
 import StockHeader from "../../components/Stock/StockHeader";
 import StockInPagination from "../../components/StockIn/StockInPagination";
@@ -11,7 +11,7 @@ const errorText = (error, fallback) => {
   if (error.response?.status === 404) return "Chưa truy cập được API lô hàng. Vui lòng thử lại sau.";
   return fallback;
 };
-const fieldClass = "h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+const fieldClass = "h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
 function Status({ lot }) {
   const status = lotStatus(lot);
@@ -19,7 +19,8 @@ function Status({ lot }) {
 }
 
 export default function StockLots() {
-  const [filters, setFilters] = useState({ search: "", status: "", productType: "" });
+  const [params] = useSearchParams();
+  const [filters, setFilters] = useState(() => ({ search: params.get("search") || "", status: ["AVAILABLE", "EXPIRING", "EXPIRED", "DEPLETED"].includes(params.get("status")) ? params.get("status") : "", productType: "" }));
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [refresh, setRefresh] = useState(0);
@@ -58,7 +59,7 @@ export default function StockLots() {
   const reload = () => { setLoading(true); setSelected(null); setRefresh((value) => value + 1); };
 
   return (
-    <div className="mx-auto max-w-[1800px] p-3 md:p-5">
+    <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
       <StockHeader activeTab="lots" onRefresh={reload} />
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
@@ -68,9 +69,9 @@ export default function StockLots() {
           </div>
           <Link to="/stock-in/create" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><Plus size={16} />Nhập kho</Link>
         </div>
-        <div className="grid gap-3 bg-slate-50 p-4 md:grid-cols-[minmax(240px,1fr)_220px_220px]">
-          <div className="relative">
-            <Search size={17} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
+        <div className="grid gap-2 border-b border-slate-100 bg-white p-3 sm:grid-cols-2 lg:grid-cols-[minmax(200px,1fr)_220px_220px]">
+          <div className="relative sm:col-span-2 lg:col-span-1">
+            <Search size={15} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
             <input aria-label="Tìm lô hàng" placeholder="Tìm số lô, mã hoặc tên hàng hóa..." value={filters.search} onChange={(event) => updateFilters("search", event.target.value)} className={`${fieldClass} w-full pl-10`} />
           </div>
           <select aria-label="Trạng thái lô" value={filters.status} onChange={(event) => updateFilters("status", event.target.value)} className={fieldClass}>
@@ -105,7 +106,7 @@ export default function StockLots() {
   );
 }
 
-function LotDetails({ lot, onClose }) {
+export function LotDetails({ lot, onClose }) {
   const panel = useRef(null);
   const [trace, setTrace] = useState(null);
   const [error, setError] = useState("");
@@ -128,13 +129,19 @@ function LotDetails({ lot, onClose }) {
   }, [lot.id, retry]);
   return (
     <section ref={panel} aria-label="Chi tiết lô hàng" className="mt-4 rounded-xl border border-blue-200 bg-white p-4 shadow-sm md:p-5">
-      <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>
+      <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>
       {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={() => { setError(""); setRetry((value) => value + 1); }} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <>
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", lotDate(trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
+          {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", lotDate(trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>
         {trace.movements?.length ? <div className="max-h-[400px] overflow-auto"><table className="w-full min-w-[600px] text-left text-sm"><thead className="sticky top-0 bg-slate-100"><tr>{["Thời gian", "Giao dịch", "Số lượng", "Kho", "Tham chiếu"].map((label) => <th key={label} className="px-3 py-2">{label}</th>)}</tr></thead><tbody>{trace.movements.map((move) => <tr key={move.id} className="border-b border-slate-100"><td className="px-3 py-3">{move.at ? new Date(move.at).toLocaleString("vi-VN") : "—"}</td><td className="px-3 py-3">{Number(move.quantity) >= 0 ? "Nhập" : "Xuất"}</td><td className={`px-3 py-3 font-semibold tabular-nums ${Number(move.quantity) >= 0 ? "text-emerald-700" : "text-red-600"}`}>{Number(move.quantity) > 0 ? "+" : ""}{lotNumber(move.quantity)}</td><td className="px-3 py-3">{move.stockName || "—"}</td><td className="max-w-[240px] break-all px-3 py-3 text-xs text-slate-500">{move.referenceId || "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-slate-500">Chưa có giao dịch cho lô này.</p>}
+        {trace.consumption?.consumedBy?.some((use) => use.referenceType === "PRODUCTION_BATCH") && (
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <h4 className="mb-3 font-semibold text-slate-800">Đầu ra chế biến thực tế</h4>
+            {trace.consumption.consumedBy.filter((use) => use.referenceType === "PRODUCTION_BATCH").map((use) => <div key={use.movementId} className="flex flex-wrap justify-between gap-2 border-b border-slate-100 py-3 text-xs text-slate-600"><span>{use.finishedGood?.name || "Mẻ chế biến"}</span><span>Đã dùng {lotNumber(use.consumedQuantity)} {trace.product?.unit}</span><span>{use.consumedAt ? new Date(use.consumedAt).toLocaleString("vi-VN") : "—"}</span></div>)}
+          </div>
+        )}
       </>}
     </section>
   );

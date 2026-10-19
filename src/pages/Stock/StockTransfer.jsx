@@ -143,7 +143,7 @@ export default function StockTransfer() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5">
       <div className="flex flex-col gap-3 border-b border-gray-300 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
   <button
     type="button"
@@ -159,7 +159,7 @@ export default function StockTransfer() {
   </h1>
 </div>
 
-      <div className="p-2 sm:p-4 space-y-4">
+      <div className="mt-4 space-y-4">
         <div className="bg-white border border-gray-300 rounded-lg p-4">
           {loading && (
             <div className="text-sm text-gray-500 mb-3">Đang tải dữ liệu...</div>

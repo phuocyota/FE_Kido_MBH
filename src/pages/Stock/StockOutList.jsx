@@ -5,7 +5,6 @@ import StockOutListTable from "../../components/StockOut/StockOutListTable";
 import StockOutToolbar from "../../components/StockOut/StockOutToolbar";
 import StockOutPagination from "../../components/StockOut/StockOutPagination";
 import StockOutDetailTable from "../../components/StockOut/StockOutDetailTable";
-import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
 export default function StockOutList({ saleMode = false }) {
   const [receipts, setReceipts] = useState([]);
@@ -17,17 +16,19 @@ export default function StockOutList({ saleMode = false }) {
   const [detailLoading, setDetailLoading] = useState(false);
   const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
   const [error, setError] = useState("");
-  const [isWideView, setIsWideView] = useState(false);
 
   const loadReceipts = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await stockOutApi.getAll(saleMode ? { salesOnly: true } : {});
+      const data = await stockOutApi.getAll(
+        saleMode ? { salesOnly: true } : {},
+      );
       setReceipts(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(
-        err?.response?.data?.message || "Không thể tải danh sách phiếu xuất kho"
+        err?.response?.data?.message ||
+          "Không thể tải danh sách phiếu xuất kho",
       );
       setReceipts([]);
     } finally {
@@ -55,7 +56,7 @@ export default function StockOutList({ saleMode = false }) {
       ]
         .join(" ")
         .toLowerCase()
-        .includes(keyword)
+        .includes(keyword),
     );
   }, [receipts, searchKeyword]);
 
@@ -66,7 +67,7 @@ export default function StockOutList({ saleMode = false }) {
     }
 
     const selectedStillVisible = filteredReceipts.some(
-      (receipt) => receipt.id === selectedReceiptId
+      (receipt) => receipt.id === selectedReceiptId,
     );
 
     if (!selectedStillVisible) {
@@ -76,7 +77,7 @@ export default function StockOutList({ saleMode = false }) {
 
   useEffect(() => {
     const selectedReceipt = receipts.find(
-      (receipt) => receipt.id === selectedReceiptId
+      (receipt) => receipt.id === selectedReceiptId,
     );
 
     if (
@@ -100,13 +101,14 @@ export default function StockOutList({ saleMode = false }) {
           prev.map((receipt) =>
             receipt.id === selectedReceipt.id
               ? { ...receipt, ...receiptDetail }
-              : receipt
-          )
+              : receipt,
+          ),
         );
       } catch (err) {
         if (!ignore) {
           setError(
-            err?.response?.data?.message || "Không thể tải chi tiết phiếu xuất kho"
+            err?.response?.data?.message ||
+              "Không thể tải chi tiết phiếu xuất kho",
           );
         }
       } finally {
@@ -123,7 +125,7 @@ export default function StockOutList({ saleMode = false }) {
 
   const visibleReceipts = filteredReceipts.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
   const selectedReceipt =
     filteredReceipts.find((receipt) => receipt.id === selectedReceiptId) ||
@@ -142,62 +144,46 @@ export default function StockOutList({ saleMode = false }) {
 
   return (
     <div className="min-h-screen bg-[#f3f5f7]">
-      <div
-        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
-          isWideView ? "max-w-none" : "max-w-[1600px]"
-        }`}
-      >
+      <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
         <StockHeader
           activeTab={saleMode ? "sale" : "out"}
           onRefresh={loadReceipts}
         />
 
-        <div
-          className={`mt-4 grid grid-cols-1 gap-4 ${
-            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
-          }`}
-        >
-          {!isWideView && (
-            <aside className="min-w-0">
-              <StockSidebarFilters type="out" />
-            </aside>
-          )}
-
+        <div className="mt-4">
           <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
             <StockOutToolbar
+              onReload={loadReceipts}
               saleMode={saleMode}
               searchKeyword={searchKeyword}
               onSearchChange={handleSearchChange}
-              showFilterButton={isWideView}
-              isWideView={isWideView}
-              onToggleWideView={() => setIsWideView((current) => !current)}
             />
 
-          {(loading || detailLoading || error) && (
-            <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
-              {loading && (
-                <span className="text-slate-500">Đang tải dữ liệu...</span>
-              )}
-              {!loading && detailLoading && (
-                <span className="text-slate-500">Đang tải chi tiết...</span>
-              )}
-              {error && <span className="text-red-600">{error}</span>}
-            </div>
-          )}
+            {(loading || detailLoading || error) && (
+              <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
+                {loading && (
+                  <span className="text-slate-500">Đang tải dữ liệu...</span>
+                )}
+                {!loading && detailLoading && (
+                  <span className="text-slate-500">Đang tải chi tiết...</span>
+                )}
+                {error && <span className="text-red-600">{error}</span>}
+              </div>
+            )}
 
-          <StockOutListTable
-            receipts={visibleReceipts}
-            selectedReceipt={selectedReceipt}
-            onSelectReceipt={setSelectedReceiptId}
-          />
+            <StockOutListTable
+              receipts={visibleReceipts}
+              selectedReceipt={selectedReceipt}
+              onSelectReceipt={setSelectedReceiptId}
+            />
 
-          <StockOutPagination
-            total={filteredReceipts.length}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-          />
+            <StockOutPagination
+              total={filteredReceipts.length}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
 
             {saleMode && selectedReceipt && (
               <div className="border-t border-gray-200 px-4 py-3 text-sm text-indigo-700">

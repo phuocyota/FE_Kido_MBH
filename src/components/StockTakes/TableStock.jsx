@@ -1,14 +1,6 @@
 import React, { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  FileSpreadsheet,
-  Maximize2,
-  Minimize2,
-  Plus,
-  RefreshCcw,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Plus, RefreshCcw } from "lucide-react";
+import StockSearchToolbar from "../Stock/StockSearchToolbar";
 import StockTakeModal from "./StockTakeModal";
 import SidebarFilterStock from "./SidebarFilterStock";
 import StockInPagination from "../StockIn/StockInPagination";
@@ -58,13 +50,9 @@ export default function TableStock({
   loading,
   error,
   onRefresh,
-  showFilterButton = false,
-  isWideView = false,
-  onToggleWideView,
 }) {
   const [openStockTake, setOpenStockTake] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState(null);
 
   // Pagination for main table
@@ -75,12 +63,9 @@ export default function TableStock({
   const [detailCurrentPage, setDetailCurrentPage] = useState(1);
   const [detailPageSize, setDetailPageSize] = useState(20);
 
-  const iconButtonClass =
-    "min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition";
-
   // Handle Search input change
-  const handleSearchChange = (event) => {
-    setSearchKeyword(event.target.value);
+  const handleSearchChange = (value) => {
+    setSearchKeyword(value);
     setCurrentPage(1);
   };
 
@@ -151,118 +136,32 @@ export default function TableStock({
 
   return (
     <div className="w-full bg-white">
-      {/* Toolbar */}
-      <div className="bg-white border-b border-gray-300">
-        <div className="p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-              {showFilterButton && <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsFilterOpen((current) => !current)}
-                  className={`h-10 px-4 w-full sm:w-auto rounded-xl border bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2 ${
-                    isFilterOpen ? "border-indigo-600 text-indigo-600 ring-2 ring-indigo-100" : "border-gray-300"
-                  }`}
-                >
-                  Lọc
-                  <ChevronDown
-                    size={15}
-                    className={`transition ${isFilterOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isFilterOpen && (
-                  <div className="absolute left-0 mt-2 z-[60] bg-white border border-gray-300 rounded-xl shadow-lg p-4 sm:w-[720px] max-h-[calc(100vh-12rem)] overflow-y-auto">
-                    <SidebarFilterStock />
-                    <div className="mt-4 flex justify-end gap-2 border-t border-gray-100 pt-3">
-                      <button
-                        type="button"
-                        onClick={() => setIsFilterOpen(false)}
-                        className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
-                      >
-                        Đóng
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>}
-
-              <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
-                Tháng này
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto lg:justify-end">
-              <div className="relative flex-1 sm:flex-none">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  value={searchKeyword}
-                  onChange={handleSearchChange}
-                  placeholder="Tìm kiếm phiếu kiểm kho..."
-                  className="h-11 w-full sm:w-[280px] lg:w-[320px] rounded-xl border border-gray-300 bg-white pl-10 pr-4 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              <div className="flex items-center justify-center gap-2">
-                {onRefresh && (
-                  <button
-                    type="button"
-                    onClick={onRefresh}
-                    className={iconButtonClass}
-                    title="Tải lại"
-                  >
-                    <RefreshCcw size={17} className="text-gray-600" />
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={onToggleWideView}
-                  className={iconButtonClass}
-                  title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
-                >
-                  {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                </button>
-
-                <button
-                  type="button"
-                  className={iconButtonClass}
-                  title="Xuất Excel"
-                >
-                  <FileSpreadsheet size={17} className="text-green-600" />
-                </button>
-
-                <button type="button" className={iconButtonClass} title="Thiết lập">
-                  <Settings size={17} className="text-gray-600" />
-                </button>
-
-                <div className="relative flex-shrink-0">
-                  <div className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => setOpenStockTake(true)}
-                      className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
-                    >
-                      <Plus size={18} />
-                      Kiểm kho
-                    </button>
-
-                    <button
-                      type="button"
-                      className="w-10 h-10 bg-indigo-600 border-l border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition"
-                      title="Tùy chọn thêm"
-                    >
-                      <ChevronDown size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <StockSearchToolbar
+        search={searchKeyword}
+        onSearchChange={handleSearchChange}
+        placeholder="Tìm kiếm phiếu kiểm kho..."
+        filters={<SidebarFilterStock />}
+      >
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={onRefresh}
+            aria-label="Tải lại"
+            title="Tải lại"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+          >
+            <RefreshCcw size={15} />
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setOpenStockTake(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700"
+        >
+          <Plus size={15} />
+          Kiểm kho
+        </button>
+      </StockSearchToolbar>
 
       {/* Main Table */}
       <div className="overflow-x-auto">

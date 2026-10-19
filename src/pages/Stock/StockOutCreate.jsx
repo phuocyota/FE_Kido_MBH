@@ -63,7 +63,7 @@ export default function StockOutCreate({ saleMode = false }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-2 md:p-3">
+    <div className="mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5">
       <div className="flex flex-col overflow-visible rounded-lg border border-gray-200 bg-white shadow-sm">
         <StockOutHeader saleMode={saleMode} />
 
