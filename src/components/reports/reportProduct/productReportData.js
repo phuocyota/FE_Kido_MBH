@@ -80,7 +80,7 @@ export function filterProductReportRows(rows, { productKeyword = "", category = 
 export function aggregateProductSales(rows) {
   const products = new Map();
   for (const row of rows) {
-    const key = row.code || row.name;
+    const key = row.productId || row.code || row.name;
     const product = products.get(key) || { ...row, qty: 0, total: 0 };
     product.qty += Number(row.qty) || 0;
     product.total += Number(row.total) || 0;

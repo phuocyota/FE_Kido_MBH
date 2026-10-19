@@ -30,7 +30,7 @@ export default function ProductSaleReport({ fromDate, toDate, branchId, branch, 
     <table className="w-full border-collapse text-sm">
       <thead><tr className="bg-slate-100">{["STT", "Mã hàng", "Tên sản phẩm", "Số lượng bán", "Doanh thu"].map(label => <th key={label} className="border border-slate-300 p-3 text-left">{label}</th>)}</tr></thead>
       <tbody>
-        {loading ? <tr><td colSpan={5} className="p-6 text-center">Đang tải báo cáo...</td></tr> : error ? <tr><td colSpan={5} role="alert" className="p-6 text-red-700">{error} <button onClick={load} className="underline">Thử lại</button></td></tr> : !rows.length ? <tr><td colSpan={5} className="p-6 text-center">Không có dữ liệu trong khoảng thời gian đã chọn</td></tr> : rows.map((row, index) => <tr key={row.code || row.name}>
+        {loading ? <tr><td colSpan={5} className="p-6 text-center">Đang tải báo cáo...</td></tr> : error ? <tr><td colSpan={5} role="alert" className="p-6 text-red-700">{error} <button onClick={load} className="underline">Thử lại</button></td></tr> : !rows.length ? <tr><td colSpan={5} className="p-6 text-center">Không có dữ liệu trong khoảng thời gian đã chọn</td></tr> : rows.map((row, index) => <tr key={row.productId || row.code || row.name}>
           <td className="border border-slate-300 p-3">{index + 1}</td><td className="border border-slate-300 p-3">{row.code}</td><td className="border border-slate-300 p-3">{row.name}</td><td className="border border-slate-300 p-3 text-right">{number(row.qty)}</td><td className="border border-slate-300 p-3 text-right">{number(row.total)}</td>
         </tr>)}
       </tbody>
