@@ -22,7 +22,17 @@ export function mapEndOfDayRows(result) {
     qty: Number(item.qty) || 0,
     total: money(item.total),
     gross: money(item.gross),
-    tax: money(item.tax),
-    net: money(item.net),
+    tax: item.tax == null ? "—" : money(item.tax),
+    net: item.net == null ? "—" : money(item.net),
   }));
+}
+
+export function mapCancellationRows(result) {
+  if (!Array.isArray(result?.stages)) throw new Error("Dữ liệu báo cáo hủy món không hợp lệ");
+  return result.stages.flatMap(stage => stage.items.map(item => ({
+    date: stage.name, code: "—", name: item.productName,
+    price: "—", qty: Number(item.quantity) || 0,
+    total: Number(item.amount || 0).toLocaleString("vi-VN"),
+    gross: "—", tax: "—", net: "—",
+  })));
 }

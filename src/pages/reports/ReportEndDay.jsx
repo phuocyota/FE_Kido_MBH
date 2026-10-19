@@ -20,7 +20,7 @@ export default function ReportEndDay() {
 
   const [zoom, setZoom] = useState(1);
 
-  const [interest, setInterest] = useState("Bán hàng");
+  const [interest, setInterest] = useState("Tổng hợp bán hàng");
 
   const [openInterest, setOpenInterest] = useState(false);
 

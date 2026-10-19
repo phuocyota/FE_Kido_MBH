@@ -17,7 +17,7 @@ import {
   getTokenPayload,
 } from "../../../api/authSession";
 
-import { getVietnamDateKey, mapEndOfDayRows } from "./reportData";
+import { getVietnamDateKey, mapEndOfDayRows, mapCancellationRows } from "./reportData";
 
 export default function ReportContent({
   reportType,
@@ -79,12 +79,13 @@ export default function ReportContent({
         dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
       if (effectiveFromDate > effectiveToDate)
         throw new Error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc");
-      const result = await reportApi.getEndOfDay(
+      const isCancellation = interest === "Hủy món";
+      const result = await (isCancellation ? reportApi.getCancellations : reportApi.getEndOfDay)(
         effectiveFromDate,
         effectiveToDate,
         branchId,
       );
-      const mappedData = mapEndOfDayRows(result);
+      const mappedData = isCancellation ? mapCancellationRows(result) : mapEndOfDayRows(result);
       if (currentRequest === requestId.current) setReportData(mappedData);
     } catch (error) {
       if (currentRequest !== requestId.current) return;
@@ -101,7 +102,7 @@ export default function ReportContent({
     } finally {
       if (currentRequest === requestId.current) setLoading(false);
     }
-  }, [dateType, fromDate, branchId, toDate]);
+  }, [dateType, fromDate, branchId, toDate, interest]);
 
   useEffect(() => {
     fetchReport();

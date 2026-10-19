@@ -3,6 +3,10 @@ import axiosInstance from "./axiosConfig";
 const unwrap = (response) => response.data?.data || response.data;
 
 export const reportApi = {
+  getCancellations: async (from, to, branchId) => {
+    const response = await axiosInstance.get("/reports/cancellations", { params: { from, to, branchId } });
+    return unwrap(response);
+  },
   // Revenue summary
   getRevenue: async (from, to, branchId) => {
     const params = {};
