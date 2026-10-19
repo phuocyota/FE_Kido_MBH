@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart3, TrendingUp, ShoppingBag, Wallet } from "lucide-react";
-import { unwrapProductReport, validateReportDates } from "./productReportData";
+import { aggregateProductSales, filterProductReportRows, validateReportDates } from "./productReportData";
 
 import {
   PieChart,
@@ -29,6 +29,9 @@ export default function ProductSaleChart({
   toDate,
   branch,
   branchId,
+  productKeyword,
+  category,
+  foodTypes,
 }) {
   const [topSelling, setTopSelling] = useState([]);
   const [lowSelling, setLowSelling] = useState([]);
@@ -43,35 +46,18 @@ export default function ProductSaleChart({
     setError("");
     try {
       validateReportDates(fromDate, toDate);
-      // Fetch top and bottom products in parallel
-      const [topData, bottomData, revenueData] = await Promise.all([
-        reportApi.getTopProducts(fromDate, toDate, branchId),
-        reportApi.getBottomProducts(fromDate, toDate, branchId),
-        reportApi.getRevenue(fromDate, toDate, branchId),
-      ]);
+      const result = await reportApi.getEndOfDay(fromDate, toDate, branchId);
       if (id !== requestId.current) return;
-
-      // Map to chart format
-      const topItems = unwrapProductReport(topData);
-      const bottomItems = unwrapProductReport(bottomData);
-
-      const mappedTop = (Array.isArray(topItems) ? topItems : []).map(
-        (item) => ({
-          name: item.productName,
-          value: Number(item.totalQuantity) || 0,
-        }),
-      );
-
-      const mappedBottom = (Array.isArray(bottomItems) ? bottomItems : []).map(
-        (item) => ({
-          name: item.productName,
-          value: Number(item.totalQuantity) || 0,
-        }),
-      );
-
-      setTopSelling(mappedTop);
-      setLowSelling(mappedBottom);
-      setSummary(unwrapProductReport(revenueData));
+      if (!Array.isArray(result?.data)) throw new Error("Dữ liệu báo cáo bán hàng không hợp lệ");
+      const products = aggregateProductSales(filterProductReportRows(result.data, { productKeyword, category, foodTypes }));
+      const chartRow = item => ({ name: item.name, value: item.qty });
+      setTopSelling(products.slice(0, 10).map(chartRow));
+      setLowSelling([...products].sort((a, b) => a.qty - b.qty).slice(0, 10).map(chartRow));
+      setSummary({
+        totalRevenue: products.reduce((sum, item) => sum + item.total, 0),
+        quantity: products.reduce((sum, item) => sum + item.qty, 0),
+        productCount: products.length,
+      });
     } catch (error) {
       if (id !== requestId.current) return;
       setTopSelling([]);
@@ -90,7 +76,7 @@ export default function ProductSaleChart({
     } finally {
       if (id === requestId.current) setLoading(false);
     }
-  }, [fromDate, toDate, branchId]);
+  }, [fromDate, toDate, branchId, productKeyword, category, foodTypes]);
   useEffect(() => {
     fetchData();
     return () => {
@@ -98,10 +84,7 @@ export default function ProductSaleChart({
     };
   }, [fetchData]);
 
-  const soldQuantity = topSelling.reduce(
-    (sum, item) => sum + Number(item.value || 0),
-    0,
-  );
+  const soldQuantity = summary?.quantity || 0;
 
   if (error && !loading)
     return (
@@ -142,8 +125,8 @@ export default function ProductSaleChart({
             },
 
             {
-              title: "Đơn hàng",
-              value: Number(summary?.orderCount || 0).toLocaleString("vi-VN"),
+              title: "Mặt hàng đã bán",
+              value: Number(summary?.productCount || 0).toLocaleString("vi-VN"),
               icon: ShoppingBag,
             },
 
@@ -154,8 +137,8 @@ export default function ProductSaleChart({
             },
 
             {
-              title: "Tăng trưởng",
-              value: "N/A",
+              title: "Doanh thu bình quân / đơn vị",
+              value: formatMoney(soldQuantity ? summary.totalRevenue / soldQuantity : 0),
               icon: TrendingUp,
             },
           ].map((item) => {

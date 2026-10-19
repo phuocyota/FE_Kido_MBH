@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { productApi } from "../../../api";
 import { ChevronDown } from "lucide-react";
 
 const timeOptions = [
@@ -11,7 +12,6 @@ const timeOptions = [
   "Toàn thời gian",
 ];
 
-const categoryOptions = ["Tất cả", "Đồ ăn", "Đồ uống", "Khác"];
 const foodTypeOptions = ["Đồ ăn", "Đồ uống", "Khác"];
 
 export default function ReportProductFilter({
@@ -43,6 +43,12 @@ export default function ReportProductFilter({
 }) {
   const [openInterest, setOpenInterest] = useState(false);
   const [openTime, setOpenTime] = useState(false);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    let active = true;
+    productApi.getCategories().then(data => { if (active) setCategories(data); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const toggleFoodType = (item) => {
     setFoodTypes(
@@ -156,6 +162,7 @@ export default function ReportProductFilter({
         />
       </div>
 
+      {interest !== "Tồn kho hiện tại" && (
       <div className="mb-8">
         <h2 className="mb-5 text-xl font-semibold">Thời gian</h2>
 
@@ -294,6 +301,7 @@ export default function ReportProductFilter({
           </label>
         </div>
       </div>
+      )}
 
       <div>
         <h2 className="mb-5 text-xl font-semibold">Hàng hóa</h2>
@@ -311,9 +319,10 @@ export default function ReportProductFilter({
             onChange={(event) => setCategory(event.target.value)}
             className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4"
           >
-            {categoryOptions.map((item) => (
-              <option key={item} value={item === "Tất cả" ? "" : item}>
-                {item}
+            <option value="">Tất cả nhóm hàng</option>
+            {categories.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
               </option>
             ))}
           </select>

@@ -201,7 +201,7 @@ export default function ReportContent({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#F3F4F6]">
-                  <th className="report-th w-[120px]">Ngày</th>
+                  <th className="report-th w-[120px]">{interest === "Hủy món" ? "Giai đoạn hủy" : "Ngày"}</th>
 
                   <th className="report-th">Mã Hàng</th>
 
@@ -326,7 +326,7 @@ export default function ReportContent({
               <table className="w-full table-fixed border-collapse">
                 <thead>
                   <tr className="bg-[#F3F4F6]">
-                    <th className="report-th w-[13%]">Ngày</th>
+                    <th className="report-th w-[13%]">{interest === "Hủy món" ? "Giai đoạn hủy" : "Ngày"}</th>
 
                     <th className="report-th w-[10%]">Mã Hàng</th>
 

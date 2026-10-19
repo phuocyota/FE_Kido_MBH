@@ -29,7 +29,7 @@ export default function ReportProduct() {
   const interests = [
     "Bán hàng",
     // "Lợi nhuận",
-    "Xuất nhập tồn",
+    "Tồn kho hiện tại",
     // "Xuất hủy",
   ];
 
@@ -296,6 +296,9 @@ export default function ReportProduct() {
         {/* CONTENT */}
         <div className="min-w-0">
           <ReportProductContent
+            productKeyword={productKeyword}
+            category={category}
+            foodTypes={foodTypes}
             // VIEW
             viewType={viewType}
             // INTEREST

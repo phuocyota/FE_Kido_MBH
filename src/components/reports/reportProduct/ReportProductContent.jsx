@@ -27,6 +27,9 @@ export default function ReportProductContent({
   toDate,
   branch,
   branchId,
+  productKeyword,
+  category,
+  foodTypes,
 
   // ZOOM
   zoom,
@@ -98,6 +101,9 @@ export default function ReportProductContent({
           {interest === "Bán hàng" &&
             (viewType === "chart" ? (
               <ProductSaleChart
+                productKeyword={productKeyword}
+                category={category}
+                foodTypes={foodTypes}
                 key={revision}
                 fromDate={fromDate}
                 toDate={toDate}
@@ -106,6 +112,10 @@ export default function ReportProductContent({
               />
             ) : (
               <ProductSaleReport
+                branch={branch}
+                productKeyword={productKeyword}
+                category={category}
+                foodTypes={foodTypes}
                 key={revision}
                 fromDate={fromDate}
                 toDate={toDate}
@@ -121,8 +131,12 @@ export default function ReportProductContent({
             />
           )}
 
-          {interest === "Xuất nhập tồn" && (
+          {interest === "Tồn kho hiện tại" && (
             <ProductInventoryReport
+              branch={branch}
+              productKeyword={productKeyword}
+              category={category}
+              foodTypes={foodTypes}
               key={revision}
               fromDate={fromDate}
               toDate={toDate}

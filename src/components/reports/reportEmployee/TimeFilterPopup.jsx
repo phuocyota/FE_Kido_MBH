@@ -19,8 +19,6 @@ export default function TimeFilterPopup({
       items: [
         "Tháng này",
         "Tháng trước",
-        "Tháng này (âm lịch)",
-        "Tháng trước (âm lịch)",
         "30 ngày qua",
       ],
     },
@@ -33,8 +31,6 @@ export default function TimeFilterPopup({
       items: [
         "Năm nay",
         "Năm trước",
-        "Năm nay (âm lịch)",
-        "Năm trước (âm lịch)",
         "Toàn thời gian",
       ],
     },

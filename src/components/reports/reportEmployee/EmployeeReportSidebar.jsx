@@ -13,6 +13,8 @@ export default function EmployeeReportSidebar({
   employee,
   setEmployee,
   employees = [],
+  onChangeCustomRange,
+  customRange,
 }) {
 
       const [showTimePopup, setShowTimePopup] = useState(false);
@@ -376,6 +378,8 @@ useEffect(() => {
      {showCustomDate && (
   <div className="mt-3 w-full">
     <CustomDatePopup
+      initialRange={customRange}
+      onApply={(range) => { onChangeCustomRange(range); setShowCustomDate(false); }}
       onClose={() =>
         setShowCustomDate(false)
       }

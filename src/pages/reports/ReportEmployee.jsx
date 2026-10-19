@@ -4,6 +4,7 @@ import React, {
   useState,
 } from "react";
 import { reportApi } from "../../api";
+import { getProductReportRange } from "../../components/reports/reportProduct/productReportData";
 
 import EmployeeReportSidebar from "../../components/reports/reportEmployee/EmployeeReportSidebar";
 import EmployeeReportContent from "../../components/reports/reportEmployee/EmployeeReportContent";
@@ -37,25 +38,7 @@ export default function ReportEmployee() {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const mapPeriodToFilter = (periodName) => {
-    switch (periodName) {
-      case "Hôm nay":
-        return "today";
-      case "Hôm qua":
-        return "yesterday";
-      case "Tháng này":
-        return "thisMonth";
-      case "Tháng trước":
-        return "lastMonth";
-      case "7 ngày qua":
-      case "lastWeek":
-      case "Tuần trước":
-      case "Tuần này":
-      default:
-        return "7days";
-    }
-  };
+  const [customRange, setCustomRange] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -65,7 +48,7 @@ export default function ReportEmployee() {
         setLoading(true);
         setError("");
         const data = await reportApi.getEmployeeReport({
-          filter: mapPeriodToFilter(period),
+          ...(customRange || getProductReportRange(period)),
           employeeId: employee,
           limit: 10,
         });
@@ -89,7 +72,7 @@ export default function ReportEmployee() {
     return () => {
       active = false;
     };
-  }, [employee, period]);
+  }, [employee, period, customRange]);
 
   const employees =
     reportData?.employees?.map((item) => ({
@@ -269,7 +252,9 @@ export default function ReportEmployee() {
                 focusType={focusType}
                 setFocusType={setFocusType}
                 period={period}
-                setPeriod={setPeriod}
+                setPeriod={(value) => { setPeriod(value); setCustomRange(null); }}
+                onChangeCustomRange={setCustomRange}
+                customRange={customRange}
                 employee={employee}
                 setEmployee={setEmployee}
                 employees={employees}
