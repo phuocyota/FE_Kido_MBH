@@ -15,6 +15,7 @@ const emptyForm = {
   weight: "",
   isCanteenItem: true,
   isBoarding: false,
+  isFreshFood: false,
   unit: "",
   imageUrl: "",
   ingredients: "",
@@ -59,6 +60,7 @@ export default function AddProductModal({
       weight: initialData?.weight || "",
       isCanteenItem: initialData?.isCanteenItem ?? true,
       isBoarding: initialData?.isBoarding ?? false,
+      isFreshFood: initialData?.isFreshFood ?? false,
       unit: initialData?.unit || "",
       imageUrl: initialData?.imageUrl || "",
       ingredients: initialData?.ingredients || "",
@@ -344,7 +346,16 @@ export default function AddProductModal({
         </div>
 
         <div className="border-t border-gray-300 px-4 md:px-6 py-4 flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-start md:items-center">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer" title="Hạn dùng mặc định 7 ngày sau ngày mua khi nhập kho">
+              <input
+                type="checkbox"
+                checked={form.isFreshFood}
+                onChange={(event) => setForm((prev) => ({ ...prev, isFreshFood: event.target.checked }))}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600"
+              />
+              Hàng tươi sống (HSD mặc định 7 ngày)
+            </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

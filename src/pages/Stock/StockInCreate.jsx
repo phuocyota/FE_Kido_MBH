@@ -7,6 +7,7 @@ import StockInTable from "../../components/StockIn/StockInTable";
 import StockInFooter from "../../components/StockIn/StockInFooter";
 import { stockInApi } from "../../api";
 import { validateStockInItems, stockInItemPayload } from "../../components/StockIn/stockInItems";
+import { freshFoodExpiry, currentPurchaseDateTime } from "../../components/Stock/stockDates";
 import { getBranchIdFromToken } from "../../api/authSession";
 
 export default function StockInCreate() {
@@ -20,6 +21,13 @@ export default function StockInCreate() {
   const [note, setNote] = useState("");
   const [reference, setReference] = useState("");
   const [items, setItems] = useState([]);
+  const [purchasedAt, setPurchasedAt] = useState(currentPurchaseDateTime);
+  const handlePurchaseDateChange = (value) => {
+    setPurchasedAt(value);
+    setItems((rows) => rows.map((item) => item.isFreshFood && !item.expiryManuallyEdited
+      ? { ...item, expiresAt: value ? freshFoodExpiry(value.slice(0, 10)) : "" }
+      : item));
+  };
 
   const handleSave = async () => {
     if (!supplier) {
@@ -31,6 +39,10 @@ export default function StockInCreate() {
       return;
     }
 
+    if (!purchasedAt) {
+      toast.error("Vui lòng chọn ngày mua / nhập kho!");
+      return;
+    }
     const validationError = validateStockInItems(items, reasonCode);
     if (validationError) {
       toast.error(validationError);
@@ -44,6 +56,7 @@ export default function StockInCreate() {
 
       const payload = {
         type: "IMPORT",
+        purchasedAt: purchasedAt.slice(0, 10),
         reasonCode: reasonCode === "OTHER" ? undefined : reasonCode,
         branchId: getBranchIdFromToken() || undefined,
         sourceId: supplier.id,
@@ -89,7 +102,9 @@ export default function StockInCreate() {
         />
 
         {/* Thông tin phiếu */}
-        <StockInInfo 
+        <StockInInfo
+          purchasedAt={purchasedAt}
+          onChangePurchasedAt={handlePurchaseDateChange}
           supplier={supplier}
           onChangeSupplier={setSupplier}
           note={note}
@@ -99,7 +114,7 @@ export default function StockInCreate() {
 
         {/* Bảng chi tiết */}
         <div className="flex-1 overflow-hidden">
-          <StockInTable items={items} setItems={setItems} />
+          <StockInTable items={items} setItems={setItems} purchasedAt={purchasedAt.slice(0, 10)} />
         </div>
 
         {/* Footer */}

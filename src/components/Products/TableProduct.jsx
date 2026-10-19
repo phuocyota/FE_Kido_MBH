@@ -461,6 +461,7 @@ export default function TableProduct({
               unit: data.unit || undefined,
               isActive: isEdit ? (selectedProduct?.isActive ?? true) : true,
               isCanteenItem: data.isCanteenItem,
+              isFreshFood: data.isFreshFood,
               imageUrl: data.imageUrl || undefined,
               ingredients: data.ingredients || undefined,
               description: data.description || undefined,

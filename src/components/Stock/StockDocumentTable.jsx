@@ -3,6 +3,8 @@ import { productApi } from "../../api";
 import { Search, Trash2 } from "lucide-react";
 import StockProductPicker from "./StockProductPicker";
 import { createStockProductCache } from "./stockProductCache";
+import { freshFoodExpiry } from "./stockDates";
+import { createStockLotCode } from "./stockLotCode";
 
 const baseColumns = [
   { label: "Mã hàng hóa", className: "w-[130px] rounded-tl-lg" },
@@ -28,6 +30,7 @@ export default function StockDocumentTable({
   showWarehouse = false,
   showRowNumbers = false,
   showLotFields = false,
+  purchasedAt,
 }) {
   const rowIdPrefix = useId();
   const nextRowId = useRef(0);
@@ -53,11 +56,13 @@ export default function StockDocumentTable({
     lotTrackingEnabled: product.lotTrackingEnabled === true,
     productType: product.productType,
     baseUnitId: product.baseUnitId,
+    isFreshFood: product.isFreshFood === true,
+    expiryManuallyEdited: false,
     serialMode: "NONE",
     serialText: "",
-    lotCode: "",
+    lotCode: createStockLotCode(),
     manufacturedAt: "",
-    expiresAt: "",
+    expiresAt: product.isFreshFood ? freshFoodExpiry(purchasedAt) : "",
   } : {};
   const [loadProducts] = useState(() =>
     createStockProductCache(productApi.getAll),
@@ -126,6 +131,7 @@ export default function StockDocumentTable({
     newItems[index] = {
       ...newItems[index],
       [field]: ["quantity", "price"].includes(field) ? Number(value) || 0 : value,
+      ...(field === "expiresAt" ? { expiryManuallyEdited: true } : {}),
     };
     setItems(newItems);
   };
@@ -350,8 +356,10 @@ export default function StockDocumentTable({
                             aria-label={`${label} dòng ${index + 1}`}
                             value={item[field] || ""}
                             disabled={isNewRow}
+                            readOnly={field === "lotCode"}
+                            title={field === "lotCode" ? item.lotCode : field === "expiresAt" && item.isFreshFood ? "Hàng tươi sống: mặc định 7 ngày sau ngày mua, có thể sửa theo thực tế" : undefined}
                             required={item.lotTrackingEnabled && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
-                            placeholder={field === "lotCode" ? (item.lotTrackingEnabled ? "Bắt buộc nhập số lô" : "Nhập số lô") : undefined}
+                            placeholder={field === "lotCode" ? "Tự sinh khi chọn hàng" : undefined}
                             onChange={(event) => handleUpdateItem(index, field, event.target.value)}
                             className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
                           />

@@ -3,12 +3,7 @@ import { Plus } from "lucide-react";
 import { supplierApi } from "../../api";
 import AddSupplierModal from "../Suppliers/AddSupplierModal";
 
-const formatDateTimeLocal = (date) => {
-  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
-  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
-};
-
-export default function StockInInfo({ supplier, onChangeSupplier, note, onChangeNote, reference }) {
+export default function StockInInfo({ supplier, onChangeSupplier, note, onChangeNote, reference, purchasedAt, onChangePurchasedAt }) {
   const [supplierName, setSupplierName] = useState(supplier?.name || "");
   const [suppliers, setSuppliers] = useState([]);
   const [showSupplierList, setShowSupplierList] = useState(false);
@@ -17,7 +12,6 @@ export default function StockInInfo({ supplier, onChangeSupplier, note, onChange
   const [hasLoadedSuppliers, setHasLoadedSuppliers] = useState(false);
   const [openAddSupplier, setOpenAddSupplier] = useState(false);
   const isLoadingSuppliersRef = useRef(false);
-  const defaultPostedAt = useMemo(() => formatDateTimeLocal(new Date()), []);
 
   const filteredSuppliers = useMemo(() => {
     const keyword = supplierName.trim().toLowerCase();
@@ -181,12 +175,13 @@ export default function StockInInfo({ supplier, onChangeSupplier, note, onChange
 
         <div className="md:col-span-3">
           <label className="mb-1 block text-sm font-medium">
-            Thời gian <span className="text-red-500">*</span>
+            Ngày mua / nhập kho <span className="text-red-500">*</span>
           </label>
 
           <input
             type="datetime-local"
-            defaultValue={defaultPostedAt}
+            value={purchasedAt}
+            onChange={(event) => onChangePurchasedAt(event.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
           />
         </div>
