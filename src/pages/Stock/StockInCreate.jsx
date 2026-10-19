@@ -14,6 +14,7 @@ export default function StockInCreate() {
   const [loading, setLoading] = useState(false);
   const saveRequest = useRef(null);
 
+  const [reasonCode, setReasonCode] = useState("NHNCC");
   const [paymentStatus, setPaymentStatus] = useState("DEBT");
   const [supplier, setSupplier] = useState(null);
   const [note, setNote] = useState("");
@@ -30,7 +31,7 @@ export default function StockInCreate() {
       return;
     }
 
-    const validationError = validateStockInItems(items);
+    const validationError = validateStockInItems(items, reasonCode);
     if (validationError) {
       toast.error(validationError);
       return;
@@ -38,11 +39,12 @@ export default function StockInCreate() {
 
     try {
       setLoading(true);
-      const defaultNote = paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
+      const defaultNote = reasonCode === "NHNNL" ? "Nhập nguyên, nhiên liệu" : paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
       const finalNote = note ? (reference ? `[Tham chiếu: ${reference}] ${note}` : note) : defaultNote;
 
       const payload = {
         type: "IMPORT",
+        reasonCode: reasonCode === "OTHER" ? undefined : reasonCode,
         branchId: getBranchIdFromToken() || undefined,
         sourceId: supplier.id,
         sourceType: "SUPPLIER",
@@ -77,7 +79,9 @@ export default function StockInCreate() {
     <div className="min-h-screen bg-gray-100 p-2 md:p-3">
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col overflow-visible">
         {/* Header */}
-        <StockInHeader 
+        <StockInHeader
+          reasonCode={reasonCode}
+          onChangeReasonCode={setReasonCode}
           paymentStatus={paymentStatus}
           onChangePaymentStatus={setPaymentStatus}
           reference={reference}

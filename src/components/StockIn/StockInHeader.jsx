@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function StockInHeader({ paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
+export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
   const navigate = useNavigate();
 
   return (
@@ -31,9 +31,10 @@ export default function StockInHeader({ paymentStatus, onChangePaymentStatus, re
 
           {/* Loại nhập */}
           <div className="relative w-full sm:w-[240px]">
-            <select className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
-              <option>Nhập hàng từ nhà cung cấp</option>
-              <option>Khác</option>
+            <select aria-label="Lý do nhập kho" value={reasonCode} onChange={(event) => onChangeReasonCode(event.target.value)} className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
+              <option value="NHNCC">Nhập hàng từ nhà cung cấp</option>
+              <option value="NHNNL">Nhập nguyên, nhiên liệu</option>
+              <option value="OTHER">Khác</option>
             </select>
 
             <ChevronDown

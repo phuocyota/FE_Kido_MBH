@@ -52,6 +52,7 @@ export default function StockDocumentTable({
   const lotFieldsForProduct = (product) => showLotFields ? {
     lotTrackingEnabled: product.lotTrackingEnabled === true,
     productType: product.productType,
+    baseUnitId: product.baseUnitId,
     serialMode: "NONE",
     serialText: "",
     lotCode: "",

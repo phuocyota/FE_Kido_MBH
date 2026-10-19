@@ -61,7 +61,8 @@ const normalizeImportReceipt = (header, details, index = 0) => {
     description: header.note || "",
     totalAmount,
     deliverer: header.supplier?.name || "",
-    voucherType: "Mua hàng trong nước nhập kho",
+    reasonCode: header.reasonCode || "",
+    voucherType: header.reasonCode === "NHNNL" ? "Nhập nguyên, nhiên liệu" : "Mua hàng trong nước nhập kho",
     branch: header.branch?.name || header.branchName || header.branchId || "",
     details: normalizedDetails,
   };
