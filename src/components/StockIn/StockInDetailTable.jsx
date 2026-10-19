@@ -12,6 +12,7 @@ const detailColumns = [
   { label: "#", className: "w-12 text-center" },
   { label: "Mã hàng", className: "min-w-[150px]" },
   { label: "Tên hàng", className: "min-w-[280px]" },
+  { label: "Lô / Serial", className: "min-w-[240px]" },
   { label: "Kho", className: "min-w-[190px]" },
   { label: "ĐVT", className: "min-w-[100px]" },
   { label: "Số lượng", className: "min-w-[120px] text-right" },
@@ -77,6 +78,9 @@ export default function StockInDetailTable({ receipt }) {
             </p>
 
             <div className="mt-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <LotSerialDetail item={item} />
+              </div>
               <div>
                 <span className="font-semibold text-gray-700">Kho:</span>{" "}
                 {item.warehouse}
@@ -138,6 +142,9 @@ export default function StockInDetailTable({ receipt }) {
                   {item.productName}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
+                  <LotSerialDetail item={item} />
+                </td>
+                <td className="px-4 py-3 text-gray-700">
                   {item.warehouse}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
@@ -175,7 +182,7 @@ export default function StockInDetailTable({ receipt }) {
 
           <tfoot>
             <tr className="bg-gray-50 font-bold text-gray-800">
-              <td colSpan={5} className="px-4 py-3 border-t border-gray-300">
+              <td colSpan={6} className="px-4 py-3 border-t border-gray-300">
                 Tổng cộng
               </td>
               <td className="px-4 py-3 text-right tabular-nums border-t border-gray-300 text-indigo-600">
@@ -198,6 +205,23 @@ export default function StockInDetailTable({ receipt }) {
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}
       />
+    </div>
+  );
+}
+
+function LotSerialDetail({ item }) {
+  return (
+    <div className="space-y-1 text-xs">
+      <div>Số lô: {item.lotCode || "—"}</div>
+      {(item.manufacturedAt || item.expiresAt) && (
+        <div>NSX: {item.manufacturedAt || "—"} · HSD: {item.expiresAt || "—"}</div>
+      )}
+      {item.serials?.length > 0 && (
+        <details>
+          <summary className="cursor-pointer font-medium text-blue-700">{item.serials.length} serial ({item.serialMode === "AUTO" ? "tự sinh" : "thủ công"})</summary>
+          <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all font-mono">{item.serials.join("\n")}</pre>
+        </details>
+      )}
     </div>
   );
 }

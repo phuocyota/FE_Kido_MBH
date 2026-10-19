@@ -27,6 +27,7 @@ export default function StockDocumentTable({
   priceField = "costPrice",
   showWarehouse = false,
   showRowNumbers = false,
+  showLotFields = false,
 }) {
   const rowIdPrefix = useId();
   const nextRowId = useRef(0);
@@ -38,7 +39,25 @@ export default function StockDocumentTable({
       label: "Kho",
       className: "w-[120px]",
     });
-  const totalLabelColumns = 3 + Number(showRowNumbers) + Number(showWarehouse);
+  if (showLotFields) {
+    const quantityIndex = columns.findIndex((column) => column.label === "Số lượng");
+    columns.splice(quantityIndex, 0,
+      { label: "Serial", className: "w-[260px]" },
+      { label: "Số lô", className: "w-[180px]" },
+      { label: "Ngày sản xuất", className: "w-[170px]" },
+      { label: "Hạn sử dụng", className: "w-[170px]" },
+    );
+  }
+  const totalLabelColumns = 3 + Number(showRowNumbers) + Number(showWarehouse) + (showLotFields ? 4 : 0);
+  const lotFieldsForProduct = (product) => showLotFields ? {
+    lotTrackingEnabled: product.lotTrackingEnabled === true,
+    productType: product.productType,
+    serialMode: "NONE",
+    serialText: "",
+    lotCode: "",
+    manufacturedAt: "",
+    expiresAt: "",
+  } : {};
   const [loadProducts] = useState(() =>
     createStockProductCache(productApi.getAll),
   );
@@ -86,6 +105,7 @@ export default function StockDocumentTable({
         ...items,
         {
           id: `product-${product.id}`,
+          ...lotFieldsForProduct(product),
           productId: product.id,
           code: product.code || "",
           name: product.name,
@@ -102,7 +122,10 @@ export default function StockDocumentTable({
 
   const handleUpdateItem = (index, field, value) => {
     const newItems = [...items];
-    newItems[index][field] = Number(value) || 0;
+    newItems[index] = {
+      ...newItems[index],
+      [field]: ["quantity", "price"].includes(field) ? Number(value) || 0 : value,
+    };
     setItems(newItems);
   };
 
@@ -133,6 +156,7 @@ export default function StockDocumentTable({
     const newItems = [...items];
     newItems[index] = {
       ...newItems[index],
+      ...lotFieldsForProduct(product),
       productId: product.id,
       code: product.code || "",
       name: product.name,
@@ -211,7 +235,7 @@ export default function StockDocumentTable({
           <table
             style={{
               minWidth:
-                1100 + (showWarehouse ? 120 : 0) + (showRowNumbers ? 48 : 0),
+                1100 + (showLotFields ? 780 : 0) + (showWarehouse ? 120 : 0) + (showRowNumbers ? 48 : 0),
             }}
             className="w-full table-fixed border-separate border-spacing-0 text-sm"
           >
@@ -286,12 +310,59 @@ export default function StockDocumentTable({
                       >
                         {item.unit}
                       </td>
+                      {showLotFields && (
+                        <td className={`${bodyCellClass} border-b border-slate-200 align-top`}>
+                          <select
+                            aria-label={`Xử lý serial dòng ${index + 1}`}
+                            value={item.serialMode || "NONE"}
+                            disabled={isNewRow}
+                            onChange={(event) => handleUpdateItem(index, "serialMode", event.target.value)}
+                            className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                          >
+                            <option value="NONE">Không dùng serial</option>
+                            <option value="MANUAL">Nhập serial thủ công</option>
+                            <option value="AUTO">Tự sinh serial</option>
+                          </select>
+                          {item.serialMode === "MANUAL" && (
+                            <textarea
+                              aria-label={`Danh sách serial dòng ${index + 1}`}
+                              placeholder="Mỗi dòng một serial"
+                              rows={3}
+                              value={item.serialText || ""}
+                              onChange={(event) => handleUpdateItem(index, "serialText", event.target.value)}
+                              className="mt-2 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                            />
+                          )}
+                          {item.serialMode === "AUTO" && (
+                            <p className="mt-2 text-xs font-normal text-slate-500">Một serial cho mỗi đơn vị, tự tạo khi lưu phiếu.</p>
+                          )}
+                        </td>
+                      )}
+                      {showLotFields && [
+                        { field: "lotCode", label: "Số lô", type: "text" },
+                        { field: "manufacturedAt", label: "Ngày sản xuất", type: "date" },
+                        { field: "expiresAt", label: "Hạn sử dụng", type: "date" },
+                      ].map(({ field, label, type }) => (
+                        <td key={field} className={`${bodyCellClass} border-b border-slate-200`}>
+                          <input
+                            type={type}
+                            aria-label={`${label} dòng ${index + 1}`}
+                            value={item[field] || ""}
+                            disabled={isNewRow}
+                            required={item.lotTrackingEnabled && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
+                            placeholder={field === "lotCode" ? (item.lotTrackingEnabled ? "Bắt buộc nhập số lô" : "Nhập số lô") : undefined}
+                            onChange={(event) => handleUpdateItem(index, field, event.target.value)}
+                            className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
+                          />
+                        </td>
+                      ))}
                       <td
                         className={`${numberCellClass} border-b border-slate-200 p-1`}
                       >
                         <input
                           type="number"
-                          min="1"
+                          min={showLotFields ? "0.0001" : "1"}
+                          step={showLotFields ? "any" : "1"}
                           value={item.quantity}
                           onChange={(e) =>
                             handleUpdateItem(index, "quantity", e.target.value)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import StockInHeader from "../../components/StockIn/StockInHeader";
@@ -6,11 +6,13 @@ import StockInInfo from "../../components/StockIn/StockInInfo";
 import StockInTable from "../../components/StockIn/StockInTable";
 import StockInFooter from "../../components/StockIn/StockInFooter";
 import { stockInApi } from "../../api";
+import { validateStockInItems, stockInItemPayload } from "../../components/StockIn/stockInItems";
 import { getBranchIdFromToken } from "../../api/authSession";
 
 export default function StockInCreate() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const saveRequest = useRef(null);
 
   const [paymentStatus, setPaymentStatus] = useState("DEBT");
   const [supplier, setSupplier] = useState(null);
@@ -28,6 +30,12 @@ export default function StockInCreate() {
       return;
     }
 
+    const validationError = validateStockInItems(items);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     try {
       setLoading(true);
       const defaultNote = paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
@@ -41,11 +49,7 @@ export default function StockInCreate() {
         paymentStatus: paymentStatus,
         note: finalNote,
         items: items.map((item) => {
-          const itemPayload = {
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.price,
-          };
+          const itemPayload = stockInItemPayload(item);
           if (paymentStatus === "PAID") {
             itemPayload.note = item.note || "Ghi chu dong hang";
           }
@@ -53,13 +57,17 @@ export default function StockInCreate() {
         }),
       };
 
-      await stockInApi.create(payload);
+      const fingerprint = JSON.stringify(payload);
+      if (saveRequest.current?.fingerprint !== fingerprint) {
+        saveRequest.current = { fingerprint, requestId: crypto.randomUUID() };
+      }
+      await stockInApi.create({ ...payload, requestId: saveRequest.current.requestId });
       toast.success("Tạo phiếu nhập kho thành công!");
       navigate("/stock-in");
     } catch (error) {
       console.error("Lỗi khi tạo phiếu nhập kho:", error);
       const errorMessage = error.response?.data?.message || "Đã có lỗi xảy ra!";
-      toast.error(errorMessage);
+      toast.error(Array.isArray(errorMessage) ? errorMessage.join("\n") : errorMessage);
     } finally {
       setLoading(false);
     }
