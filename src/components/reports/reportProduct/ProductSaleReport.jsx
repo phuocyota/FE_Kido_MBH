@@ -24,7 +24,7 @@ export default function ProductSaleReport({ fromDate, toDate, branchId, branch, 
   }, [fromDate, toDate, branchId]);
   useEffect(() => { load(); return () => { request.current += 1; }; }, [load]);
   const rows = aggregateProductSales(filterProductReportRows(data, filters));
-  return <div className="min-w-[1000px] bg-white p-8">
+  return <div aria-busy={loading} className="min-w-[1000px] bg-white p-8">
     <h1 className="text-center text-3xl font-bold">Báo cáo bán hàng theo sản phẩm</h1>
     <p className="my-3 text-center text-slate-600">{branch} · Từ {fromDate} đến {toDate}</p>
     <table className="w-full border-collapse text-sm">

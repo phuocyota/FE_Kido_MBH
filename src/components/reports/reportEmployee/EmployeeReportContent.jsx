@@ -85,6 +85,8 @@ export default function EmployeeReportContent({
           </div>
         )}
         <div
+          aria-busy={loading}
+          data-report-error={error || undefined}
           ref={(el) => {
             previewRef.current = el;
             exportRef.current = el;

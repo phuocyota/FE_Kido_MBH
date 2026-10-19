@@ -1,13 +1,15 @@
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 
+const unavailable = element => !element || element.matches('[aria-busy="true"], [data-report-error]') || element.querySelector('[role="alert"], [aria-busy="true"], [data-report-error]') || /Đang tải/.test(element.textContent);
+
 export function exportReportExcel(element, filename) {
   const table = element?.querySelector("table");
   if (!table) {
     toast.error("Vui lòng chọn dạng báo cáo bảng để xuất Excel.");
     return;
   }
-  if (element.querySelector('[role="alert"]') || /Đang tải/.test(table.textContent)) {
+  if (unavailable(element)) {
     toast.error("Vui lòng chờ báo cáo tải thành công trước khi xuất.");
     return;
   }
@@ -16,7 +18,7 @@ export function exportReportExcel(element, filename) {
 }
 
 export async function printReport(element, landscape = false) {
-  if (!element || element.querySelector('[role="alert"]') || /Đang tải/.test(element.textContent)) {
+  if (unavailable(element)) {
     toast.error("Vui lòng chờ báo cáo tải thành công trước khi in.");
     return;
   }

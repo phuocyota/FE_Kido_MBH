@@ -75,7 +75,11 @@ export default function ReportEndDay() {
 
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
+    const pageHeight = reportType === "portrait" ? 297 : 210;
+    for (let offset = 0; offset < imgHeight; offset += pageHeight) {
+      if (offset > 0) pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, -offset, pdfWidth, imgHeight);
+    }
 
     pdf.save("Bao_cao_cuoi_ngay.pdf");
   };

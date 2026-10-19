@@ -297,6 +297,8 @@ export default function ReportContent({
         <div className="fixed left-[-99999px] top-0">
           <div
             ref={exportRef}
+            aria-busy={loading}
+            data-report-error={reportError || undefined}
             style={{
               width: reportType === "portrait" ? "210mm" : "297mm",
               minHeight: reportType === "portrait" ? "297mm" : "210mm",
