@@ -23,8 +23,8 @@ export function validateStockInItems(items, reasonCode = "NHNCC") {
     if (!Number.isFinite(item.quantity) || item.quantity <= 0) return prefix + "Số lượng phải lớn hơn 0.";
     if (!Number.isFinite(item.price) || item.price < 0) return prefix + "Đơn giá không hợp lệ.";
     if (reasonCode === "NHNNL") {
-      if (!["INGREDIENT", "FUEL"].includes(item.productType)) return prefix + "Chỉ chọn nguyên liệu hoặc nhiên liệu cho lý do này.";
-      if (!item.lotTrackingEnabled || !item.baseUnitId) return prefix + "Sản phẩm cần bật theo dõi lô và có đơn vị cơ sở.";
+      if (!["INGREDIENT", "FUEL"].includes(item.productType)) return prefix + `“${item.name || item.code || "Sản phẩm"}” chưa có loại kho phù hợp. Vào Danh mục → Sửa hàng hóa → Phân loại kho, chọn Nguyên liệu hoặc Nhiên liệu rồi mở lại phiếu nhập.`;
+      if (!item.lotTrackingEnabled || !item.baseUnitId) return prefix + "Vào Danh mục → Sửa hàng hóa, chọn đơn vị cơ sở và bật theo dõi lô rồi mở lại phiếu nhập.";
     }
     if (item.lotTrackingEnabled && !item.lotCode?.trim()) return prefix + "Vui lòng nhập số lô.";
     if (item.lotTrackingEnabled && item.productType === "INGREDIENT" && !item.expiresAt) return prefix + "Nguyên liệu phải có hạn sử dụng.";

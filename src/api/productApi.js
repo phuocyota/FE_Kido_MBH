@@ -30,6 +30,11 @@ export const productApi = {
     return response.data.data || response.data;
   },
 
+  getMeasurementUnits: async () => {
+    const response = await axiosInstance.get("/kitchen/units");
+    return response.data?.data ?? response.data;
+  },
+
   // Get all categories
   getCategories: async () => {
     const categories = [];

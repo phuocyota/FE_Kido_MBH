@@ -22,6 +22,7 @@ import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
 import BoardingOrderDemo from "./pages/BoardingOrder/BoardingOrderDemo";
 import ReportEmployee from "./pages/reports/ReportEmployee";
 import ReportBoarding from "./pages/reports/ReportBoarding";
+import StockLots from "./pages/Stock/StockLots";
 import StockInList from "./pages/Stock/StockInList";
 import StockInCreate from "./pages/Stock/StockInCreate";
 import StockOutList from "./pages/Stock/StockOutList";
@@ -84,6 +85,7 @@ const App = () => {
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/boarding-orders" element={<BoardingOrder />} />
                   <Route path="/report-employee" element={<ReportEmployee />} />
+                  <Route path="/stock-lots" element={<StockLots />} />
                   <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />
                   <Route path="/stock-out" element={<StockOutList />} />

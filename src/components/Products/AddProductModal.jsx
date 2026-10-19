@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ImagePlus, Info, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { stockLotApi } from "../../api/stockLotApi";
+import { getBranchIdFromToken } from "../../api/authSession";
 import { productApi } from "../../api";
 
 const emptyForm = {
@@ -8,6 +10,8 @@ const emptyForm = {
   categoryId: "",
   tag: "",
   type: "Đồ ăn",
+  productType: "",
+  baseUnitId: "",
   code: "",
   cost: "",
   price: "",
@@ -26,6 +30,7 @@ export default function AddProductModal({
   open,
   onClose,
   onSave,
+  onTrackingEnabled,
   initialData = null,
 }) {
   const isEditMode = !!initialData;
@@ -34,6 +39,10 @@ export default function AddProductModal({
   const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [categories, setCategories] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [unitError, setUnitError] = useState("");
+  const [trackingEnabled, setTrackingEnabled] = useState(false);
+  const [enablingTracking, setEnablingTracking] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -47,12 +56,15 @@ export default function AddProductModal({
       previewUrl = `${baseUrl}${previewUrl}`;
     }
     setImagePreview(previewUrl);
+    setTrackingEnabled(initialData?.lotTrackingEnabled === true);
 
     setForm({
       name: initialData?.name || "",
       categoryId: initialData?.categoryId || "",
       tag: initialData?.tag || "",
       type: initialData?.type || "Đồ ăn",
+      productType: initialData?.productType || "",
+      baseUnitId: initialData?.baseUnitId || "",
       code: initialData?.code || "",
       cost: initialData?.costPrice || initialData?.cost || "",
       price: initialData?.price || "",
@@ -82,6 +94,16 @@ export default function AddProductModal({
     };
 
     loadCategories();
+    const loadUnits = async () => {
+      setUnitError("");
+      try {
+        const data = await productApi.getMeasurementUnits();
+        setUnits(Array.isArray(data) ? data : []);
+      } catch {
+        setUnitError("Không thể tải đơn vị cơ sở. Đóng và mở lại form để thử lại.");
+      }
+    };
+    loadUnits();
   }, [open]);
 
   if (!open) return null;
@@ -104,6 +126,10 @@ export default function AddProductModal({
       return;
     }
 
+    if (["INGREDIENT", "FUEL"].includes(form.productType) && !form.baseUnitId) {
+      toast.error("Vui lòng chọn đơn vị cơ sở cho nguyên liệu / nhiên liệu.");
+      return;
+    }
     let finalImageUrl = form.imageUrl;
 
     if (imageFile) {
@@ -242,6 +268,44 @@ export default function AddProductModal({
             </div>
           </div>
 
+          <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-5">
+            <h3 className="mb-3 font-semibold">Phân loại kho</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm font-medium">Loại hàng trong kho
+                <select aria-label="Loại hàng trong kho" name="productType" value={form.productType} onChange={handleChange} className="mt-2 w-full rounded-xl border border-gray-300 bg-white p-3">
+                  <option value="">Chưa phân loại</option>
+                  <option value="INGREDIENT">Nguyên liệu</option><option value="FUEL">Nhiên liệu</option>
+                  <option value="FINISHED_GOOD">Thành phẩm</option><option value="MERCHANDISE">Hàng hóa thương mại</option>
+                </select>
+              </label>
+              <label className="text-sm font-medium">Đơn vị cơ sở
+                <select aria-label="Đơn vị cơ sở" name="baseUnitId" value={form.baseUnitId} onChange={(event) => {
+                  const unit = units.find((item) => item.id === event.target.value);
+                  setForm((prev) => ({ ...prev, baseUnitId: event.target.value, ...(unit ? { unit: unit.code } : {}) }));
+                }} className="mt-2 w-full rounded-xl border border-gray-300 bg-white p-3">
+                  <option value="">Chọn đơn vị cơ sở</option>{units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name} ({unit.code})</option>)}
+                </select>
+                {unitError && <span className="mt-1 block text-xs text-red-600">{unitError}</span>}
+              </label>
+            </div>
+            <p className="mt-3 text-xs text-slate-600">Nhập nguyên, nhiên liệu cần loại Nguyên liệu hoặc Nhiên liệu, có đơn vị cơ sở và bật theo dõi lô. Hàng tươi sống là tùy chọn tính hạn dùng.</p>
+            {isEditMode && ["INGREDIENT", "FUEL"].includes(initialData.productType) && initialData.baseUnitId && (
+              trackingEnabled ? <p className="mt-3 text-sm font-medium text-emerald-700">Đã bật theo dõi lô.</p> : <button type="button" disabled={enablingTracking || form.productType !== initialData.productType || form.baseUnitId !== initialData.baseUnitId} onClick={async () => {
+                setEnablingTracking(true);
+                try {
+                  await stockLotApi.enableEmptyProductTracking(initialData.id, initialData.branchId || getBranchIdFromToken());
+                  setTrackingEnabled(true);
+                  onTrackingEnabled?.();
+                  toast.success("Đã bật theo dõi lô. Mở lại phiếu nhập để tải cấu hình mới.");
+                } catch (error) {
+                  const message = error.response?.data?.message || error.message || "Không thể bật theo dõi lô.";
+                  toast.error(Array.isArray(message) ? message.join("\n") : message);
+                } finally { setEnablingTracking(false); }
+              }} className="mt-3 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-semibold text-blue-700 disabled:opacity-50">{enablingTracking ? "Đang bật..." : "Bật theo dõi lô (hàng chưa có tồn)"}</button>
+            )}
+            {!isEditMode && ["INGREDIENT", "FUEL"].includes(form.productType) && <p className="mt-2 text-xs text-blue-700">Sau khi lưu, mở sửa hàng hóa để bật theo dõi lô trước khi nhập kho.</p>}
+          </div>
+
           <div className="border border-gray-300 rounded-2xl p-5">
             <div className="flex justify-between mb-4">
               <h3 className="font-semibold">Giá & Thuế</h3>
@@ -347,6 +411,20 @@ export default function AddProductModal({
 
         <div className="border-t border-gray-300 px-4 md:px-6 py-4 flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-start md:items-center">
           <div className="flex flex-wrap items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer" title="Dùng để nhập kho nguyên liệu hoặc nhiên liệu; chọn loại cụ thể ở phần Phân loại kho">
+              <input
+                type="checkbox"
+                checked={["INGREDIENT", "FUEL"].includes(form.productType)}
+                onChange={(event) => setForm((prev) => ({
+                  ...prev,
+                  productType: event.target.checked
+                    ? (["INGREDIENT", "FUEL"].includes(prev.productType) ? prev.productType : "INGREDIENT")
+                    : "MERCHANDISE",
+                }))}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600"
+              />
+              Nguyên, nhiên liệu
+            </label>
             <label className="flex items-center gap-2 cursor-pointer" title="Hạn dùng mặc định 7 ngày sau ngày mua khi nhập kho">
               <input
                 type="checkbox"

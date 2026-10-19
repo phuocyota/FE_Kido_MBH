@@ -449,6 +449,7 @@ export default function TableProduct({
           setOpenAddModal(false);
           setSelectedProduct(null);
         }}
+        onTrackingEnabled={fetchProducts}
         initialData={selectedProduct}
         onSave={async (data, isEdit, productId, keepOpen = false) => {
           try {
@@ -459,6 +460,8 @@ export default function TableProduct({
               code: data.code || undefined,
               categoryId: data.categoryId || undefined,
               unit: data.unit || undefined,
+              productType: data.productType || undefined,
+              baseUnitId: data.baseUnitId || undefined,
               isActive: isEdit ? (selectedProduct?.isActive ?? true) : true,
               isCanteenItem: data.isCanteenItem,
               isFreshFood: data.isFreshFood,
@@ -481,8 +484,13 @@ export default function TableProduct({
               setSelectedProduct(null);
             }
             return true;
-          } catch {
-            toast.error(isEdit ? "Không thể cập nhật sản phẩm" : "Không thể tạo sản phẩm");
+          } catch (error) {
+            const message = error.response?.data?.message;
+            const friendly = message === "PRODUCT_CLASSIFICATION_IN_USE"
+              ? "Hàng đã có giao dịch: không thể đổi loại hoặc đơn vị cơ sở."
+              : message === "PRODUCT_BASE_UNIT_REQUIRED" ? "Vui lòng chọn đơn vị cơ sở."
+              : message || (isEdit ? "Không thể cập nhật sản phẩm" : "Không thể tạo sản phẩm");
+            toast.error(Array.isArray(friendly) ? friendly.join("\n") : friendly);
           }
         }}
       />

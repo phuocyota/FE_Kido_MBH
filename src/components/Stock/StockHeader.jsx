@@ -10,6 +10,7 @@ export default function StockHeader({ activeTab, onRefresh }) {
     { id: "out", label: "Xuất kho", path: "/stock-out" },
     { id: "sale", label: "Xuất bán", path: "/stock-sale" },
     { id: "transfer", label: "Chuyển kho", path: "/stock-transfer" },
+    { id: "lots", label: "Lô hàng", path: "/stock-lots" },
     { id: "takes", label: "Kiểm kho", path: "/stock-takes" },
   ];
 

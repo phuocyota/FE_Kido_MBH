@@ -17,6 +17,7 @@ const menu = [
       { name: "Danh mục", path: "/products" },
       { name: "Thiết lập giá", path: "/price-book" },
       { name: "Kho", path: "/stock-in" },
+      { name: "Lô hàng", path: "/stock-lots" },
       { name: "Thu chi", path: "/cash-management" },
     ],
   },
