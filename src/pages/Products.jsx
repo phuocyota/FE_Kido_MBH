@@ -4,6 +4,8 @@ import TableProduct from "../components/Products/TableProduct.jsx";
 import ToolbarFilterDropdown from "../components/layout/ToolbarFilterDropdown.jsx";
 
 export default function Products() {
+  const [categoryRevision, setCategoryRevision] = React.useState(0);
+  const handleCategoriesChanged = () => setCategoryRevision(value => value + 1);
   const [isWideView, setIsWideView] = React.useState(false);
   const [filters, setFilters] = React.useState({
     search: "",
@@ -29,12 +31,13 @@ export default function Products() {
             <h1 className="mb-4 text-2xl font-bold text-gray-800 lg:text-3xl">
               Danh mục hàng hóa
             </h1>
-            <SidebarFilter filters={filters} setFilters={setFilters} />
+            <SidebarFilter filters={filters} setFilters={setFilters} onCategoriesChanged={handleCategoriesChanged} />
             </aside>
           )}
 
           <main className="min-w-0">
             <TableProduct
+              categoryRevision={categoryRevision}
               filters={filters}
               setFilters={setFilters}
               isWideView={isWideView}
@@ -42,7 +45,7 @@ export default function Products() {
               filterControl={
                 isWideView ? (
                   <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
-                    <SidebarFilter filters={filters} setFilters={setFilters} />
+                    <SidebarFilter filters={filters} setFilters={setFilters} onCategoriesChanged={handleCategoriesChanged} />
                   </ToolbarFilterDropdown>
                 ) : null
               }

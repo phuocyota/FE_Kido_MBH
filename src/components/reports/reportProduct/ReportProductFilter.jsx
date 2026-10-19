@@ -21,7 +21,6 @@ export default function ReportProductFilter({
   setInterest,
   interests,
   branch,
-  setBranch,
   dateMode,
   setDateMode,
   timeType,
@@ -30,6 +29,10 @@ export default function ReportProductFilter({
   toDate,
   setFromDate,
   setToDate,
+  fromTime,
+  toTime,
+  setFromTime,
+  setToTime,
   formatDate,
   productKeyword,
   setProductKeyword,
@@ -45,7 +48,7 @@ export default function ReportProductFilter({
     setFoodTypes(
       foodTypes.includes(item)
         ? foodTypes.filter((value) => value !== item)
-        : [...foodTypes, item]
+        : [...foodTypes, item],
     );
   };
 
@@ -147,7 +150,7 @@ export default function ReportProductFilter({
 
         <input
           value={branch}
-          onChange={(event) => setBranch(event.target.value)}
+          readOnly
           placeholder="Tất cả chi nhánh"
           className="h-12 w-full rounded-2xl border border-gray-300 bg-white px-4"
         />
@@ -265,6 +268,11 @@ export default function ReportProductFilter({
                   <div className="mb-2 text-sm text-gray-500">Từ giờ</div>
                   <input
                     type="time"
+                    value={fromTime}
+                    onChange={(event) => {
+                      setDateMode("hour");
+                      setFromTime(event.target.value);
+                    }}
                     className="h-14 w-full rounded-2xl border border-gray-300 px-4"
                   />
                 </div>
@@ -273,6 +281,11 @@ export default function ReportProductFilter({
                   <div className="mb-2 text-sm text-gray-500">Đến giờ</div>
                   <input
                     type="time"
+                    value={toTime}
+                    onChange={(event) => {
+                      setDateMode("hour");
+                      setToTime(event.target.value);
+                    }}
                     className="h-14 w-full rounded-2xl border border-gray-300 px-4"
                   />
                 </div>
@@ -307,7 +320,10 @@ export default function ReportProductFilter({
 
           <div className="space-y-3">
             {foodTypeOptions.map((item) => (
-              <label key={item} className="flex cursor-pointer items-center gap-3">
+              <label
+                key={item}
+                className="flex cursor-pointer items-center gap-3"
+              >
                 <input
                   type="checkbox"
                   checked={foodTypes.includes(item)}

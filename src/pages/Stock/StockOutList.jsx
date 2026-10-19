@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { stockOutApi } from "../../api";
 import StockHeader from "../../components/Stock/StockHeader";
 import StockOutListTable from "../../components/StockOut/StockOutListTable";
@@ -7,7 +7,7 @@ import StockOutPagination from "../../components/StockOut/StockOutPagination";
 import StockOutDetailTable from "../../components/StockOut/StockOutDetailTable";
 import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
-export default function StockOutList() {
+export default function StockOutList({ saleMode = false }) {
   const [receipts, setReceipts] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedReceiptId, setSelectedReceiptId] = useState(null);
@@ -19,11 +19,11 @@ export default function StockOutList() {
   const [error, setError] = useState("");
   const [isWideView, setIsWideView] = useState(false);
 
-  const loadReceipts = async () => {
+  const loadReceipts = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await stockOutApi.getAll();
+      const data = await stockOutApi.getAll(saleMode ? { salesOnly: true } : {});
       setReceipts(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(
@@ -33,11 +33,11 @@ export default function StockOutList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [saleMode]);
 
   useEffect(() => {
     loadReceipts();
-  }, []);
+  }, [loadReceipts]);
 
   const filteredReceipts = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -148,7 +148,7 @@ export default function StockOutList() {
         }`}
       >
         <StockHeader
-          activeTab="out"
+          activeTab={saleMode ? "sale" : "out"}
           onRefresh={loadReceipts}
         />
 
@@ -165,6 +165,7 @@ export default function StockOutList() {
 
           <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
             <StockOutToolbar
+              saleMode={saleMode}
               searchKeyword={searchKeyword}
               onSearchChange={handleSearchChange}
               showFilterButton={isWideView}
@@ -198,6 +199,11 @@ export default function StockOutList() {
             onPageSizeChange={handlePageSizeChange}
           />
 
+            {saleMode && selectedReceipt && (
+              <div className="border-t border-gray-200 px-4 py-3 text-sm text-indigo-700">
+                Phiếu thu: {selectedReceipt.receiptCode || "Chưa có phiếu thu"}
+              </div>
+            )}
             <StockOutDetailTable receipt={selectedReceipt} />
           </div>
         </div>

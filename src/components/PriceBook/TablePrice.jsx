@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,22 +13,34 @@ import toast from "react-hot-toast";
 import { productApi } from "../../api";
 
 export default function PriceTable({
+  filters,
+  setFilters,
   filterControl,
   isWideView = false,
   onToggleWideView,
 }) {
+  const requestId = useRef(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editedPrices, setEditedPrices] = useState({});
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const searchKeyword = filters.search;
   const ITEMS_PER_PAGE = 22;
   const [currentPage, setCurrentPage] = useState(1);
 
   const fetchProducts = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     try {
-      const data = await productApi.getAll({ page: 1, size: 1000 });
+      const data = await productApi.getAll({
+        page: currentPage,
+        size: ITEMS_PER_PAGE,
+        categoryId: filters.categoryId,
+        search: filters.search,
+      });
+      if (currentRequest !== requestId.current) return;
+      setTotalPages(Math.max(1, data.totalPages || 1));
       // Map BE fields to FE format
       const mappedData = data.map(p => ({
         id: p.id,
@@ -39,28 +51,23 @@ export default function PriceTable({
       }));
       setProducts(mappedData);
     } catch {
+      if (currentRequest !== requestId.current) return;
+      setProducts([]);
       toast.error("Không thể tải danh sách sản phẩm");
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
-  }, []);
+  }, [filters.categoryId, filters.search, currentPage]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const filteredProducts = useMemo(() => {
-    const keyword = searchKeyword.trim().toLowerCase();
-    if (!keyword) return products;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.categoryId, filters.search]);
 
-    return products.filter((product) =>
-      `${product.code || ""} ${product.name || ""}`.toLowerCase().includes(keyword)
-    );
-  }, [products, searchKeyword]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentData = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentData = products;
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
@@ -118,7 +125,7 @@ export default function PriceTable({
               <input
                 value={searchKeyword}
                 onChange={(event) => {
-                  setSearchKeyword(event.target.value);
+                  setFilters(prev => ({ ...prev, search: event.target.value }));
                   setCurrentPage(1);
                 }}
                 placeholder="Tìm kiếm mã, tên hàng..."

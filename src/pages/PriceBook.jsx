@@ -4,6 +4,7 @@ import TablePrice from "../components/PriceBook/TablePrice";
 import ToolbarFilterDropdown from "../components/layout/ToolbarFilterDropdown";
 
 export default function PriceBook() {
+  const [filters, setFilters] = useState({ search: "", categoryId: null });
   const [isWideView, setIsWideView] = useState(false);
 
   return (
@@ -23,18 +24,20 @@ export default function PriceBook() {
             <h1 className="mb-4 text-2xl font-bold text-gray-800 lg:text-3xl">
               Thiết lập giá
             </h1>
-            <SidebarPrice />
+            <SidebarPrice filters={filters} setFilters={setFilters} />
             </aside>
           )}
 
           <main className="min-w-0">
             <TablePrice
+              filters={filters}
+              setFilters={setFilters}
               isWideView={isWideView}
               onToggleWideView={() => setIsWideView((current) => !current)}
               filterControl={
                 isWideView ? (
                   <ToolbarFilterDropdown panelClassName="sm:w-[640px]">
-                    <SidebarPrice />
+                    <SidebarPrice filters={filters} setFilters={setFilters} />
                   </ToolbarFilterDropdown>
                 ) : null
               }

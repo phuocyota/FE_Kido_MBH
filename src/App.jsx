@@ -88,6 +88,8 @@ const App = () => {
                   <Route path="/stock-in/create" element={<StockInCreate />} />
                   <Route path="/stock-out" element={<StockOutList />} />
                   <Route path="/stock-out/create" element={<StockOutCreate />} />
+                  <Route path="/stock-sale" element={<StockOutList key="sale" saleMode />} />
+                  <Route path="/stock-sale/create" element={<StockOutCreate saleMode />} />
                   <Route path="/cash-management/payment-vouchers" element={<PaymentVoucher />} />
                   <Route path="/stock-transfer" element={<StockTransferList />} />
                   <Route path="/stock-transfer/create" element={<StockTransfer />} />

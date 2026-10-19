@@ -32,8 +32,22 @@ export const productApi = {
 
   // Get all categories
   getCategories: async () => {
-    const response = await axiosInstance.get("/categories");
-    return response.data.data || response.data;
+    const categories = [];
+    let page = 1;
+    const size = 100;
+    while (true) {
+      const response = await axiosInstance.get("/categories", { params: { page, size } });
+      const payload = response.data.data ?? response.data;
+      const items = Array.isArray(payload) ? payload : payload.data;
+      if (!Array.isArray(items)) throw new Error("Dữ liệu nhóm hàng không hợp lệ");
+      categories.push(...items);
+      const total = payload.total;
+      if (items.length === 0 || (total !== undefined
+        ? categories.length >= Number(total)
+        : items.length < size)) break;
+      page += 1;
+    }
+    return categories;
   },
 
   createCategory: async (data) => {

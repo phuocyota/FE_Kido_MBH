@@ -3,8 +3,11 @@ import { ChevronDown, Plus, Pencil } from "lucide-react";
 import { useState } from "react";
 import { productApi } from "../../api";
 
-export default function SidebarFilter() {
+export default function SidebarFilter({ filters, setFilters }) {
 
+      const [categorySearch, setCategorySearch] = useState("");
+      const [groupsError, setGroupsError] = useState("");
+      const [reload, setReload] = useState(0);
       const [openNhomHang, setOpenNhomHang] = useState(true);
       const [openModal, setOpenModal] = useState(false);
       const [groupData, setGroupData] = useState([]);
@@ -14,17 +17,18 @@ export default function SidebarFilter() {
             const loadCategories = async () => {
                   try {
                         setLoadingGroups(true);
+                        setGroupsError("");
                         const data = await productApi.getCategories();
                         setGroupData(Array.isArray(data) ? data : []);
                   } catch {
-                        setGroupData([]);
+                        setGroupsError("Không thể tải nhóm hàng. Vui lòng thử lại.");
                   } finally {
                         setLoadingGroups(false);
                   }
             };
 
             loadCategories();
-      }, []);
+      }, [reload]);
 
       return (
             <div className="w-full space-y-4">
@@ -72,6 +76,8 @@ export default function SidebarFilter() {
                         <p className="font-medium mb-2">Tìm kiếm</p>
                         <input
                               type="text"
+                              value={filters.search}
+                              onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
                               placeholder="Theo mã, tên hàng"
                               className="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -132,6 +138,8 @@ export default function SidebarFilter() {
 
                                     {/* SEARCH */}
                                     <input
+                                          value={categorySearch}
+                                          onChange={e => setCategorySearch(e.target.value)}
                                           placeholder="Tìm kiếm nhóm hàng"
                                           className="w-full border border-gray-300 rounded-lg p-2 mb-3 outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -139,7 +147,7 @@ export default function SidebarFilter() {
                                     {/* LIST */}
                                     <div className="text-sm space-y-1">
 
-                                          <p className="font-semibold px-2 py-1">Tất cả</p>
+                                          <button onClick={() => setFilters(prev => ({ ...prev, categoryId: null }))} className={`font-semibold px-2 py-1 ${!filters.categoryId ? "text-blue-600" : ""}`}>Tất cả</button>
 
                                           {loadingGroups && (
                                                 <div className="px-2 py-1 text-gray-400">
@@ -147,16 +155,18 @@ export default function SidebarFilter() {
                                                 </div>
                                           )}
 
-                                          {!loadingGroups && groupData.length === 0 && (
+                                          {groupsError && !loadingGroups && <div role="alert" className="text-red-600">{groupsError} <button className="underline" onClick={() => setReload(value => value + 1)}>Thử lại</button></div>}
+                                          {!groupsError && !loadingGroups && groupData.length === 0 && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       Chưa có nhóm hàng
                                                 </div>
                                           )}
 
-                                          {!loadingGroups && groupData.map((item) => (
+                                          {!loadingGroups && groupData.filter(item => item.name?.toLowerCase().includes(categorySearch.trim().toLowerCase())).map((item) => (
                                                 <div
                                                       key={item.id}
-                                                      className="flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group"
+                                                      onClick={() => setFilters(prev => ({ ...prev, categoryId: item.id }))}
+                                                      className={`flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group cursor-pointer ${filters.categoryId === item.id ? "bg-blue-50 text-blue-600" : ""}`}
                                                 >
                                                       <span>{item.name}</span>
 

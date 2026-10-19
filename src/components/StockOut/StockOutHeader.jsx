@@ -1,50 +1,23 @@
 import React from "react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  ArrowLeft,
-  Settings,
-  X,
-  HelpCircle,
-} from "lucide-react";
-
-export default function StockOutHeader({
-  onBack,
-}) {
-
-        const navigate = useNavigate();
-
+export default function StockOutHeader({ saleMode = false }) {
+  const navigate = useNavigate();
   return (
-    <div className="bg-cyan-50 border-b border-gray-300 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-  onClick={() => navigate("/stock-out")}
-  className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-cyan-500 hover:bg-cyan-50 hover:text-cyan-700"
->
-  <ArrowLeft size={18} />
-  <span>Quay lại</span>
-</button>
-
-          <h1 className="text-3xl font-bold text-gray-800">
-            Phiếu xuất kho XK00362
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 border rounded-full bg-white hover:bg-gray-50">
-            <HelpCircle size={16} />
-            Hướng dẫn sử dụng
-          </button>
-
-          <button>
-            <Settings size={20} />
-          </button>
-
-          <button>
-            <X size={22} />
-          </button>
-        </div>
+    <div className="border-b border-gray-300 bg-gray-50 p-3 md:p-4">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(saleMode ? "/stock-sale" : "/stock-out")}
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 sm:w-auto"
+        >
+          <ArrowLeft size={17} />
+          Quay lại
+        </button>
+        <h1 className="text-lg font-semibold leading-tight text-slate-900 md:text-xl">
+          {saleMode ? "Thêm mới phiếu xuất bán" : "Thêm mới phiếu xuất kho"}
+        </h1>
       </div>
     </div>
   );

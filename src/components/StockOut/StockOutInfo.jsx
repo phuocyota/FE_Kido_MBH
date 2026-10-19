@@ -1,6 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Calendar } from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Plus } from "lucide-react";
 import { customerApi } from "../../api";
+import AddCustomerModal from "../Customers/AddCustomerModal";
 
 const formatDateTimeLocal = (date) => {
   const offsetMs = date.getTimezoneOffset() * 60 * 1000;
@@ -15,6 +22,7 @@ export default function StockOutInfo({
 }) {
   const [customerName, setCustomerName] = useState(customer?.fullName || "");
   const [customers, setCustomers] = useState([]);
+  const [openAddCustomer, setOpenAddCustomer] = useState(false);
   const [showCustomerList, setShowCustomerList] = useState(false);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [customerError, setCustomerError] = useState("");
@@ -44,7 +52,7 @@ export default function StockOutInfo({
     setCustomerError("");
 
     try {
-      const data = await customerApi.getAll();
+      const data = await customerApi.getAllWithDebt();
       setCustomers(Array.isArray(data) ? data : []);
       setHasLoadedCustomers(true);
     } catch (error) {
@@ -80,18 +88,33 @@ export default function StockOutInfo({
     setShowCustomerList(false);
   };
 
+  const handleCustomerSaved = (createdCustomer) => {
+    if (createdCustomer?.id) {
+      setCustomers((current) => [
+        createdCustomer,
+        ...current.filter((item) => item.id !== createdCustomer.id),
+      ]);
+      handleSelectCustomer(createdCustomer);
+    } else {
+      loadCustomers();
+    }
+  };
+
   return (
-    <div className="bg-cyan-50 p-4 border-b border-gray-300">
+    <div className="border-b border-gray-300 p-3 md:p-4">
       {/* Click outside to close dropdown */}
       {showCustomerList && (
-        <div className="fixed inset-0 z-40" onClick={() => setShowCustomerList(false)}></div>
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowCustomerList(false)}
+        ></div>
       )}
 
-      <div className="grid grid-cols-12 gap-4 relative z-50">
-        <div className="col-span-12 lg:col-span-9">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative">
-              <label className="text-sm font-medium">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12 relative">
+        <div className="md:col-span-9">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className={`relative ${showCustomerList ? "z-50" : ""}`}>
+              <label className="mb-1 block text-sm font-medium">
                 Tìm khách hàng <span className="text-red-500">*</span>
               </label>
 
@@ -105,11 +128,17 @@ export default function StockOutInfo({
                   onClick={handleFocusCustomerInput}
                   onFocus={handleFocusCustomerInput}
                   placeholder="Nhập tên, mã hoặc SĐT để tìm"
-                  className="w-full h-10 border border-gray-300 px-3 bg-white focus:border-cyan-500 focus:outline-none"
+                  className="min-w-0 flex-1 h-10 rounded-l border border-gray-300 px-3 bg-white focus:border-blue-500 focus:outline-none"
                 />
                 <button
                   type="button"
-                  className="w-10 border border-l-0 border-gray-300 flex items-center justify-center bg-gray-100 hover:bg-gray-200"
+                  onClick={() => {
+                    setShowCustomerList(false);
+                    setOpenAddCustomer(true);
+                  }}
+                  title="Thêm khách hàng"
+                  aria-label="Thêm khách hàng"
+                  className="h-10 w-10 rounded-r-md border border-l-0 border-gray-300 flex items-center justify-center hover:bg-gray-50"
                 >
                   <Plus size={16} />
                 </button>
@@ -136,13 +165,15 @@ export default function StockOutInfo({
                         type="button"
                         key={cust.id || cust.customerCode || cust.fullName}
                         onClick={() => handleSelectCustomer(cust)}
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-cyan-50"
+                        className="block w-full px-3 py-2 text-left text-sm hover:bg-blue-50"
                       >
                         <span className="block font-medium text-gray-900 font-semibold">
                           {cust.fullName}
                         </span>
                         <span className="block text-xs text-gray-500">
-                          {[cust.customerCode, cust.phone].filter(Boolean).join(" - ")}
+                          {[cust.customerCode, cust.phone]
+                            .filter(Boolean)
+                            .join(" - ")}
                         </span>
                       </button>
                     ))}
@@ -159,107 +190,110 @@ export default function StockOutInfo({
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Mã khách hàng
               </label>
               <input
                 value={customer?.customerCode || ""}
                 readOnly
-                className="w-full h-10 border border-gray-300 px-3 bg-gray-100 cursor-not-allowed"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-gray-50 cursor-not-allowed"
                 placeholder="Mã khách hàng tự động điền"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Người nhận
               </label>
               <input
                 value={customer?.fullName || ""}
                 readOnly
-                className="w-full h-10 border border-gray-300 px-3 bg-gray-100 cursor-not-allowed"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-gray-50 cursor-not-allowed"
                 placeholder="Người nhận"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">
-                Địa chỉ
-              </label>
+              <label className="mb-1 block text-sm font-medium">Địa chỉ</label>
               <input
                 value={customer?.phone ? `SĐT: ${customer.phone}` : ""}
                 readOnly
-                className="w-full h-10 border border-gray-300 px-3 bg-gray-100 cursor-not-allowed"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-gray-50 cursor-not-allowed"
                 placeholder="Địa chỉ/Số điện thoại"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Nhân viên bán hàng
               </label>
               <input
                 value="Admin"
                 readOnly
-                className="w-full h-10 border border-gray-300 px-3 bg-gray-100 cursor-not-allowed"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-gray-50 cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Lý do xuất
               </label>
               <input
                 value={note}
                 onChange={(e) => onChangeNote(e.target.value)}
                 placeholder="Xuất kho bán hàng"
-                className="w-full h-10 border border-gray-300 px-3 bg-white focus:border-cyan-500 focus:outline-none"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-white focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-3">
+        <div className="md:col-span-3">
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Ngày hạch toán
               </label>
               <div className="relative">
                 <input
                   type="datetime-local"
                   defaultValue={defaultPostedAt}
-                  className="w-full h-10 border border-gray-300 px-3 bg-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full h-10 rounded border border-gray-300 px-3 bg-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Ngày chứng từ
               </label>
               <div className="relative">
                 <input
                   type="datetime-local"
                   defaultValue={defaultPostedAt}
-                  className="w-full h-10 border border-gray-300 px-3 bg-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full h-10 rounded border border-gray-300 px-3 bg-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium">
                 Số chứng từ
               </label>
               <input
                 value="XK000001 (Tự động)"
                 readOnly
-                className="w-full h-10 border border-gray-300 px-3 bg-gray-100 cursor-not-allowed"
+                className="w-full h-10 rounded border border-gray-300 px-3 bg-gray-50 cursor-not-allowed"
               />
             </div>
           </div>
         </div>
       </div>
+      <AddCustomerModal
+        open={openAddCustomer}
+        onClose={() => setOpenAddCustomer(false)}
+        onSaved={handleCustomerSaved}
+      />
     </div>
   );
 }

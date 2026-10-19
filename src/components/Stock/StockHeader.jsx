@@ -8,6 +8,7 @@ export default function StockHeader({ activeTab, onRefresh }) {
   const tabs = [
     { id: "in", label: "Nhập kho", path: "/stock-in" },
     { id: "out", label: "Xuất kho", path: "/stock-out" },
+    { id: "sale", label: "Xuất bán", path: "/stock-sale" },
     { id: "transfer", label: "Chuyển kho", path: "/stock-transfer" },
     { id: "takes", label: "Kiểm kho", path: "/stock-takes" },
   ];

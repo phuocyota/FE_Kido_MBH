@@ -28,6 +28,7 @@ export default function StockOutToolbar({
   showFilterButton = false,
   isWideView = false,
   onToggleWideView,
+  saleMode = false,
 }) {
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -116,11 +117,11 @@ export default function StockOutToolbar({
                 <div className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm">
                   <button
                     type="button"
-                    onClick={() => navigate("/stock-out/create")}
+                    onClick={() => navigate(saleMode ? "/stock-sale/create" : "/stock-out/create")}
                     className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
                   >
                     <Plus size={18} />
-                    Thêm phiếu
+                    {saleMode ? "Thêm phiếu xuất bán" : "Thêm phiếu"}
                   </button>
 
                   <button

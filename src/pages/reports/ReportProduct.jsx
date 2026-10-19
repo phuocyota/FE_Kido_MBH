@@ -1,33 +1,30 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
- 
+import React, { useEffect, useRef, useState } from "react";
 
 import { branchApi } from "../../api";
-import { getBranchIdFromToken, getBranchNameFromToken } from "../../api/authSession";
+import {
+  getBranchIdFromToken,
+  getBranchNameFromToken,
+  getTokenPayload,
+} from "../../api/authSession";
 import ReportProductFilter from "../../components/reports/reportProduct/ReportProductFilter";
 import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 import ReportProductContent from "../../components/reports/reportProduct/ReportProductContent";
 
-const todayInput = () => new Date().toISOString().split("T")[0];
+import { getProductReportRange } from "../../components/reports/reportProduct/productReportData";
+import { getVietnamDateKey } from "../../components/reports/reportEndDay/reportData";
+const todayInput = () => getVietnamDateKey();
 
 export default function ReportProduct() {
-
   // =========================
   // VIEW
   // =========================
-  const [viewType, setViewType] =
-    useState("portrait");
+  const [viewType, setViewType] = useState("report");
 
   // =========================
   // INTEREST
   // =========================
-  const [interest, setInterest] =
-    useState("Bán hàng");
+  const [interest, setInterest] = useState("Bán hàng");
 
   const interests = [
     "Bán hàng",
@@ -39,65 +36,65 @@ export default function ReportProduct() {
   // =========================
   // BRANCH
   // =========================
-  const [branch, setBranch] =
-    useState(getBranchNameFromToken() || "");
-
-  const [branchId, setBranchId] =
-    useState(getBranchIdFromToken() || "");
-
+  const [branchId] = useState(() => {
+    const token = getTokenPayload();
+    return (token ? token.branchId : getBranchIdFromToken()) || undefined;
+  });
+  const [branch, setBranch] = useState(() =>
+    branchId
+      ? getBranchNameFromToken() || "Chi nhánh hiện tại"
+      : "Tất cả chi nhánh",
+  );
   useEffect(() => {
-    const loadDefaultBranch = async () => {
-      try {
-        const data = await branchApi.getAll();
-        const branches = Array.isArray(data) ? data : [];
-        const savedBranchId = getBranchIdFromToken();
-        const defaultBranch = branches.find((item) => item.id === savedBranchId) || branches[0];
-
-        if (defaultBranch) {
-          setBranch(defaultBranch.name || "");
-          setBranchId(defaultBranch.id || "");
-        }
-      } catch {
-        setBranch(getBranchNameFromToken() || "");
-        setBranchId(getBranchIdFromToken() || "");
-      }
+    if (!branchId) return;
+    let cancelled = false;
+    branchApi
+      .getById(branchId)
+      .then((data) => {
+        if (!cancelled && data?.name) setBranch(data.name);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
     };
-
-    loadDefaultBranch();
-  }, []);
+  }, [branchId]);
 
   // =========================
   // TIME
   // =========================
-  const [dateMode, setDateMode] =
-    useState("preset");
+  const [dateMode, setDateMode] = useState("preset");
 
-  const [timeType, setTimeType] =
-    useState("Hôm nay");
+  const [timeType, setTimeType] = useState("Hôm nay");
 
-  const [fromDate, setFromDate] =
-    useState(todayInput());
+  const [fromDate, setFromDate] = useState(todayInput());
 
-  const [toDate, setToDate] =
-    useState(todayInput());
+  const [toDate, setToDate] = useState(todayInput());
+
+  const [fromTime, setFromTime] = useState("00:00");
+  const [toTime, setToTime] = useState("23:59");
+  const effectiveRange =
+    dateMode === "preset"
+      ? getProductReportRange(timeType)
+      : dateMode === "hour"
+        ? {
+            from: `${fromDate}T${fromTime}:00+07:00`,
+            to: `${toDate}T${toTime}:59.999+07:00`,
+          }
+        : { from: fromDate, to: toDate };
 
   // =========================
   // FILTER
   // =========================
-  const [productKeyword, setProductKeyword] =
-    useState("");
+  const [productKeyword, setProductKeyword] = useState("");
 
-  const [category, setCategory] =
-    useState("");
+  const [category, setCategory] = useState("");
 
-  const [foodTypes, setFoodTypes] =
-    useState([]);
+  const [foodTypes, setFoodTypes] = useState([]);
 
   // =========================
   // UI STATE
   // =========================
-  const [zoom, setZoom] =
-    useState(1);
+  const [zoom, setZoom] = useState(1);
 
   const previewRef = useRef();
 
@@ -105,14 +102,11 @@ export default function ReportProduct() {
   // DATE FORMAT
   // =========================
   const formatDate = (date) => {
-
     if (!date) return "";
 
     const d = new Date(date);
 
-    return d.toLocaleDateString(
-      "vi-VN"
-    );
+    return d.toLocaleDateString("vi-VN");
   };
 
   // =========================
@@ -123,11 +117,9 @@ export default function ReportProduct() {
   };
 
   const handleZoomOut = () => {
-
     if (zoom > 0.5) {
       setZoom((prev) => prev - 0.1);
     }
-
   };
 
   const handleResetZoom = () => {
@@ -138,36 +130,25 @@ export default function ReportProduct() {
   // FULLSCREEN
   // =========================
   const handleFullscreen = () => {
-
     document.documentElement.requestFullscreen();
-
   };
 
-   
   // =========================
   // EXPORT EXCEL
   // =========================
-  const handleDownloadExcel =
-    () => {
-
-      alert(
-        "Xuất Excel đang được phát triển"
-      );
-
-    };
+  const handleDownloadExcel = () => {
+    alert("Xuất Excel đang được phát triển");
+  };
 
   // =========================
   // PRINT
   // =========================
- const handlePrint = () => {
+  const handlePrint = () => {
+    const printContents = previewRef.current.innerHTML;
 
-  const printContents =
-    previewRef.current.innerHTML;
+    const originalContents = document.body.innerHTML;
 
-  const originalContents =
-    document.body.innerHTML;
-
-  document.body.innerHTML = `
+    document.body.innerHTML = `
     <html>
 
       <head>
@@ -253,112 +234,91 @@ export default function ReportProduct() {
     </html>
   `;
 
-  setTimeout(() => {
+    setTimeout(() => {
+      window.print();
 
-    window.print();
+      document.body.innerHTML = originalContents;
 
-    document.body.innerHTML =
-      originalContents;
-
-    window.location.reload();
-
-  }, 300);
-
-};
- 
-
-
+      window.location.reload();
+    }, 300);
+  };
 
   return (
-  <div className="min-h-screen bg-[#F3F4F6] p-2 sm:p-4 lg:p-5">
+    <div className="min-h-screen bg-[#F3F4F6] p-2 sm:p-4 lg:p-5">
+      <div className="max-w-[1800px] mx-auto">
+        {/* HEADER */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
+              Báo cáo hàng hóa
+            </h1>
 
-    <div className="max-w-[1800px] mx-auto">
+            <ToolbarFilterDropdown panelClassName="sm:w-[760px]">
+              <ReportProductFilter
+                viewType={viewType}
+                setViewType={setViewType}
+                interest={interest}
+                setInterest={setInterest}
+                interests={interests}
+                branch={branch}
+                dateMode={dateMode}
+                setDateMode={setDateMode}
+                timeType={timeType}
+                setTimeType={setTimeType}
+                fromDate={
+                  dateMode === "preset" ? effectiveRange.from : fromDate
+                }
+                toDate={dateMode === "preset" ? effectiveRange.to : toDate}
+                setFromDate={setFromDate}
+                setToDate={setToDate}
+                fromTime={fromTime}
+                toTime={toTime}
+                setFromTime={setFromTime}
+                setToTime={setToTime}
+                formatDate={formatDate}
+                productKeyword={productKeyword}
+                setProductKeyword={setProductKeyword}
+                category={category}
+                setCategory={setCategory}
+                foodTypes={foodTypes}
+                setFoodTypes={setFoodTypes}
+              />
+            </ToolbarFilterDropdown>
+          </div>
 
-      {/* HEADER */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
-
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-bold text-gray-800 text-2xl sm:text-3xl lg:text-4xl">
-            Báo cáo hàng hóa
-          </h1>
-
-          <ToolbarFilterDropdown panelClassName="sm:w-[760px]">
-            <ReportProductFilter
-              viewType={viewType}
-              setViewType={setViewType}
-              interest={interest}
-              setInterest={setInterest}
-              interests={interests}
-              branch={branch}
-              setBranch={setBranch}
-              dateMode={dateMode}
-              setDateMode={setDateMode}
-              timeType={timeType}
-              setTimeType={setTimeType}
-              fromDate={fromDate}
-              toDate={toDate}
-              setFromDate={setFromDate}
-              setToDate={setToDate}
-              formatDate={formatDate}
-              productKeyword={productKeyword}
-              setProductKeyword={setProductKeyword}
-              category={category}
-              setCategory={setCategory}
-              foodTypes={foodTypes}
-              setFoodTypes={setFoodTypes}
-            />
-          </ToolbarFilterDropdown>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-slate-700">
+              {interest}
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-slate-700">
-            {interest}
-          </span>
-        </div>
-
-      </div>
-
-      {/* CONTENT */}
-      <div className="min-w-0">
-
+        {/* CONTENT */}
+        <div className="min-w-0">
           <ReportProductContent
-
             // VIEW
             viewType={viewType}
-
             // INTEREST
             interest={interest}
-
             // TIME
-            fromDate={fromDate}
-            toDate={toDate}
+            fromDate={effectiveRange.from}
+            toDate={effectiveRange.to}
             branch={branch}
             branchId={branchId}
-
             // ZOOM
             zoom={zoom}
-
             // ACTIONS
             handleZoomIn={handleZoomIn}
-
             handleZoomOut={handleZoomOut}
-
             handleResetZoom={handleResetZoom}
-
             handleFullscreen={handleFullscreen}
- 
             handleDownloadExcel={handleDownloadExcel}
-
             handlePrint={handlePrint}
-
             // REFS
             previewRef={previewRef}
           />
-
+        </div>
       </div>
-
     </div>
-
-  </div>
-);
+  );
 }

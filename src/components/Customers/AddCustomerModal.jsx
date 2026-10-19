@@ -3,57 +3,85 @@ import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { customerApi } from "../../api";
 
-export default function AddCustomerModal({ open, onClose, onSaved, initialData }) {
-  const [formData, setFormData] = useState({
-    customerCode: "",
-    fullName: "",
-    phone: "",
-    email: "",
-    address: "",
-    debt: 0,
-    status: "active",
-    debtLimit: 50000,
-  });
+export default function AddCustomerModal({
+  open,
+  onClose,
+  onSaved,
+  initialData,
+}) {
+  if (!open) return null;
+  return (
+    <CustomerForm
+      key={initialData?.id || "new"}
+      onClose={onClose}
+      onSaved={onSaved}
+      initialData={initialData}
+    />
+  );
+}
+
+function CustomerForm({ onClose, onSaved, initialData }) {
+  const [formData, setFormData] = useState(() => ({
+    customerCode: initialData?.customerCode || "",
+    fullName: initialData?.fullName || "",
+    phone: initialData?.phone || "",
+    status: initialData?.status?.toUpperCase() || "ACTIVE",
+    type: initialData?.type || "GUEST",
+    debtLimit: initialData?.debtLimit ?? 50000,
+  }));
   const [loading, setLoading] = useState(false);
+  const [loadingCode, setLoadingCode] = useState(!initialData);
+  const [codeError, setCodeError] = useState("");
+  const [codeRetry, setCodeRetry] = useState(0);
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        customerCode: initialData.customerCode || "",
-        fullName: initialData.fullName || "",
-        phone: initialData.phone || "",
-        email: initialData.email || "",
-        address: initialData.address || "",
-        debt: initialData.debt || 0,
-        status: initialData.status || "active",
-        debtLimit: initialData.debtLimit ?? 50000,
-      });
-    } else {
-      setFormData({
-        customerCode: "",
-        fullName: "",
-        phone: "",
-        email: "",
-        address: "",
-        debt: 0,
-        status: "active",
-        debtLimit: 50000,
-      });
-    }
-  }, [initialData, open]);
+    if (initialData) return;
+    let cancelled = false;
+    const generateCode = async () => {
+      try {
+        const result = await customerApi.generateCode();
+        if (!result?.customerCode)
+          throw new Error("Không nhận được mã khách hàng");
+        if (!cancelled)
+          setFormData((current) => ({
+            ...current,
+            customerCode: result.customerCode,
+          }));
+      } catch {
+        if (!cancelled)
+          setCodeError("Không thể tạo mã khách hàng. Vui lòng thử lại.");
+      } finally {
+        if (!cancelled) setLoadingCode(false);
+      }
+    };
+    generateCode();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialData, codeRetry]);
 
-  if (!open) return null;
+  const retryCode = () => {
+    setCodeError("");
+    setLoadingCode(true);
+    setFormData((current) => ({ ...current, customerCode: "" }));
+    setCodeRetry((value) => value + 1);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: (name === "debt" || name === "debtLimit") ? Number(value) : value,
+      [name]: name === "debtLimit" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading || loadingCode || codeError) return;
+    if (!formData.customerCode.trim()) {
+      toast.error("Vui lòng nhập mã khách hàng");
+      return;
+    }
     if (!formData.fullName.trim()) {
       toast.error("Vui lòng nhập tên khách hàng");
       return;
@@ -61,22 +89,33 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
 
     setLoading(true);
     try {
+      let savedCustomer;
+      const payload = {
+        customerCode: formData.customerCode.trim(),
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim() || undefined,
+        type: formData.type,
+        status: formData.status,
+        debtLimit: Number(formData.debtLimit),
+      };
       if (initialData) {
-        // If edit is needed, we call the create endpoint or update endpoint.
-        // As per customerApi, there is only create. We will submit it as a new/updated record.
-        await customerApi.create({
-          ...formData,
-          id: initialData.id,
-        });
-        toast.success("Cập nhật thông tin khách hàng thành công 🎉");
+        savedCustomer = await customerApi.update(initialData.id, payload);
+        toast.success("Cập nhật thông tin khách hàng thành công");
       } else {
-        await customerApi.create(formData);
-        toast.success("Thêm khách hàng mới thành công 🎉");
+        savedCustomer = await customerApi.create(payload);
+        toast.success("Thêm khách hàng mới thành công");
       }
-      onSaved?.();
+      onSaved?.(savedCustomer);
       onClose();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Không thể lưu thông tin khách hàng ❌");
+      if (!initialData && err.response?.status === 409) {
+        setCodeError("Mã khách hàng đã tồn tại. Vui lòng lấy mã mới.");
+      }
+      toast.error(
+        [err.response?.data?.message || "Không thể lưu thông tin khách hàng"]
+          .flat()
+          .join("\n"),
+      );
     } finally {
       setLoading(false);
     }
@@ -86,11 +125,14 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden border border-gray-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-indigo-50/50">
-          <h2 className="text-lg font-bold text-indigo-900">
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-blue-50/50">
+          <h2 className="text-lg font-bold text-blue-900">
             {initialData ? "Cập nhật khách hàng" : "Thêm khách hàng mới"}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition"
+          >
             <X size={20} />
           </button>
         </div>
@@ -100,16 +142,30 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Mã khách hàng
+                Mã khách hàng <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="customerCode"
                 value={formData.customerCode}
                 onChange={handleChange}
-                placeholder="Mã tự động sinh"
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+                placeholder={loadingCode ? "Đang tạo mã..." : "Mã tự động"}
+                readOnly={!initialData}
+                required
+                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
               />
+              {codeError && (
+                <div role="alert" className="mt-2 text-sm text-red-600">
+                  {codeError}
+                  <button
+                    type="button"
+                    onClick={retryCode}
+                    className="ml-2 underline"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>
@@ -123,7 +179,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
                 onChange={handleChange}
                 placeholder="Nhập họ tên"
                 required
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
           </div>
@@ -139,55 +195,12 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="Nhập SĐT"
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Nhập email"
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-              Địa chỉ
-            </label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Nhập địa chỉ khách hàng"
-              className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
-            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Dư nợ ban đầu (₫)
-              </label>
-              <input
-                type="number"
-                name="debt"
-                value={formData.debt}
-                onChange={handleChange}
-                placeholder="0"
-                min="0"
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
-              />
-            </div>
-
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
                 Hạn mức nợ (₫)
@@ -199,7 +212,7 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
                 onChange={handleChange}
                 placeholder="50000"
                 min="0"
-                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+                className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
           </div>
@@ -212,10 +225,10 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none bg-white font-medium text-gray-700"
+              className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-white font-medium text-gray-700"
             >
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Ngừng hoạt động</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Ngừng hoạt động</option>
             </select>
           </div>
 
@@ -230,8 +243,8 @@ export default function AddCustomerModal({ open, onClose, onSaved, initialData }
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition text-sm disabled:opacity-50"
+              disabled={loading || loadingCode || !!codeError}
+              className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition text-sm disabled:opacity-50"
             >
               {loading ? "Đang lưu..." : "Lưu lại"}
             </button>

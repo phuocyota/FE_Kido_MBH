@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   RotateCcw,
   Printer,
@@ -11,7 +11,13 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { branchApi, reportApi } from "../../../api";
-import { getBranchIdFromToken, getBranchNameFromToken } from "../../../api/authSession";
+import {
+  getBranchIdFromToken,
+  getBranchNameFromToken,
+  getTokenPayload,
+} from "../../../api/authSession";
+
+import { getVietnamDateKey, mapEndOfDayRows } from "./reportData";
 
 export default function ReportContent({
   reportType,
@@ -32,377 +38,349 @@ export default function ReportContent({
 }) {
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBranch, setSelectedBranch] = useState(null);
-  const branchName = selectedBranch?.name || getBranchNameFromToken() || "";
+  const [reportError, setReportError] = useState("");
+  const requestId = useRef(0);
+  const [selectedBranch, setSelectedBranch] = useState(() => {
+    const payload = getTokenPayload();
+    const id = payload ? payload.branchId : getBranchIdFromToken();
+    return id
+      ? { id, name: payload?.branchName || getBranchNameFromToken() || "" }
+      : null;
+  });
+  const branchId = selectedBranch?.id;
+  const branchName = selectedBranch
+    ? selectedBranch.name || "Chi nhánh hiện tại"
+    : "Tất cả chi nhánh";
 
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const data = await branchApi.getAll();
-        const branches = Array.isArray(data) ? data : [];
-        const savedBranchId = getBranchIdFromToken();
-        setSelectedBranch(branches.find((item) => item.id === savedBranchId) || branches[0] || null);
-      } catch {
-        const savedBranchId = getBranchIdFromToken();
-        const savedBranchName = getBranchNameFromToken();
-        setSelectedBranch(savedBranchId ? { id: savedBranchId, name: savedBranchName || "" } : null);
-      }
+    if (!branchId) return;
+    let cancelled = false;
+    branchApi
+      .getById(branchId)
+      .then((branch) => {
+        if (!cancelled && branch?.name)
+          setSelectedBranch((current) => ({ ...current, name: branch.name }));
+      })
+      .catch(() => {
+        // Branch metadata must not prevent the authenticated report request.
+      });
+    return () => {
+      cancelled = true;
     };
-
-    fetchBranches();
-  }, []);
+  }, [branchId]);
 
   const fetchReport = useCallback(async () => {
-    if (!selectedBranch?.id) return;
-
+    const currentRequest = ++requestId.current;
     setLoading(true);
+    setReportError("");
     try {
-      const effectiveFromDate = fromDate || new Date().toISOString().split("T")[0];
-      const effectiveToDate = dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
-      const branchId = selectedBranch.id;
-      const result = await reportApi.getEndOfDay(effectiveFromDate, effectiveToDate, branchId);
-      // Map BE data to FE format - result.data contains the items array
-      const mappedData = result.data?.map(item => ({
-        date: new Date(item.date).toLocaleDateString("vi-VN"),
-        code: item.code,
-        name: item.name,
-        price: item.price.toLocaleString(),
-        qty: item.qty,
-        total: item.total.toLocaleString(),
-        gross: item.gross.toLocaleString(),
-        tax: item.tax.toLocaleString(),
-        net: item.net.toLocaleString(),
-      })) || [];
-      setReportData(mappedData);
-    } catch {
+      const effectiveFromDate = fromDate || getVietnamDateKey();
+      const effectiveToDate =
+        dateType === "single" ? effectiveFromDate : toDate || effectiveFromDate;
+      if (effectiveFromDate > effectiveToDate)
+        throw new Error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc");
+      const result = await reportApi.getEndOfDay(
+        effectiveFromDate,
+        effectiveToDate,
+        branchId,
+      );
+      const mappedData = mapEndOfDayRows(result);
+      if (currentRequest === requestId.current) setReportData(mappedData);
+    } catch (error) {
+      if (currentRequest !== requestId.current) return;
       setReportData([]);
+      setReportError(
+        [
+          error?.response?.data?.message ||
+            error.message ||
+            "Không thể tải báo cáo. Vui lòng thử lại.",
+        ]
+          .flat()
+          .join("\n"),
+      );
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
-  }, [dateType, fromDate, selectedBranch?.id, toDate]);
+  }, [dateType, fromDate, branchId, toDate]);
 
   useEffect(() => {
     fetchReport();
+    return () => {
+      requestId.current += 1;
+    };
   }, [fetchReport]);
 
   const data = reportData;
 
-  const isPortrait =
-  reportType === "portrait";
+  const isPortrait = reportType === "portrait";
 
-
-return (
-  <div className="flex-1 min-w-0 rounded-3xl shadow-sm border border-gray-300 overflow-hidden bg-white">
-
-    {/* TOOLBAR */}
-    <div className="h-16 px-4 flex items-center gap-2 overflow-x-auto bg-gray-600 text-white">
-
-      <button onClick={handleResetZoom} className="toolbar-btn">
-        <RotateCcw size={24} />
-      </button>
-
-      <button className="toolbar-btn">
-        <ChevronsLeft size={24} />
-      </button>
-
-      <button className="toolbar-btn">
-        <ChevronsRight size={24} />
-      </button>
-
-      <div className="flex-1"></div>
-
-      <button onClick={handleDownloadPDF} className="toolbar-btn">
-        <FileText size={24} />
-      </button>
-
-      <button onClick={handleDownloadExcel} className="toolbar-btn">
-        <FileSpreadsheet size={24} />
-      </button>
-
-      <button onClick={handlePrint} className="toolbar-btn">
-        <Printer size={24} />
-      </button>
-
-      <button onClick={handleZoomIn} className="toolbar-btn">
-        <ZoomIn size={24} />
-      </button>
-
-      <button onClick={handleZoomOut} className="toolbar-btn">
-        <ZoomOut size={24} />
-      </button>
-
-      <button onClick={handleFullscreen} className="toolbar-btn">
-        <Maximize size={24} />
-      </button>
-
-    </div>
-
-    {/* PREVIEW */}
-    <div className="h-[75vh] overflow-x-auto overflow-y-auto bg-gray-200 p-2 sm:p-5">
-
-      <div
-        ref={previewRef}
-        style={{
-          transform: window.innerWidth < 768 ? "scale(1)" : `scale(${zoom})`,
-          transformOrigin: "top left",
-        }}
-        className="min-h-[900px] w-[1700px] min-w-[1700px] border bg-white shadow-xl transition-all duration-300"
-      >
-
-        {/* HEADER */}
-        <div className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}>
-
-          <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
-
-            {interest === "Hủy món"
-              ? "Báo cáo hủy món"
-              : "Báo cáo doanh thu bán hàng"}
-
-          </h1>
-
-          <div className="text-center mt-3 text-[20px] text-gray-700">
-            {branchName}
-          </div>
-
-        </div>
-
-        {/* TABLE */}
-        <div className={`${isPortrait ? "px-3 py-6" : "px-8 py-4"} overflow-x-auto`}>
-
-          <table className="w-full border-collapse">
-
-            <thead>
-
-              <tr className="bg-[#F3F4F6]">
-
-                <th className="report-th w-[120px]">Ngày</th>
-
-                <th className="report-th">Mã Hàng</th>
-
-                <th className="report-th">Tên sản phẩm</th>
-
-                <th className="report-th">Giá</th>
-
-                <th className="report-th">Số lượng</th>
-
-                <th className="report-th">Tổng</th>
-
-                <th className="report-th">
-                  Doanh thu
-                  <br />
-                  (Gross Sale)
-                </th>
-
-                <th className="report-th">
-                  Thuế GTGT
-                </th>
-
-                <th className="report-th">
-                  Doanh thu
-                  <br />
-                  (Net Sale)
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]">
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
-              ) : data.length === 0 ? (
-
-                <tr>
-
-                  <td colSpan={9} className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]">
-                    Báo cáo không có dữ liệu
-                  </td>
-
-                </tr>
-
-              ) : (
-
-                data.map((item, index) => (
-
-                  <tr key={index}>
-
-                    <td className="report-td">{item.date}</td>
-
-                    <td className="report-td">{item.code}</td>
-
-                    <td className="report-td">{item.name}</td>
-
-                    <td className="report-td">{item.price}</td>
-
-                    <td className="report-td">{item.qty}</td>
-
-                    <td className="report-td">{item.total}</td>
-
-                    <td className="report-td">{item.gross}</td>
-
-                    <td className="report-td">{item.tax}</td>
-
-                    <td className="report-td">{item.net}</td>
-
-                  </tr>
-
-                ))
-
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
-      {/* EXPORT */}
-      <div className="fixed left-[-99999px] top-0">
-
-        <div
-          ref={exportRef}
-          style={{
-            width: reportType === "portrait" ? "210mm" : "297mm",
-            minHeight: reportType === "portrait" ? "297mm" : "210mm",
+  return (
+    <div className="flex-1 min-w-0 rounded-3xl shadow-sm border border-gray-300 overflow-hidden bg-white">
+      {/* TOOLBAR */}
+      <div className="h-16 px-4 flex items-center gap-2 overflow-x-auto bg-gray-600 text-white">
+        <button
+          aria-label="Làm mới báo cáo"
+          title="Làm mới báo cáo"
+          onClick={() => {
+            handleResetZoom();
+            fetchReport();
           }}
-          className="bg-white"
+          className="toolbar-btn"
         >
+          <RotateCcw size={24} />
+        </button>
 
-           {/* HEADER */}
-        <div className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}>
+        <button className="toolbar-btn">
+          <ChevronsLeft size={24} />
+        </button>
 
-          <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+        <button className="toolbar-btn">
+          <ChevronsRight size={24} />
+        </button>
 
-            {interest === "Hủy món"
-              ? "Báo cáo hủy món"
-              : "Báo cáo doanh thu bán hàng"}
+        <div className="flex-1"></div>
 
-          </h1>
+        <button onClick={handleDownloadPDF} className="toolbar-btn">
+          <FileText size={24} />
+        </button>
 
-          <div className="text-center mt-3 text-[20px] text-gray-700">
-            {branchName}
-          </div>
+        <button onClick={handleDownloadExcel} className="toolbar-btn">
+          <FileSpreadsheet size={24} />
+        </button>
 
-        </div>
+        <button onClick={handlePrint} className="toolbar-btn">
+          <Printer size={24} />
+        </button>
 
-        {/* TABLE */}
-<div className={isPortrait ? "px-6 py-6" : "px-8 py-4"}>
+        <button onClick={handleZoomIn} className="toolbar-btn">
+          <ZoomIn size={24} />
+        </button>
 
-  <table className="w-full table-fixed border-collapse">
+        <button onClick={handleZoomOut} className="toolbar-btn">
+          <ZoomOut size={24} />
+        </button>
 
-    <thead>
-
-      <tr className="bg-[#F3F4F6]">
-
-        <th className="report-th w-[13%]">
-          Ngày
-        </th>
-
-        <th className="report-th w-[10%]">
-          Mã Hàng
-        </th>
-
-        <th className="report-th w-[20%]">
-          Tên sản phẩm
-        </th>
-
-        <th className="report-th w-[10%]">
-          Giá
-        </th>
-
-        <th className="report-th w-[9%]">
-          Số lượng
-        </th>
-
-        <th className="report-th w-[10%]">
-          Tổng
-        </th>
-
-        <th className="report-th w-[13%]">
-          Doanh thu
-          <br />
-          (Gross Sale)
-        </th>
-
-        <th className="report-th w-[10%]">
-          Thuế GTGT
-        </th>
-
-        <th className="report-th w-[13%]">
-          Doanh thu
-          <br />
-          (Net Sale)
-        </th>
-
-      </tr>
-
-    </thead>
-
-    <tbody>
-
-      {data.map((item, index) => (
-
-        <tr key={index}>
-
-          <td className="report-td break-words">
-            {item.date}
-          </td>
-
-          <td className="report-td break-words">
-            {item.code}
-          </td>
-
-          <td className="report-td break-words">
-            {item.name}
-          </td>
-
-          <td className="report-td">
-            {item.price}
-          </td>
-
-          <td className="report-td">
-            {item.qty}
-          </td>
-
-          <td className="report-td">
-            {item.total}
-          </td>
-
-          <td className="report-td">
-            {item.gross}
-          </td>
-
-          <td className="report-td">
-            {item.tax}
-          </td>
-
-          <td className="report-td">
-            {item.net}
-          </td>
-
-        </tr>
-
-      ))}
-
-    </tbody>
-
-  </table>
-
-</div>
-
-        </div>
-
+        <button onClick={handleFullscreen} className="toolbar-btn">
+          <Maximize size={24} />
+        </button>
       </div>
 
-    </div>
+      {/* PREVIEW */}
+      <div className="h-[75vh] overflow-x-auto overflow-y-auto bg-gray-200 p-2 sm:p-5">
+        <div
+          ref={previewRef}
+          style={{
+            transform: window.innerWidth < 768 ? "scale(1)" : `scale(${zoom})`,
+            transformOrigin: "top left",
+          }}
+          className="min-h-[900px] w-[1700px] min-w-[1700px] border bg-white shadow-xl transition-all duration-300"
+        >
+          {/* HEADER */}
+          <div
+            className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}
+          >
+            <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+              {interest === "Hủy món"
+                ? "Báo cáo hủy món"
+                : "Báo cáo doanh thu bán hàng"}
+            </h1>
 
-  </div>
-);
+            <div className="text-center mt-3 text-[20px] text-gray-700">
+              {branchName}
+            </div>
+            <div className="mt-2 text-center text-sm text-gray-600">
+              Từ {fromDate} đến {dateType === "single" ? fromDate : toDate}
+            </div>
+          </div>
+
+          {/* TABLE */}
+          <div
+            className={`${isPortrait ? "px-3 py-6" : "px-8 py-4"} overflow-x-auto`}
+          >
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#F3F4F6]">
+                  <th className="report-th w-[120px]">Ngày</th>
+
+                  <th className="report-th">Mã Hàng</th>
+
+                  <th className="report-th">Tên sản phẩm</th>
+
+                  <th className="report-th">Giá</th>
+
+                  <th className="report-th">Số lượng</th>
+
+                  <th className="report-th">Tổng</th>
+
+                  <th className="report-th">
+                    Doanh thu
+                    <br />
+                    (Gross Sale)
+                  </th>
+
+                  <th className="report-th">Thuế GTGT</th>
+
+                  <th className="report-th">
+                    Doanh thu
+                    <br />
+                    (Net Sale)
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]"
+                    >
+                      Đang tải dữ liệu...
+                    </td>
+                  </tr>
+                ) : reportError ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      role="alert"
+                      className="border border-red-200 bg-red-50 px-4 py-10 text-center text-red-700"
+                    >
+                      {reportError}
+                      <button
+                        type="button"
+                        onClick={fetchReport}
+                        className="ml-3 underline"
+                      >
+                        Thử lại
+                      </button>
+                    </td>
+                  </tr>
+                ) : data.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className="border border-[#D6D3C4] py-10 text-center italic text-gray-700 bg-[#F4EFD8]"
+                    >
+                      Báo cáo không có dữ liệu
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((item, index) => (
+                    <tr key={index}>
+                      <td className="report-td">{item.date}</td>
+
+                      <td className="report-td">{item.code}</td>
+
+                      <td className="report-td">{item.name}</td>
+
+                      <td className="report-td">{item.price}</td>
+
+                      <td className="report-td">{item.qty}</td>
+
+                      <td className="report-td">{item.total}</td>
+
+                      <td className="report-td">{item.gross}</td>
+
+                      <td className="report-td">{item.tax}</td>
+
+                      <td className="report-td">{item.net}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* EXPORT */}
+        <div className="fixed left-[-99999px] top-0">
+          <div
+            ref={exportRef}
+            style={{
+              width: reportType === "portrait" ? "210mm" : "297mm",
+              minHeight: reportType === "portrait" ? "297mm" : "210mm",
+            }}
+            className="bg-white"
+          >
+            {/* HEADER */}
+            <div
+              className={`border-b border-gray-300 ${isPortrait ? "pb-4 pt-8 px-8" : "pb-5 pt-6 px-12"}`}
+            >
+              <h1 className="text-[34px] font-bold text-center text-[#1E293B]">
+                {interest === "Hủy món"
+                  ? "Báo cáo hủy món"
+                  : "Báo cáo doanh thu bán hàng"}
+              </h1>
+
+              <div className="text-center mt-3 text-[20px] text-gray-700">
+                {branchName}
+              </div>
+              <div className="mt-2 text-center text-sm text-gray-600">
+                Từ {fromDate} đến {dateType === "single" ? fromDate : toDate}
+              </div>
+            </div>
+
+            {/* TABLE */}
+            <div className={isPortrait ? "px-6 py-6" : "px-8 py-4"}>
+              <table className="w-full table-fixed border-collapse">
+                <thead>
+                  <tr className="bg-[#F3F4F6]">
+                    <th className="report-th w-[13%]">Ngày</th>
+
+                    <th className="report-th w-[10%]">Mã Hàng</th>
+
+                    <th className="report-th w-[20%]">Tên sản phẩm</th>
+
+                    <th className="report-th w-[10%]">Giá</th>
+
+                    <th className="report-th w-[9%]">Số lượng</th>
+
+                    <th className="report-th w-[10%]">Tổng</th>
+
+                    <th className="report-th w-[13%]">
+                      Doanh thu
+                      <br />
+                      (Gross Sale)
+                    </th>
+
+                    <th className="report-th w-[10%]">Thuế GTGT</th>
+
+                    <th className="report-th w-[13%]">
+                      Doanh thu
+                      <br />
+                      (Net Sale)
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {data.map((item, index) => (
+                    <tr key={index}>
+                      <td className="report-td break-words">{item.date}</td>
+
+                      <td className="report-td break-words">{item.code}</td>
+
+                      <td className="report-td break-words">{item.name}</td>
+
+                      <td className="report-td">{item.price}</td>
+
+                      <td className="report-td">{item.qty}</td>
+
+                      <td className="report-td">{item.total}</td>
+
+                      <td className="report-td">{item.gross}</td>
+
+                      <td className="report-td">{item.tax}</td>
+
+                      <td className="report-td">{item.net}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

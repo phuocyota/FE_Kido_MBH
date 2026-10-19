@@ -55,8 +55,9 @@ const normalizeExportReceipt = (header, details, index = 0) => {
     voucherNo: header.code || "",
     description: header.note || "",
     totalAmount,
-    receiver: header.order?.customer?.fullName || "Khách lẻ",
+    receiver: header.receiptVoucher?.customer?.fullName || header.order?.customer?.fullName || "Khách lẻ",
     voucherType: "Xuất kho bán hàng",
+    receiptCode: header.receivedReceipt?.code || header.receiptVoucher?.code || "",
     branch: header.branch?.name || header.branchName || header.branchId || "Chi nhánh mặc định",
     details: normalizedDetails,
   };
@@ -86,11 +87,30 @@ const findFallbackReceipt = (id) =>
 export const stockOutApi = {
   getAll: async (filters = {}) => {
     try {
+      if (filters.salesOnly) {
+        const details = [];
+        let page = 1;
+        const size = 100;
+        while (true) {
+          const response = await axiosInstance.get("/stock-vouchers", {
+            params: { ...filters, receiptType: "EXPORT", page, size },
+          });
+          const payload = unwrap(response);
+          const items = toList(payload);
+          details.push(...items);
+          if (!items.length || (payload.total !== undefined
+            ? details.length >= Number(payload.total)
+            : items.length < size)) break;
+          page += 1;
+        }
+        return groupExportReceipts(details);
+      }
       const response = await axiosInstance.get("/stock-vouchers", {
         params: filters,
       });
       return groupExportReceipts(toList(unwrap(response)));
     } catch (error) {
+      if (filters.salesOnly) throw error;
       if (error?.response?.status !== 404) throw error;
       return stockOutReceiptsData;
     }
@@ -111,5 +131,9 @@ export const stockOutApi = {
     const response = await axiosInstance.post("/stock-vouchers", data);
     const receipts = groupExportReceipts(toList(unwrap(response)));
     return receipts[0] || null;
+  },
+  createSale: async (data) => {
+    const response = await axiosInstance.post("/stock-vouchers/sales", data);
+    return unwrap(response);
   },
 };

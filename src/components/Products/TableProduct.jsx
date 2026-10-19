@@ -98,6 +98,7 @@ function EditableCell({ value, onSave, type = "text", align = "left" }) {
 }
 
 export default function TableProduct({
+  categoryRevision = 0,
   filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" },
   setFilters,
   filterControl,
@@ -163,7 +164,7 @@ export default function TableProduct({
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+  }, [fetchProducts, categoryRevision]);
 
   useEffect(() => {
     setCurrentPage(1);

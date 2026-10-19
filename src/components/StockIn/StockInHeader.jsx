@@ -14,7 +14,7 @@ export default function StockInHeader({ paymentStatus, onChangePaymentStatus, re
           <button
             type="button"
             onClick={() => navigate("/stock-in")}
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-500 hover:bg-cyan-50 hover:text-cyan-700 sm:w-auto"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 sm:w-auto"
           >
             <ArrowLeft size={17} />
             Quay lại

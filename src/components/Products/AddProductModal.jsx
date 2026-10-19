@@ -74,6 +74,7 @@ export default function AddProductModal({
         const data = await productApi.getCategories();
         setCategories(Array.isArray(data) ? data : []);
       } catch {
+        toast.error("Không thể tải nhóm hàng. Vui lòng đóng và mở lại để thử lại.");
         setCategories([]);
       }
     };

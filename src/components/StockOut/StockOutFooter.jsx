@@ -1,47 +1,36 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip } from "lucide-react";
 
 export default function StockOutFooter({ onSave, onCancel, loading }) {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="space-y-4 border-t border-gray-300 bg-gray-50 p-3 md:p-4">
       <div>
-        <label className="block mb-2 font-medium">
+        <label className="block mb-1 text-sm font-medium">
           Địa điểm giao hàng
         </label>
 
-        <select className="w-full lg:w-96 h-10 border border-gray-300 px-3 rounded-lg bg-white">
+        <select className="w-full sm:w-96 h-10 border border-gray-300 px-3 rounded bg-white">
           <option>Chọn địa điểm</option>
           <option>Kho tổng</option>
           <option>Cửa hàng chính</option>
         </select>
       </div>
 
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Paperclip size={18} />
-          <span className="font-medium">
-            Đính kèm
-          </span>
-          <span className="text-gray-500 text-sm">
-            Dung lượng tối đa 5MB
-          </span>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="w-full md:w-auto">
+          <label className="mb-1 block text-sm font-medium">
+            File đính kèm
+          </label>
+          <input type="file" className="w-full text-sm md:w-auto" />
         </div>
-
-        <div className="w-full lg:w-96 h-28 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-gray-500">
-          Kéo thả tệp hoặc bấm để tải lên
-        </div>
-      </div>
-
-      <div className="sticky bottom-0 -mx-4 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-25">
-        <div className="flex justify-end gap-2">
+        <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
           <button
             type="button"
             onClick={onCancel || (() => navigate("/stock-out"))}
             disabled={loading}
-            className="rounded-lg border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-5 py-2 border border-gray-300 rounded hover:bg-gray-100 transition disabled:opacity-50"
           >
             Hủy
           </button>
@@ -50,7 +39,7 @@ export default function StockOutFooter({ onSave, onCancel, loading }) {
             type="button"
             onClick={onSave}
             disabled={loading}
-            className="rounded-lg bg-cyan-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading ? "Đang lưu..." : "Lưu"}
           </button>
