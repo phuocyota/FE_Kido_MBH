@@ -443,6 +443,7 @@ export default function TableProduct({
               categoryId: data.categoryId || undefined,
               unit: data.unit || undefined,
               productType: data.productType || undefined,
+              requiresCooking: data.productType === "FINISHED_GOOD",
               baseUnitId: data.baseUnitId || undefined,
               minimumStock: data.minimumStock === "" ? undefined : Number(data.minimumStock),
               clearMinimumStock: data.minimumStock === "",

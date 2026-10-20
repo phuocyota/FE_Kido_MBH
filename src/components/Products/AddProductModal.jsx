@@ -11,6 +11,7 @@ const emptyForm = {
   tag: "",
   type: "Đồ ăn",
   productType: "",
+  requiresCooking: false,
   baseUnitId: "",
   minimumStock: "",
   code: "",
@@ -65,6 +66,7 @@ export default function AddProductModal({
       tag: initialData?.tag || "",
       type: initialData?.type || "Đồ ăn",
       productType: initialData?.productType || "",
+      requiresCooking: initialData?.requiresCooking ?? initialData?.productType === "FINISHED_GOOD",
       baseUnitId: initialData?.baseUnitId || "",
       minimumStock: initialData?.minimumStock ?? "",
       code: initialData?.code || "",
@@ -421,6 +423,19 @@ export default function AddProductModal({
 
         <div className="border-t border-gray-300 px-4 md:px-6 py-4 flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-start md:items-center">
           <div className="flex flex-wrap items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.productType === "FINISHED_GOOD"}
+                onChange={(event) => setForm((prev) => ({
+                  ...prev,
+                  productType: event.target.checked ? "FINISHED_GOOD" : "MERCHANDISE",
+                  requiresCooking: event.target.checked,
+                }))}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600"
+              />
+              Phải qua chế biến
+            </label>
             <label className="flex items-center gap-2 cursor-pointer" title="Dùng để nhập kho nguyên liệu hoặc nhiên liệu; chọn loại cụ thể ở phần Phân loại kho">
               <input
                 type="checkbox"
