@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import StockInPagination from "./StockInPagination";
+import { dateTime } from "../Warehouse/warehouseFormat";
 
 const formatNumber = (value) => new Intl.NumberFormat("vi-VN").format(value);
 const formatDecimal = (value) =>
@@ -212,6 +213,7 @@ export default function StockInDetailTable({ receipt }) {
 function LotSerialDetail({ item }) {
   return (
     <div className="space-y-1 text-xs">
+      <div>Ngày giờ nhập kho: {dateTime(item.purchasedAt || item.receivedAt)}</div>
       <div>Số lô: {item.lotCode || "—"}</div>
       {(item.manufacturedAt || item.expiresAt) && (
         <div>NSX: {item.manufacturedAt || "—"} · HSD: {item.expiresAt || "—"}</div>
