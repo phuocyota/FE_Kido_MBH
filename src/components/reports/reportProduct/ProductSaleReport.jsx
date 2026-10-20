@@ -35,7 +35,7 @@ export default function ProductSaleReport({
         throw new Error("Dữ liệu báo cáo không hợp lệ");
       setReportData(result);
 
-      // Map to FE format according to FE_HANDOFF.md
+      // Map to FE format according to docs/FE_HANDOFF.md
       const mappedData =
         result.data?.map((item) => ({
           productId: item.productId,
