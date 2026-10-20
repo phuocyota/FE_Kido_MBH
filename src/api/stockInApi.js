@@ -23,7 +23,7 @@ const formatDate = (value) => {
 
 const getImportHeader = (detail) => detail.importReceipt || detail.import || null;
 
-const normalizeDetail = (detail, index) => {
+const normalizeDetail = (detail, index, header) => {
   const product = detail.product || {};
   const quantity = toNumber(detail.quantity);
   const unitPrice = toNumber(
@@ -37,6 +37,8 @@ const normalizeDetail = (detail, index) => {
     warehouse: detail.toStock?.name || detail.stock?.name || "Kho mặc định",
     unit: product.unit || detail.unit || "",
     lotCode: detail.inputDetails?.lotCode || detail.lot?.lotCode || "",
+    purchasedAt: detail.inputDetails?.purchasedAt || null,
+    receivedAt: header.createdAt || detail.createdAt || null,
     manufacturedAt: formatDate(detail.inputDetails?.manufacturedAt || detail.lot?.manufacturedAt),
     expiresAt: formatDate(detail.inputDetails?.expiresAt || detail.lot?.expiresAt),
     serialMode: detail.inputDetails?.serialMode || "NONE",
@@ -50,7 +52,7 @@ const normalizeDetail = (detail, index) => {
 };
 
 const normalizeImportReceipt = (header, details, index = 0) => {
-  const normalizedDetails = details.map(normalizeDetail);
+  const normalizedDetails = details.map((detail, detailIndex) => normalizeDetail(detail, detailIndex, header));
   const totalAmount =
     toNumber(header.totalAmount) ||
     normalizedDetails.reduce((sum, detail) => sum + toNumber(detail.amount), 0);

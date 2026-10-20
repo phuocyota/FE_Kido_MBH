@@ -1,3 +1,4 @@
+import DataRefresh from "../components/common/DataRefresh";
 import PageHeader from "../components/Management/PageHeader";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -102,7 +103,7 @@ export default function Account() {
     }
   };
 
-  if (loading) {
+  if (loading && !(profile !== emptyProfile)) {
     return (
       <div className="erp-page">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 text-gray-500 erp-panel">
@@ -113,7 +114,7 @@ export default function Account() {
   }
 
   return (
-    <div className="erp-page bg-gray-100">
+    <DataRefresh pending={loading} hasData={profile !== emptyProfile}><div className="erp-page bg-gray-100">
       <div className="erp-content">
 
          
@@ -447,6 +448,6 @@ export default function Account() {
           </div>
         </div>
       </div>
-    </div>
+    </div></DataRefresh>
   );
 }

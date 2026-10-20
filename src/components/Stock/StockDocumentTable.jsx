@@ -1,3 +1,4 @@
+import { stockNumber } from "./stockNumbers";
 import React, { useState, useEffect, useRef, useId, useMemo } from "react";
 import { productApi } from "../../api";
 import { Search, Trash2 } from "lucide-react";
@@ -119,7 +120,7 @@ export default function StockDocumentTable({
           name: product.name,
           unit: product.unit || "Cái",
           quantity: 1,
-          price: product[priceField] || 0,
+          price: stockNumber(product[priceField] ?? 0),
           ...(showWarehouse ? { warehouse: "Kho mặc định" } : {}),
         },
       ]);
@@ -171,7 +172,7 @@ export default function StockDocumentTable({
       name: product.name,
       unit: product.unit || "Cái",
       quantity: 1,
-      price: product[priceField] || 0,
+      price: stockNumber(product[priceField] ?? 0),
       ...(showWarehouse ? { warehouse: "Kho mặc định" } : {}),
     };
     setItems(newItems);
@@ -387,6 +388,7 @@ export default function StockDocumentTable({
                         <input
                           type="number"
                           min="0"
+                          step="0.01"
                           value={item.price}
                           onChange={(e) =>
                             handleUpdateItem(index, "price", e.target.value)

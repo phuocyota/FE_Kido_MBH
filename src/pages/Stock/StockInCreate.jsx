@@ -63,7 +63,7 @@ export default function StockInCreate() {
 
       const payload = {
         type: "IMPORT",
-        purchasedAt: purchasedAt.slice(0, 10),
+        purchasedAt: `${purchasedAt}+07:00`,
         reasonCode,
         branchId: getBranchIdFromToken() || undefined,
         sourceId: supplier.id,

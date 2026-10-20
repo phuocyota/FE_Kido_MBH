@@ -1,50 +1,29 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useDebouncedValue } from "./useDebouncedValue";
+import { useReadQuery } from "./useReadQuery";
 import { warehouseApi } from "../api/warehouseApi";
+import { getLoadingState } from "./loadingState";
+
+const warehouseError = (error) =>
+  error.response?.status === 403
+    ? "Bạn không có quyền xem dữ liệu kho của chi nhánh này."
+    : error.response?.data?.message === "BRANCH_REQUIRED"
+      ? "Vui lòng chọn chi nhánh trước khi xem kho."
+      : error.response?.status === 400 && typeof error.response?.data?.message === "string"
+        ? error.response.data.message
+        : "Không thể tải dữ liệu kho. Vui lòng thử lại.";
 
 export function useWarehouseData(path, params = {}, refresh = 0) {
-  const key = JSON.stringify(params);
-  const requestKey = `${path}:${key}:${refresh}`;
-  const [state, setState] = useState({
-    key: "",
-    data: null,
-    error: "",
-    loading: true,
+  const search = useDebouncedValue(params.search ?? "");
+  const debouncing = params.search !== undefined && search !== params.search;
+  const key = JSON.stringify(params.search === undefined ? params : { ...params, search });
+  const load = useCallback((signal) => warehouseApi.get(path, JSON.parse(key), signal), [path, key]);
+  const result = useReadQuery({
+    queryKey: [path, key, refresh],
+    scopeKey: [path, params.branchId],
+    load,
+    getErrorMessage: warehouseError,
   });
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const data = await warehouseApi.get(
-          path,
-          JSON.parse(key),
-          controller.signal,
-        );
-        if (!controller.signal.aborted)
-          setState({ key: requestKey, data, error: "", loading: false });
-      } catch (error) {
-        if (!controller.signal.aborted)
-          setState({
-            key: requestKey,
-            data: null,
-            loading: false,
-            error:
-              error.response?.status === 403
-                ? "Bạn không có quyền xem dữ liệu kho của chi nhánh này."
-                : error.response?.data?.message === "BRANCH_REQUIRED"
-                  ? "Vui lòng chọn chi nhánh trước khi xem kho."
-                  : error.response?.status === 400 &&
-                      typeof error.response?.data?.message === "string"
-                    ? error.response.data.message
-                    : "Không thể tải dữ liệu kho. Vui lòng thử lại.",
-          });
-      }
-    }, 200);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [path, key, requestKey]);
-  return state.key === requestKey
-    ? state
-    : { loading: true, data: null, error: "" };
+  const loading = result.loading || debouncing;
+  return { ...result, loading, error: debouncing ? "" : result.error, ...getLoadingState(loading, result.hasData) };
 }

@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useState, useEffect } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -62,7 +63,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
     <div>
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
-          <table className="w-full text-sm erp-data-table">
+          <DataRefresh pending={loading} hasData={mealItems.length > 0}>{({ initialLoading }) => (<><table className="w-full text-sm erp-data-table">
             <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
               <tr>
                 <th className="p-3 text-center">STT</th>
@@ -77,7 +78,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {initialLoading ? (
                 <tr>
                   <td colSpan={9} className="text-center py-10 text-gray-500">Đang tải...</td>
                 </tr>
@@ -134,7 +135,7 @@ export default function TableMealItem({ filters, triggerRefresh, onRefresh, open
                 ))
               )}
             </tbody>
-          </table>
+          </table></>)}</DataRefresh>
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, {
   useRef,
   useState,
@@ -410,15 +411,15 @@ export default function AddEmployeeModal({
   </div>
 
   {/* BODY */}
-  <div className="p-5 overflow-x-auto">
+  <DataRefresh pending={loadingSchedule} hasData={scheduleData.length > 0}>{({ initialLoading }) => (<><div className="p-5 overflow-x-auto">
 
-    {loadingSchedule && (
+    {initialLoading && (
       <div className="text-center py-8 text-gray-400">
         Đang tải lịch làm việc...
       </div>
     )}
 
-    {!loadingSchedule && (
+    {!initialLoading && (
     <div className="min-w-[980px] grid grid-cols-7 gap-4">
 
       {currentWeekData?.days?.map((item, index) => (
@@ -519,7 +520,7 @@ export default function AddEmployeeModal({
       ))}
     </div>
     )}
-  </div>
+  </div></>)}</DataRefresh>
 </div>
 
           {/* THÔNG TIN CÔNG VIỆC */}

@@ -1,52 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useReadQuery } from "../../hooks/useReadQuery";
+import DataRefresh from "../../components/common/DataRefresh";
+import React, { useCallback, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { stockLotApi } from "../../api/stockLotApi";
 import { LotDetails } from "./StockLots";
 import { Panel, RequestState } from "../../components/Warehouse/WarehouseUI";
-import { inputClass, date } from "../../components/Warehouse/warehouseFormat";
+import { inputClass, date, dateTime } from "../../components/Warehouse/warehouseFormat";
 
-export default function UnifiedTrace() {
+export default function UnifiedTrace({ refreshVersion = 0 }) {
   const [params, setParams] = useSearchParams();
   const id = params.get("id") || "";
   const [input, setInput] = useState(id);
   const [refresh, setRefresh] = useState(0);
   const [page, setPage] = useState(1);
-  const [state, setState] = useState({
-    id: "",
-    data: null,
-    loading: false,
-    error: "",
-    matches: [],
+  const load = useCallback((signal) => stockLotApi.searchTrace(id, page, signal), [id, page]);
+  const query = useReadQuery({
+    queryKey: [id, page, refresh, refreshVersion],
+    scopeKey: ["trace-lookup", id],
+    enabled: !!id,
+    load,
+    getErrorMessage: (error) => typeof error.response?.data?.message === "string"
+      ? error.response.data.message : "Không thể truy xuất nguồn gốc. Vui lòng thử lại.",
   });
-  useEffect(() => {
-    if (!id) return;
-    const controller = new AbortController();
-    stockLotApi
-      .searchTrace(id, page, controller.signal)
-      .then((data) => {
-        if (!controller.signal.aborted)
-          setState({ id, data, loading: false, error: "", matches: data.matches || [] });
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        const payload = error.response?.data;
-        setState({
-          id,
-          data: null,
-          loading: false,
-          error:
-            typeof payload?.message === "string"
-              ? payload.message
-              : "Không thể truy xuất nguồn gốc. Vui lòng thử lại.",
-          matches:
-            payload?.code === "TRACE_ID_AMBIGUOUS" ? payload.matches || [] : [],
-        });
-      });
-    return () => controller.abort();
-  }, [id, refresh, page]);
-  const loading = !!id && (state.id !== id || state.loading);
-  const data = state.id === id ? state.data : null;
+  const { data, loading, error } = query;
+  const payload = query.failure?.response?.data;
+  const matches = data?.matches || (payload?.code === "TRACE_ID_AMBIGUOUS" ? payload.matches || [] : []);
   const serial = data?.serial;
   return (
     <>
@@ -60,13 +39,6 @@ export default function UnifiedTrace() {
             event.preventDefault();
             if (!input.trim()) return;
             setPage(1);
-            setState({
-              id: "",
-              data: null,
-              loading: true,
-              error: "",
-              matches: [],
-            });
             setParams({ id: input.trim() });
             setRefresh((value) => value + 1);
           }}
@@ -94,26 +66,25 @@ export default function UnifiedTrace() {
           </button>
         </form>
         <RequestState
-          loading={loading}
-          error={!loading && state.id === id ? state.error : ""}
+          hasData={!!data} loading={loading}
+          error={error}
           retry={() => {
-            setState((s) => ({ ...s, loading: true }));
             setRefresh((value) => value + 1);
           }}
         />
-        {!loading && data?.type === "SEARCH" && (
+        {data?.type === "SEARCH" && (
           <p role="status" className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
             {data.lotTotal || data.serialTotal
               ? `Tìm thấy ${data.lotTotal} lô và ${data.serialTotal} serial. Chọn bản ghi để xem nguồn gốc.`
               : "Không tìm thấy lô hoặc serial phù hợp trong chi nhánh."}
           </p>
         )}
-        {!loading && state.id === id && state.matches.length > 0 && (
-          <div className="space-y-2 border-t border-slate-100 p-4">
+        {matches.length > 0 && (
+          <DataRefresh showStatus={false} pending={loading} hasData={!!data}><div className="space-y-2 border-t border-slate-100 p-4">
             <p className="text-xs text-slate-500">
               Chọn đúng bản ghi để xem nguồn gốc:
             </p>
-            {state.matches.map((match) => (
+            {matches.map((match) => (
               <Link
                 key={
                   match.type === "LOT"
@@ -136,17 +107,17 @@ export default function UnifiedTrace() {
                   : `${match.serial} · ${match.productName} · ${match.receiptCode}`}
               </Link>
             ))}
-          </div>
+          </div></DataRefresh>
         )}
-        {!loading && data?.type === "SEARCH" && (page > 1 || data.hasNext) && (
+        {data?.type === "SEARCH" && (page > 1 || data.hasNext) && (
           <div className="flex items-center justify-end gap-3 border-t border-slate-100 p-4 text-xs">
             <button type="button" disabled={page === 1} className="rounded border px-3 py-2 disabled:opacity-40"
-              onClick={() => { setState((s) => ({ ...s, loading: true })); setPage((p) => p - 1); }}>
+              onClick={() => { setPage((p) => p - 1); }}>
               Trước
             </button>
             <span>Trang {page}</span>
             <button type="button" disabled={!data.hasNext} className="rounded border px-3 py-2 disabled:opacity-40"
-              onClick={() => { setState((s) => ({ ...s, loading: true })); setPage((p) => p + 1); }}>
+              onClick={() => { setPage((p) => p + 1); }}>
               Sau
             </button>
           </div>
@@ -167,7 +138,7 @@ export default function UnifiedTrace() {
                 >
                   <dt className="text-sm text-slate-500">{label}</dt>
                   <dd className="mt-2 text-xl font-bold text-slate-900">
-                    {value ? date(value) : "Chưa có thông tin"}
+                    {value ? (label === "Ngày nhập kho" ? dateTime(value) : date(value)) : "Chưa có thông tin"}
                   </dd>
                 </div>
               ))}

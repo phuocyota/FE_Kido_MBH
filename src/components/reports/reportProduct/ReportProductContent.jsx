@@ -104,7 +104,7 @@ export default function ReportProductContent({
                 productKeyword={productKeyword}
                 category={category}
                 foodTypes={foodTypes}
-                key={revision}
+                refreshVersion={revision}
                 fromDate={fromDate}
                 toDate={toDate}
                 branch={branch}
@@ -116,7 +116,7 @@ export default function ReportProductContent({
                 productKeyword={productKeyword}
                 category={category}
                 foodTypes={foodTypes}
-                key={revision}
+                refreshVersion={revision}
                 fromDate={fromDate}
                 toDate={toDate}
                 branchId={branchId}
@@ -137,7 +137,7 @@ export default function ReportProductContent({
               productKeyword={productKeyword}
               category={category}
               foodTypes={foodTypes}
-              key={revision}
+              refreshVersion={revision}
               fromDate={fromDate}
               toDate={toDate}
               branchId={branchId}

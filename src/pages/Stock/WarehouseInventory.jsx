@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Download, SlidersHorizontal, Search, X, Info } from "lucide-react";
@@ -248,14 +249,13 @@ export default function WarehouseInventory() {
           </p>
         </div>
         <RequestState
-          loading={result.loading}
+          hasData={!!result.data} loading={result.loading}
           error={result.error}
           retry={reload}
         />
-        {!result.loading &&
-          !result.error &&
+        {(result.data || (!result.loading && !result.error)) &&
           (result.data?.data?.length ? (
-            <div className="overflow-x-auto">
+            <DataRefresh showStatus={false} pending={result.loading} hasData={!!result.data}><div className="overflow-x-auto">
               <table className="w-full min-w-[1150px]">
                 <thead>
                   <tr>
@@ -327,11 +327,11 @@ export default function WarehouseInventory() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div></DataRefresh>
           ) : (
             <Empty text="Không có tồn kho phù hợp bộ lọc. Các số dư được ghi nhận từ nghiệp vụ nhập, xuất và chuyển kho." />
           ))}
-        {!result.loading && !result.error && (
+        {(result.data || (!result.loading && !result.error)) && (
           <StockInPagination
             total={Number(result.data?.total || 0)}
             currentPage={page}
@@ -411,11 +411,11 @@ function InventoryDetail({ productId, onClose }) {
           ))}
         </div>
         <RequestState
-          loading={result.loading}
+          hasData={!!result.data} loading={result.loading}
           error={result.error}
           retry={() => setRefresh((value) => value + 1)}
         />
-        {data && !result.loading && !result.error && (
+        {data && (result.data || (!result.loading && !result.error)) && (
           <>
             <dl className="grid gap-3 bg-slate-50 p-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
               {[

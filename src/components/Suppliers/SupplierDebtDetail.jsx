@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useEffect, useState } from "react";
 import { supplierApi } from "../../api/supplierApi";
 import { X } from "lucide-react";
@@ -70,7 +71,7 @@ export default function SupplierDebtDetail({ supplier, onClose }) {
       </div>
 
       <div className="flex-1 overflow-auto bg-gray-50/50 p-4">
-        {loading ? (
+        <DataRefresh pending={loading} hasData={debts.length > 0}>{({ initialLoading }) => (<>{initialLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="w-8 h-8 border-4 border-indigo-200 border-t-[#5b45ff] rounded-full animate-spin"></div>
           </div>
@@ -126,7 +127,7 @@ export default function SupplierDebtDetail({ supplier, onClose }) {
               </table>
             </div>
           </div>
-        )}
+        )}</>)}</DataRefresh>
       </div>
     </div>
   );

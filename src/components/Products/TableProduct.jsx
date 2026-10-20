@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -413,7 +414,7 @@ export default function TableProduct({
         </div>
 
         <div className="max-h-[900px] overflow-auto">
-          <table className="w-full text-sm erp-data-table">
+          <DataRefresh pending={loading} hasData={products.length > 0}>{({ initialLoading }) => (<><table className="w-full text-sm erp-data-table">
             {/* HEADER */}
             <thead className="bg-blue-50 text-gray-700 sticky top-0 z-10">
               <tr>
@@ -432,7 +433,7 @@ export default function TableProduct({
 
             {/* BODY */}
             <tbody>
-              {loading ? (
+              {initialLoading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-14 text-gray-400">
                     Đang tải dữ liệu...
@@ -560,7 +561,7 @@ export default function TableProduct({
                 ))
               )}
             </tbody>
-          </table>
+          </table></>)}</DataRefresh>
         </div>
 
         {/* PAGINATION */}

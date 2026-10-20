@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import PageHeader from "../../components/Management/PageHeader";
 import React, { useMemo, useState, useEffect } from "react";
 import {
@@ -166,7 +167,7 @@ export default function ListEmployee() {
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="min-w-[1100px] w-full border-collapse erp-data-table">
+          <DataRefresh pending={loading} hasData={employees.length > 0}>{({ initialLoading }) => (<><table className="min-w-[1100px] w-full border-collapse erp-data-table">
 
             <thead>
               <tr className="bg-[#eaf2ff] text-gray-700 text-sm">
@@ -210,7 +211,7 @@ export default function ListEmployee() {
             </thead>
 
             <tbody>
-  {loading ? (
+  {initialLoading ? (
     <tr>
       <td colSpan={9} className="text-center py-14 text-gray-400">
         Đang tải dữ liệu...
@@ -299,7 +300,7 @@ export default function ListEmployee() {
   )}
 </tbody>
 
-          </table>
+          </table></>)}</DataRefresh>
         </div>
 {/* 
       {

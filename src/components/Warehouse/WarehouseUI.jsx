@@ -1,3 +1,5 @@
+import RefreshNotice from "../common/RefreshNotice";
+import { getLoadingState } from "../../hooks/loadingState";
 import React from "react";
 import { AlertCircle, Inbox, LoaderCircle } from "lucide-react";
 
@@ -35,7 +37,10 @@ export function Empty({ text = "Chưa có dữ liệu phù hợp." }) {
     </div>
   );
 }
-export function RequestState({ loading, error, retry }) {
+export function RequestState({ loading, error, retry, hasData = false }) {
+  const { initialLoading, refreshing } = getLoadingState(loading, hasData);
+  if (hasData && (refreshing || error))
+    return <div className="relative h-0"><RefreshNotice error={error} onRetry={retry} /></div>;
   if (error)
     return (
       <div
@@ -53,7 +58,7 @@ export function RequestState({ loading, error, retry }) {
         </button>
       </div>
     );
-  if (loading)
+  if (initialLoading)
     return (
       <div
         role="status"
