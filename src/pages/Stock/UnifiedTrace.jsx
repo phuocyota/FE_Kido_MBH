@@ -11,6 +11,7 @@ export default function UnifiedTrace() {
   const id = params.get("id") || "";
   const [input, setInput] = useState(id);
   const [refresh, setRefresh] = useState(0);
+  const [page, setPage] = useState(1);
   const [state, setState] = useState({
     id: "",
     data: null,
@@ -22,10 +23,10 @@ export default function UnifiedTrace() {
     if (!id) return;
     const controller = new AbortController();
     stockLotApi
-      .lookup(id, controller.signal)
+      .searchTrace(id, page, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted)
-          setState({ id, data, loading: false, error: "", matches: [] });
+          setState({ id, data, loading: false, error: "", matches: data.matches || [] });
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
@@ -43,7 +44,7 @@ export default function UnifiedTrace() {
         });
       });
     return () => controller.abort();
-  }, [id, refresh]);
+  }, [id, refresh, page]);
   const loading = !!id && (state.id !== id || state.loading);
   const data = state.id === id ? state.data : null;
   const serial = data?.serial;
@@ -51,13 +52,14 @@ export default function UnifiedTrace() {
     <>
       <Panel
         title="Truy xuất nguồn gốc"
-        description="Nhập ID lô hoặc số serial của sản phẩm. Hệ thống tự xác định loại để truy xuất."
+        description="Nhập số lô, ID lô, serial, mã hoặc tên hàng để tìm và xem nguồn gốc."
       >
         <form
           className="flex flex-wrap gap-2 p-4"
           onSubmit={(event) => {
             event.preventDefault();
             if (!input.trim()) return;
+            setPage(1);
             setState({
               id: "",
               data: null,
@@ -75,10 +77,10 @@ export default function UnifiedTrace() {
               className="absolute left-3 top-2.5 text-slate-400"
             />
             <input
-              aria-label="ID lô hoặc số serial"
+              aria-label="Số lô, ID lô, serial, mã hoặc tên hàng"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Nhập ID lô hoặc số serial..."
+              placeholder="Tìm số lô, ID lô, serial, mã hoặc tên hàng..."
               className={`${inputClass} pl-9`}
               maxLength={128}
             />
@@ -88,7 +90,7 @@ export default function UnifiedTrace() {
             disabled={!input.trim() || loading}
             className="h-9 rounded-lg bg-indigo-600 px-4 text-xs font-semibold text-white disabled:opacity-50"
           >
-            Truy xuất
+            Tìm kiếm
           </button>
         </form>
         <RequestState
@@ -99,6 +101,13 @@ export default function UnifiedTrace() {
             setRefresh((value) => value + 1);
           }}
         />
+        {!loading && data?.type === "SEARCH" && (
+          <p role="status" className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+            {data.lotTotal || data.serialTotal
+              ? `Tìm thấy ${data.lotTotal} lô và ${data.serialTotal} serial. Chọn bản ghi để xem nguồn gốc.`
+              : "Không tìm thấy lô hoặc serial phù hợp trong chi nhánh."}
+          </p>
+        )}
         {!loading && state.id === id && state.matches.length > 0 && (
           <div className="space-y-2 border-t border-slate-100 p-4">
             <p className="text-xs text-slate-500">
@@ -123,10 +132,23 @@ export default function UnifiedTrace() {
                 className="block rounded-lg border border-slate-200 p-3 text-sm text-indigo-700 hover:bg-indigo-50"
               >
                 {match.type === "LOT"
-                  ? `Lô ${match.lotId}`
+                  ? `Lô ${match.lotCode || match.lotId} · ${match.productName || ""}${match.stockName ? ` · ${match.stockName}` : ""}`
                   : `${match.serial} · ${match.productName} · ${match.receiptCode}`}
               </Link>
             ))}
+          </div>
+        )}
+        {!loading && data?.type === "SEARCH" && (page > 1 || data.hasNext) && (
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 p-4 text-xs">
+            <button type="button" disabled={page === 1} className="rounded border px-3 py-2 disabled:opacity-40"
+              onClick={() => { setState((s) => ({ ...s, loading: true })); setPage((p) => p - 1); }}>
+              Trước
+            </button>
+            <span>Trang {page}</span>
+            <button type="button" disabled={!data.hasNext} className="rounded border px-3 py-2 disabled:opacity-40"
+              onClick={() => { setState((s) => ({ ...s, loading: true })); setPage((p) => p + 1); }}>
+              Sau
+            </button>
           </div>
         )}
         {serial && (

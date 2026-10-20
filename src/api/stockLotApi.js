@@ -1,9 +1,35 @@
 import axiosInstance from "./axiosConfig";
 import { getBranchIdFromToken } from "./authSession";
+import { warehouseApi } from "./warehouseApi";
 
 const unwrap = (response) => response.data?.data ?? response.data;
 
 export const stockLotApi = {
+  searchTrace: async (id, page = 1, signal) => {
+    try {
+      return await stockLotApi.lookup(id, signal);
+    } catch (error) {
+      if (error.response?.status !== 404 || signal?.aborted) throw error;
+    }
+    const size = 20;
+    const [lots, serials] = await Promise.all([
+      stockLotApi.getAll({ search: id, page, size }, signal),
+      warehouseApi.get("serials", { search: id, page, size }, signal),
+    ]);
+    return {
+      type: "SEARCH",
+      lotTotal: lots.total,
+      serialTotal: Number(serials.total || 0),
+      hasNext: page * size < Math.max(lots.total, Number(serials.total || 0)),
+      matches: [
+        ...lots.items.map((lot) => ({
+          type: "LOT", lotId: lot.id, lotCode: lot.lotCode,
+          productName: lot.product?.name, stockName: lot.stock?.name,
+        })),
+        ...(serials.data || []).map((serial) => ({ ...serial, type: "SERIAL" })),
+      ],
+    };
+  },
   lookup: async (id, signal) => {
     const response = await axiosInstance.get("/production-trace/lookup", { params: { id, branchId: getBranchIdFromToken() || undefined }, signal });
     return unwrap(response);
