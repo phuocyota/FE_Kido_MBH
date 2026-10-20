@@ -13,6 +13,7 @@ import {
   cellClass,
   headingClass,
   date,
+  dateTime,
   number,
 } from "../../components/Warehouse/warehouseFormat";
 import StockInPagination from "../../components/StockIn/StockInPagination";
@@ -242,7 +243,7 @@ export default function StockSerials({ traceMode = false }) {
                       </td>
                       <td className={cellClass}>{row.receiptCode}</td>
                       <td className={`${cellClass} whitespace-nowrap`}>
-                        {date(row.receivedAt)}
+                        {dateTime(row.purchasedAt || row.receivedAt)}
                       </td>
                       <td className={cellClass}>
                         {row.serialMode === "AUTO"
@@ -333,7 +334,7 @@ function SerialDetails({ selected, onClose }) {
                 <dt className="text-sm text-slate-500">Ngày nhập kho</dt>
                 <dd className="mt-2 text-xl font-bold text-slate-900">
                   {row.purchasedAt || row.receivedAt
-                    ? date(row.purchasedAt || row.receivedAt)
+                    ? dateTime(row.purchasedAt || row.receivedAt)
                     : "Chưa có thông tin"}
                 </dd>
               </div>
@@ -379,7 +380,7 @@ function SerialDetails({ selected, onClose }) {
                 </span>
               </p>
               <p className="mt-2 text-xs text-slate-500">
-                Ghi nhận ngày {date(row.receivedAt)} tại{" "}
+                Ghi nhận ngày {dateTime(row.receivedAt)} tại{" "}
                 {row.stockName || "kho chưa ghi nhận"}. Thông tin lấy từ đúng
                 dòng phiếu nhập đã khai báo serial này.
               </p>

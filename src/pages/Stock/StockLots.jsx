@@ -1,3 +1,4 @@
+import { dateTime } from "../../components/Warehouse/warehouseFormat";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Package, Plus, Search, X } from "lucide-react";
@@ -175,7 +176,7 @@ export function LotDetails({ lot, onClose, initialTrace }) {
       <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>
       {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={() => { setError(""); setRetry((value) => value + 1); }} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <>
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", lotDate(trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
+          {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", dateTime(trace.origin?.purchasedAt || trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
         <LotSerialList key={lot.id} lotId={lot.id} />
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>

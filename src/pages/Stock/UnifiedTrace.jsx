@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { stockLotApi } from "../../api/stockLotApi";
 import { LotDetails } from "./StockLots";
 import { Panel, RequestState } from "../../components/Warehouse/WarehouseUI";
-import { inputClass, date } from "../../components/Warehouse/warehouseFormat";
+import { inputClass, date, dateTime } from "../../components/Warehouse/warehouseFormat";
 
 export default function UnifiedTrace() {
   const [params, setParams] = useSearchParams();
@@ -167,7 +167,7 @@ export default function UnifiedTrace() {
                 >
                   <dt className="text-sm text-slate-500">{label}</dt>
                   <dd className="mt-2 text-xl font-bold text-slate-900">
-                    {value ? date(value) : "Chưa có thông tin"}
+                    {value ? (label === "Ngày nhập kho" ? dateTime(value) : date(value)) : "Chưa có thông tin"}
                   </dd>
                 </div>
               ))}
