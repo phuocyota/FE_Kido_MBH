@@ -1,6 +1,10 @@
 import axiosInstance from "./axiosConfig";
 
 export const productApi = {
+  getById: async (id, signal) => {
+    const response = await axiosInstance.get(`/products/${id}`, { signal });
+    return response.data?.data ?? response.data;
+  },
   // Get all products
   getAll: async (filters = {}) => {
     const params = { ...filters };
@@ -30,8 +34,8 @@ export const productApi = {
     return response.data.data || response.data;
   },
 
-  getMeasurementUnits: async () => {
-    const response = await axiosInstance.get("/kitchen/units");
+  getMeasurementUnits: async (signal) => {
+    const response = await axiosInstance.get("/kitchen/units", { signal });
     return response.data?.data ?? response.data;
   },
 

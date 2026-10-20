@@ -8,6 +8,7 @@ export default function StockOutTable(props) {
       priceField="price"
       showWarehouse
       showRowNumbers
+      allowLotSelection
     />
   );
 }

@@ -12,6 +12,8 @@ import StockSerials from "./StockSerials";
 import StockHeader from "../../components/Stock/StockHeader";
 import StockInPagination from "../../components/StockIn/StockInPagination";
 import { stockLotApi } from "../../api/stockLotApi";
+import FefoLotPicker from "../../components/Stock/FefoLotPicker";
+import { getTokenPayload } from "../../api/authSession";
 import { lotTypes, lotStatus, lotDate, lotNumber } from "../../components/Stock/stockLotDisplay";
 
 const errorText = (error, fallback) => {
@@ -68,6 +70,9 @@ export default function StockLots() {
 }
 
 function StockLotList({ refreshVersion = 0 }) {
+  const identity = getTokenPayload();
+  const canPlanFefo = ['ADMIN', 'MANAGER'].includes(identity?.userType || identity?.role || localStorage.getItem('role'));
+  const [fefoLot, setFefoLot] = useState(null);
   const [params] = useSearchParams();
   const [filters, setFilters] = useState(() => ({ search: params.get("search") || "", status: ["AVAILABLE", "EXPIRING", "EXPIRED", "DEPLETED"].includes(params.get("status")) ? params.get("status") : "", productType: "" }));
   const [page, setPage] = useState(1);
@@ -138,7 +143,7 @@ function StockLotList({ refreshVersion = 0 }) {
                   <td className="whitespace-nowrap px-4 py-4">{lotDate(lot.manufacturedAt)}</td><td className="whitespace-nowrap px-4 py-4">{lotDate(lot.expiresAt)}</td>
                   <td className="whitespace-nowrap px-4 py-4 text-right font-semibold tabular-nums">{lotNumber(lot.quantity)} <span className="font-normal text-slate-500">{lot.baseUnit?.code || lot.product?.unit || ""}</span></td>
                   <td className="px-4 py-4"><Status lot={lot} /></td>
-                  <td className="px-4 py-4"><button onClick={() => setSelected(lot)} className="whitespace-nowrap font-semibold text-blue-600 hover:underline" aria-label={`Chi tiết lô ${lot.lotCode}`}>Chi tiết</button></td>
+                  <td className="px-4 py-4"><button onClick={() => setSelected(lot)} className="whitespace-nowrap font-semibold text-blue-600 hover:underline" aria-label={`Chi tiết lô ${lot.lotCode}`}>Chi tiết</button>{canPlanFefo && lot.product?.lotTrackingEnabled && <button type="button" onClick={() => setFefoLot(lot)} className="mt-2 block whitespace-nowrap text-sm font-semibold text-indigo-600 underline">Gợi ý xuất FEFO</button>}</td>
                 </tr>
               ))}</tbody>
             </table>
@@ -147,6 +152,7 @@ function StockLotList({ refreshVersion = 0 }) {
         {hasLoaded && <div inert={busy || undefined}><StockInPagination total={result.total} currentPage={page} pageSize={size} onPageChange={(value) => { setSelected(null); setPage(value); }} onPageSizeChange={(value) => { setSelected(null); setSize(value); setPage(1); }} /></div>}
       </section>
       {selected && <LotDetails key={selected.id} lot={selected} refreshVersion={`${refresh}:${refreshVersion}`} onClose={() => setSelected(null)} />}
+      {fefoLot && <FefoLotPicker productId={fefoLot.productId} stockId={fefoLot.stockId} onClose={() => setFefoLot(null)} />}
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   Legend,
 } from "recharts";
 import StockHeader from "../../components/Stock/StockHeader";
+import KitchenReplenishmentPanel from "../../components/Warehouse/KitchenReplenishmentPanel";
 import { useWarehouseData } from "../../hooks/useWarehouseData";
 import {
   Panel,
@@ -89,6 +90,7 @@ export default function WarehouseOverview() {
           </select>
         </div>
       </div>
+      <KitchenReplenishmentPanel refresh={refresh} onImported={reload} />
       <RequestState hasData={!!data} loading={loading} error={error} retry={reload} />
       {data && <DataRefresh showStatus={false} pending={loading} hasData={!!data}><Dashboard data={data} /></DataRefresh>}
     </main>

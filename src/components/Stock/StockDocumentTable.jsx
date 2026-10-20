@@ -1,17 +1,20 @@
 import { stockNumber } from "./stockNumbers";
 import React, { useState, useEffect, useRef, useId, useMemo } from "react";
 import { productApi } from "../../api";
-import { Search, Trash2 } from "lucide-react";
+import { CalendarDays, Search, Trash2 } from "lucide-react";
 import StockProductPicker from "./StockProductPicker";
 import { createStockProductCache } from "./stockProductCache";
-import { freshFoodExpiry, currentPurchaseDateTime } from "./stockDates";
+import { expiryAfter, freshFoodExpiry, currentPurchaseDateTime } from "./stockDates";
 import { createStockLotCode } from "./stockLotCode";
+import FefoLotPicker from "./FefoLotPicker";
+import LotSerialEditor from "./LotSerialEditor";
+import { compatibleStockUnits, convertStockLineUnit } from "./stockUnitConversion";
 
 const baseColumns = [
   { label: "Mã hàng hóa", className: "w-[130px] rounded-tl-lg" },
   { label: "Tên hàng hóa", className: "min-w-[360px]" },
-  { label: "Đơn vị tính", className: "w-[100px]" },
   { label: "Số lượng", className: "w-[110px] text-right" },
+  { label: "Đơn vị tính", className: "w-[100px]" },
   { label: "Đơn giá", className: "w-[150px] text-right" },
   { label: "Thành tiền", className: "w-[150px] text-right" },
   { label: "Xóa", className: "w-[56px] text-center rounded-tr-lg" },
@@ -33,6 +36,9 @@ export default function StockDocumentTable({
   showLotFields = false,
   purchasedAt,
   productTypeFilter = "",
+  allowLotSelection = false,
+  allowUnitConversion = false,
+  requireMaterialLots = false,
 }) {
   const rowIdPrefix = useId();
   const nextRowId = useRef(0);
@@ -47,17 +53,20 @@ export default function StockDocumentTable({
   if (showLotFields) {
     const quantityIndex = columns.findIndex((column) => column.label === "Số lượng");
     columns.splice(quantityIndex, 0,
-      { label: "Serial", className: "w-[260px]" },
       { label: "Số lô", className: "w-[180px]" },
       { label: "Ngày sản xuất", className: "w-[170px]" },
       { label: "Hạn sử dụng", className: "w-[170px]" },
     );
   }
-  const totalLabelColumns = 3 + Number(showRowNumbers) + Number(showWarehouse) + (showLotFields ? 4 : 0);
-  const lotFieldsForProduct = (product) => showLotFields ? {
+  const totalLabelColumns = 2 + Number(showRowNumbers) + Number(showWarehouse) + (showLotFields ? 3 : 0);
+  const lotFieldsForProduct = (product) => ({
     lotTrackingEnabled: product.lotTrackingEnabled === true,
     productType: product.productType,
     baseUnitId: product.baseUnitId,
+    unitId: allowUnitConversion ? product.baseUnitId : undefined,
+    allocations: undefined,
+    inputToBaseFactor: 1,
+    ...(showLotFields ? {
     isFreshFood: product.isFreshFood === true,
     expiryManuallyEdited: false,
     serialMode: "NONE",
@@ -65,7 +74,12 @@ export default function StockDocumentTable({
     lotCode: createStockLotCode(),
     manufacturedAt: currentPurchaseDateTime().slice(0, 10),
     expiresAt: product.isFreshFood ? freshFoodExpiry(purchasedAt) : "",
-  } : {};
+    } : {}),
+  });
+  const [lotItemId, setLotItemId] = useState(null);
+  const [serialItemId, setSerialItemId] = useState(null);
+  const serialItem = items.find((item) => item.id === serialItemId);
+  const lotItem = items.find((item) => item.id === lotItemId);
   const loadProducts = useMemo(() =>
     createStockProductCache(productApi.getAll, productTypeFilter ? { productType: productTypeFilter } : {}),
     [productTypeFilter],
@@ -73,6 +87,31 @@ export default function StockDocumentTable({
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [units, setUnits] = useState([]);
+  const [unitError, setUnitError] = useState("");
+  const [unitRevision, setUnitRevision] = useState(0);
+  useEffect(() => {
+    if (!allowUnitConversion) return;
+    const controller = new AbortController();
+    productApi.getMeasurementUnits(controller.signal).then((rows) => {
+      if (!Array.isArray(rows)) throw new Error('Không đọc được danh mục đơn vị.');
+      if (!controller.signal.aborted) { setUnits(rows); setUnitError(''); }
+    }).catch((error) => {
+      if (!controller.signal.aborted) setUnitError(error.response?.data?.message || error.message);
+    });
+    return () => controller.abort();
+  }, [allowUnitConversion, unitRevision]);
+  const changeUnit = (index, nextId) => {
+    const item = items[index];
+    try {
+      const choices = compatibleStockUnits(item.baseUnitId, units);
+      const from = choices.find((unit) => unit.id === (item.unitId || item.baseUnitId));
+      const to = choices.find((unit) => unit.id === nextId);
+      const patch = convertStockLineUnit(item, from, to);
+      setItems((previous) => previous.map((row, i) => i === index ? { ...row, ...patch } : row));
+      setUnitError('');
+    } catch (error) { setUnitError(error.message); }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -108,6 +147,7 @@ export default function StockDocumentTable({
     if (existingIndex > -1) {
       const newItems = [...items];
       newItems[existingIndex].quantity += 1;
+      newItems[existingIndex].allocations = undefined;
       setItems(newItems);
     } else {
       setItems([
@@ -135,6 +175,7 @@ export default function StockDocumentTable({
       ...newItems[index],
       [field]: ["quantity", "price"].includes(field) ? Number(value) || 0 : value,
       ...(field === "expiresAt" ? { expiryManuallyEdited: true } : {}),
+      ...(field === "quantity" ? { allocations: undefined } : {}),
     };
     setItems(newItems);
   };
@@ -186,6 +227,8 @@ export default function StockDocumentTable({
 
   return (
     <div className="flex-1 overflow-auto flex flex-col p-4">
+      {allowUnitConversion && <p className="mb-3 text-xs text-slate-500">Chọn đơn vị nhập tương thích theo danh mục và hệ số quy đổi đã cấu hình. Số lượng và đơn giá tự quy đổi để giữ nguyên thành tiền; tồn kho được lưu theo đơn vị chuẩn.</p>}
+      {unitError && <p role="alert" className="mb-3 text-sm text-red-600">{String(unitError)} <button type="button" onClick={() => setUnitRevision((value) => value + 1)} className="underline">Tải lại đơn vị</button></p>}
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-base font-bold tracking-wide text-slate-800">
           CHI TIẾT
@@ -245,7 +288,7 @@ export default function StockDocumentTable({
           <table
             style={{
               minWidth:
-                1100 + (showLotFields ? 780 : 0) + (showWarehouse ? 120 : 0) + (showRowNumbers ? 48 : 0),
+                1100 + (showLotFields ? 520 : 0) + (showWarehouse ? 120 : 0) + (showRowNumbers ? 48 : 0),
             }}
             className="w-full table-fixed border-separate border-spacing-0 text-sm"
           >
@@ -307,6 +350,7 @@ export default function StockDocumentTable({
                         ) : (
                           item.name
                         )}
+                        {allowLotSelection && item.lotTrackingEnabled && <div className="mt-2 text-xs font-normal"><button type="button" disabled={!(item.quantity > 0)} className="font-semibold text-blue-600 underline" onClick={() => setLotItemId(item.id)}>Chọn lô FEFO</button><span className="ml-2 text-slate-500">{item.allocations?.length ? `Đã chọn ${item.allocations.length} lô` : 'Chưa chọn lô'}</span></div>}
                       </td>
                       {showWarehouse && (
                         <td
@@ -315,57 +359,63 @@ export default function StockDocumentTable({
                           {item.warehouse}
                         </td>
                       )}
-                      <td
-                        className={`${bodyCellClass} border-b border-slate-200 text-slate-500`}
-                      >
-                        {item.unit}
-                      </td>
-                      {showLotFields && (
-                        <td className={`${bodyCellClass} border-b border-slate-200 align-top`}>
-                          <select
-                            aria-label={`Xử lý serial dòng ${index + 1}`}
-                            value={item.serialMode || "NONE"}
-                            disabled={isNewRow}
-                            onChange={(event) => handleUpdateItem(index, "serialMode", event.target.value)}
-                            className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
-                          >
-                            <option value="NONE">Không dùng serial</option>
-                            <option value="MANUAL">Nhập serial thủ công</option>
-                            <option value="AUTO">Tự sinh serial</option>
-                          </select>
-                          {item.serialMode === "MANUAL" && (
-                            <textarea
-                              aria-label={`Danh sách serial dòng ${index + 1}`}
-                              placeholder="Mỗi dòng một serial"
-                              rows={3}
-                              value={item.serialText || ""}
-                              onChange={(event) => handleUpdateItem(index, "serialText", event.target.value)}
-                              className="mt-2 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                            />
-                          )}
-                          {item.serialMode === "AUTO" && (
-                            <p className="mt-2 text-xs font-normal text-slate-500">Một serial cho mỗi đơn vị, tự tạo khi lưu phiếu.</p>
-                          )}
-                        </td>
-                      )}
+
                       {showLotFields && [
                         { field: "lotCode", label: "Số lô", type: "text" },
                         { field: "manufacturedAt", label: "Ngày sản xuất", type: "date" },
                         { field: "expiresAt", label: "Hạn sử dụng", type: "date" },
                       ].map(({ field, label, type }) => (
                         <td key={field} className={`${bodyCellClass} border-b border-slate-200`}>
+                          <div className="flex items-center gap-1">
                           <input
                             type={type}
                             aria-label={`${label} dòng ${index + 1}`}
+                            data-expiry-row={field === 'expiresAt' ? index : undefined}
+                            aria-invalid={!isNewRow && field === 'expiresAt' && (item.lotTrackingEnabled || requireMaterialLots) && item.productType === 'INGREDIENT' && !item.expiresAt || undefined}
                             value={item[field] || ""}
                             disabled={isNewRow}
                             readOnly={field === "lotCode"}
                             title={field === "lotCode" ? item.lotCode : field === "expiresAt" && item.isFreshFood ? "Hàng tươi sống: mặc định 7 ngày sau ngày mua, có thể sửa theo thực tế" : undefined}
-                            required={item.lotTrackingEnabled && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
+                            required={(item.lotTrackingEnabled || requireMaterialLots) && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
                             placeholder={field === "lotCode" ? "Tự sinh khi chọn hàng" : undefined}
                             onChange={(event) => handleUpdateItem(index, field, event.target.value)}
-                            className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
+                            className={`min-w-0 w-full rounded border px-2 py-1.5 text-sm outline-none disabled:bg-gray-100 ${type === 'date' && !isNewRow && !item[field] ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-1 focus:ring-red-200' : 'border-gray-300 focus:border-blue-500'}`}
                           />
+                          {type === 'date' && <button
+                            type="button"
+                            disabled={isNewRow}
+                            aria-label={`Mở lịch ${label.toLowerCase()} dòng ${index + 1}`}
+                            title={`Chọn ${label.toLowerCase()}`}
+                            className="shrink-0 rounded border border-slate-300 bg-white p-1.5 text-blue-600 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-40"
+                            onClick={(event) => {
+                              const input = event.currentTarget.previousElementSibling;
+                              input.focus();
+                              if (typeof input.showPicker === 'function') {
+                                try { input.showPicker(); } catch { /* Manual entry remains available. */ }
+                              }
+                            }}
+                          ><CalendarDays size={16} /></button>}
+                          </div>
+                          {field === 'expiresAt' && !isNewRow && <div className="mt-2 flex flex-wrap gap-1">
+                            {[
+                              { label: '+1 tuần', days: 7 },
+                              { label: '+1 tháng', months: 1 },
+                              { label: '+3 tháng', months: 3 },
+                              { label: '+6 tháng', months: 6 },
+                            ].map(({ label: optionLabel, ...offset }) => <button
+                              key={optionLabel}
+                              type="button"
+                              title={`${optionLabel} từ ngày sản xuất; nếu chưa có thì từ ngày nhập kho`}
+                              aria-label={`Hạn sử dụng ${optionLabel} cho ${item.name}`}
+                              className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100"
+                              onClick={() => handleUpdateItem(index, 'expiresAt', expiryAfter(item.manufacturedAt || purchasedAt?.slice(0, 10) || currentPurchaseDateTime().slice(0, 10), offset))}
+                            >{optionLabel}</button>)}
+                          </div>}
+                          {field === "lotCode" && !isNewRow && <div className="mt-2 space-y-1">
+
+                            <button type="button" className="text-xs font-semibold text-blue-600 underline" onClick={() => setSerialItemId(item.id)}>Serial trong lô</button>
+                            <p className="text-xs text-slate-500">{item.serialMode === 'MANUAL' ? `${(item.serialText || '').split(/\r?\n/).filter((value) => value.trim()).length} serial đã nhập` : item.serialMode === 'AUTO' ? 'Tự sinh serial khi lưu' : 'Không dùng serial'}</p>
+                          </div>}
                         </td>
                       ))}
                       <td
@@ -373,14 +423,23 @@ export default function StockDocumentTable({
                       >
                         <input
                           type="number"
-                          min={showLotFields ? "0.0001" : "1"}
-                          step={showLotFields ? "any" : "1"}
+                          min={allowUnitConversion ? "0" : showLotFields || allowLotSelection ? "0.0001" : "1"}
+                          step={allowUnitConversion ? "any" : showLotFields || allowLotSelection ? "0.0001" : "1"}
                           value={item.quantity}
                           onChange={(e) =>
                             handleUpdateItem(index, "quantity", e.target.value)
                           }
                           className="w-full text-right px-2 py-1 border border-transparent hover:border-gray-300 focus:border-blue-500 rounded outline-none bg-transparent"
                         />
+                      </td>
+                      <td
+                        className={`${bodyCellClass} border-b border-slate-200 text-slate-500`}
+                      >
+                        {allowUnitConversion && compatibleStockUnits(item.baseUnitId, units).length > 0 ? (
+                          <select aria-label={`Đơn vị nhập ${item.name}`} className="w-full min-w-[70px] rounded border border-slate-200 bg-white px-2 py-1" value={item.unitId || item.baseUnitId} onChange={(event) => changeUnit(index, event.target.value)}>
+                            {compatibleStockUnits(item.baseUnitId, units).map((unit) => <option key={unit.id} value={unit.id}>{unit.code}</option>)}
+                          </select>
+                        ) : item.unit}
                       </td>
                       <td
                         className={`${numberCellClass} border-b border-slate-200 p-1`}
@@ -431,6 +490,7 @@ export default function StockDocumentTable({
                   {totalQuantity.toLocaleString("vi-VN")}
                 </td>
                 <td className={`${totalCellClass} border-t`}></td>
+                <td className={`${totalCellClass} border-t`}></td>
                 <td className={`${totalCellClass} border-t`}>
                   {totalAmount.toLocaleString("vi-VN")}
                 </td>
@@ -464,6 +524,14 @@ export default function StockDocumentTable({
           onClick={() => setShowSearch(false)}
         ></div>
       )}
+      {serialItem && <LotSerialEditor key={serialItem.id} item={serialItem} onClose={() => setSerialItemId(null)} onApply={(patch) => {
+        setItems((previous) => previous.map((item) => item.id === serialItemId ? { ...item, ...patch } : item));
+        setSerialItemId(null);
+      }} />}
+      {lotItem && <FefoLotPicker productId={lotItem.productId} quantity={lotItem.quantity} unitId={lotItem.baseUnitId} onClose={() => setLotItemId(null)} onApply={(selection) => {
+        setItems((previous) => previous.map((item) => item.id === lotItemId ? { ...item, allocations: selection.allocations, unitId: selection.unitId } : item));
+        setLotItemId(null);
+      }} />}
     </div>
   );
 }

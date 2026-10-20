@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { kitchenRecipeApi } from "../../api/kitchenRecipeApi";
+import RecipeCostWarning from "./RecipeCostWarning";
+import { getTokenPayload } from "../../api/authSession";
 const statuses = {
   ACTIVE: "Đang áp dụng",
   DRAFT: "Bản nháp",
@@ -8,6 +10,8 @@ const statuses = {
   INACTIVE: "Ngừng áp dụng",
 };
 export default function ProductRecipeSection({ productId, branchId }) {
+  const identity = getTokenPayload();
+  const canEditCost = ['ADMIN', 'MANAGER'].includes(identity?.userType || identity?.role || localStorage.getItem('role'));
   const [result, setResult] = useState(null),
     [revision, setRevision] = useState(0);
   useEffect(() => {
@@ -70,6 +74,7 @@ export default function ProductRecipeSection({ productId, branchId }) {
               {result.rows.map((row) => (
                 <li key={row.id}>
                   Phiên bản {row.version} · {statuses[row.status] || row.status}
+                  <RecipeCostWarning recipe={row} canEdit={canEditCost} onSaved={() => setRevision((value) => value + 1)} />
                 </li>
               ))}
             </ul>

@@ -6,7 +6,9 @@ import toast from "react-hot-toast";
 
 import { FaBars, FaBell, FaUserCircle } from "react-icons/fa";
 import { authApi } from "../../api";
-import { systemNotificationsData } from "../../datas/systemNotificationsData";
+import { kitchenRecipeApi } from "../../api/kitchenRecipeApi";
+import useRecipeNotifications from "../../hooks/useRecipeNotifications";
+import ProductRecipeModal from "../Products/ProductRecipeModal";
 
 const menu = [
   { name: "Tổng quan", path: "/" },
@@ -99,8 +101,8 @@ export default function Header() {
   const [openMobile, setOpenMobile] = useState(false);
   const [openUser, setOpenUser] = useState(false);
   const [openNotifications, setOpenNotifications] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState(null);
-  const [parentReply, setParentReply] = useState("");
+  const [notificationProduct, setNotificationProduct] = useState(null);
+  const [shortageNotification, setShortageNotification] = useState(null);
 
   const [openTabletMenu, setOpenTabletMenu] =
     useState(null);
@@ -108,9 +110,20 @@ export default function Header() {
   // biến giả lập đăng nhập
   const isLoggedIn = localStorage.getItem("isLogin") === "true";
   const user = authApi.getUserInfo();
-  const unreadNotifications = systemNotificationsData.filter(
-    (notification) => !notification.isRead
-  );
+  const notifications = useRecipeNotifications(user);
+  async function openRecipeNotification(notification) {
+    setOpenNotifications(false);
+    if (notification.type === 'STOCK_SHORTAGE') setShortageNotification(notification);
+    else setNotificationProduct({ id: notification.productId, name: notification.productName, branchId: notification.branchId });
+    if (!notification.isRead) {
+      try {
+        await kitchenRecipeApi.readNotification(notification.id);
+        await notifications.reload();
+      } catch {
+        toast.error("Chưa đánh dấu được thông báo đã đọc. Vui lòng thử lại.");
+      }
+    }
+  }
 
   const isParentActive = (item) => {
 
@@ -397,16 +410,17 @@ export default function Header() {
                     aria-label="Thong bao he thong"
                     onClick={() => {
                       setOpenNotifications((prev) => !prev);
+                      notifications.reload();
                       setOpenUser(false);
                     }}
                     className="relative flex h-10 w-10 items-center justify-center rounded-full text-yellow-300 transition-all hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-yellow-200 sm:h-11 sm:w-11"
                   >
                     <FaBell className="text-[22px] sm:text-[24px] lg:text-[26px]" />
-                    {unreadNotifications.length > 0 && (
+                    {notifications.unreadCount > 0 && (
                       <span
                         className="absolute -right-0.5 -top-0.5 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-blue-600 bg-red-500 px-1 text-[11px] font-bold leading-none text-white"
                       >
-                        {unreadNotifications.length}
+                        {notifications.unreadCount}
                       </span>
                     )}
                   </button>
@@ -418,7 +432,7 @@ export default function Header() {
                           <div>
                             <div className="text-sm font-bold sm:text-base">Thông báo hệ thống</div>
                             <div className="text-xs text-gray-500">
-                              {unreadNotifications.length} thông báo chưa đọc
+                              {notifications.unreadCount} thông báo chưa đọc
                             </div>
                           </div>
                           <span className="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-yellow-700">
@@ -427,15 +441,14 @@ export default function Header() {
                         </div>
 
                         <div className="max-h-[70vh] overflow-y-auto py-1">
-                          {systemNotificationsData.map((notification) => (
+                          {notifications.loading && <p role="status" className="px-4 py-3 text-sm text-gray-500">Đang tải thông báo…</p>}
+                          {notifications.error && <p role="alert" className="px-4 py-3 text-sm text-red-600">{String(notifications.error)} <button type="button" onClick={notifications.reload} className="underline">Thử lại</button></p>}
+                          {!notifications.loading && !notifications.error && !notifications.items.length && <p className="px-4 py-3 text-sm text-gray-500">Chưa có thông báo phản hồi từ bếp.</p>}
+                          {notifications.items.map((notification) => (
                             <button
                               key={notification.id}
                               type="button"
-                              onClick={() => {
-                                setSelectedNotification(notification);
-                                setParentReply("");
-                                setOpenNotifications(false);
-                              }}
+                              onClick={() => openRecipeNotification(notification)}
                               className={`block w-full border-b border-gray-100 px-4 py-3 text-left transition-all last:border-b-0 hover:bg-yellow-100 ${notification.isRead ? "bg-white" : "bg-yellow-50"}`}
                             >
                               <div className="flex items-start gap-3">
@@ -448,7 +461,7 @@ export default function Header() {
                                       {notification.title}
                                     </p>
                                     <span className="shrink-0 text-[11px] text-gray-500">
-                                      {notification.time}
+                                      {new Date(notification.createdAt).toLocaleString("vi-VN")}
                                     </span>
                                   </div>
                                   <p className="mt-1 text-sm leading-5 text-gray-600">
@@ -691,94 +704,25 @@ export default function Header() {
         </div>
       )}
 
-      {selectedNotification && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/25 px-4 py-6">
-          <div className="flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-300 bg-gradient-to-r from-blue-600 via-sky-500 to-yellow-400 px-5 py-5 text-white">
-              <div className="min-w-0">
-                <div className="inline-flex rounded-full border border-white/50 bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide">{selectedNotification.id}</div>
-                <h2 className="mt-3 text-2xl font-bold leading-tight">{selectedNotification.title}</h2>
-                <p className="mt-1 text-sm text-white/90">{selectedNotification.createdAt}</p>
-              </div>
-              <button type="button" onClick={() => setSelectedNotification(null)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl text-white transition-all hover:bg-white/30">×</button>
+      {notificationProduct && (
+        <ProductRecipeModal
+          key={notificationProduct.id}
+          product={notificationProduct}
+          onClose={() => setNotificationProduct(null)}
+        />
+      )}
+      {shortageNotification && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="shortage-notification-title" className="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
+            <h2 id="shortage-notification-title" className="text-xl font-bold">Bếp yêu cầu bổ sung nguyên liệu</h2>
+            <p className="text-sm text-gray-600">{shortageNotification.branchName} · Ngày {shortageNotification.date.split('-').reverse().join('/')}</p>
+            <p className="rounded-xl bg-red-50 p-4 font-semibold text-red-700">Thiếu {Number(shortageNotification.shortageQuantity).toLocaleString('vi-VN', { maximumFractionDigits: 4 })} {shortageNotification.unit} {shortageNotification.productName}</p>
+            <p className="text-sm">Người gửi: {shortageNotification.requestedByName}. Vui lòng kiểm tra kho và bổ sung nguyên liệu cho bếp.</p>
+            <div className="flex justify-end gap-3">
+              <button type="button" className="rounded-lg border px-4 py-2 text-sm" onClick={() => setShortageNotification(null)}>Đóng</button>
+              <button type="button" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => { setShortageNotification(null); navigate('/warehouse'); }}>Mở kho</button>
             </div>
-
-            <div className="flex-1 overflow-y-auto bg-slate-50 px-5 py-4 text-gray-800">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-blue-700">{selectedNotification.status}</span>
-                <span className="rounded-full border border-gray-300 bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">{selectedNotification.isRead ? "Đã đọc" : "Chưa đọc"}</span>
-                <span className="rounded-full border border-gray-300 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">{selectedNotification.amount}</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-sm">
-                  <div className="text-xs font-semibold uppercase text-gray-500">Phụ huynh</div>
-                  <div className="mt-1 font-semibold text-gray-900">{selectedNotification.parentName}</div>
-                  <div className="mt-0.5 text-sm text-gray-600">{selectedNotification.parentPhone}</div>
-                </div>
-                <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-sm">
-                  <div className="text-xs font-semibold uppercase text-gray-500">Học sinh</div>
-                  <div className="mt-1 font-semibold text-gray-900">{selectedNotification.studentName}</div>
-                  <div className="mt-0.5 text-sm text-gray-600">{selectedNotification.studentCode} · Lớp {selectedNotification.className}</div>
-                </div>
-                <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-sm">
-                  <div className="text-xs font-semibold uppercase text-gray-500">Bữa / khu vực</div>
-                  <div className="mt-1 font-semibold text-gray-900">{selectedNotification.mealSession}</div>
-                  <div className="mt-0.5 text-sm text-gray-600">Trạng thái: {selectedNotification.status}</div>
-                </div>
-                <div className="rounded-lg border border-gray-300 bg-white p-3 shadow-sm">
-                  <div className="text-xs font-semibold uppercase text-gray-500">Số tiền</div>
-                  <div className="mt-1 font-semibold text-gray-900">{selectedNotification.amount}</div>
-                  <div className="mt-0.5 text-sm text-gray-600">{selectedNotification.isRead ? "Đã đọc" : "Chưa đọc"}</div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-lg border border-gray-300 bg-white p-3 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-gray-500">Thông tin món</div>
-                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <div className="text-sm font-medium text-gray-500">Món cũ</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900">{selectedNotification.oldMeal || "Không có"}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-500">Món mới / món đặt</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900">{selectedNotification.newMeal || "Không có"}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-lg border border-gray-300 bg-yellow-50 p-4 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-yellow-800">Nội dung thông báo</div>
-                <p className="mt-2 text-sm leading-6 text-gray-800">{selectedNotification.content}</p>
-              </div>
-
-              <div className="mt-4 rounded-lg border border-gray-300 bg-white p-4 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-blue-700">Phản hồi gửi phụ huynh</div>
-                <textarea
-                  value={parentReply}
-                  onChange={(event) => setParentReply(event.target.value)}
-                  placeholder="Nhập nội dung phản hồi cho phụ huynh..."
-                  className="mt-3 min-h-[110px] w-full resize-none rounded-lg border border-gray-300 bg-blue-50/40 px-3 py-2 text-sm leading-6 text-gray-800 outline-none transition-all placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse gap-2 border-t border-gray-300 bg-white px-5 py-4 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setSelectedNotification(null)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-100">Đóng</button>
-              <button
-                type="button"
-                onClick={() => {
-                  toast.success("Gửi phản hồi cho phụ huynh thành công");
-                  setParentReply("");
-                  setSelectedNotification(null);
-                }}
-                className="rounded-lg border border-gray-300 bg-yellow-400 px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition-all hover:bg-yellow-300"
-              >
-                Gửi phản hồi phụ huynh
-              </button>
-              <button type="button" onClick={() => setSelectedNotification(null)} className="rounded-lg border border-gray-300 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700">Xác nhận thông báo</button>
-            </div>
-          </div>
+          </section>
         </div>
       )}
     </>

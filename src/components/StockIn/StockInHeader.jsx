@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
 import { stockInPurposes, getStockInPurpose } from "./stockInPurposes";
 import { useNavigate } from "react-router-dom";
 
-export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentStatus, onChangePaymentStatus, reference, onChangeReference }) {
+export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentStatus, onChangePaymentStatus, reference, onChangeReference, onBack, disabled = false }) {
   const navigate = useNavigate();
 
   return (
@@ -14,7 +14,8 @@ export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentS
         <div className="flex w-full shrink-0 flex-col items-start gap-2 sm:flex-row sm:items-center lg:w-auto">
           <button
             type="button"
-            onClick={() => navigate("/stock-in")}
+            disabled={disabled}
+            onClick={onBack || (() => navigate("/stock-in"))}
             className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 sm:w-auto"
           >
             <ArrowLeft size={17} />

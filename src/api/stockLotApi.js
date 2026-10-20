@@ -4,6 +4,9 @@ import { getBranchIdFromToken } from "./authSession";
 const unwrap = (response) => response.data?.data ?? response.data;
 
 export const stockLotApi = {
+  suggestFefo: async (params, signal) => unwrap(await axiosInstance.get('/stock-lots/fefo', {
+    params: { branchId: getBranchIdFromToken() || undefined, ...params }, signal,
+  })),
   searchTrace: async (id, page = 1, signal) => {
     const response = await axiosInstance.get("/production-trace/lookup", {
       params: { search: id, page, branchId: getBranchIdFromToken() || undefined },

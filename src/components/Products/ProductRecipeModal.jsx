@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { kitchenRecipeApi } from "../../api/kitchenRecipeApi";
 import { getBranchIdFromToken, getTokenPayload } from "../../api/authSession";
+import RecipeCostWarning from "./RecipeCostWarning";
+import { ingredientsWithoutCost } from "./recipeCostWarnings";
 const input =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm";
 const statusNames = {
@@ -226,7 +228,8 @@ export default function ProductRecipeModal({ product, onClose }) {
                     Lý do yêu cầu sửa: {recipe.approval.reason}
                   </p>
                 )}
-                <CostSummary costing={recipe.costing} />
+                {canReview && <RecipeCostWarning recipe={recipe} canEdit onSaved={() => setRevision((value) => value + 1)} />}
+                <CostSummary costing={recipe.costing} missingCosts={ingredientsWithoutCost(recipe).length > 0} />
                 <ul className="my-3 space-y-1 text-sm">
                   {recipe.items?.map((item) => (
                     <li key={item.id}>
@@ -297,12 +300,13 @@ export default function ProductRecipeModal({ product, onClose }) {
   );
 }
 
-function CostSummary({ costing }) {
+function CostSummary({ costing, missingCosts }) {
   if (!costing) return null;
+  if (!costing.complete && missingCosts) return null;
   if (!costing.complete)
     return (
-      <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-        Chưa đủ giá vốn/đơn vị tồn chuẩn: {costing.missing?.join(", ")}
+      <p role="status" className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+        Chưa tính được giá vốn công thức. Kiểm tra định lượng và đơn vị tồn chuẩn: {costing.missing?.join(", ")}
       </p>
     );
   const money = (n) => `${Number(n).toLocaleString("vi-VN")}đ`;

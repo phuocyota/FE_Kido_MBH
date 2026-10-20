@@ -29,6 +29,10 @@ export default function StockOutCreate({ saleMode = false }) {
       toast.error("Vui lòng chọn ít nhất 1 sản phẩm!");
       return;
     }
+    if (items.some((item) => item.lotTrackingEnabled && (!item.allocations?.length || Math.abs(item.allocations.reduce((sum, allocation) => sum + Number(allocation.quantity), 0) - Number(item.quantity)) > 0.00005))) {
+      toast.error('Vui lòng chọn đủ số lượng lô cho hàng có theo dõi lô.');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -42,6 +46,8 @@ export default function StockOutCreate({ saleMode = false }) {
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.price,
+          unitId: item.unitId || item.baseUnitId || undefined,
+          allocations: item.allocations,
           note: "",
         })),
       };

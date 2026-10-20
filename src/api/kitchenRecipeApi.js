@@ -2,6 +2,10 @@ import axiosInstance from "./axiosConfig";
 
 const unwrap = (response) => response.data?.data ?? response.data;
 export const kitchenRecipeApi = {
+  notifications: async (signal) =>
+    unwrap(await axiosInstance.get('/kitchen/notifications', { signal })),
+  readNotification: async (id) =>
+    unwrap(await axiosInstance.post(`/kitchen/notifications/${id}/read`)),
   requestRecipe: async (productId, branchId, note) =>
     unwrap(
       await axiosInstance.post(

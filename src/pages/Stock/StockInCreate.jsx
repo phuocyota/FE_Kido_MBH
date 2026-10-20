@@ -11,14 +11,16 @@ import { validateStockInItems, stockInItemPayload } from "../../components/Stock
 import { freshFoodExpiry, currentPurchaseDateTime } from "../../components/Stock/stockDates";
 import { getBranchIdFromToken } from "../../api/authSession";
 
-export default function StockInCreate() {
+export default function StockInCreate({ embedded = false, initialItems = [], onSaved, onCancel, onBusyChange } = {}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const saveRequest = useRef(null);
+  const formPanel = useRef(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const reasonCode = getStockInPurpose(searchParams.get("reasonCode")).code;
-  const setReasonCode = (code) => setSearchParams((current) => {
+  const [embeddedReason, setEmbeddedReason] = useState("NHNNL");
+  const reasonCode = embedded ? embeddedReason : getStockInPurpose(searchParams.get("reasonCode")).code;
+  const setReasonCode = (code) => embedded ? setEmbeddedReason(getStockInPurpose(code).code) : setSearchParams((current) => {
     const next = new URLSearchParams(current);
     next.set("reasonCode", getStockInPurpose(code).code);
     return next;
@@ -27,7 +29,7 @@ export default function StockInCreate() {
   const [supplier, setSupplier] = useState(null);
   const [note, setNote] = useState("");
   const [reference, setReference] = useState("");
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(() => initialItems);
   const [purchasedAt, setPurchasedAt] = useState(currentPurchaseDateTime);
   const handlePurchaseDateChange = (value) => {
     setPurchasedAt(value);
@@ -37,6 +39,7 @@ export default function StockInCreate() {
   };
 
   const handleSave = async () => {
+    if (loading) return;
     if (!supplier) {
       toast.error("Vui lòng chọn nhà cung cấp!");
       return;
@@ -53,11 +56,18 @@ export default function StockInCreate() {
     const validationError = validateStockInItems(items, reasonCode);
     if (validationError) {
       toast.error(validationError);
+      if (validationError.toLowerCase().includes('hạn sử dụng')) {
+        const row = Number(validationError.match(/^Dòng (\d+):/)?.[1]) - 1;
+        const input = formPanel.current?.querySelector(`[data-expiry-row="${row}"]`);
+        input?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        input?.focus({ preventScroll: true });
+      }
       return;
     }
 
     try {
       setLoading(true);
+      onBusyChange?.(true);
       const defaultNote = reasonCode === "NHNNL" ? "Nhập nguyên, nhiên liệu" : paymentStatus === "PAID" ? "Nhap hang tu nha cung cap" : "Nhap hang cong no";
       const finalNote = note ? (reference ? `[Tham chiếu: ${reference}] ${note}` : note) : defaultNote;
 
@@ -85,18 +95,20 @@ export default function StockInCreate() {
       }
       await stockInApi.create({ ...payload, requestId: saveRequest.current.requestId });
       toast.success("Tạo phiếu nhập kho thành công!");
-      navigate("/stock-in");
+      if (embedded) await onSaved?.();
+      else navigate("/stock-in");
     } catch (error) {
       console.error("Lỗi khi tạo phiếu nhập kho:", error);
       const errorMessage = error.response?.data?.message || "Đã có lỗi xảy ra!";
       toast.error(Array.isArray(errorMessage) ? errorMessage.join("\n") : errorMessage);
     } finally {
       setLoading(false);
+      onBusyChange?.(false);
     }
   };
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5">
+    <div ref={formPanel} className={embedded ? "w-full" : "mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5"}>
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col overflow-visible">
         {/* Header */}
         <StockInHeader
@@ -106,6 +118,8 @@ export default function StockInCreate() {
           onChangePaymentStatus={setPaymentStatus}
           reference={reference}
           onChangeReference={setReference}
+          onBack={embedded ? onCancel : undefined}
+          disabled={loading}
         />
 
         {/* Thông tin phiếu */}
@@ -124,6 +138,7 @@ export default function StockInCreate() {
           <StockInTable
             key={reasonCode === "NHNNL" ? "materials" : "all-products"}
             productTypeFilter={reasonCode === "NHNNL" ? "INGREDIENT,FUEL" : ""}
+            requireMaterialLots={reasonCode === "NHNNL"}
             items={items} setItems={setItems} purchasedAt={purchasedAt.slice(0, 10)}
           />
         </div>
@@ -131,7 +146,7 @@ export default function StockInCreate() {
         {/* Footer */}
         <StockInFooter 
           onSave={handleSave}
-          onCancel={() => navigate("/stock-in")}
+          onCancel={embedded ? onCancel : () => navigate("/stock-in")}
           loading={loading}
         />
       </div>
