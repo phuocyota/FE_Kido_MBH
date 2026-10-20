@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -6,7 +7,7 @@ import { RequestState } from "../Warehouse/WarehouseUI";
 import { inputClass, number } from "../Warehouse/warehouseFormat";
 import StockInPagination from "../StockIn/StockInPagination";
 
-export default function LotSerialList({ lotId }) {
+export default function LotSerialList({ lotId, refreshVersion = 0 }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -14,7 +15,7 @@ export default function LotSerialList({ lotId }) {
   const state = useWarehouseData(
     "serials",
     { lotId, search, page, size, receiptStatus: "COMPLETED" },
-    refresh,
+    `${refresh}:${refreshVersion}`,
   );
   const result = state.data;
   return (
@@ -46,14 +47,13 @@ export default function LotSerialList({ lotId }) {
         </div>
       </div>
       <RequestState
-        loading={state.loading}
+        hasData={!!result} loading={state.loading}
         error={state.error}
         retry={() => setRefresh((value) => value + 1)}
       />
-      {!state.loading &&
-        !state.error &&
+      {(result || (!state.loading && !state.error)) &&
         (result?.data?.length ? (
-          <>
+          <DataRefresh showStatus={false} pending={state.loading} hasData={!!result}>
             <ol
               start={(page - 1) * size + 1}
               className="grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -80,7 +80,7 @@ export default function LotSerialList({ lotId }) {
               Đây là các serial đã nhập của lô. Lịch sử xuất/chuyển hiện được
               ghi nhận theo lô, chưa xác định từng serial đã xuất.
             </p>
-          </>
+          </DataRefresh>
         ) : (
           <p className="p-5 text-sm text-slate-500">
             {search
@@ -88,7 +88,7 @@ export default function LotSerialList({ lotId }) {
               : "Lô này chưa khai báo serial. Khi nhập kho, chọn nhập serial thủ công hoặc tự sinh cho từng đơn vị."}
           </p>
         ))}
-      {!state.loading && !state.error && result?.total > 0 && (
+      {(result || (!state.loading && !state.error)) && result?.total > 0 && (
         <StockInPagination
           total={result.total}
           currentPage={page}

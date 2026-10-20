@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -6,12 +7,13 @@ import { LotDetails } from "./StockLots";
 import { Panel, RequestState } from "../../components/Warehouse/WarehouseUI";
 import { inputClass, date, dateTime } from "../../components/Warehouse/warehouseFormat";
 
-export default function UnifiedTrace() {
+export default function UnifiedTrace({ refreshVersion = 0 }) {
   const [params, setParams] = useSearchParams();
   const id = params.get("id") || "";
   const [input, setInput] = useState(id);
   const [refresh, setRefresh] = useState(0);
   const [page, setPage] = useState(1);
+  const requestKey = JSON.stringify([id, page, refresh, refreshVersion]);
   const [state, setState] = useState({
     id: "",
     data: null,
@@ -26,13 +28,13 @@ export default function UnifiedTrace() {
       .searchTrace(id, page, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted)
-          setState({ id, data, loading: false, error: "", matches: data.matches || [] });
+          setState({ requestKey, id, data, loading: false, error: "", matches: data.matches || [] });
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
         const payload = error.response?.data;
         setState({
-          id,
+          requestKey, id,
           data: null,
           loading: false,
           error:
@@ -44,8 +46,8 @@ export default function UnifiedTrace() {
         });
       });
     return () => controller.abort();
-  }, [id, refresh, page]);
-  const loading = !!id && (state.id !== id || state.loading);
+  }, [id, refresh, page, refreshVersion, requestKey]);
+  const loading = !!id && (state.requestKey !== requestKey || state.loading);
   const data = state.id === id ? state.data : null;
   const serial = data?.serial;
   return (
@@ -60,7 +62,7 @@ export default function UnifiedTrace() {
             event.preventDefault();
             if (!input.trim()) return;
             setPage(1);
-            setState({
+            setState((previous) => input.trim() === id ? { ...previous, loading: true, error: "" } : {
               id: "",
               data: null,
               loading: true,
@@ -94,22 +96,22 @@ export default function UnifiedTrace() {
           </button>
         </form>
         <RequestState
-          loading={loading}
+          hasData={!!data} loading={loading}
           error={!loading && state.id === id ? state.error : ""}
           retry={() => {
             setState((s) => ({ ...s, loading: true }));
             setRefresh((value) => value + 1);
           }}
         />
-        {!loading && data?.type === "SEARCH" && (
+        {data?.type === "SEARCH" && (
           <p role="status" className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
             {data.lotTotal || data.serialTotal
               ? `Tìm thấy ${data.lotTotal} lô và ${data.serialTotal} serial. Chọn bản ghi để xem nguồn gốc.`
               : "Không tìm thấy lô hoặc serial phù hợp trong chi nhánh."}
           </p>
         )}
-        {!loading && state.id === id && state.matches.length > 0 && (
-          <div className="space-y-2 border-t border-slate-100 p-4">
+        {state.id === id && state.matches.length > 0 && (
+          <DataRefresh showStatus={false} pending={loading} hasData={!!data}><div className="space-y-2 border-t border-slate-100 p-4">
             <p className="text-xs text-slate-500">
               Chọn đúng bản ghi để xem nguồn gốc:
             </p>
@@ -136,9 +138,9 @@ export default function UnifiedTrace() {
                   : `${match.serial} · ${match.productName} · ${match.receiptCode}`}
               </Link>
             ))}
-          </div>
+          </div></DataRefresh>
         )}
-        {!loading && data?.type === "SEARCH" && (page > 1 || data.hasNext) && (
+        {data?.type === "SEARCH" && (page > 1 || data.hasNext) && (
           <div className="flex items-center justify-end gap-3 border-t border-slate-100 p-4 text-xs">
             <button type="button" disabled={page === 1} className="rounded border px-3 py-2 disabled:opacity-40"
               onClick={() => { setState((s) => ({ ...s, loading: true })); setPage((p) => p - 1); }}>

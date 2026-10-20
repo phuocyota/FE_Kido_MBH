@@ -161,9 +161,7 @@ export default function StockTransfer() {
 
       <div className="mt-4 space-y-4">
         <div className="bg-white border border-gray-300 rounded-lg p-4">
-          {loading && (
-            <div className="text-sm text-gray-500 mb-3">Đang tải dữ liệu...</div>
-          )}
+          <div role={loading ? "status" : undefined} className="mb-3 min-h-5 text-sm text-gray-500">{loading && "Đang tải dữ liệu..."}</div>
           {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
           {message && (
             <div className="text-sm text-green-600 mb-3">{message}</div>

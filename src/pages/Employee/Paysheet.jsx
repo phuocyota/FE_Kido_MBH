@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, Plus, Search } from "lucide-react";
 import AddPaySheetModal from "../../components/Employee/AddPaySheetModal";
@@ -194,7 +195,7 @@ export default function PaySheet() {
 
       <div className="overflow-hidden rounded-xl border border-gray-300 bg-white">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1200px] erp-data-table">
+          <DataRefresh pending={loading} hasData={payrolls.length > 0}><table className="w-full min-w-[1200px] erp-data-table">
             <thead className="bg-[#eef5ff]">
               <tr>
                 <th className="p-3">
@@ -212,7 +213,7 @@ export default function PaySheet() {
             </thead>
 
             <tbody>
-              {loading && (
+              {(loading && payrolls.length === 0) && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-gray-500">
                     Đang tải danh sách bảng lương...
@@ -220,7 +221,7 @@ export default function PaySheet() {
                 </tr>
               )}
 
-              {!loading && error && (
+              {(!loading || payrolls.length > 0) && error && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-red-500">
                     {error}
@@ -228,7 +229,7 @@ export default function PaySheet() {
                 </tr>
               )}
 
-              {!loading &&
+              {(!loading || payrolls.length > 0) &&
                 !error &&
                 filteredPayrolls.map((item) => (
                   <tr key={item.id} className="border-t">
@@ -252,7 +253,7 @@ export default function PaySheet() {
                   </tr>
                 ))}
 
-              {!loading && !error && filteredPayrolls.length === 0 && (
+              {(!loading || payrolls.length > 0) && !error && filteredPayrolls.length === 0 && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-gray-500">
                     Chưa có bảng lương nào
@@ -260,7 +261,7 @@ export default function PaySheet() {
                 </tr>
               )}
             </tbody>
-          </table>
+          </table></DataRefresh>
         </div>
       </div>
 

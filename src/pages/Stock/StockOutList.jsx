@@ -159,8 +159,8 @@ export default function StockOutList({ saleMode = false }) {
               onSearchChange={handleSearchChange}
             />
 
-            {(loading || detailLoading || error) && (
-              <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
+            {(
+              <div className="min-h-11 border-b border-gray-300 bg-white px-4 py-3 text-sm">
                 {loading && (
                   <span className="text-slate-500">Đang tải dữ liệu...</span>
                 )}

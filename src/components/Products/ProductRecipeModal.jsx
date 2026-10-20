@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { kitchenRecipeApi } from "../../api/kitchenRecipeApi";
@@ -142,7 +143,7 @@ export default function ProductRecipeModal({ product, onClose }) {
             </button>
           </p>
         )}
-        {loading ? (
+        <DataRefresh pending={loading} hasData={recipes.length > 0}>{loading && recipes.length === 0 ? (
           <p role="status">Đang tải công thức…</p>
         ) : (
           <div className="space-y-4">
@@ -152,7 +153,7 @@ export default function ProductRecipeModal({ product, onClose }) {
                 dưới để bếp trưởng thiết lập và trình duyệt.
               </p>
             )}
-            {!loading && !recipes.length && canReview && (
+            {(!loading || recipes.length > 0) && !recipes.length && canReview && (
               <div className="space-y-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
                 {requestNotice ? (
                   <p
@@ -290,7 +291,7 @@ export default function ProductRecipeModal({ product, onClose }) {
               </article>
             ))}
           </div>
-        )}
+        )}</DataRefresh>
       </section>
     </div>
   );

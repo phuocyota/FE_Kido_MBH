@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Plus, Search, Upload, RefreshCw, Users, Wallet } from "lucide-react";
 import toast from "react-hot-toast";
@@ -271,7 +272,7 @@ export default function Suppliers() {
           </div>
 
           <div className="p-0">
-            {loading ? (
+            <DataRefresh pending={loading} hasData={suppliers.length > 0}>{loading && suppliers.length === 0 ? (
               <div className="flex min-h-[400px] items-center justify-center bg-white text-gray-500">
                 Đang tải danh sách nhà cung cấp...
               </div>
@@ -316,7 +317,7 @@ export default function Suppliers() {
                 onDelete={handleDeleteSupplier}
                 onBulkDelete={handleDeleteSuppliers}
               />
-            )}
+            )}</DataRefresh>
           </div>
         </div>
       </div>

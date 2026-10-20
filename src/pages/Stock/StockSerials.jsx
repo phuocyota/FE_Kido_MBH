@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, X, Info } from "lucide-react";
@@ -38,7 +39,7 @@ function ReceiptStatus({ value }) {
     </span>
   );
 }
-export default function StockSerials({ traceMode = false }) {
+export default function StockSerials({ traceMode = false, refreshVersion = 0 }) {
   const [params] = useSearchParams();
   const [filters, setFilters] = useState({
     search: "",
@@ -59,9 +60,9 @@ export default function StockSerials({ traceMode = false }) {
   const state = useWarehouseData(
     "serials",
     { ...filters, lotId, productId, page, size },
-    refresh,
+    `${refresh}:${refreshVersion}`,
   );
-  const stocks = useWarehouseData("stocks", {}, refresh);
+  const stocks = useWarehouseData("stocks", {}, `${refresh}:${refreshVersion}`);
   const result = state.data;
   const update = (name, value) => {
     setFilters((old) => ({ ...old, [name]: value }));
@@ -80,7 +81,7 @@ export default function StockSerials({ traceMode = false }) {
         </button>
         <SerialDetails
           key={`${selected.detailId}:${selected.position}`}
-          selected={selected}
+          selected={selected} refreshVersion={refreshVersion}
           onClose={() => setSelected(null)}
         />
       </>
@@ -182,14 +183,13 @@ export default function StockSerials({ traceMode = false }) {
           )}
         </div>
         <RequestState
-          loading={state.loading}
+          hasData={!!result} loading={state.loading}
           error={state.error}
           retry={() => setRefresh((v) => v + 1)}
         />
-        {!state.loading &&
-          !state.error &&
+        {(result || (!state.loading && !state.error)) &&
           (result?.data?.length ? (
-            <div className="overflow-x-auto">
+            <DataRefresh showStatus={false} pending={state.loading} hasData={!!result}><div className="overflow-x-auto">
               <table className="w-full min-w-[1100px] text-left">
                 <thead>
                   <tr>
@@ -267,11 +267,11 @@ export default function StockSerials({ traceMode = false }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div></DataRefresh>
           ) : (
             <Empty text="Chưa có serial phù hợp. Serial được tạo khi nhập kho và chọn nhập thủ công hoặc tự sinh." />
           ))}
-        {!state.loading && !state.error && (
+        {(result || (!state.loading && !state.error)) && (
           <StockInPagination
             total={result?.total || 0}
             currentPage={page}
@@ -291,16 +291,16 @@ export default function StockSerials({ traceMode = false }) {
       {selected && (
         <SerialDetails
           key={`${selected.detailId}:${selected.position}`}
-          selected={selected}
+          selected={selected} refreshVersion={refreshVersion}
           onClose={() => setSelected(null)}
         />
       )}
     </>
   );
 }
-function SerialDetails({ selected, onClose }) {
+function SerialDetails({ selected, onClose, refreshVersion = 0 }) {
   const [refresh, setRefresh] = useState(0);
-  const state = useSerialTrace(selected, refresh);
+  const state = useSerialTrace(selected, `${refresh}:${refreshVersion}`);
   const row = state.data?.serial;
   return (
     <div className="mt-4">
@@ -317,7 +317,7 @@ function SerialDetails({ selected, onClose }) {
         }
       >
         <RequestState
-          loading={state.loading}
+          hasData={!!row} loading={state.loading}
           error={state.error}
           retry={() => setRefresh((v) => v + 1)}
         />

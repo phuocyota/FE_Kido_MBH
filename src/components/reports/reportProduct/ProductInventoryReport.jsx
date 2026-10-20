@@ -1,3 +1,4 @@
+import DataRefresh from "../../common/DataRefresh";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   unwrapProductReport,
@@ -17,6 +18,7 @@ const getMonthLabel = (value) => {
 };
 
 export default function ProductInventoryReport({
+  refreshVersion = 0,
   fromDate,
   toDate,
   branchId,
@@ -133,7 +135,7 @@ export default function ProductInventoryReport({
     return () => {
       requestId.current += 1;
     };
-  }, [fetchInventory]);
+  }, [fetchInventory, refreshVersion]);
 
   const visibleRows = filterProductReportRows(rows, filters);
 
@@ -243,7 +245,7 @@ export default function ProductInventoryReport({
       </div>
 
       {/* TABLE */}
-      <table className="border-collapse  ">
+      <DataRefresh pending={loading} hasData={rows.length > 0}><table className="border-collapse  ">
         <thead>
           {/* HEADER ROW 1 */}
           <tr>
@@ -426,7 +428,7 @@ export default function ProductInventoryReport({
         </thead>
 
         <tbody>
-          {loading ? (
+          {(loading && rows.length === 0) ? (
             <tr>
               <td colSpan={30} className="text-center py-10">
                 Đang tải dữ liệu...
@@ -547,7 +549,7 @@ export default function ProductInventoryReport({
             ))
           )}
         </tbody>
-      </table>
+      </table></DataRefresh>
     </div>
   );
 }

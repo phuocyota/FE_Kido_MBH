@@ -1,3 +1,4 @@
+import DataRefresh from "../../common/DataRefresh";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart3, TrendingUp, ShoppingBag, Wallet } from "lucide-react";
 import { aggregateProductSales, filterProductReportRows, validateReportDates } from "./productReportData";
@@ -25,6 +26,7 @@ const formatDate = (value) => {
 const formatMoney = (value) => `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
 export default function ProductSaleChart({
+  refreshVersion = 0,
   fromDate,
   toDate,
   branch,
@@ -82,7 +84,7 @@ export default function ProductSaleChart({
     return () => {
       requestId.current += 1;
     };
-  }, [fetchData]);
+  }, [fetchData, refreshVersion]);
 
   const soldQuantity = summary?.quantity || 0;
 
@@ -166,7 +168,7 @@ export default function ProductSaleChart({
         </div>
 
         {/* PIE CHARTS */}
-        {loading ? (
+        <DataRefresh pending={loading} hasData={!!summary}>{loading && !summary ? (
           <div className="text-center py-20 text-gray-400">
             Đang tải dữ liệu biểu đồ...
           </div>
@@ -266,7 +268,7 @@ export default function ProductSaleChart({
               </div>
             </div>
           </div>
-        )}
+        )}</DataRefresh>
       </div>
     </div>
   );

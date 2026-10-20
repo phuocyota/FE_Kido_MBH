@@ -1,3 +1,4 @@
+import DataRefresh from "../../common/DataRefresh";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   filterProductReportRows,
@@ -6,6 +7,7 @@ import {
 import { reportApi } from "../../../api";
 
 export default function ProductSaleReport({
+  refreshVersion = 0,
   fromDate,
   toDate,
   branchId,
@@ -79,7 +81,7 @@ export default function ProductSaleReport({
     return () => {
       requestId.current += 1;
     };
-  }, [fetchData]);
+  }, [fetchData, refreshVersion]);
   const visibleRows = filterProductReportRows(rows, filters);
 
   if (error && !loading)
@@ -145,7 +147,7 @@ export default function ProductSaleReport({
         </div>
 
         {/* TABLE */}
-        <table className="border-collapse  w-[1600px]">
+        <DataRefresh pending={loading} hasData={rows.length > 0}><table className="border-collapse  w-[1600px]">
           <thead>
             {/* HEADER ROW 1 */}
             <tr>
@@ -258,7 +260,7 @@ export default function ProductSaleReport({
           </thead>
 
           <tbody>
-            {loading ? (
+            {(loading && rows.length === 0) ? (
               <tr>
                 <td colSpan={13} className="text-center py-10">
                   Đang tải dữ liệu...
@@ -342,7 +344,7 @@ export default function ProductSaleReport({
               ))
             )}
           </tbody>
-        </table>
+        </table></DataRefresh>
       </div>
     </div>
   );

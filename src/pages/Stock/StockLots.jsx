@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import { dateTime } from "../../components/Warehouse/warehouseFormat";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -54,48 +55,57 @@ export default function StockLots() {
         ))}
       </nav>
       {serial ? (
-        <StockSerials key={`${refresh}:${params.toString()}`} />
+        <StockSerials key={params.toString()} refreshVersion={refresh} />
       ) : (
-        <StockLotList key={`${refresh}:${params.toString()}`} />
+        <StockLotList key={params.toString()} refreshVersion={refresh} />
       )}
     </div>
   );
 }
 
-function StockLotList() {
+function StockLotList({ refreshVersion = 0 }) {
   const [params] = useSearchParams();
   const [filters, setFilters] = useState(() => ({ search: params.get("search") || "", status: ["AVAILABLE", "EXPIRING", "EXPIRED", "DEPLETED"].includes(params.get("status")) ? params.get("status") : "", productType: "" }));
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [refresh, setRefresh] = useState(0);
   const [result, setResult] = useState({ items: [], total: 0 });
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [search, setSearch] = useState(filters.search);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
+    const timer = setTimeout(() => setSearch(filters.search), 250);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  useEffect(() => {
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
+    const load = async () => {
       setLoading(true);
       setError("");
       try {
-        const data = await stockLotApi.getAll({ ...filters, page, size }, controller.signal);
+        const data = await stockLotApi.getAll({ search, status: filters.status, productType: filters.productType, page, size }, controller.signal);
         if (!controller.signal.aborted) {
           if (page > 1 && page > Math.max(1, Math.ceil(data.total / size))) {
             setPage(Math.max(1, Math.ceil(data.total / size)));
-          } else setResult(data);
+          } else { setResult(data); setHasLoaded(true); }
         }
       } catch (err) {
         if (!controller.signal.aborted) setError(errorText(err, "Không thể tải lô hàng. Vui lòng thử lại."));
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
-    }, 250);
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [filters, page, size, refresh]);
+    };
+    load();
+    return () => controller.abort();
+  }, [search, filters.status, filters.productType, page, size, refresh, refreshVersion]);
+  const busy = loading || search !== filters.search;
 
   const updateFilters = (name, value) => {
-    setLoading(true);
+    if (name !== "search") setLoading(true);
     setSelected(null);
     setFilters((current) => ({ ...current, [name]: value }));
     setPage(1);
@@ -104,7 +114,7 @@ function StockLotList() {
 
   return (
     <div>
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <section aria-busy={busy} className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900"><Package size={22} className="text-blue-600" />Lô hàng hóa</h2>
@@ -124,8 +134,10 @@ function StockLotList() {
             <option value="">Tất cả loại hàng</option>{Object.entries(lotTypes).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
           </select>
         </div>
-        {error ? <div role="alert" className="p-8 text-center text-red-700">{error}<button onClick={reload} className="ml-3 font-semibold underline">Thử lại</button></div> : loading ? <div role="status" className="p-12 text-center text-slate-500">Đang tải lô hàng...</div> : result.items.length === 0 ? <div className="p-12 text-center text-slate-500">Không có lô hàng phù hợp. Các lô được tạo khi nhập kho hàng có bật theo dõi lô.</div> : (
-          <div className="overflow-x-auto">
+        {busy && hasLoaded && <div role="status" className="pointer-events-none absolute right-4 top-2 rounded bg-white/95 px-2 py-1 text-xs text-blue-600">Đang cập nhật...</div>}
+        {error && <div role="alert" className="p-8 text-center text-red-700">{error}<button onClick={reload} className="ml-3 font-semibold underline">Thử lại</button></div>}
+        {!hasLoaded ? <div role="status" className="min-h-[360px] p-12 text-center text-slate-500">{!error && "Đang tải lô hàng..."}</div> : result.items.length === 0 ? <div className="p-12 text-center text-slate-500">Không có lô hàng phù hợp. Các lô được tạo khi nhập kho hàng có bật theo dõi lô.</div> : (
+          <div className="overflow-x-auto" inert={busy || undefined}>
             <table className="w-full min-w-[1100px] text-left text-sm">
               <thead className="bg-blue-600 text-xs uppercase text-white"><tr>{["Số lô", "Hàng hóa", "Kho", "Ngày sản xuất", "Hạn sử dụng", "Tồn còn lại", "Trạng thái", ""].map((title, index) => <th key={index} className="whitespace-nowrap px-4 py-3">{title}</th>)}</tr></thead>
               <tbody>{result.items.map((lot) => (
@@ -142,16 +154,18 @@ function StockLotList() {
             </table>
           </div>
         )}
-        {!loading && !error && <StockInPagination total={result.total} currentPage={page} pageSize={size} onPageChange={(value) => { setLoading(true); setSelected(null); setPage(value); }} onPageSizeChange={(value) => { setLoading(true); setSelected(null); setSize(value); setPage(1); }} />}
+        {hasLoaded && <div inert={busy || undefined}><StockInPagination total={result.total} currentPage={page} pageSize={size} onPageChange={(value) => { setLoading(true); setSelected(null); setPage(value); }} onPageSizeChange={(value) => { setLoading(true); setSelected(null); setSize(value); setPage(1); }} /></div>}
       </section>
-      {selected && <LotDetails key={selected.id} lot={selected} onClose={() => setSelected(null)} />}
+      {selected && <LotDetails key={selected.id} lot={selected} refreshVersion={`${refresh}:${refreshVersion}`} onClose={() => setSelected(null)} />}
     </div>
   );
 }
 
-export function LotDetails({ lot, onClose, initialTrace }) {
+export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
   const panel = useRef(null);
-  const [trace, setTrace] = useState(initialTrace || null);
+  const [fetchedTrace, setTrace] = useState(null);
+  const trace = initialTrace || fetchedTrace;
+  const [loading, setLoading] = useState(!initialTrace);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   useEffect(() => {
@@ -161,24 +175,27 @@ export function LotDetails({ lot, onClose, initialTrace }) {
     if (initialTrace) return;
     const controller = new AbortController();
     const load = async () => {
+      setLoading(true);
       try {
         const data = await stockLotApi.getTrace(lot.id, controller.signal);
         if (!controller.signal.aborted) setTrace(data);
       } catch (err) {
         if (!controller.signal.aborted) setError(errorText(err, "Không thể tải lịch sử lô hàng. Vui lòng thử lại."));
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
     load();
     return () => controller.abort();
-  }, [lot.id, retry, initialTrace]);
+  }, [lot.id, retry, initialTrace, refreshVersion]);
   return (
     <section ref={panel} aria-label="Chi tiết lô hàng" className="mt-4 rounded-xl border border-blue-200 bg-white p-4 shadow-sm md:p-5">
       <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>
-      {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={() => { setError(""); setRetry((value) => value + 1); }} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <>
+      {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={() => { setError(""); setRetry((value) => value + 1); }} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <DataRefresh pending={loading} hasData={!!trace}>
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", dateTime(trace.origin?.purchasedAt || trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
-        <LotSerialList key={lot.id} lotId={lot.id} />
+        <LotSerialList key={lot.id} lotId={lot.id} refreshVersion={refreshVersion} />
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>
         {trace.movements?.length ? <div className="max-h-[400px] overflow-auto"><table className="w-full min-w-[600px] text-left text-sm"><thead className="sticky top-0 bg-slate-100"><tr>{["Thời gian", "Giao dịch", "Số lượng", "Kho", "Tham chiếu"].map((label) => <th key={label} className="px-3 py-2">{label}</th>)}</tr></thead><tbody>{trace.movements.map((move) => <tr key={move.id} className="border-b border-slate-100"><td className="px-3 py-3">{move.at ? new Date(move.at).toLocaleString("vi-VN") : "—"}</td><td className="px-3 py-3">{Number(move.quantity) >= 0 ? "Nhập" : "Xuất"}</td><td className={`px-3 py-3 font-semibold tabular-nums ${Number(move.quantity) >= 0 ? "text-emerald-700" : "text-red-600"}`}>{Number(move.quantity) > 0 ? "+" : ""}{lotNumber(move.quantity)}</td><td className="px-3 py-3">{move.stockName || "—"}</td><td className="max-w-[240px] break-all px-3 py-3 text-xs text-slate-500">{move.referenceId || "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-slate-500">Chưa có giao dịch cho lô này.</p>}
         {trace.consumption?.consumedBy?.some((use) => use.referenceType === "PRODUCTION_BATCH") && (
@@ -187,7 +204,7 @@ export function LotDetails({ lot, onClose, initialTrace }) {
             {trace.consumption.consumedBy.filter((use) => use.referenceType === "PRODUCTION_BATCH").map((use) => <div key={use.movementId} className="flex flex-wrap justify-between gap-2 border-b border-slate-100 py-3 text-xs text-slate-600"><span>{use.finishedGood?.name || "Mẻ chế biến"}</span><span>Đã dùng {lotNumber(use.consumedQuantity)} {trace.product?.unit}</span><span>{use.consumedAt ? new Date(use.consumedAt).toLocaleString("vi-VN") : "—"}</span></div>)}
           </div>
         )}
-      </>}
+      </DataRefresh>}
     </section>
   );
 }

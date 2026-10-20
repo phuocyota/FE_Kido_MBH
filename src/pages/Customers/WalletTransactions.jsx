@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Search, RefreshCw, Wallet, ArrowDownLeft, ArrowUpRight, RotateCcw, ChevronDown, Sliders } from "lucide-react";
 import toast from "react-hot-toast";
@@ -303,7 +304,7 @@ export default function WalletTransactions() {
 
           {/* Table List */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
+            <DataRefresh pending={loading} hasData={transactions.length > 0}><table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
               <thead>
                 <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                   <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 w-44">
@@ -333,7 +334,7 @@ export default function WalletTransactions() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {loading ? (
+                {(loading && transactions.length === 0) ? (
                   <tr>
                     <td colSpan="8" className="px-4 py-10 text-center text-gray-500 font-medium">
                       Đang tải lịch sử giao dịch...
@@ -389,11 +390,11 @@ export default function WalletTransactions() {
                   })
                 )}
               </tbody>
-            </table>
+            </table></DataRefresh>
           </div>
 
           {/* Pagination Controls */}
-          {!loading && !error && totalItems > 0 && (
+          {(!error || transactions.length > 0) && totalItems > 0 && (
             <div className="bg-white px-4 py-3 border-t border-gray-300 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-700">Hiển thị</span>

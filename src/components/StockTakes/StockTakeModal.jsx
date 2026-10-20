@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { inventoryItemApi, stockTakeApi } from "../../api";
@@ -175,7 +176,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
 
           <div className="flex-1 overflow-x-auto overflow-y-auto">
             <div className="min-w-[900px]">
-              <table className="w-full text-sm">
+              <DataRefresh pending={loading} hasData={products.length > 0}><table className="w-full text-sm">
                 <thead className="sticky top-0 bg-blue-50 z-10">
                   <tr>
                     <th className="p-3 text-center">STT</th>
@@ -188,7 +189,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && (
+                  {(loading && products.length === 0) && (
                     <tr>
                       <td colSpan="7" className="text-center py-10 text-gray-400">
                         Đang tải danh sách hàng hóa...
@@ -196,7 +197,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
                     </tr>
                   )}
 
-                  {!loading && error && (
+                  {(!loading || products.length > 0) && error && (
                     <tr>
                       <td colSpan="7" className="text-center py-10 text-red-500">
                         {error}
@@ -204,7 +205,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
                     </tr>
                   )}
 
-                  {!loading &&
+                  {(!loading || products.length > 0) &&
                     !error &&
                     currentProducts.map((item, index) => {
                       const diff = Number(item.actual || 0) - Number(item.stock || 0);
@@ -240,7 +241,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
                       );
                     })}
 
-                  {!loading && !error && filteredProducts.length === 0 && (
+                  {(!loading || products.length > 0) && !error && filteredProducts.length === 0 && (
                     <tr>
                       <td colSpan="7" className="text-center py-10 text-gray-400">
                         Chưa có sản phẩm nào
@@ -248,7 +249,7 @@ export default function StockTakeModal({ open, onClose, onSaved }) {
                     </tr>
                   )}
                 </tbody>
-              </table>
+              </table></DataRefresh>
             </div>
           </div>
 
