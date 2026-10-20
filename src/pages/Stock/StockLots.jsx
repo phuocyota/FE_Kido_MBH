@@ -157,14 +157,13 @@ export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
   const load = useCallback((signal) => stockLotApi.getTrace(lot.id, signal), [lot.id]);
   const query = useReadQuery({
     queryKey: [lot.id, refreshVersion],
-    scopeKey: ["lot-trace", lot.id],
-    load,
+    scopeKey: ["stock-lot-trace", lot.id],
     enabled: !initialTrace,
-    retainOnError: true,
+    load,
     getErrorMessage: (error) => errorText(error, "Không thể tải lịch sử lô hàng. Vui lòng thử lại."),
   });
   const trace = initialTrace || query.data;
-  const { loading, error } = query;
+  const { error, loading } = query;
   useEffect(() => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
@@ -177,7 +176,7 @@ export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
         </dl>
         <button type="button" onClick={() => setPrintOpen(true)} className="mb-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><Printer size={16} />In QR</button>
         {printOpen && <LotQrPrintModal lot={lot} trace={trace} onClose={() => setPrintOpen(false)} />}
-        <LotSerialList key={lot.id} lotId={lot.id} refreshVersion={refreshVersion} />
+        <LotSerialList key={lot.id} lotId={lot.id} />
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>
         {trace.movements?.length ? <div className="max-h-[400px] overflow-auto"><table className="w-full min-w-[600px] text-left text-sm"><thead className="sticky top-0 bg-slate-100"><tr>{["Thời gian", "Giao dịch", "Số lượng", "Kho", "Tham chiếu"].map((label) => <th key={label} className="px-3 py-2">{label}</th>)}</tr></thead><tbody>{trace.movements.map((move) => <tr key={move.id} className="border-b border-slate-100"><td className="px-3 py-3">{move.at ? new Date(move.at).toLocaleString("vi-VN") : "—"}</td><td className="px-3 py-3">{Number(move.quantity) >= 0 ? "Nhập" : "Xuất"}</td><td className={`px-3 py-3 font-semibold tabular-nums ${Number(move.quantity) >= 0 ? "text-emerald-700" : "text-red-600"}`}>{Number(move.quantity) > 0 ? "+" : ""}{lotNumber(move.quantity)}</td><td className="px-3 py-3">{move.stockName || "—"}</td><td className="max-w-[240px] break-all px-3 py-3 text-xs text-slate-500">{move.referenceId || "—"}</td></tr>)}</tbody></table></div> : <p className="text-sm text-slate-500">Chưa có giao dịch cho lô này.</p>}
         {trace.consumption?.consumedBy?.some((use) => use.referenceType === "PRODUCTION_BATCH") && (
