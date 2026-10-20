@@ -282,7 +282,7 @@ export default function Orders() {
         </div>
 
         {/* TABLE GRID / EMPTY STATE */}
-        <DataRefresh pending={loading} hasData={orders.length > 0}>{loading && orders.length === 0 ? (
+        <DataRefresh pending={loading} hasData={orders.length > 0}>{({ initialLoading }) => (<>{initialLoading ? (
           <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm min-h-[500px] flex items-center justify-center text-gray-500 erp-panel">
             Đang tải danh sách đơn hàng...
           </div>
@@ -303,7 +303,7 @@ export default function Orders() {
             onResetFilters={resetFilters}
             onOrderClick={(orderId) => setSelectedOrderId(orderId)}
           />
-        )}</DataRefresh>
+        )}</>)}</DataRefresh>
       </div>
 
       {selectedOrderId && (

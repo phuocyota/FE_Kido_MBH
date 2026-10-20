@@ -146,24 +146,24 @@ export default function SidebarFilter({ filters, setFilters }) {
                                     />
 
                                     {/* LIST */}
-                                    <DataRefresh pending={loadingGroups} hasData={groupData.length > 0}><div className="text-sm space-y-1">
+                                    <DataRefresh pending={loadingGroups} hasData={groupData.length > 0}>{({ initialLoading }) => (<><div className="text-sm space-y-1">
 
                                           <button onClick={() => setFilters(prev => ({ ...prev, categoryId: null }))} className={`font-semibold px-2 py-1 ${!filters.categoryId ? "text-blue-600" : ""}`}>Tất cả</button>
 
-                                          {loadingGroups && !(groupData.length > 0) && (
+                                          {initialLoading && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       Đang tải nhóm hàng...
                                                 </div>
                                           )}
 
-                                          {groupsError && (!loadingGroups || groupData.length > 0) && <div role="alert" className="text-red-600">{groupsError} <button className="underline" onClick={() => setReload(value => value + 1)}>Thử lại</button></div>}
-                                          {!groupsError && (!loadingGroups || groupData.length > 0) && groupData.length === 0 && (
+                                          {groupsError && !initialLoading && <div role="alert" className="text-red-600">{groupsError} <button className="underline" onClick={() => setReload(value => value + 1)}>Thử lại</button></div>}
+                                          {!groupsError && !initialLoading && groupData.length === 0 && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       Chưa có nhóm hàng
                                                 </div>
                                           )}
 
-                                          {(!loadingGroups || groupData.length > 0) && groupData.filter(item => item.name?.toLowerCase().includes(categorySearch.trim().toLowerCase())).map((item) => (
+                                          {!initialLoading && groupData.filter(item => item.name?.toLowerCase().includes(categorySearch.trim().toLowerCase())).map((item) => (
                                                 <div
                                                       key={item.id}
                                                       onClick={() => setFilters(prev => ({ ...prev, categoryId: item.id }))}
@@ -184,7 +184,7 @@ export default function SidebarFilter({ filters, setFilters }) {
                                                 </div>
                                           ))}
 
-                                    </div></DataRefresh>
+                                    </div></>)}</DataRefresh>
 
                               </div>
                         </div>

@@ -245,7 +245,7 @@ export default function ProductInventoryReport({
       </div>
 
       {/* TABLE */}
-      <DataRefresh pending={loading} hasData={rows.length > 0}><table className="border-collapse  ">
+      <DataRefresh pending={loading} hasData={rows.length > 0}>{({ initialLoading }) => (<><table className="border-collapse  ">
         <thead>
           {/* HEADER ROW 1 */}
           <tr>
@@ -428,7 +428,7 @@ export default function ProductInventoryReport({
         </thead>
 
         <tbody>
-          {(loading && rows.length === 0) ? (
+          {initialLoading ? (
             <tr>
               <td colSpan={30} className="text-center py-10">
                 Đang tải dữ liệu...
@@ -549,7 +549,7 @@ export default function ProductInventoryReport({
             ))
           )}
         </tbody>
-      </table></DataRefresh>
+      </table></>)}</DataRefresh>
     </div>
   );
 }

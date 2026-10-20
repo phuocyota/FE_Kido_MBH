@@ -68,7 +68,7 @@ export default function RecentActivities() {
   );
 
   return (
-    <DataRefresh pending={loading} hasData={activities.length > 0}><div className="h-[508px] bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 w-full max-w-[360px] mx-0 flex flex-col">
+    <DataRefresh pending={loading} hasData={activities.length > 0}>{({ initialLoading }) => (<><div className="h-[508px] bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 w-full max-w-[360px] mx-0 flex flex-col">
       <div className="font-semibold text-gray-800 mb-4 text-sm sm:text-base">
         CÁC HOẠT ĐỘNG GẦN ĐÂY
       </div>
@@ -77,19 +77,19 @@ export default function RecentActivities() {
         <div className="relative pl-5 sm:pl-8">
           <div className="absolute left-[11px] sm:left-[16px] top-0 bottom-0 w-[2px] bg-gray-200" />
 
-          {loading && activities.length === 0 && (
+          {initialLoading && (
             <div className="py-6 text-center text-sm text-gray-400">
               Đang tải dữ liệu...
             </div>
           )}
 
-          {(!loading || activities.length > 0) && data.length === 0 && (
+          {!initialLoading && data.length === 0 && (
             <div className="py-6 text-center text-sm text-gray-400">
               Chưa có hoạt động gần đây
             </div>
           )}
 
-          {(!loading || activities.length > 0) &&
+          {!initialLoading &&
             data.map((item, index) => (
               <div key={`${item.type}-${index}`} className="relative mb-4 sm:mb-5 last:mb-0">
                 <div
@@ -118,6 +118,6 @@ export default function RecentActivities() {
             ))}
         </div>
       </div>
-    </div></DataRefresh>
+    </div></>)}</DataRefresh>
   );
 }

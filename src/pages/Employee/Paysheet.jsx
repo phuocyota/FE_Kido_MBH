@@ -1,5 +1,6 @@
+import { useReadQuery } from "../../hooks/useReadQuery";
 import DataRefresh from "../../components/common/DataRefresh";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Download, Plus, Search } from "lucide-react";
 import AddPaySheetModal from "../../components/Employee/AddPaySheetModal";
 import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
@@ -53,27 +54,20 @@ export default function PaySheet() {
   const [cycleFilter, setCycleFilter] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
-  const [payrolls, setPayrolls] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const loadPayrolls = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const data = await payrollApi.getAll();
-      setPayrolls(Array.isArray(data) ? data : []);
-    } catch {
-      setPayrolls([]);
-      setError("Không thể tải danh sách bảng lương");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPayrolls();
+  const load = useCallback(async () => {
+    const data = await payrollApi.getAll();
+    return Array.isArray(data) ? data : [];
   }, []);
+  const query = useReadQuery({
+    queryKey: "payrolls",
+    scopeKey: "payrolls",
+    load,
+    getErrorMessage: () => "Không thể tải danh sách bảng lương",
+  });
+  const payrolls = useMemo(() => query.data || [], [query.data]);
+  const { loading, error } = query;
+  const loadPayrolls = query.refetch;
 
   const filteredPayrolls = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -195,7 +189,7 @@ export default function PaySheet() {
 
       <div className="overflow-hidden rounded-xl border border-gray-300 bg-white">
         <div className="overflow-x-auto">
-          <DataRefresh pending={loading} hasData={payrolls.length > 0}><table className="w-full min-w-[1200px] erp-data-table">
+          <DataRefresh pending={loading} hasData={payrolls.length > 0}>{({ initialLoading }) => (<><table className="w-full min-w-[1200px] erp-data-table">
             <thead className="bg-[#eef5ff]">
               <tr>
                 <th className="p-3">
@@ -213,7 +207,7 @@ export default function PaySheet() {
             </thead>
 
             <tbody>
-              {(loading && payrolls.length === 0) && (
+              {initialLoading && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-gray-500">
                     Đang tải danh sách bảng lương...
@@ -221,7 +215,7 @@ export default function PaySheet() {
                 </tr>
               )}
 
-              {(!loading || payrolls.length > 0) && error && (
+              {!initialLoading && error && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-red-500">
                     {error}
@@ -229,7 +223,7 @@ export default function PaySheet() {
                 </tr>
               )}
 
-              {(!loading || payrolls.length > 0) &&
+              {!initialLoading &&
                 !error &&
                 filteredPayrolls.map((item) => (
                   <tr key={item.id} className="border-t">
@@ -253,7 +247,7 @@ export default function PaySheet() {
                   </tr>
                 ))}
 
-              {(!loading || payrolls.length > 0) && !error && filteredPayrolls.length === 0 && (
+              {!initialLoading && !error && filteredPayrolls.length === 0 && (
                 <tr>
                   <td colSpan="9" className="p-6 text-center text-gray-500">
                     Chưa có bảng lương nào
@@ -261,7 +255,7 @@ export default function PaySheet() {
                 </tr>
               )}
             </tbody>
-          </table></DataRefresh>
+          </table></>)}</DataRefresh>
         </div>
       </div>
 

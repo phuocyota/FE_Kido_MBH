@@ -1,3 +1,4 @@
+import RefreshNotice from "../../components/common/RefreshNotice";
 import { useReadQuery } from "../../hooks/useReadQuery";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import DataRefresh from "../../components/common/DataRefresh";
@@ -73,9 +74,14 @@ function StockLotList({ refreshVersion = 0 }) {
   const [refresh, setRefresh] = useState(0);
   const [selected, setSelected] = useState(null);
   const search = useDebouncedValue(filters.search);
-  const load = useCallback((signal) => stockLotApi.getAll({
-    search, status: filters.status, productType: filters.productType, page, size,
-  }, signal), [search, filters.status, filters.productType, page, size]);
+  const load = useCallback(async (signal) => {
+    const data = await stockLotApi.getAll({
+      search, status: filters.status, productType: filters.productType, page, size,
+    }, signal);
+    const lastPage = Math.max(1, Math.ceil(data.total / size));
+    if (!signal.aborted && page > lastPage) setPage(lastPage);
+    return data;
+  }, [search, filters.status, filters.productType, page, size]);
   const query = useReadQuery({
     queryKey: [search, filters.status, filters.productType, page, size, refresh, refreshVersion],
     scopeKey: "stock-lots",
@@ -87,12 +93,6 @@ function StockLotList({ refreshVersion = 0 }) {
   const hasLoaded = query.hasData;
   const error = query.error;
   const busy = query.loading || search !== filters.search;
-  useEffect(() => {
-    if (!query.loading && query.data) {
-      const lastPage = Math.max(1, Math.ceil(query.data.total / size));
-      if (page > lastPage) setPage(lastPage);
-    }
-  }, [query.loading, query.data, page, size]);
 
   const updateFilters = (name, value) => {
     setSelected(null);
@@ -123,7 +123,7 @@ function StockLotList({ refreshVersion = 0 }) {
             <option value="">Tất cả loại hàng</option>{Object.entries(lotTypes).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
           </select>
         </div>
-        {busy && hasLoaded && <div role="status" className="pointer-events-none absolute right-4 top-2 rounded bg-white/95 px-2 py-1 text-xs text-blue-600">Đang cập nhật...</div>}
+        {busy && hasLoaded && <RefreshNotice />}
         {error && <div role="alert" className="p-8 text-center text-red-700">{error}<button onClick={reload} className="ml-3 font-semibold underline">Thử lại</button></div>}
         {!hasLoaded ? <div role="status" className="min-h-[360px] p-12 text-center text-slate-500">{!error && "Đang tải lô hàng..."}</div> : result.items.length === 0 ? <div className="p-12 text-center text-slate-500">Không có lô hàng phù hợp. Các lô được tạo khi nhập kho hàng có bật theo dõi lô.</div> : (
           <div className="overflow-x-auto" inert={busy || undefined}>
@@ -166,8 +166,6 @@ export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
   useEffect(() => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
-  return () => controller.abort();
-  }, [lot.id, retry, initialTrace, refreshVersion]);
   return (
     <section ref={panel} aria-label="Chi tiết lô hàng" className="mt-4 rounded-xl border border-blue-200 bg-white p-4 shadow-sm md:p-5">
       <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>

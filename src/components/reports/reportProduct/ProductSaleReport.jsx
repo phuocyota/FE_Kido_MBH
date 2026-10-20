@@ -147,7 +147,7 @@ export default function ProductSaleReport({
         </div>
 
         {/* TABLE */}
-        <DataRefresh pending={loading} hasData={rows.length > 0}><table className="border-collapse  w-[1600px]">
+        <DataRefresh pending={loading} hasData={rows.length > 0}>{({ initialLoading }) => (<><table className="border-collapse  w-[1600px]">
           <thead>
             {/* HEADER ROW 1 */}
             <tr>
@@ -260,7 +260,7 @@ export default function ProductSaleReport({
           </thead>
 
           <tbody>
-            {(loading && rows.length === 0) ? (
+            {initialLoading ? (
               <tr>
                 <td colSpan={13} className="text-center py-10">
                   Đang tải dữ liệu...
@@ -344,7 +344,7 @@ export default function ProductSaleReport({
               ))
             )}
           </tbody>
-        </table></DataRefresh>
+        </table></>)}</DataRefresh>
       </div>
     </div>
   );

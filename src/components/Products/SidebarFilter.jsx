@@ -161,7 +161,7 @@ export default function SidebarFilter({
                                     />
 
                                     {/* LIST */}
-                                    <DataRefresh pending={loadingGroups} hasData={groupData.length > 0}><div className="text-sm space-y-1 max-h-60 overflow-y-auto">
+                                    <DataRefresh pending={loadingGroups} hasData={groupData.length > 0}>{({ initialLoading }) => (<><div className="text-sm space-y-1 max-h-60 overflow-y-auto">
 
                                           <p
                                                 className={`font-semibold px-2 py-1 cursor-pointer rounded ${!filters.categoryId ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`}
@@ -170,25 +170,25 @@ export default function SidebarFilter({
                                                 Tất cả
                                           </p>
 
-                                          {loadingGroups && !(groupData.length > 0) && (
+                                          {initialLoading && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       Đang tải nhóm hàng...
                                                 </div>
                                           )}
 
-                                          {groupsError && (!loadingGroups || groupData.length > 0) && (
+                                          {groupsError && !initialLoading && (
                                                 <div role="alert" className="px-2 py-1 text-red-600">
                                                       {groupsError}
                                                       <button onClick={loadCategories} className="ml-2 underline">Thử lại</button>
                                                 </div>
                                           )}
-                                          {!groupsError && (!loadingGroups || groupData.length > 0) && filteredGroups.length === 0 && (
+                                          {!groupsError && !initialLoading && filteredGroups.length === 0 && (
                                                 <div className="px-2 py-1 text-gray-400">
                                                       {categorySearch.trim() ? "Không tìm thấy nhóm hàng" : "Chưa có nhóm hàng"}
                                                 </div>
                                           )}
 
-                                          {(!loadingGroups || groupData.length > 0) && filteredGroups.map((item) => (
+                                          {!initialLoading && filteredGroups.map((item) => (
                                                 <div
                                                       key={item.id}
                                                       className={`flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded group cursor-pointer ${filters.categoryId === item.id ? "bg-blue-50 text-blue-600 font-medium" : ""}`}
@@ -211,7 +211,7 @@ export default function SidebarFilter({
                                                 </div>
                                           ))}
 
-                                    </div></DataRefresh>
+                                    </div></>)}</DataRefresh>
 
                               </div>
                         </div>

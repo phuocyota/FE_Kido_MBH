@@ -140,7 +140,7 @@ export default function CashTable({ filters, refreshTrigger }) {
       </div>
 
       <div className="overflow-x-auto">
-        <DataRefresh pending={loading} hasData={rows.length > 0}><table className="min-w-[1200px] w-full text-sm erp-data-table">
+        <DataRefresh pending={loading} hasData={rows.length > 0}>{({ initialLoading }) => (<><table className="min-w-[1200px] w-full text-sm erp-data-table">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               <th className="border-b border-indigo-200 px-4 py-3 w-12">
@@ -177,7 +177,7 @@ export default function CashTable({ filters, refreshTrigger }) {
           </thead>
 
           <tbody>
-            {(loading && rows.length === 0) && (
+            {initialLoading && (
               <tr>
                 <td colSpan={10} className="py-16 text-center text-gray-500">
                   Đang tải dữ liệu...
@@ -185,7 +185,7 @@ export default function CashTable({ filters, refreshTrigger }) {
               </tr>
             )}
 
-            {(!loading || rows.length > 0) &&
+            {!initialLoading &&
               rows.map((item) => {
                 const isReceipt = item.voucherType === "RECEIVED" || item.type === "RECEIPT";
                 const voucherTypeLabel = isReceipt ? "Phiếu thu" : "Phiếu chi";
@@ -244,7 +244,7 @@ export default function CashTable({ filters, refreshTrigger }) {
                 );
               })}
 
-            {(!loading || rows.length > 0) && rows.length === 0 && (
+            {!initialLoading && rows.length === 0 && (
               <tr>
                 <td colSpan={10} className="py-16 text-center text-gray-500">
                   Không có dữ liệu
@@ -252,7 +252,7 @@ export default function CashTable({ filters, refreshTrigger }) {
               </tr>
             )}
           </tbody>
-        </table></DataRefresh>
+        </table></>)}</DataRefresh>
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 border-t border-gray-300 bg-gray-50">

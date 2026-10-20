@@ -326,7 +326,7 @@ export default function ReportBoardingContent({
       </div>
 
       {/* REPORT CONTENT WRAPPER */}
-      <DataRefresh pending={loading} hasData={!!data}>{loading && !data ? (
+      <DataRefresh pending={loading} hasData={!!data}>{({ initialLoading }) => (<>{initialLoading ? (
         <div className="flex-1 min-h-[500px] flex flex-col justify-center items-center bg-white">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
@@ -629,7 +629,7 @@ export default function ReportBoardingContent({
             </div>
           </div>
         </div>
-      )}</DataRefresh>
+      )}</>)}</DataRefresh>
     </div>
   );
 }

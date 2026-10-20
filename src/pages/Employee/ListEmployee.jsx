@@ -167,7 +167,7 @@ export default function ListEmployee() {
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <DataRefresh pending={loading} hasData={employees.length > 0}><table className="min-w-[1100px] w-full border-collapse erp-data-table">
+          <DataRefresh pending={loading} hasData={employees.length > 0}>{({ initialLoading }) => (<><table className="min-w-[1100px] w-full border-collapse erp-data-table">
 
             <thead>
               <tr className="bg-[#eaf2ff] text-gray-700 text-sm">
@@ -211,7 +211,7 @@ export default function ListEmployee() {
             </thead>
 
             <tbody>
-  {(loading && employees.length === 0) ? (
+  {initialLoading ? (
     <tr>
       <td colSpan={9} className="text-center py-14 text-gray-400">
         Đang tải dữ liệu...
@@ -300,7 +300,7 @@ export default function ListEmployee() {
   )}
 </tbody>
 
-          </table></DataRefresh>
+          </table></>)}</DataRefresh>
         </div>
 {/* 
       {

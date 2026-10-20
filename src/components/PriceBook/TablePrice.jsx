@@ -159,7 +159,7 @@ export default function PriceTable({
         </div>
 
         <div className="max-h-[800px] overflow-auto">
-          <DataRefresh pending={loading} hasData={products.length > 0}><table className="w-full text-sm erp-data-table">
+          <DataRefresh pending={loading} hasData={products.length > 0}>{({ initialLoading }) => (<><table className="w-full text-sm erp-data-table">
 
             {/* HEADER */}
             <thead className="bg-blue-100 sticky top-0 z-10">
@@ -174,7 +174,7 @@ export default function PriceTable({
 
             {/* BODY */}
             <tbody>
-              {(loading && products.length === 0) ? (
+              {initialLoading ? (
                 <tr>
                   <td colSpan={5} className="text-center py-14 text-gray-400">
                     Đang tải dữ liệu...
@@ -207,7 +207,7 @@ export default function PriceTable({
               )}
             </tbody>
 
-          </table></DataRefresh>
+          </table></>)}</DataRefresh>
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-300 p-4">

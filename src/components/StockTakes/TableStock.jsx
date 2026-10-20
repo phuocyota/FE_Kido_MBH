@@ -166,7 +166,7 @@ export default function TableStock({
 
       {/* Main Table */}
       <div className="overflow-x-auto">
-        <DataRefresh pending={loading} hasData={rows.length > 0}><table className="w-full min-w-[1100px] border-collapse text-sm">
+        <DataRefresh pending={loading} hasData={rows.length > 0}>{({ initialLoading }) => (<><table className="w-full min-w-[1100px] border-collapse text-sm">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               {columns.map((col, idx) => (
@@ -180,21 +180,21 @@ export default function TableStock({
             </tr>
           </thead>
           <tbody>
-            {(loading && rows.length === 0) && (
+            {initialLoading && (
               <tr>
                 <td colSpan="9" className="text-center py-16 text-gray-500 bg-white">
                   Đang tải dữ liệu...
                 </td>
               </tr>
             )}
-            {(!loading || rows.length > 0) && error && (
+            {!initialLoading && error && (
               <tr>
                 <td colSpan="9" className="text-center py-16 text-red-500 bg-white">
                   {error}
                 </td>
               </tr>
             )}
-            {(!loading || rows.length > 0) &&
+            {!initialLoading &&
               !error &&
               paginatedRows.map((item) => {
                 const isSelected = item.id === activeSelectedRowId;
@@ -236,7 +236,7 @@ export default function TableStock({
                   </tr>
                 );
               })}
-            {(!loading || rows.length > 0) && !error && filteredRows.length === 0 && (
+            {!initialLoading && !error && filteredRows.length === 0 && (
               <tr>
                 <td colSpan="9" className="text-center py-16 text-gray-500 bg-white">
                   Không tìm thấy phiếu kiểm kho nào phù hợp
@@ -255,7 +255,7 @@ export default function TableStock({
               <td colSpan={5} className="px-4 py-3 border-t border-gray-300"></td>
             </tr>
           </tfoot>
-        </table></DataRefresh>
+        </table></>)}</DataRefresh>
       </div>
 
       {/* Main Table Pagination */}

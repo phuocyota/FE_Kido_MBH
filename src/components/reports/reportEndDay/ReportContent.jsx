@@ -199,7 +199,7 @@ export default function ReportContent({
           <div
             className={`${isPortrait ? "px-3 py-6" : "px-8 py-4"} overflow-x-auto`}
           >
-            <DataRefresh pending={loading} hasData={reportData.length > 0}><table className="w-full border-collapse">
+            <DataRefresh pending={loading} hasData={reportData.length > 0}>{({ initialLoading }) => (<><table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#F3F4F6]">
                   <th className="report-th w-[120px]">{interest === "Hủy món" ? "Giai đoạn hủy" : "Ngày"}</th>
@@ -231,7 +231,7 @@ export default function ReportContent({
               </thead>
 
               <tbody>
-                {(loading && reportData.length === 0) ? (
+                {initialLoading ? (
                   <tr>
                     <td
                       colSpan={9}
@@ -290,7 +290,7 @@ export default function ReportContent({
                   ))
                 )}
               </tbody>
-            </table></DataRefresh>
+            </table></>)}</DataRefresh>
           </div>
         </div>
 

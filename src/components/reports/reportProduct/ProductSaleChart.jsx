@@ -168,7 +168,7 @@ export default function ProductSaleChart({
         </div>
 
         {/* PIE CHARTS */}
-        <DataRefresh pending={loading} hasData={!!summary}>{loading && !summary ? (
+        <DataRefresh pending={loading} hasData={!!summary}>{({ initialLoading }) => (<>{initialLoading ? (
           <div className="text-center py-20 text-gray-400">
             Đang tải dữ liệu biểu đồ...
           </div>
@@ -268,7 +268,7 @@ export default function ProductSaleChart({
               </div>
             </div>
           </div>
-        )}</DataRefresh>
+        )}</>)}</DataRefresh>
       </div>
     </div>
   );

@@ -180,7 +180,7 @@ export default function StockProductPicker({ onSelect, loadProducts }) {
               aria-label="Sản phẩm"
               aria-busy={loading}
             >
-              <DataRefresh pending={loading} hasData={products.length > 0}>{loading && !(products.length > 0) ? (
+              <DataRefresh pending={loading} hasData={products.length > 0}>{({ initialLoading }) => (<>{initialLoading ? (
                 <p
                   role="status"
                   className="p-4 text-sm font-normal text-slate-500"
@@ -238,7 +238,7 @@ export default function StockProductPicker({ onSelect, loadProducts }) {
                     </div>
                   </button>
                 ))
-              )}</DataRefresh>
+              )}</>)}</DataRefresh>
             </div>
           </div>,
           document.body,

@@ -112,7 +112,7 @@ export default function StockTransferListTable({
 
       {/* Desktop view */}
       <div className="hidden overflow-x-auto lg:block">
-        <DataRefresh pending={loading} hasData={transfers.length > 0}><table className="w-full min-w-[1660px] border-collapse text-sm [&_tbody_td]:!py-2">
+        <DataRefresh pending={loading} hasData={transfers.length > 0}>{({ initialLoading }) => (<><table className="w-full min-w-[1660px] border-collapse text-sm [&_tbody_td]:!py-2">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               {columns.map((column) => (
@@ -127,7 +127,7 @@ export default function StockTransferListTable({
           </thead>
 
           <tbody>
-            {(loading && transfers.length === 0) && (
+            {initialLoading && (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-16 text-center text-gray-500 bg-white">
                   Đang tải dữ liệu...
@@ -135,7 +135,7 @@ export default function StockTransferListTable({
               </tr>
             )}
 
-            {(!loading || transfers.length > 0) &&
+            {!initialLoading &&
               transfers.map((transfer) => {
                 const isSelected = transfer.id === selectedTransferId;
 
@@ -212,7 +212,7 @@ export default function StockTransferListTable({
               </tr>
             )}
 
-            {(!loading || transfers.length > 0) && error && (
+            {!initialLoading && error && (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-red-600 bg-white">
                   {error}
@@ -220,7 +220,7 @@ export default function StockTransferListTable({
               </tr>
             )}
           </tbody>
-        </table></DataRefresh>
+        </table></>)}</DataRefresh>
       </div>
     </>
   );

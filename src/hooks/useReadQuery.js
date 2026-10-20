@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { getAccessToken } from "../api/authSession";
+import { useCallback, useEffect, useState } from "react";
+import { getAccessToken, getBranchIdFromToken } from "../api/authSession";
 import { getLoadingState } from "./loadingState";
 
 const defaultErrorMessage = (error) => {
@@ -19,13 +19,16 @@ export function useReadQuery({
 }) {
   const [revision, setRevision] = useState(0);
   const key = JSON.stringify([queryKey, revision]);
-  const scope = JSON.stringify([getAccessToken(), scopeKey]);
+  const scope = JSON.stringify([getAccessToken(), getBranchIdFromToken(), scopeKey]);
   const [state, setState] = useState({ key: "", scope: "", data: null, failure: null });
 
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
     const run = async () => {
+      // A disabled query can be enabled again with the same key and response.
+      setState((previous) => previous.key === key && previous.scope === scope
+        ? { ...previous, key: "" } : previous);
       try {
         const data = await load(controller.signal);
         if (!controller.signal.aborted) setState({ key, scope, data, failure: null });
@@ -49,6 +52,7 @@ export function useReadQuery({
   const failure = current ? state.failure : null;
   const loading = enabled && !current;
   const hasData = data !== null && data !== undefined;
+  const refetch = useCallback(() => setRevision((value) => value + 1), []);
   return {
     data,
     failure,
@@ -56,6 +60,6 @@ export function useReadQuery({
     loading,
     hasData,
     ...getLoadingState(loading, hasData),
-    refetch: () => setRevision((value) => value + 1),
+    refetch,
   };
 }

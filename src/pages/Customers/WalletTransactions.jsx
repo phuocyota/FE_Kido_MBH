@@ -304,7 +304,7 @@ export default function WalletTransactions() {
 
           {/* Table List */}
           <div className="overflow-x-auto">
-            <DataRefresh pending={loading} hasData={transactions.length > 0}><table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
+            <DataRefresh pending={loading} hasData={transactions.length > 0}>{({ initialLoading }) => (<><table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
               <thead>
                 <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                   <th className="border-b border-indigo-200 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 w-44">
@@ -334,7 +334,7 @@ export default function WalletTransactions() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {(loading && transactions.length === 0) ? (
+                {initialLoading ? (
                   <tr>
                     <td colSpan="8" className="px-4 py-10 text-center text-gray-500 font-medium">
                       Đang tải lịch sử giao dịch...
@@ -390,7 +390,7 @@ export default function WalletTransactions() {
                   })
                 )}
               </tbody>
-            </table></DataRefresh>
+            </table></>)}</DataRefresh>
           </div>
 
           {/* Pagination Controls */}

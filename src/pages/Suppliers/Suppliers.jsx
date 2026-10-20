@@ -272,7 +272,7 @@ export default function Suppliers() {
           </div>
 
           <div className="p-0">
-            <DataRefresh pending={loading} hasData={suppliers.length > 0}>{loading && suppliers.length === 0 ? (
+            <DataRefresh pending={loading} hasData={suppliers.length > 0}>{({ initialLoading }) => (<>{initialLoading ? (
               <div className="flex min-h-[400px] items-center justify-center bg-white text-gray-500">
                 Đang tải danh sách nhà cung cấp...
               </div>
@@ -317,7 +317,7 @@ export default function Suppliers() {
                 onDelete={handleDeleteSupplier}
                 onBulkDelete={handleDeleteSuppliers}
               />
-            )}</DataRefresh>
+            )}</>)}</DataRefresh>
           </div>
         </div>
       </div>
