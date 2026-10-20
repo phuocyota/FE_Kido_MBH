@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Search } from "lucide-react";
@@ -179,7 +180,7 @@ export default function StockProductPicker({ onSelect, loadProducts }) {
               aria-label="Sản phẩm"
               aria-busy={loading}
             >
-              {loading ? (
+              <DataRefresh pending={loading} hasData={products.length > 0}>{({ initialLoading }) => (<>{initialLoading ? (
                 <p
                   role="status"
                   className="p-4 text-sm font-normal text-slate-500"
@@ -237,7 +238,7 @@ export default function StockProductPicker({ onSelect, loadProducts }) {
                     </div>
                   </button>
                 ))
-              )}
+              )}</>)}</DataRefresh>
             </div>
           </div>,
           document.body,

@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
@@ -570,7 +571,7 @@ export default function TimeSheet() {
 
         <div className="overflow-x-auto">
 
-          <table className="min-w-[1400px] w-full border-collapse border border-gray-00 erp-data-table">
+          <DataRefresh pending={loading} hasData={timeSheetData.length > 0}>{({ initialLoading }) => (<><table className="min-w-[1400px] w-full border-collapse border border-gray-00 erp-data-table">
 
             <thead>
 
@@ -613,7 +614,7 @@ export default function TimeSheet() {
 
             <tbody>
 
-              {loading ? (
+              {initialLoading ? (
                 <tr>
                   <td colSpan={9} className="text-center py-14 text-gray-400">
                     Đang tải dữ liệu...
@@ -751,7 +752,7 @@ export default function TimeSheet() {
 
             </tbody>
 
-          </table>
+          </table></>)}</DataRefresh>
 
         </div>
 

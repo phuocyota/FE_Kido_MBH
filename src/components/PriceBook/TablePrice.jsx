@@ -1,3 +1,4 @@
+import DataRefresh from "../common/DataRefresh";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
@@ -148,7 +149,7 @@ export default function PriceTable({
             <button
               type="button"
               onClick={handleSaveAll}
-              disabled={saving || Object.keys(editedPrices).length === 0}
+              disabled={loading || saving || Object.keys(editedPrices).length === 0}
               className="flex h-10 items-center gap-2 rounded-lg bg-indigo-600 px-5 font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save size={17} />
@@ -158,7 +159,7 @@ export default function PriceTable({
         </div>
 
         <div className="max-h-[800px] overflow-auto">
-          <table className="w-full text-sm erp-data-table">
+          <DataRefresh pending={loading} hasData={products.length > 0}>{({ initialLoading }) => (<><table className="w-full text-sm erp-data-table">
 
             {/* HEADER */}
             <thead className="bg-blue-100 sticky top-0 z-10">
@@ -173,7 +174,7 @@ export default function PriceTable({
 
             {/* BODY */}
             <tbody>
-              {loading ? (
+              {initialLoading ? (
                 <tr>
                   <td colSpan={5} className="text-center py-14 text-gray-400">
                     Đang tải dữ liệu...
@@ -206,7 +207,7 @@ export default function PriceTable({
               )}
             </tbody>
 
-          </table>
+          </table></>)}</DataRefresh>
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-300 p-4">

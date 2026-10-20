@@ -175,11 +175,12 @@ export default function StockInInfo({ supplier, onChangeSupplier, note, onChange
 
         <div className="md:col-span-3">
           <label className="mb-1 block text-sm font-medium">
-            Ngày mua / nhập kho <span className="text-red-500">*</span>
+            Ngày giờ nhập kho (giờ Việt Nam) <span className="text-red-500">*</span>
           </label>
 
           <input
             type="datetime-local"
+            step="60"
             value={purchasedAt}
             onChange={(event) => onChangePurchasedAt(event.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"

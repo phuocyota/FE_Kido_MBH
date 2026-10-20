@@ -1,6 +1,6 @@
 export function currentPurchaseDateTime() {
   const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  return new Date(now.getTime() + 7 * 3600000).toISOString().slice(0, 16);
 }
 
 export function freshFoodExpiry(purchasedAt = currentPurchaseDateTime().slice(0, 10)) {

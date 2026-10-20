@@ -1,3 +1,4 @@
+import DataRefresh from "../../common/DataRefresh";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   RotateCcw,
@@ -198,7 +199,7 @@ export default function ReportContent({
           <div
             className={`${isPortrait ? "px-3 py-6" : "px-8 py-4"} overflow-x-auto`}
           >
-            <table className="w-full border-collapse">
+            <DataRefresh pending={loading} hasData={reportData.length > 0}>{({ initialLoading }) => (<><table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#F3F4F6]">
                   <th className="report-th w-[120px]">{interest === "Hủy món" ? "Giai đoạn hủy" : "Ngày"}</th>
@@ -230,7 +231,7 @@ export default function ReportContent({
               </thead>
 
               <tbody>
-                {loading ? (
+                {initialLoading ? (
                   <tr>
                     <td
                       colSpan={9}
@@ -289,7 +290,7 @@ export default function ReportContent({
                   ))
                 )}
               </tbody>
-            </table>
+            </table></>)}</DataRefresh>
           </div>
         </div>
 

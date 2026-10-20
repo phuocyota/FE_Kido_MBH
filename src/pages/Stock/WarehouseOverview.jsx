@@ -1,3 +1,4 @@
+import DataRefresh from "../../components/common/DataRefresh";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -88,8 +89,8 @@ export default function WarehouseOverview() {
           </select>
         </div>
       </div>
-      <RequestState loading={loading} error={error} retry={reload} />
-      {data && !loading && !error && <Dashboard data={data} />}
+      <RequestState hasData={!!data} loading={loading} error={error} retry={reload} />
+      {data && <DataRefresh showStatus={false} pending={loading} hasData={!!data}><Dashboard data={data} /></DataRefresh>}
     </main>
   );
 }

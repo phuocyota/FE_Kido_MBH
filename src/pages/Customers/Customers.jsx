@@ -1,39 +1,32 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useReadQuery } from "../../hooks/useReadQuery";
+import DataRefresh from "../../components/common/DataRefresh";
+import React, { useCallback, useMemo, useState } from "react";
 import { Search, Plus, RefreshCw, FileSpreadsheet, Edit2, Wallet, Users } from "lucide-react";
-import toast from "react-hot-toast";
 import { customerApi } from "../../api";
 import AddCustomerModal from "../../components/Customers/AddCustomerModal";
 
 const formatNumber = (value) => new Intl.NumberFormat("vi-VN").format(Number(value || 0));
 
 export default function Customers() {
-  const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [openAddCustomer, setOpenAddCustomer] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-  const loadCustomers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const data = await customerApi.getAll();
-      setCustomers(Array.isArray(data) ? data : []);
-      setCurrentPage(1);
-    } catch {
-      setCustomers([]);
-      setError("Không thể tải danh sách khách hàng");
-    } finally {
-      setLoading(false);
-    }
+  const load = useCallback(async () => {
+    const data = await customerApi.getAll();
+    return Array.isArray(data) ? data : [];
   }, []);
-
-  useEffect(() => {
-    loadCustomers();
-  }, [loadCustomers]);
+  const query = useReadQuery({
+    queryKey: "customers",
+    scopeKey: "customers",
+    load,
+    getErrorMessage: () => "Không thể tải danh sách khách hàng",
+  });
+  const customers = useMemo(() => query.data || [], [query.data]);
+  const { loading, error } = query;
+  const loadCustomers = query.refetch;
 
   const openCreateModal = () => {
     setSelectedCustomer(null);
@@ -169,7 +162,7 @@ export default function Customers() {
 
           {/* Table list */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
+            <DataRefresh pending={loading} hasData={customers.length > 0}>{({ initialLoading }) => (<><table className="w-full min-w-[1200px] border-collapse text-sm erp-data-table">
               <thead>
                 <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
                   <th className="border-b border-indigo-200 px-4 py-3 w-12 text-center">
@@ -206,7 +199,7 @@ export default function Customers() {
               </thead>
 
               <tbody>
-                {loading && (
+                {initialLoading && (
                   <tr>
                     <td colSpan={10} className="py-16 text-center text-gray-500 bg-white">
                       Đang tải danh sách khách hàng...
@@ -214,7 +207,7 @@ export default function Customers() {
                   </tr>
                 )}
 
-                {!loading && error && (
+                {!initialLoading && error && (
                   <tr>
                     <td colSpan={10} className="py-16 text-center text-red-500 bg-white">
                       {error}
@@ -222,7 +215,7 @@ export default function Customers() {
                   </tr>
                 )}
 
-                {!loading &&
+                {!initialLoading &&
                   !error &&
                   currentCustomers.map((cust) => {
                     const hasDebt = Number(cust.debt || 0) > 0;
@@ -280,7 +273,7 @@ export default function Customers() {
                     );
                   })}
 
-                {!loading && !error && filteredCustomers.length === 0 && (
+                {!initialLoading && !error && filteredCustomers.length === 0 && (
                   <tr>
                     <td colSpan={10} className="py-16 text-center text-gray-500 bg-white">
                       Không tìm thấy khách hàng nào phù hợp
@@ -288,7 +281,7 @@ export default function Customers() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table></>)}</DataRefresh>
           </div>
 
           {/* Pagination */}

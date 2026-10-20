@@ -65,17 +65,17 @@ export default function WarehouseTrace() {
         </nav>
       )}
       {unified ? (
-        <UnifiedTrace key={`${params.toString()}:${refresh}`} />
+        <UnifiedTrace key={params.toString()} refreshVersion={refresh} />
       ) : serialMode ? (
-        <StockSerials traceMode key={`${params.toString()}:${refresh}`} />
+        <StockSerials traceMode key={params.toString()} refreshVersion={refresh} />
       ) : (
-        <LotTrace key={`${params.toString()}:${refresh}`} />
+        <LotTrace key={params.toString()} refreshVersion={refresh} />
       )}
     </main>
   );
 }
 
-function LotTrace() {
+function LotTrace({ refreshVersion = 0 }) {
   const [params] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(() =>
@@ -188,6 +188,7 @@ function LotTrace() {
         <LotDetails
           key={selected.id}
           lot={selected}
+          refreshVersion={refreshVersion}
           onClose={() => setSelected(null)}
         />
       )}
