@@ -1,6 +1,8 @@
+import { useReadQuery } from "../../hooks/useReadQuery";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import DataRefresh from "../../components/common/DataRefresh";
 import { dateTime } from "../../components/Warehouse/warehouseFormat";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Package, Plus, Search, X } from "lucide-react";
 import LotSerialList from "../../components/Stock/LotSerialList";
@@ -69,48 +71,35 @@ function StockLotList({ refreshVersion = 0 }) {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [refresh, setRefresh] = useState(0);
-  const [result, setResult] = useState({ items: [], total: 0 });
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [search, setSearch] = useState(filters.search);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [selected, setSelected] = useState(null);
-
+  const search = useDebouncedValue(filters.search);
+  const load = useCallback((signal) => stockLotApi.getAll({
+    search, status: filters.status, productType: filters.productType, page, size,
+  }, signal), [search, filters.status, filters.productType, page, size]);
+  const query = useReadQuery({
+    queryKey: [search, filters.status, filters.productType, page, size, refresh, refreshVersion],
+    scopeKey: "stock-lots",
+    load,
+    retainOnError: true,
+    getErrorMessage: (error) => errorText(error, "Không thể tải lô hàng. Vui lòng thử lại."),
+  });
+  const result = query.data || { items: [], total: 0 };
+  const hasLoaded = query.hasData;
+  const error = query.error;
+  const busy = query.loading || search !== filters.search;
   useEffect(() => {
-    const timer = setTimeout(() => setSearch(filters.search), 250);
-    return () => clearTimeout(timer);
-  }, [filters.search]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const data = await stockLotApi.getAll({ search, status: filters.status, productType: filters.productType, page, size }, controller.signal);
-        if (!controller.signal.aborted) {
-          if (page > 1 && page > Math.max(1, Math.ceil(data.total / size))) {
-            setPage(Math.max(1, Math.ceil(data.total / size)));
-          } else { setResult(data); setHasLoaded(true); }
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) setError(errorText(err, "Không thể tải lô hàng. Vui lòng thử lại."));
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-    load();
-    return () => controller.abort();
-  }, [search, filters.status, filters.productType, page, size, refresh, refreshVersion]);
-  const busy = loading || search !== filters.search;
+    if (!query.loading && query.data) {
+      const lastPage = Math.max(1, Math.ceil(query.data.total / size));
+      if (page > lastPage) setPage(lastPage);
+    }
+  }, [query.loading, query.data, page, size]);
 
   const updateFilters = (name, value) => {
-    if (name !== "search") setLoading(true);
     setSelected(null);
     setFilters((current) => ({ ...current, [name]: value }));
     setPage(1);
   };
-  const reload = () => { setLoading(true); setSelected(null); setRefresh((value) => value + 1); };
+  const reload = () => { setSelected(null); setRefresh((value) => value + 1); };
 
   return (
     <div>
@@ -154,7 +143,7 @@ function StockLotList({ refreshVersion = 0 }) {
             </table>
           </div>
         )}
-        {hasLoaded && <div inert={busy || undefined}><StockInPagination total={result.total} currentPage={page} pageSize={size} onPageChange={(value) => { setLoading(true); setSelected(null); setPage(value); }} onPageSizeChange={(value) => { setLoading(true); setSelected(null); setSize(value); setPage(1); }} /></div>}
+        {hasLoaded && <div inert={busy || undefined}><StockInPagination total={result.total} currentPage={page} pageSize={size} onPageChange={(value) => { setSelected(null); setPage(value); }} onPageSizeChange={(value) => { setSelected(null); setSize(value); setPage(1); }} /></div>}
       </section>
       {selected && <LotDetails key={selected.id} lot={selected} refreshVersion={`${refresh}:${refreshVersion}`} onClose={() => setSelected(null)} />}
     </div>
@@ -163,35 +152,26 @@ function StockLotList({ refreshVersion = 0 }) {
 
 export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
   const panel = useRef(null);
-  const [fetchedTrace, setTrace] = useState(null);
-  const trace = initialTrace || fetchedTrace;
-  const [loading, setLoading] = useState(!initialTrace);
-  const [error, setError] = useState("");
-  const [retry, setRetry] = useState(0);
+  const load = useCallback((signal) => stockLotApi.getTrace(lot.id, signal), [lot.id]);
+  const query = useReadQuery({
+    queryKey: [lot.id, refreshVersion],
+    scopeKey: ["lot-trace", lot.id],
+    load,
+    enabled: !initialTrace,
+    retainOnError: true,
+    getErrorMessage: (error) => errorText(error, "Không thể tải lịch sử lô hàng. Vui lòng thử lại."),
+  });
+  const trace = initialTrace || query.data;
+  const { loading, error } = query;
   useEffect(() => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
-  useEffect(() => {
-    if (initialTrace) return;
-    const controller = new AbortController();
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await stockLotApi.getTrace(lot.id, controller.signal);
-        if (!controller.signal.aborted) setTrace(data);
-      } catch (err) {
-        if (!controller.signal.aborted) setError(errorText(err, "Không thể tải lịch sử lô hàng. Vui lòng thử lại."));
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-    load();
-    return () => controller.abort();
+  return () => controller.abort();
   }, [lot.id, retry, initialTrace, refreshVersion]);
   return (
     <section ref={panel} aria-label="Chi tiết lô hàng" className="mt-4 rounded-xl border border-blue-200 bg-white p-4 shadow-sm md:p-5">
       <div className="flex items-start justify-between gap-4"><div><h3 className="text-lg font-bold text-slate-900">Chi tiết lô hàng</h3><p className="mt-1 break-all text-sm text-blue-700">{trace?.lot?.code || lot.lotCode}</p></div><button onClick={onClose} aria-label="Đóng chi tiết lô" className="rounded p-1 hover:bg-slate-100"><X size={20} /></button></div>
-      {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={() => { setError(""); setRetry((value) => value + 1); }} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <DataRefresh pending={loading} hasData={!!trace}>
+      {error ? <div role="alert" className="py-6 text-red-700">{error}<button onClick={query.refetch} className="ml-2 underline">Thử lại</button></div> : !trace ? <p role="status" className="py-6 text-slate-500">Đang tải nguồn gốc và lịch sử...</p> : <DataRefresh pending={loading} hasData={!!trace}>
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", dateTime(trace.origin?.purchasedAt || trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
