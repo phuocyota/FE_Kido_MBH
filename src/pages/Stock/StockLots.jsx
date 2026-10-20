@@ -154,6 +154,16 @@ function StockLotList({ refreshVersion = 0 }) {
 export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
   const panel = useRef(null);
   const [printOpen, setPrintOpen] = useState(false);
+  const load = useCallback((signal) => stockLotApi.getTrace(lot.id, signal), [lot.id]);
+  const query = useReadQuery({
+    queryKey: [lot.id, refreshVersion],
+    scopeKey: ["stock-lot-trace", lot.id],
+    enabled: !initialTrace,
+    load,
+    getErrorMessage: (error) => errorText(error, "Không thể tải lịch sử lô hàng. Vui lòng thử lại."),
+  });
+  const trace = initialTrace || query.data;
+  const { error, loading } = query;
   useEffect(() => {
     panel.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
