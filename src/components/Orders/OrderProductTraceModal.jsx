@@ -279,6 +279,23 @@ function BatchTrace({ batchId, refreshVersion }) {
               ? "Chưa ghi nhận"
               : number(batch.actualQuantity)}
           </p>
+          <dl className="grid gap-3 rounded-xl bg-blue-50 p-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="font-semibold text-slate-900">In stock · Nhập kho nguyên liệu</dt>
+              <dd className="mt-1 space-y-2 text-slate-600">
+                {batch.inputs?.length ? batch.inputs.map((input) => (
+                  <p key={input.lotId}>
+                    <span className="font-medium">{input.origin?.product?.name || "Nguyên liệu"}</span>
+                    {" · "}{input.origin?.lot?.code || input.lotId}<br />
+                    {dateTime(input.origin?.origin?.purchasedAt || input.origin?.origin?.receivedAt)}
+                  </p>
+                )) : "Chưa ghi nhận lô nguyên liệu"}
+              </dd>
+            </div>
+            <div><dt className="font-semibold text-slate-900">Make · Bắt đầu chế biến</dt><dd className="mt-1 text-slate-600">{dateTime(batch.startedAt)}</dd></div>
+            <div><dt className="font-semibold text-slate-900">Ready · Chế biến xong, dùng được</dt><dd className="mt-1 text-slate-600">{dateTime(batch.readyAt)}</dd></div>
+            <div><dt className="font-semibold text-slate-900">Expired at · Hạn sử dụng</dt><dd className="mt-1 text-slate-600">{dateTime(unit?.expiresAt || batch.expiresAt)}</dd></div>
+          </dl>
           {!batch.traceabilityComplete && (
             <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
               Mẻ chưa có đầy đủ hồ sơ nguyên liệu theo lô.

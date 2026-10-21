@@ -44,8 +44,8 @@ const page = (data, total = data.length) => ({ data, total, page: 1, size: 20 })
 function fixtures() {
   globalThis.__orderTraceQueries = {
     'order-product-trace': { data: { orderId: 'order', orderNumber: 1005, orderedQuantity: 1, batches: page([{ batchId, unitCount: 1, productionStatus: 'COMPLETED' }]) } },
-    'production-labels': { data: page([{ unitId, batchId, serial: 1, status: 'READY', qrPayload: `MBH:UNIT:${unitId}`, expiresAt: '2026-10-20T18:38:00Z' }]) },
-    'production-batch': { data: { batchId, traceabilityComplete: true, actualQuantity: 1, completedAt: '2026-10-20T16:38:00Z', inputs: [{ lotId: 'lot-pork', usedQuantity: 40, wasteQuantity: 0, returnedQuantity: 0, consumedQuantity: 40, origin: { product: { name: 'Chả', unit: 'g' }, lot: { code: 'LO-CHA', expiresAt: '2026-10-27' }, origin: { supplier: { name: 'Nhà cung cấp A' }, receiptCode: 'NK1005' } } }] } },
+    'production-labels': { data: page([{ unitId, batchId, serial: 1, status: 'READY', qrPayload: `MBH:UNIT:${unitId}`, expiresAt: '2026-10-20T10:00:00Z' }]) },
+    'production-batch': { data: { batchId, traceabilityComplete: true, actualQuantity: 1, startedAt: '2026-10-20T02:00:00Z', readyAt: '2026-10-20T02:30:00Z', expiresAt: '2026-10-20T10:00:00Z', completedAt: '2026-10-20T02:31:00Z', inputs: [{ lotId: 'lot-pork', usedQuantity: 40, wasteQuantity: 0, returnedQuantity: 0, consumedQuantity: 40, origin: { product: { name: 'Chả', unit: 'g' }, lot: { code: 'LO-CHA', expiresAt: '2026-10-27' }, origin: { supplier: { name: 'Nhà cung cấp A' }, receiptCode: 'NK1005', purchasedAt: '2026-10-19T01:00:00Z' } } }] } },
   };
 }
 const render = () => renderToStaticMarkup(React.createElement(Modal, { orderId: 'order', productId: 'dish', productName: 'Bánh mì', onClose() {} }));
@@ -55,6 +55,15 @@ test('renders the exact unit, batch ingredient amount, lot and supplier chain in
   const html = render();
   for (const text of ['Đơn 1005', 'Serial 1', unitId, 'MBH:UNIT:', 'Chả', '40', 'LO-CHA', 'Nhà cung cấp A', 'NK1005', 'toàn mẻ']) assert.ok(html.includes(text), text);
   assert.ok(html.includes('/warehouse/trace?lotId=lot-pork'));
+});
+
+test('shows all four lifecycle timestamps and keeps input receipt dates per lot', () => {
+  fixtures();
+  globalThis.__orderTraceQueries['production-batch'].data.inputs.push({ lotId: 'lot-veg', origin: { product: { name: 'Rau' }, lot: { code: 'LO-RAU' }, origin: { receivedAt: '2026-10-20T00:00:00Z' } } });
+  const html = render();
+  for (const text of ['In stock', 'Make', 'Ready', 'Expired at', 'LO-CHA', 'LO-RAU']) assert.ok(html.includes(text), text);
+  for (const instant of ['2026-10-19T01:00:00Z', '2026-10-20T00:00:00Z', '2026-10-20T02:00:00Z', '2026-10-20T02:30:00Z', '2026-10-20T10:00:00Z'])
+    assert.ok(html.includes(new Date(instant).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })), instant);
 });
 
 test('does not infer trace data for an order without linked production', () => {
