@@ -96,8 +96,10 @@ function CustomerForm({ onClose, onSaved, initialData }) {
         phone: formData.phone.trim() || undefined,
         type: formData.type,
         status: formData.status,
-        debtLimit: Number(formData.debtLimit),
       };
+      if (!initialData || Number(formData.debtLimit) !== Number(initialData.debtLimit ?? 50000)) {
+        payload.debtLimit = Number(formData.debtLimit);
+      }
       if (initialData) {
         savedCustomer = await customerApi.update(initialData.id, payload);
         toast.success("Cập nhật thông tin khách hàng thành công");
@@ -203,7 +205,7 @@ function CustomerForm({ onClose, onSaved, initialData }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Hạn mức nợ (₫)
+                Giới hạn tổng nợ (₫)
               </label>
               <input
                 type="number"
@@ -212,6 +214,7 @@ function CustomerForm({ onClose, onSaved, initialData }) {
                 onChange={handleChange}
                 placeholder="50000"
                 min="0"
+                max="50000"
                 className="h-10 w-full rounded-xl border border-gray-300 px-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
