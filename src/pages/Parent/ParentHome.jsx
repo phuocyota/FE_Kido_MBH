@@ -94,8 +94,7 @@ const [avatarError, setAvatarError] = useState("");
       if (data?.user?.branchId) {
         localStorage.setItem("parent_branch_id", data.user.branchId);
       }
-      const limit = data?.statistics?.month?.limit ?? data?.statistics?.week?.limit ?? 0;
-      localStorage.setItem("parent_advance_limit", String(limit));
+      localStorage.removeItem("parent_advance_limit");
     } catch (err) {
       console.error("Fetch parent home error:", err);
       setError(err.message || "Không tải được dữ liệu");

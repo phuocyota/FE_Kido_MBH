@@ -52,7 +52,10 @@ export default function OrderHeader({
                 </div>
 
                 <div className={`mt-1 text-xs font-medium ${Number(student?.balance || 0) < 0 ? "text-red-700/80" : "text-green-700/80"}`}>
-                  Tạm ứng: {Number(student?.advanceAmount || 0).toLocaleString()} đ
+                  Được nợ thêm: {Number(student?.availableDebtLimit || 0).toLocaleString("vi-VN")} đ
+                </div>
+                <div className="mt-1 text-xs text-gray-600">
+                  Giới hạn tổng nợ: {Number(student?.debtLimit ?? 50000).toLocaleString("vi-VN")} đ
                 </div>
               </div>
             </div>

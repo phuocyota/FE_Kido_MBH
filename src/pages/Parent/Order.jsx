@@ -17,6 +17,7 @@ import BottomCheckout from "../../components/OrderParent/BottomCheckout";
 
 import { buildAssetUrl } from "../../api/client";
 import { getProductsFull } from "../../api/products";
+import { getParentDebt } from "../../utils/parentDebt";
 
 const ALL_CATEGORY = {
   id: "all",
@@ -87,15 +88,7 @@ export default function Order() {
   const [menuLoading, setMenuLoading] = useState(false);
   const [menuError, setMenuError] = useState("");
   const cachedBranchId = localStorage.getItem("parent_branch_id") || "";
-  const cachedLimit = Number(localStorage.getItem("parent_advance_limit") || 0);
-
   const branchId = homeData?.user?.branchId || storedStudent?.branchId || cachedBranchId;
-  const advanceAmount = Number(
-    homeData?.statistics?.month?.limit ??
-    homeData?.statistics?.week?.limit ??
-    storedStudent?.advanceAmount ??
-    cachedLimit
-  );
 
   useEffect(() => {
     // Nếu chưa có branchId từ cache mà trang đang tải thông tin chung thì đợi tải xong
@@ -115,7 +108,6 @@ export default function Order() {
         setMenuError("");
         const data = await getProductsFull({
           branchId,
-          maxPrice: advanceAmount || undefined,
           isCanteenItem: true,
         });
 
@@ -142,7 +134,7 @@ export default function Order() {
     return () => {
       ignore = true;
     };
-  }, [advanceAmount, branchId, loading]);
+  }, [branchId, loading]);
 
   const student = useMemo(() => {
     const user = homeData?.user;
@@ -160,19 +152,14 @@ export default function Order() {
         user?.id ??
         localStorage.getItem("userId") ??
         "",
-      balance: Number(homeData?.wallet?.balance ?? storedStudent?.balance ?? 0),
-      advanceAmount: Number(advanceAmount || 0),
+      ...getParentDebt(homeData?.wallet ?? { balance: storedStudent?.balance ?? 0 }),
       branchId,
     };
-  }, [advanceAmount, branchId, homeData, storedStudent]);
+  }, [branchId, homeData, storedStudent]);
 
   const categories = useMemo(() => {
     const apiCategories = menuData
-      .filter((item) =>
-        (item.products || []).some(
-          (product) => !advanceAmount || Number(product.price || 0) <= advanceAmount
-        )
-      )
+      .filter((item) => (item.products || []).length > 0)
       .map((item) => ({
         id: item.id,
         name: item.name,
@@ -180,12 +167,11 @@ export default function Order() {
       }));
 
     return [ALL_CATEGORY, ...apiCategories];
-  }, [advanceAmount, menuData]);
+  }, [menuData]);
 
   const products = useMemo(() => {
     return menuData.flatMap((category) =>
       (category.products || [])
-        .filter((item) => !advanceAmount || Number(item.price || 0) <= advanceAmount)
         .map((item) => ({
           id: item.id,
           name: item.name,
@@ -201,7 +187,7 @@ export default function Order() {
           unit: item.unit || "",
         }))
     );
-  }, [advanceAmount, menuData]);
+  }, [menuData]);
 
 
 

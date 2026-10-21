@@ -23,7 +23,7 @@ export default function Topup() {
 
   useEffect(() => {
     const currentLimit =
-      homeData?.statistics?.month?.limit ?? homeData?.statistics?.week?.limit;
+      homeData?.wallet?.debtLimit;
 
     if (currentLimit !== undefined && currentLimit !== null) {
       setAdvanceAmount(Number(currentLimit));
@@ -78,7 +78,7 @@ export default function Topup() {
       await updateCustomerAdvanceAmount(customerId, nextAmount);
       setAdvanceAmount(nextAmount);
       await refreshHome?.();
-      toast.success("Da cap nhat muc tam ung");
+      toast.success("Đã cập nhật giới hạn tổng nợ");
       setOpenAdvanceModal(false);
     } catch (err) {
       console.error("Update advance amount error:", err);
@@ -164,7 +164,7 @@ export default function Topup() {
             <div className="min-w-0 flex-1">
 
               <p className="text-sm text-blue-100 sm:text-base">
-                Mức tạm ứng số dư mong muốn
+                Giới hạn tổng nợ
               </p>
 
               <h2 className="mt-1 break-words text-2xl font-bold sm:text-3xl lg:text-4xl">
@@ -172,8 +172,8 @@ export default function Topup() {
               </h2>
 
               <p className="mt-2 text-xs leading-5 text-blue-100 sm:text-sm">
-                Nhà trường sẽ tự động trừ dần vào các khoản ăn uống,
-                bán trú và các dịch vụ phát sinh của học sinh.
+                Tổng nợ tối đa 50.000đ. Trả nợ hoặc nạp tiền làm giảm nợ hiện tại,
+                không làm thay đổi giới hạn này.
               </p>
 
             </div>

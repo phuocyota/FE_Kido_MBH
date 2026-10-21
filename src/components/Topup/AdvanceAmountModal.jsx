@@ -17,10 +17,10 @@ export default function AdvanceAmountModal({
   if (!open) return null;
 
   const quickAmounts = [
+    0,
+    10000,
+    20000,
     50000,
-    100000,
-    200000,
-    300000,
   ];
 
   return (
@@ -31,7 +31,7 @@ export default function AdvanceAmountModal({
 
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <h2 className="text-lg font-bold">
-            Thiết lập số tiền ứng trước
+            Thiết lập giới hạn tổng nợ
           </h2>
 
           <button onClick={onClose} disabled={saving}>
@@ -45,11 +45,14 @@ export default function AdvanceAmountModal({
 
           <div>
             <label className="block mb-2 font-medium">
-              Số tiền ứng trước
+              Giới hạn tổng nợ
             </label>
 
             <input
               type="number"
+              min="0"
+              max="50000"
+              step="1"
               value={amount}
               disabled={saving}
               onChange={(e) =>
@@ -78,8 +81,8 @@ export default function AdvanceAmountModal({
 
           <div className="rounded-xl bg-blue-50 p-4">
             <p className="text-sm text-gray-600">
-              Khi số dư nhỏ hơn mức này, phụ huynh sẽ
-              nhận được thông báo để nạp thêm tiền.
+              Tổng nợ không được vượt quá giới hạn này, tối đa 50.000đ.
+              Chọn 0đ để không cho mua nợ.
             </p>
           </div>
         </div>
@@ -97,7 +100,7 @@ export default function AdvanceAmountModal({
 
           <button
             onClick={() => onSave(amount)}
-            disabled={saving || amount < 0}
+            disabled={saving || !Number.isFinite(amount) || amount < 0 || amount > 50000}
             className="px-5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300"
           >
             Lưu

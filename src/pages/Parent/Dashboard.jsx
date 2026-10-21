@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell, Wallet, Utensils, BarChart3, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import toast from "react-hot-toast";
 import { cancelParentOrder } from "../../api/parent";
 import { mapParentStatus } from "../../api/parentData";
+import { getParentDebt } from "../../utils/parentDebt";
 
 const getStatusText = (status, isFoodOrder = true) => {
   const mapped = mapParentStatus(status);
@@ -82,7 +83,7 @@ export default function Dashboard() {
   const recentHistory = homeData?.recentHistory ?? [];
   const weekStats = homeData?.statistics?.week ?? { spent: 0, limit: 0 };
   const monthStats = homeData?.statistics?.month ?? { spent: 0, limit: 0 };
-  const advanceAmount = monthStats.limit ?? weekStats.limit ?? 0;
+  const { debtLimit, availableDebtLimit } = getParentDebt(homeData?.wallet);
   const canCancelTodayOrder =
     todayOrder &&
     ![0, 5, 6, 10, 11].includes(Number(todayOrder.status)) &&
@@ -135,9 +136,12 @@ export default function Dashboard() {
             </p>
             <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full backdrop-blur-md">
               <p className="text-xs font-medium text-white">
-                Tạm ứng: {formatMoney(advanceAmount)}
+                Được nợ thêm: {formatMoney(availableDebtLimit)}
               </p>
             </div>
+            <p className="mt-2 text-xs text-white/90">
+              Giới hạn tổng nợ: {formatMoney(debtLimit)}
+            </p>
           </div>
           <div className="relative z-10 p-3 bg-white/20 rounded-2xl backdrop-blur-md">
             <Wallet size={32} className="text-white drop-shadow-md" />
