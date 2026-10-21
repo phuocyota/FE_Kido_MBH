@@ -1,3 +1,5 @@
+import LotSerialRegistrationModal from "./LotSerialRegistrationModal";
+import { getTokenPayload } from "../../api/authSession";
 import DataRefresh from "../common/DataRefresh";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,6 +10,9 @@ import { inputClass, number } from "../Warehouse/warehouseFormat";
 import StockInPagination from "../StockIn/StockInPagination";
 
 export default function LotSerialList({ lotId, refreshVersion = 0 }) {
+  const identity = getTokenPayload();
+  const canManage = ["ADMIN", "MANAGER"].includes(identity?.userType || identity?.role || localStorage.getItem("role"));
+  const [registering, setRegistering] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -19,6 +24,7 @@ export default function LotSerialList({ lotId, refreshVersion = 0 }) {
   );
   const result = state.data;
   return (
+    <>
     <section
       aria-label="Serial trong lô"
       className="mb-5 overflow-hidden rounded-xl border border-slate-200"
@@ -32,6 +38,7 @@ export default function LotSerialList({ lotId, refreshVersion = 0 }) {
             </span>
           )}
         </h4>
+        {canManage && <button type="button" onClick={() => setRegistering(true)} className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white">Quản lý serial</button>}
         <div className="relative w-full sm:w-64">
           <Search size={14} className="absolute left-3 top-3 text-slate-400" />
           <input
@@ -85,7 +92,7 @@ export default function LotSerialList({ lotId, refreshVersion = 0 }) {
           <p className="p-5 text-sm text-slate-500">
             {search
               ? "Không tìm thấy serial phù hợp trong lô."
-              : "Lô này chưa khai báo serial. Khi nhập kho, chọn nhập serial thủ công hoặc tự sinh cho từng đơn vị."}
+              : "Lô này chưa khai báo serial. Có thể bổ sung serial tại mục Quản lý serial."}
           </p>
         ))}
       {(result || (!state.loading && !state.error)) && result?.total > 0 && (
@@ -101,5 +108,7 @@ export default function LotSerialList({ lotId, refreshVersion = 0 }) {
         />
       )}
     </section>
+    {registering && <LotSerialRegistrationModal lotId={lotId} onClose={() => setRegistering(false)} onSaved={() => { setSearch(""); setPage(1); setRefresh((v) => v + 1); }} />}
+    </>
   );
 }

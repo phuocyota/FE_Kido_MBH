@@ -4,6 +4,12 @@ import { getBranchIdFromToken } from "./authSession";
 const unwrap = (response) => response.data?.data ?? response.data;
 
 export const stockLotApi = {
+  getSerialRegistration: async (lotId, signal) => unwrap(await axiosInstance.get(`/warehouse/serials/lots/${encodeURIComponent(lotId)}/registration`, {
+    params: { branchId: getBranchIdFromToken() || undefined }, signal,
+  })),
+  registerLotSerials: async (lotId, data) => unwrap(await axiosInstance.post(`/warehouse/serials/lots/${encodeURIComponent(lotId)}/registration`, data, {
+    params: { branchId: getBranchIdFromToken() || undefined },
+  })),
   suggestFefo: async (params, signal) => unwrap(await axiosInstance.get('/stock-lots/fefo', {
     params: { branchId: getBranchIdFromToken() || undefined, ...params }, signal,
   })),
