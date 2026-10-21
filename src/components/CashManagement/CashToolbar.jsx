@@ -1,17 +1,5 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-} from "react";
-import {
-  Search,
-  Plus,
-  RefreshCw,
-  FileSpreadsheet,
-  Printer,
-  ChevronDown,
-} from "lucide-react";
-import { createPortal } from "react-dom";
+import React from "react";
+import { Search, RefreshCw, FileSpreadsheet, Printer, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 export default function CashToolbar({
   onAddPaymentVoucher,
   onAddReceiptVoucher,
@@ -20,56 +8,6 @@ export default function CashToolbar({
   onRefresh,
   filterControl,
 }) {
-  const [openMenu, setOpenMenu] =
-
-  
-  useState(false);
-
-const menuRef = useRef(null);
-
-useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(e.target)
-    ) {
-      setOpenMenu(false);
-    }
-  };
-
-  document.addEventListener(
-    "mousedown",
-    handleClickOutside
-  );
-
-  return () =>
-    document.removeEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-}, []);
-
-const buttonRef = useRef(null);
-
-const [menuPosition, setMenuPosition] =
-  useState({   
-    top: 0,
-    left: 0,
-  });
-
-const handleToggleMenu = () => {
-  if (!openMenu && buttonRef.current) {
-    const rect = buttonRef.current.getBoundingClientRect();
-
-    setMenuPosition({
-      top: rect.bottom + 6,
-      left: rect.right - 200,
-    });
-  }
-
-  setOpenMenu((current) => !current);
-};
- 
   return (
     <div className="bg-white border-b border-gray-300">
       <div className="p-0">
@@ -113,68 +51,22 @@ const handleToggleMenu = () => {
               <Printer size={17} className="text-gray-600" />
             </button>
 
-            <div className="relative flex-shrink-0">
-  <div
-    ref={buttonRef}
-    className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm"
-  >
-    <button
-      type="button"
-      onClick={handleToggleMenu}
-      className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
-    >
-      <Plus size={18} />
-      Thêm phiếu
-    </button>
-
-    <button
-      type="button"
-      onClick={handleToggleMenu}
-      className="w-10 h-10 bg-indigo-600 border-l border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition"
-    >
-      <ChevronDown
-        size={16}
-        className={`transition-transform ${
-          openMenu ? "rotate-180" : ""
-        }`}
-      />
-    </button>
-  </div>
-
-  {openMenu &&
-    createPortal(
-      <div
-        ref={menuRef}
-        className="fixed z-[99999] w-[200px] bg-white rounded-xl border border-gray-300 shadow-xl overflow-hidden"
-        style={{
-          top: menuPosition.top,
-          left: menuPosition.left,
-        }}
-      >
-        <button
-  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
-  onClick={() => {
-    setOpenMenu(false);
-    onAddReceiptVoucher?.();
-  }}
->
-  Thêm phiếu thu
-</button>
-
-        <button
-  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
-  onClick={() => {
-    setOpenMenu(false);
-    onAddPaymentVoucher?.();
-  }}
->
-  Thêm phiếu chi
-</button>
-
-      </div>,
-      document.body
-    )}
-</div>
+            <button
+              type="button"
+              onClick={onAddReceiptVoucher}
+              className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+            >
+              <ArrowDownLeft size={18} aria-hidden="true" />
+              Thu nợ khách hàng
+            </button>
+            <button
+              type="button"
+              onClick={onAddPaymentVoucher}
+              className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-xl border border-orange-200 bg-orange-50 px-4 text-sm font-semibold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+            >
+              <ArrowUpRight size={18} aria-hidden="true" />
+              Chi trả nợ nhà cung cấp
+            </button>
           </div>
         </div>
       </div>

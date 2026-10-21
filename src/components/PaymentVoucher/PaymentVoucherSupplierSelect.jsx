@@ -45,9 +45,10 @@ export default function PaymentVoucherSupplierSelect({ onChange }) {
       <div className="flex flex-1 min-w-0">
         <select
           value={selectedSupplierId}
+          aria-label="Chọn nhà cung cấp trả nợ"
           onChange={handleChange}
           disabled={loading}
-          className="flex-1 min-w-0 h-10 border border-gray-300 rounded-l-md px-3 bg-white disabled:bg-gray-100"
+          className="flex-1 min-w-0 h-10 border border-gray-300 rounded-l-lg px-3 bg-white disabled:bg-gray-100"
         >
           <option value="">
             {loading
@@ -68,7 +69,7 @@ export default function PaymentVoucherSupplierSelect({ onChange }) {
         <button
           type="button"
           onClick={() => setOpenAddSupplier(true)}
-          className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center hover:bg-gray-50"
+          className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-lg flex items-center justify-center hover:bg-gray-50"
           title="Thêm nhà cung cấp"
           aria-label="Thêm nhà cung cấp"
         >

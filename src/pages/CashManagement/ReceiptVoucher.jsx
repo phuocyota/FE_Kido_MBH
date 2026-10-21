@@ -9,13 +9,13 @@ import { ArrowLeft } from "lucide-react";
 export default function ReceiptVoucher({
   onBack,
 }) {
-  const [receiptType, setReceiptType] = useState("Thu khác");
+  const [receiptType, setReceiptType] = useState("Thu khách hàng");
   const [items, setItems] = useState([]);
   const [selectedSource, setSelectedSource] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [note, setNote] = useState("");
   const [reference, setReference] = useState("");
-  const [voucherNumber] = useState("PT000003");
+  const [voucherNumber] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -173,15 +173,18 @@ export default function ReceiptVoucher({
         Quay lại
       </button>
       <div className="bg-white rounded-xl border border-gray-300 overflow-hidden">
-        <ReceiptVoucherHeader receiptType={receiptType} onChangeReceiptType={handleReceiptTypeChange} />
+        <ReceiptVoucherHeader
+          receiptType={receiptType}
+          onChangeReceiptType={handleReceiptTypeChange}
+          paymentMethod={paymentMethod}
+          onChangePaymentMethod={setPaymentMethod}
+        />
 
         <div className="p-4 space-y-4">
           <ReceiptVoucherInfo
             receiptType={receiptType}
             selectedSource={selectedSource}
             onChangeSelectedSource={handleSelectedSourceChange}
-            paymentMethod={paymentMethod}
-            onChangePaymentMethod={setPaymentMethod}
             note={note}
             onChangeNote={setNote}
             reference={reference}
@@ -191,6 +194,7 @@ export default function ReceiptVoucher({
           />
 
           <ReceiptVoucherTable
+            receiptType={receiptType}
             items={items}
             setItems={setItems}
             selectedSource={selectedSource}
@@ -201,6 +205,8 @@ export default function ReceiptVoucher({
           onCancel={onBack}
           onSave={handleSave}
           onChangeFile={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          selectedFile={selectedFile}
+          onClearFile={() => setSelectedFile(null)}
           isSaving={isSaving}
         />
       </div>
