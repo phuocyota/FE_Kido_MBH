@@ -371,12 +371,12 @@ export default function StockDocumentTable({
                             type={type}
                             aria-label={`${label} dòng ${index + 1}`}
                             data-expiry-row={field === 'expiresAt' ? index : undefined}
-                            aria-invalid={!isNewRow && field === 'expiresAt' && (item.lotTrackingEnabled || requireMaterialLots) && item.productType === 'INGREDIENT' && !item.expiresAt || undefined}
+                            aria-invalid={!isNewRow && field === 'expiresAt' && (item.lotTrackingEnabled || !!item.lotCode?.trim() || requireMaterialLots) && item.productType === 'INGREDIENT' && !item.expiresAt || undefined}
                             value={item[field] || ""}
                             disabled={isNewRow}
                             readOnly={field === "lotCode"}
                             title={field === "lotCode" ? item.lotCode : field === "expiresAt" && item.isFreshFood ? "Hàng tươi sống: mặc định 7 ngày sau ngày mua, có thể sửa theo thực tế" : undefined}
-                            required={(item.lotTrackingEnabled || requireMaterialLots) && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
+                            required={(item.lotTrackingEnabled || !!item.lotCode?.trim() || requireMaterialLots) && (field === "lotCode" || (field === "expiresAt" && item.productType === "INGREDIENT"))}
                             placeholder={field === "lotCode" ? "Tự sinh khi chọn hàng" : undefined}
                             onChange={(event) => handleUpdateItem(index, field, event.target.value)}
                             className={`min-w-0 w-full rounded border px-2 py-1.5 text-sm outline-none disabled:bg-gray-100 ${type === 'date' && !isNewRow && !item[field] ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-1 focus:ring-red-200' : 'border-gray-300 focus:border-blue-500'}`}

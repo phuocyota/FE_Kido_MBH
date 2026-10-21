@@ -131,7 +131,7 @@ function StockLotList({ refreshVersion = 0 }) {
         </div>
         {busy && hasLoaded && <RefreshNotice />}
         {error && <div role="alert" className="p-8 text-center text-red-700">{error}<button onClick={reload} className="ml-3 font-semibold underline">Thử lại</button></div>}
-        {!hasLoaded ? <div role="status" className="min-h-[360px] p-12 text-center text-slate-500">{!error && "Đang tải lô hàng..."}</div> : result.items.length === 0 ? <div className="p-12 text-center text-slate-500">Không có lô hàng phù hợp. Các lô được tạo khi nhập kho hàng có bật theo dõi lô.</div> : (
+        {!hasLoaded ? <div role="status" className="min-h-[360px] p-12 text-center text-slate-500">{!error && "Đang tải lô hàng..."}</div> : result.items.length === 0 ? <div className="p-12 text-center text-slate-500">Không có lô hàng phù hợp. Các lô được tạo khi nhập kho có số lô.</div> : (
           <div className="overflow-x-auto" inert={busy || undefined}>
             <table className="w-full min-w-[1100px] text-left text-sm">
               <thead className="bg-blue-600 text-xs uppercase text-white"><tr>{["Số lô", "Hàng hóa", "Kho", "Ngày sản xuất", "Hạn sử dụng", "Tồn còn lại", "Trạng thái", ""].map((title, index) => <th key={index} className="whitespace-nowrap px-4 py-3">{title}</th>)}</tr></thead>

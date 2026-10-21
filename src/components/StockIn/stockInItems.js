@@ -48,7 +48,7 @@ export function validateStockInItems(items, reasonCode = "NHNCC") {
       if (!["INGREDIENT", "FUEL"].includes(item.productType)) return prefix + `“${item.name || item.code || "Sản phẩm"}” chưa có loại kho phù hợp. Vào Danh mục → Sửa hàng hóa → Phân loại kho, chọn Nguyên liệu hoặc Nhiên liệu rồi mở lại phiếu nhập.`;
       if (!item.baseUnitId) return prefix + `“${item.name || item.code || "Nguyên liệu"}” chưa có đơn vị tồn chuẩn. Cần cấu hình trong Danh mục hàng hóa.`;
     }
-    const requiresLot = item.lotTrackingEnabled || reasonCode === "NHNNL";
+    const requiresLot = item.lotTrackingEnabled || !!item.lotCode?.trim() || reasonCode === "NHNNL";
     if (requiresLot && !item.lotCode?.trim()) return prefix + "Vui lòng nhập số lô.";
     if (requiresLot && item.productType === "INGREDIENT" && !item.expiresAt) return prefix + `“${item.name || item.code || "Nguyên liệu"}” chưa có hạn sử dụng. Vui lòng nhập hạn dùng thực tế của lô.`;
     if (item.manufacturedAt && item.expiresAt && item.manufacturedAt > item.expiresAt) return prefix + "Hạn sử dụng phải từ ngày sản xuất trở đi.";
