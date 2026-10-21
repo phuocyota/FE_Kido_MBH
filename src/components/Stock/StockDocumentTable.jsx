@@ -350,7 +350,7 @@ export default function StockDocumentTable({
                         ) : (
                           item.name
                         )}
-                        {allowLotSelection && item.lotTrackingEnabled && <div className="mt-2 text-xs font-normal"><button type="button" disabled={!(item.quantity > 0)} className="font-semibold text-blue-600 underline" onClick={() => setLotItemId(item.id)}>Chọn lô FEFO</button><span className="ml-2 text-slate-500">{item.allocations?.length ? `Đã chọn ${item.allocations.length} lô` : 'Chưa chọn lô'}</span></div>}
+                        {allowLotSelection && item.lotTrackingEnabled && <div className="mt-2 text-xs font-normal"><button type="button" disabled={!(item.quantity > 0)} className="font-semibold text-blue-600 underline" onClick={() => setLotItemId(item.id)}>Gợi ý chọn lô</button><span className="ml-2 text-slate-500">{item.allocations?.length ? `Đã chọn ${item.allocations.length} lô` : 'Chưa chọn lô'}</span></div>}
                       </td>
                       {showWarehouse && (
                         <td

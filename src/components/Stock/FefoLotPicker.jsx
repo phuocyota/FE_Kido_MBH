@@ -35,7 +35,7 @@ export default function FefoLotPicker({ productId, quantity, unitId, stockId, on
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4">
       <section role="dialog" aria-modal="true" aria-labelledby="fefo-title" className="max-h-[90vh] w-full max-w-4xl space-y-4 overflow-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl">
         <div className="flex items-start justify-between gap-4">
-          <div><h2 id="fefo-title" className="text-xl font-bold">Chọn lô theo FEFO</h2><p className="mt-1 text-sm text-gray-600">Ưu tiên hạn dùng sớm, cùng hạn ưu tiên ngày tạo lô trước; lô không có hạn dùng xếp cuối. Chỉ dùng lô còn hạn và còn tồn.</p></div>
+          <div><h2 id="fefo-title" className="text-xl font-bold">Gợi ý chọn lô</h2><p className="mt-1 text-sm text-gray-600">Ưu tiên hạn dùng sớm, cùng hạn ưu tiên ngày tạo lô trước; lô không có hạn dùng xếp cuối. Chỉ dùng lô còn hạn và còn tồn.</p></div>
           <button type="button" aria-label="Đóng chọn lô" onClick={onClose}>✕</button>
         </div>
         {quantity == null && <label className="grid max-w-xs gap-1 text-sm">Số lượng cần xuất (đơn vị tồn chuẩn)<input type="number" min="0.0001" step="0.0001" value={amount} onChange={(e) => { setAmount(e.target.value); setResult({ loading: true }); }} className="rounded-lg border px-3 py-2" /></label>}
@@ -52,7 +52,7 @@ export default function FefoLotPicker({ productId, quantity, unitId, stockId, on
         </>}
         <div className="flex flex-wrap justify-end gap-2">
           <button type="button" className="rounded-lg border px-4 py-2 text-sm" onClick={onClose}>Đóng</button>
-          <button type="button" disabled={!(Number(requested) > 0)} className="rounded-lg border px-4 py-2 text-sm" onClick={() => { setResult({ loading: true }); setRevision((value) => value + 1); }}>Tính lại FEFO</button>
+          <button type="button" disabled={!(Number(requested) > 0)} className="rounded-lg border px-4 py-2 text-sm" onClick={() => { setResult({ loading: true }); setRevision((value) => value + 1); }}>Làm mới gợi ý</button>
           {onApply && <button type="button" disabled={!valid} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40" onClick={() => onApply({ allocations, stockId: data.stockId, unitId: data.unitId })}>Áp dụng lựa chọn</button>}
         </div>
       </section>

@@ -143,7 +143,7 @@ function StockLotList({ refreshVersion = 0 }) {
                   <td className="whitespace-nowrap px-4 py-4">{lotDate(lot.manufacturedAt)}</td><td className="whitespace-nowrap px-4 py-4">{lotDate(lot.expiresAt)}</td>
                   <td className="whitespace-nowrap px-4 py-4 text-right font-semibold tabular-nums">{lotNumber(lot.quantity)} <span className="font-normal text-slate-500">{lot.baseUnit?.code || lot.product?.unit || ""}</span></td>
                   <td className="px-4 py-4"><Status lot={lot} /></td>
-                  <td className="px-4 py-4"><button onClick={() => setSelected(lot)} className="whitespace-nowrap font-semibold text-blue-600 hover:underline" aria-label={`Chi tiết lô ${lot.lotCode}`}>Chi tiết</button>{canPlanFefo && lot.product?.lotTrackingEnabled && <button type="button" onClick={() => setFefoLot(lot)} className="mt-2 block whitespace-nowrap text-sm font-semibold text-indigo-600 underline">Gợi ý xuất FEFO</button>}</td>
+                  <td className="px-4 py-4"><button onClick={() => setSelected(lot)} className="whitespace-nowrap font-semibold text-blue-600 hover:underline" aria-label={`Chi tiết lô ${lot.lotCode}`}>Chi tiết</button>{canPlanFefo && lot.product?.lotTrackingEnabled && <button type="button" onClick={() => setFefoLot(lot)} className="mt-2 block whitespace-nowrap text-sm font-semibold text-indigo-600 underline">Gợi ý chọn lô</button>}</td>
                 </tr>
               ))}</tbody>
             </table>
