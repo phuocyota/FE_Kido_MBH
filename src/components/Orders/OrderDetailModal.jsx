@@ -3,6 +3,7 @@ import { X, Calendar, User, DollarSign, Tag, FileText, CheckCircle2, AlertCircle
 import toast from "react-hot-toast";
 import { orderApi } from "../../api";
 import OrderStatusLogsDrawer from "./OrderStatusLogsDrawer";
+import OrderProductTraceModal from "./OrderProductTraceModal";
 
 const mapStatusToVN = (statusNum) => {
   switch (Number(statusNum)) {
@@ -80,6 +81,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showStatusLogs, setShowStatusLogs] = useState(false);
+  const [traceItem, setTraceItem] = useState(null);
 
   useEffect(() => {
     if (!orderId) return;
@@ -255,6 +257,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                           <td className="py-3 px-5 text-center text-gray-400 font-medium">{index + 1}</td>
                           <td className="py-3 px-4">
                             <div className="font-semibold text-gray-900">{item.productName}</div>
+                            {item.productId && <button type="button" onClick={() => setTraceItem({ orderId: order.id, productId: item.productId, productName: item.productName })} className="mt-1 text-xs font-semibold text-blue-700 underline hover:text-blue-900">Truy xuất nguồn gốc</button>}
                             {item.note && <div className="text-xs text-orange-500 italic mt-0.5">Ghi chú: {item.note}</div>}
                           </td>
                           <td className="py-3 px-4 text-right text-gray-700 font-medium">
@@ -291,7 +294,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
                   </h3>
                   <div className="space-y-3">
                     {order.payments && order.payments.length > 0 ? (
-                      order.payments.map((pm, idx) => (
+                      order.payments.map((pm) => (
                         <div key={pm.id} className="flex justify-between items-center p-3 rounded-xl border border-gray-100 bg-slate-50/50 hover:bg-slate-50 transition">
                           <div>
                             <div className="font-semibold text-sm text-gray-900">
@@ -403,6 +406,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
           onClose={() => setShowStatusLogs(false)}
         />
       )}
+      {traceItem?.orderId === orderId && <OrderProductTraceModal key={`${traceItem.orderId}:${traceItem.productId}`} {...traceItem} onClose={() => setTraceItem(null)} />}
     </div>
   );
 }
