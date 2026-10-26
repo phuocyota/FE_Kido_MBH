@@ -252,7 +252,7 @@ export default function BoardingOrderAdmin() {
       const newSchedule = {};
 
       data.forEach((item) => {
-        if (!item.product) return;
+        if (item.product?.isBoarding !== true) return;
 
         const meal = enumToMeal[item.mealPeriod];
         const dateKey = item.dateKey;
@@ -305,9 +305,24 @@ export default function BoardingOrderAdmin() {
 
   const fetchTemplates = async () => {
     try {
-      const data = await productApi.getAll();
+      const data = [];
+      let page = 1;
+      const size = 100;
+      while (true) {
+        const items = await productApi.getAll({
+          isBoarding: true,
+          displayStatus: "active",
+          page,
+          size,
+        });
+        data.push(...items);
+        if (items.length === 0 || (items.total !== undefined
+          ? data.length >= Number(items.total)
+          : items.length < size)) break;
+        page += 1;
+      }
       const templates = data
-        .filter((p) => p.isCanteenItem === false && p.isActive === true)
+        .filter((p) => p.isBoarding === true && p.isActive === true)
         .map((p) => {
           let imageUrl = p.imageUrl || "";
           if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("data:")) {
@@ -389,6 +404,7 @@ export default function BoardingOrderAdmin() {
           price: 0,
           isActive: true,
           isCanteenItem: false,
+          isBoarding: true,
         });
         productId = newProduct.id;
       } else {
@@ -416,13 +432,8 @@ export default function BoardingOrderAdmin() {
           const dayKey = makeKey(level, day.key, meal);
           const dayOptions = schedule[dayKey] || [];
 
-          // Delete existing option at index if editing
           const existingOption = dayOptions[modalContext.optionIndex];
-          if (existingOption?.id) {
-            await mealItemApi.delete(existingOption.id).catch(() => {});
-          }
-
-          return mealItemApi.create({
+          const payload = {
             branchId: getBranchIdFromToken(),
             productId,
             mealPeriod: mealToEnum[meal],
@@ -433,7 +444,10 @@ export default function BoardingOrderAdmin() {
             sortOrder: order.sortOrder || 0,
             expectedQuantity: order.expectedQuantity || 0,
             status: "ACTIVE",
-          });
+          };
+          return existingOption?.id
+            ? mealItemApi.update(existingOption.id, payload)
+            : mealItemApi.create(payload);
         })
       );
 
@@ -441,7 +455,8 @@ export default function BoardingOrderAdmin() {
       await fetchSchedule();
       setModalContext(null);
     } catch (err) {
-      toast.error("Có lỗi xảy ra khi lưu thực đơn");
+      const message = err.response?.data?.message;
+      toast.error(Array.isArray(message) ? message.join(", ") : message || "Có lỗi xảy ra khi lưu thực đơn");
     } finally {
       setIsLoading(false);
     }
@@ -582,7 +597,7 @@ export default function BoardingOrderAdmin() {
             </div>
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
               <Clock3 size={14} />
-              Lưu tự động trên thiết bị
+                Số suất dự kiến được gửi vào kế hoạch bếp
             </span>
           </div>
 
