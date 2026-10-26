@@ -56,7 +56,7 @@ export default function ShiftCell({
                 {displayLabel}
               </span>
 
-              {hover && (
+              {onDelete && (
                 <button
                   type="button"
                   onClick={(e) => {
@@ -88,13 +88,13 @@ export default function ShiftCell({
         </div>
       )}
 
-      <button
+      {!hasShift && <button
         type="button"
         onClick={onAdd}
-        className="mt-2 text-blue-600 text-sm opacity-0 group-hover:opacity-100 transition"
+        className="mt-2 text-blue-600 text-sm transition"
       >
         + Thêm lịch
-      </button>
+      </button>}
 
     </div>
   );

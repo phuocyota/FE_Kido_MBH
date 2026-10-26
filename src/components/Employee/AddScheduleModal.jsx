@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
+import { getRepeatEndDate } from "../../utils/timeSheet";
 import { workScheduleApi } from "../../api";
 
 export default function AddScheduleModal({
@@ -94,6 +95,7 @@ const getSelectedShift = () => {
 };
 
 const handleSave = async () => {
+  if (saving) return;
   const shift = customShift ? "custom" : getSelectedShift();
 
   if (!employee?.id || !date || !shift) {
@@ -101,6 +103,10 @@ const handleSave = async () => {
     return;
   }
 
+  if (customShift && (!startTime || !endTime || startTime >= endTime)) {
+    toast.error("Vui lòng chọn giờ bắt đầu nhỏ hơn giờ kết thúc trong cùng ngày");
+    return;
+  }
   setSaving(true);
   try {
     const parsedWorkDate = parseDate(date);
@@ -110,14 +116,6 @@ const handleSave = async () => {
         toast.error("Vui lòng chọn ít nhất một ngày trong tuần");
         return;
       }
-
-      const startDate = new Date(parsedWorkDate);
-      const endDate = new Date(startDate);
-      endDate.setUTCDate(startDate.getUTCDate() + 7 * (repeatWeeks - 1));
-
-      const formatDate = (d) => {
-        return d.toISOString().split("T")[0];
-      };
 
       const weeklyShiftItem = {
         shift,
@@ -138,7 +136,7 @@ const handleSave = async () => {
       const repeatPayload = {
         employeeId: employee.id,
         fromDate: parsedWorkDate,
-        toDate: formatDate(endDate),
+        toDate: getRepeatEndDate(parsedWorkDate, repeatWeeks),
         replaceExisting: true,
         weeklyShifts: [weeklyShiftItem],
       };
@@ -161,7 +159,7 @@ const handleSave = async () => {
       if (existingShift) {
         let scheduleId = existingShift.id;
         if (!scheduleId) {
-          const [year, month, day] = parsedWorkDate.split("-");
+          const [year, month] = parsedWorkDate.split("-");
           const scheduleData = await workScheduleApi.getMonthly(
             Number(year),
             Number(month),
@@ -197,7 +195,7 @@ const handleSave = async () => {
   return (
     <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center p-4">
 
-      <div className="w-full max-w-[680px] bg-white rounded-2xl overflow-hidden shadow-xl">
+      <div className="w-full max-w-[680px] max-h-[90vh] bg-white rounded-2xl overflow-y-auto shadow-xl">
 
         <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
 
@@ -223,6 +221,7 @@ const handleSave = async () => {
 
           <button
             onClick={onClose}
+            disabled={saving}
             className="text-gray-500"
           >
             <X size={22} />
@@ -582,7 +581,7 @@ const handleSave = async () => {
         </div>
 
         <p className="text-xs text-gray-500 mt-1">
-          Hệ thống sẽ tự tạo lịch làm việc vào các thứ đã chọn và cùng ca trong các tuần tiếp theo.
+          Áp dụng các thứ đã chọn trong {repeatWeeks * 7} ngày, bắt đầu từ {date}. Lịch cũ tại những ngày này sẽ được thay thế.
         </p>
 
       </div>
@@ -601,6 +600,7 @@ const handleSave = async () => {
 
           <button
             onClick={onClose}
+            disabled={saving}
             className="h-[42px] px-5 rounded-xl border border-gray-300"
           >
             Bỏ qua

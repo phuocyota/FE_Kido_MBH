@@ -35,19 +35,24 @@ export const workScheduleApi = {
 
   // Create schedule
   create: async (data) => {
-    const response = await axiosInstance.post("/work-schedules", data);
+    const response = await axiosInstance.post("/work-schedules", data, { preserveEmptyData: true });
     return response.data.data || response.data;
   },
 
   // Create schedule weekly repeat
   createWeeklyRepeat: async (data) => {
-    const response = await axiosInstance.post("/work-schedules/weekly-repeat", data);
+    const response = await axiosInstance.post("/work-schedules/weekly-repeat", data, { preserveEmptyData: true });
     return response.data.data || response.data;
+  },
+
+  importSchedules: async (data) => {
+    const response = await axiosInstance.post("/work-schedules/import", data, { preserveEmptyData: true });
+    return unwrapRequiredData(response);
   },
 
   // Update schedule
   update: async (id, data) => {
-    const response = await axiosInstance.put(`/work-schedules/${id}`, data);
+    const response = await axiosInstance.put(`/work-schedules/${id}`, data, { preserveEmptyData: true });
     return response.data.data || response.data;
   },
 

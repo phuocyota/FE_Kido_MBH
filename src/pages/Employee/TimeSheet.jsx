@@ -1,5 +1,5 @@
 import DataRefresh from "../../components/common/DataRefresh";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Search,
   ChevronLeft,
@@ -10,7 +10,9 @@ import {
 import toast from "react-hot-toast";
 
 import { workScheduleApi, employeeApi } from "../../api";
+import { formatDateISO, importColumns, parseScheduleImport } from "../../utils/timeSheet";
 import ShiftCell from "../../components/Employee/ShiftCell";
+import ScheduleImportModal from "../../components/Employee/ScheduleImportModal";
 import AddScheduleModal from "../../components/Employee/AddScheduleModal";
 
 const SHIFT_DEFINITIONS = {
@@ -308,10 +310,6 @@ const getEmployeeWeekHours = (employee, weekDays) => {
   }, 0);
 };
 
-const formatDateISO = (date) => {
-  return date.toISOString().split("T")[0];
-};
-
 const getWeekDays = (date) => {
   const current = new Date(date);
 
@@ -358,23 +356,33 @@ export default function TimeSheet() {
   // API data state
   const [timeSheetData, setTimeSheetData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const requestId = useRef(0);
+  const importInput = useRef(null);
+  const [importRows, setImportRows] = useState(null);
+  const [replaceExisting, setReplaceExisting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchTimeSheet = useCallback(async () => {
     const weekDays = getWeekDays(currentDate);
     const from = formatDateISO(weekDays[0]);
     const to = formatDateISO(weekDays[6]);
     
+    const id = ++requestId.current;
     setLoading(true);
+    setLoadError("");
+    setTimeSheetData([]);
     try {
       const [employeesList, timesheetData] = await Promise.all([
         employeeApi.getAll("working"),
-        workScheduleApi.getTimeSheet(from, to).catch(() => []),
+        workScheduleApi.getTimeSheet(from, to),
       ]);
 
+      if (!Array.isArray(timesheetData)) throw new Error("Invalid timesheet response");
+      const schedulesByEmployee = new Map(timesheetData.map((entry) => [entry.id, entry]));
       const mappedData = employeesList.map((emp) => {
-        const tsEntry = (Array.isArray(timesheetData) ? timesheetData : []).find(
-          (item) => item.id === emp.id || item.code === emp.code
-        );
+        const tsEntry = schedulesByEmployee.get(emp.id);
         return {
           id: emp.id,
           code: emp.code,
@@ -385,17 +393,20 @@ export default function TimeSheet() {
         };
       });
 
-      setTimeSheetData(mappedData);
+      if (id === requestId.current) setTimeSheetData(mappedData);
     } catch {
-      toast.error("Không thể tải bảng chấm công");
+      if (id === requestId.current) {
+        setLoadError("Không thể tải lịch làm việc. Vui lòng thử lại.");
+        toast.error("Không thể tải bảng chấm công");
+      }
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [currentDate]);
 
   const handleDeleteSchedule = async () => {
-    if (!deleteInfo) return;
-
+    if (!deleteInfo || deleting) return;
+    setDeleting(true);
     try {
       let scheduleId = deleteInfo.scheduleId;
 
@@ -421,7 +432,9 @@ export default function TimeSheet() {
       setDeleteInfo(null);
       fetchTimeSheet();
     } catch {
-      toast.error("Khong the xoa lich lam viec");
+      toast.error("Không thể xóa lịch làm việc");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -429,6 +442,7 @@ export default function TimeSheet() {
 
   useEffect(() => {
     fetchTimeSheet();
+    return () => { requestId.current += 1; };
   }, [fetchTimeSheet]);
 
   const weekDays =
@@ -473,6 +487,58 @@ export default function TimeSheet() {
     (total, hours) => total + hours,
     0
   );
+
+  const handleExport = async () => {
+    try {
+      const XLSX = await import("xlsx");
+      const rows = filteredTimeSheetData.flatMap((employee) => weekDays.flatMap((date) => {
+        const detail = employee.shiftDetails?.[date.getDate()];
+        const shift = employee.shifts?.[date.getDate()];
+        if (!shift) return [];
+        return [{ employeeCode: employee.code, workDate: formatDateISO(date), shift,
+          startTime: detail?.startTime?.slice(0, 5) || "", endTime: detail?.endTime?.slice(0, 5) || "", note: detail?.note || "" }];
+      }));
+      const sheet = XLSX.utils.json_to_sheet(rows, { header: importColumns });
+      sheet["!cols"] = importColumns.map((key) => ({ wch: key === "note" ? 40 : 20 }));
+      const book = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(book, sheet, "Lich lam viec");
+      XLSX.writeFile(book, `lich-lam-viec-${formatDateISO(weekDays[0])}.xlsx`);
+    } catch {
+      toast.error("Không thể xuất file lịch làm việc");
+    }
+  };
+
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("File tối đa 5 MB"); return; }
+    try {
+      const XLSX = await import("xlsx");
+      const book = XLSX.read(await file.arrayBuffer(), { type: "array", raw: true });
+      const sheet = book.Sheets[book.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+      setImportRows(parseScheduleImport(rows, timeSheetData));
+      setReplaceExisting(false);
+    } catch (error) {
+      toast.error(error.message || "Không thể đọc file import");
+    }
+  };
+
+  const handleImport = async () => {
+    if (importing || !importRows) return;
+    setImporting(true);
+    try {
+      const schedules = importRows.map(({ employeeId, workDate, shift, startTime, endTime, note }) =>
+        ({ employeeId, workDate, shift, ...(shift === "custom" ? { startTime, endTime } : {}), note }));
+      const result = await workScheduleApi.importSchedules({ schedules, replaceExisting });
+      toast.success(`Đã nhập ${result.created} lịch, thay thế ${result.replaced} lịch cũ`);
+      setImportRows(null);
+      fetchTimeSheet();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Không thể hoàn tất import. Vui lòng tải lại lịch để kiểm tra");
+    } finally { setImporting(false); }
+  };
 
   return (
     <div className="erp-page bg-[#f5f6f8]">
@@ -555,12 +621,12 @@ export default function TimeSheet() {
 
           <div className="flex gap-2">
 
-            <button className="h-[42px] px-4 border border-gray-300 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50">
+            <button disabled={loading || !!loadError} onClick={() => importInput.current?.click()} className="h-[42px] px-4 border border-gray-300 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 disabled:opacity-50">
               <Upload size={16} />
               Import
             </button>
 
-            <button className="h-[42px] px-4 border border-gray-300 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50">
+            <button disabled={loading || !!loadError} onClick={handleExport} className="h-[42px] px-4 border border-gray-300 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 disabled:opacity-50">
               <Download size={16} />
               Xuất file
             </button>
@@ -569,6 +635,8 @@ export default function TimeSheet() {
 
         </div>
 
+        <input ref={importInput} type="file" accept=".xlsx,.xls,.csv" onChange={handleImportFile} className="hidden" />
+        {loadError && <div role="alert" className="p-4 text-red-700">{loadError} <button onClick={fetchTimeSheet} className="underline">Thử lại</button></div>}
         <div className="overflow-x-auto">
 
           <DataRefresh pending={loading} hasData={timeSheetData.length > 0}>{({ initialLoading }) => (<><table className="min-w-[1400px] w-full border-collapse border border-gray-00 erp-data-table">
@@ -595,7 +663,7 @@ export default function TimeSheet() {
                       </span>
 
                       <span className="font-semibold mt-1">
-                        {date.getDate()}
+                        {date.getDate()}/{date.getMonth() + 1}
                       </span>
 
                     </div>
@@ -620,10 +688,10 @@ export default function TimeSheet() {
                     Đang tải dữ liệu...
                   </td>
                 </tr>
-              ) : timeSheetData.length === 0 ? (
+              ) : filteredTimeSheetData.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-14 text-gray-400">
-                    Không có dữ liệu chấm công
+                    {loadError ? "Chưa tải được lịch làm việc" : "Không tìm thấy nhân viên"}
                   </td>
                 </tr>
               ) : (
@@ -759,6 +827,15 @@ export default function TimeSheet() {
       </div>
 
 
+      <ScheduleImportModal
+        rows={importRows}
+        replaceExisting={replaceExisting}
+        onReplaceChange={setReplaceExisting}
+        importing={importing}
+        onClose={() => setImportRows(null)}
+        onImport={handleImport}
+      />
+
       <AddScheduleModal
         open={openSchedule}
         onClose={() => setOpenSchedule(false)}
@@ -813,6 +890,7 @@ export default function TimeSheet() {
 
         <button
           onClick={handleDeleteSchedule}
+          disabled={deleting}
           className="h-[40px] px-6 bg-indigo-600 text-white rounded-xl"
         >
           Đồng ý
