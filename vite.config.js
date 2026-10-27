@@ -5,6 +5,14 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        admin: 'index.html',
+        productTrace: 'product-trace.html',
+      },
+    },
+  },
   server: {
     host: true,
     port: 5173,

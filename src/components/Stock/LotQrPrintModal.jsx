@@ -1,10 +1,13 @@
 import React from "react";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Printer, X } from "lucide-react";
 import { warehouseApi } from "../../api/warehouseApi";
 import { buildLotLabelDocument } from "./lotLabelPrint";
+import { productApi } from "../../api/productApi";
+import { useReadQuery } from "../../hooks/useReadQuery";
+import { buildLotTraceUrl } from "../QR/lotTraceUrl";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
 const isNumberInRange = (value, min, max) => Number.isFinite(Number(value)) && value !== "" && Number(value) >= min && Number(value) <= max;
@@ -23,6 +26,17 @@ export default function LotQrPrintModal({ lot, trace, onClose }) {
   const [printError, setPrintError] = useState("");
   const frame = useRef(null);
   const closeButton = useRef(null);
+  const productId = trace.product?.id || lot.productId || lot.product?.id;
+  const loadProduct = useCallback((signal) => productApi.getById(productId, signal), [productId]);
+  const productQuery = useReadQuery({
+    queryKey: [productId],
+    scopeKey: ["lot-print-product", productId],
+    enabled: !!productId,
+    load: loadProduct,
+  });
+  const productImage = productQuery.data?.imageUrl ?? trace.product?.imageUrl ?? lot.product?.imageUrl;
+  const pending = loading || productQuery.loading;
+  const loadError = error || productQuery.error;
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -90,13 +104,27 @@ export default function LotQrPrintModal({ lot, trace, onClose }) {
     : serials.length && !allSerials && !serials.includes(selectedSerial) ? "Vui lòng chọn serial cần in."
     : !serials.length && !lotCode ? "Thiếu mã lô để tạo QR." : "";
   const preview = useMemo(() => {
-    if (loading || error || validationError) return { html: "" };
+    if (pending || loadError || validationError) return { html: "" };
     try {
-      return { html: buildLotLabelDocument({ productName: trace.product?.name || lot.product?.name, lotCode, receivedAt: trace.origin?.receivedAt, expiresAt: trace.lot?.expiresAt || lot.expiresAt, serials: chosenSerials, quantity: total }) };
+      const details = {
+        lotId: lot.id,
+        productName: trace.product?.name || lot.product?.name,
+        productImage,
+        lotCode,
+        manufacturedAt: trace.lot?.manufacturedAt || lot.manufacturedAt,
+        receivedAt: trace.origin?.receivedAt || trace.origin?.purchasedAt,
+        expiresAt: trace.lot?.expiresAt || lot.expiresAt,
+      };
+      return {
+        url: buildLotTraceUrl({ ...details, serial: chosenSerials[0] }),
+        html: buildLotLabelDocument({ ...details, serials: chosenSerials, quantity: total,
+          labelPayload: (serial) => buildLotTraceUrl({ ...details, serial }),
+        }),
+      };
     } catch {
       return { html: "", error: "Không thể tạo QR. Mã lô hoặc serial quá dài hoặc không hợp lệ." };
     }
-  }, [loading, error, validationError, trace, lot, lotCode, chosenSerials, total]);
+  }, [pending, loadError, validationError, trace, lot, lotCode, chosenSerials, total, productImage]);
 
   const ready = !!preview.html && loadedPreview === preview.html;
   const change = (setter) => (event) => { setPrintError(""); setter(event.target.value); };
@@ -121,7 +149,8 @@ export default function LotQrPrintModal({ lot, trace, onClose }) {
           <button ref={closeButton} type="button" onClick={onClose} aria-label="Đóng in tem QR" className="rounded p-2 hover:bg-slate-100"><X size={20} /></button>
         </header>
         <div className="overflow-y-auto p-4">
-          {loading ? <p role="status">Đang tải toàn bộ serial của lô...</p> : error ? <p role="alert" className="text-red-700">{error} <button type="button" onClick={() => setRetry((value) => value + 1)} className="underline">Thử lại</button></p> : <>
+          {pending ? <p role="status">Đang tải ảnh sản phẩm và serial của lô...</p> : loadError ? <p role="alert" className="text-red-700">{loadError} <button type="button" onClick={() => { setRetry((value) => value + 1); productQuery.refetch(); }} className="underline">Thử lại</button></p> : <>
+            {preview.url && <a href={preview.url} target="_blank" rel="noopener noreferrer" className="mb-4 inline-block text-sm text-blue-700 underline">Xem trang sau khi quét QR{allSerials ? " (serial đầu tiên)" : ""}</a>}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {serials.length > 0 && <label className="text-sm">Serial cần in<select aria-label="Serial cần in" className={inputClass} value={mode} onChange={change(setMode)}><option value="all">In tất cả ({serials.length} serial)</option><option value="single">In một serial</option></select></label>}
               {serials.length > 0 && !allSerials && <label className="text-sm">Chọn serial<select aria-label="Chọn serial" className={inputClass} value={selectedSerial} onChange={change(setSelectedSerial)}>{serials.map((serial) => <option key={serial} value={serial}>{serial}</option>)}</select></label>}

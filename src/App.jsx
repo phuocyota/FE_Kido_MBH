@@ -18,6 +18,9 @@ import TimeKeeping from "./pages/Employee/TimeKeeping";
 import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import Orders from "./pages/Orders/Orders";
+import ProductTrace from "./pages/QR/ProductTrace";
+import Trace from "./pages/QR/Trace";
+import WarehouseQr from "./pages/QR/WarehouseQr";
 import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
 import BoardingOrderDemo from "./pages/BoardingOrder/BoardingOrderDemo";
 import ReportEmployee from "./pages/reports/ReportEmployee";
@@ -58,6 +61,9 @@ const App = () => {
       <Routes>
         {/* LOGIN (KHÔNG CÓ HEADER) */}
         <Route path="/login" element={<Login />} />
+        <Route path="/truyxuat" element={<ProductTrace />} />
+        <Route path="/trace" element={<Trace />} />
+        <Route path="/product-trace" element={<ProductTrace />} />
         <Route path="/boarding-orders/demo" element={<BoardingOrderDemo />} />
 
         {/* CÁC TRANG CÓ HEADER */}
@@ -91,6 +97,7 @@ const App = () => {
                   <Route path="/warehouse" element={<WarehouseOverview />} />
                   <Route path="/warehouse/inventory" element={<WarehouseInventory />} />
                   <Route path="/warehouse/trace" element={<WarehouseTrace />} />
+                  <Route path="/warehouse/qr" element={<WarehouseQr />} />
                   <Route path="/stock-lots" element={<StockLots />} />
                   <Route path="/stock-in" element={<StockInList />} />
                   <Route path="/stock-in/create" element={<StockInCreate />} />

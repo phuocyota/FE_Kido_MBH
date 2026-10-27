@@ -1,0 +1,22 @@
+- main [ref=e3]:
+  - article [ref=e4]:
+    - generic [ref=e6]:
+      - img "Ảnh thay thế sản phẩm" [ref=e7]
+      - paragraph [ref=e8]: Chưa có hình ảnh sản phẩm
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: Thông tin sản phẩm
+        - heading "Thit bo" [level=1] [ref=e12]
+        - paragraph [ref=e13]: "Lô: LOT-001"
+      - heading "Truy xuất nguồn gốc" [level=2] [ref=e14]
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - term [ref=e17]: Ngày sản xuất
+          - definition [ref=e18]: 26/10/2026
+        - generic [ref=e19]:
+          - term [ref=e20]: In stock · Nhập kho
+          - definition [ref=e21]: 27/10/2026 08:30
+        - generic [ref=e22]:
+          - term [ref=e23]: Expired · Hạn sử dụng
+          - definition [ref=e24]: 30/10/2026
+      - paragraph [ref=e25]: Thời gian theo múi giờ Việt Nam (UTC+7). Thông tin được ghi nhận tại thời điểm tạo tem QR.

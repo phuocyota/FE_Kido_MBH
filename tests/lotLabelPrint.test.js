@@ -2,9 +2,32 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jsQR from "jsqr";
 import { buildLotLabelDocument, buildLotLabelPayload, formatLabelDate, labelQr } from "../src/components/Stock/lotLabelPrint.js";
+import { buildLotTraceUrl } from "../src/components/QR/lotTraceUrl.js";
 
 const defaults = { productName: "Thịt bò", lotCode: "LOT-001", receivedAt: "2026-10-20T01:30:00Z", expiresAt: "2027-10-20T15:00:00Z", serials: [], quantity: 1 };
 const count = (html, className) => (html.match(new RegExp(`class="${className}"`, "g")) || []).length;
+
+test("lot QR opens the photo trace page and retains a distinct URL for every serial", () => {
+  const details = { ...defaults, origin: 'http://192.168.1.15:5173', productImage: 'https://images.example.com/beef.jpg', manufacturedAt: '2026-10-19' };
+  const payload = (serial) => buildLotTraceUrl({ ...details, serial });
+  const parsed = new URL(payload('SERIAL-1'));
+  const params = new URLSearchParams(parsed.hash.slice(1));
+  assert.equal(parsed.origin, details.origin);
+  assert.equal(parsed.pathname, '/truyxuat');
+  assert.equal(params.get('image'), details.productImage);
+  assert.equal(params.get('lot'), 'LOT-001');
+  assert.equal(params.get('serial'), 'SERIAL-1');
+  assert.equal(params.get('stock'), '20/10/2026 08:30:00');
+  assert.equal(params.get('manufactured'), '19/10/2026 (chưa có giờ)');
+  assert.equal(params.get('expires'), '20/10/2027 22:00:00');
+  const html = buildLotLabelDocument({ ...details, serials: ['SERIAL-1', 'SERIAL-2'], quantity: 2, labelPayload: payload });
+  assert.ok(html.includes(labelQr(payload('SERIAL-1'))));
+  assert.ok(html.includes(labelQr(payload('SERIAL-2'))));
+  assert.notEqual(payload('SERIAL-1'), payload('SERIAL-2'));
+  assert.ok(!html.includes('<img'));
+  const lotOnly = new URLSearchParams(new URL(payload()).hash.slice(1));
+  assert.equal(lotOnly.has('serial'), false);
+});
 
 test("non-serial lot repeats labels and leaves the last right slot blank", () => {
   const html = buildLotLabelDocument({ ...defaults, quantity: 3 });
@@ -42,10 +65,10 @@ test("product names and codes cannot inject markup into the print frame", () => 
 
 test("scanned QR contains details and Vietnam date/time without printing them", () => {
   const payload = buildLotLabelPayload({ ...defaults, serial: "SERIAL-1" });
-  assert.equal(payload, "Sản phẩm: Thịt bò\nLô: LOT-001\nSerial: SERIAL-1\nInstock: 20/10 08:30\nExpired: 20/10 22:00");
+  assert.equal(payload, "Sản phẩm: Thịt bò\nLô: LOT-001\nSerial: SERIAL-1\nNgày sản xuất: —\nInstock: 20/10/2026 08:30:00\nExpired: 20/10/2027 22:00:00");
   assert.ok(buildLotLabelDocument(defaults).includes(labelQr(buildLotLabelPayload(defaults))));
-  assert.equal(formatLabelDate("2026-10-20T08:30:00"), "20/10 08:30");
-  assert.equal(formatLabelDate("2026-10-20"), "20/10 --:--");
+  assert.equal(formatLabelDate("2026-10-20T08:30:00"), "20/10/2026 08:30:00");
+  assert.equal(formatLabelDate("2026-10-20"), "20/10/2026 (chưa có giờ)");
   assert.equal(formatLabelDate(null), "—");
   assert.equal(formatLabelDate("invalid"), "—");
   assert.ok(!buildLotLabelPayload(defaults).includes("Serial:"));

@@ -1,0 +1,20 @@
+- main [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "Product Traceability" [level=2] [ref=e8]
+        - paragraph [ref=e15]: Nhập ID lô hoặc quét mã QR để xem hình ảnh và nguồn gốc sản phẩm.
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - textbox "ID lô hoặc đường dẫn QR" [ref=e22]:
+            - /placeholder: Nhập ID lô (UUID) hoặc dán đường dẫn QR...
+          - button "Tra cứu" [disabled] [ref=e23]
+        - generic [ref=e28]:
+          - button "Quét mã QR" [ref=e29]
+          - generic [ref=e33] [cursor=pointer]:
+            - text: Tải ảnh QR
+            - button "Tải ảnh mã QR" [ref=e38]
+        - paragraph [ref=e39]: Hỗ trợ ID lô dạng UUID và đường dẫn QR. Với mã sản phẩm hoặc serial, hãy lấy ID lô tương ứng trước khi tra cứu.
+    - generic [ref=e40]:
+      - paragraph [ref=e47]: Sẵn sàng truy xuất
+      - paragraph [ref=e48]: Nhập ID lô, quét bằng camera hoặc tải ảnh QR để bắt đầu.

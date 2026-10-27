@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Search, RefreshCw } from "lucide-react";
 import { productionTraceApi } from "../../api/productionTraceApi";
+import { productApi } from "../../api/productApi";
 import { useReadQuery } from "../../hooks/useReadQuery";
+import OrderQrPrint from "./OrderQrPrint";
 
 const number = (value) =>
   Number(value || 0).toLocaleString("vi-VN", { maximumFractionDigits: 4 });
@@ -86,6 +88,15 @@ export default function OrderProductTraceModal({
     queryKey: [orderId, productId, page, refreshVersion],
     scopeKey: ["order-product-trace", orderId, productId, page],
     load,
+  });
+  const loadProduct = useCallback(
+    (signal) => productApi.getById(productId, signal),
+    [productId],
+  );
+  const productQuery = useReadQuery({
+    queryKey: [productId, refreshVersion],
+    scopeKey: ["trace-product", productId],
+    load: loadProduct,
   });
   const batches = query.data?.batches?.data || [];
   const batch =
@@ -184,6 +195,7 @@ export default function OrderProductTraceModal({
         </header>
         <div className="space-y-4 overflow-y-auto p-5">
           <ReadState query={query} />
+          <ReadState query={productQuery} />
           {!query.loading && !query.error && query.data && !batches.length && (
             <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
               Sản phẩm chưa có mẻ chế biến được liên kết với đơn này. Chưa có hồ
@@ -226,6 +238,8 @@ export default function OrderProductTraceModal({
                 <BatchTrace
                   key={batch.batchId}
                   batchId={batch.batchId}
+                  productName={productName}
+                  productQuery={productQuery}
                   refreshVersion={refreshVersion}
                 />
               )}
@@ -238,7 +252,7 @@ export default function OrderProductTraceModal({
   );
 }
 
-function BatchTrace({ batchId, refreshVersion }) {
+function BatchTrace({ batchId, refreshVersion, productName, productQuery }) {
   const [page, setPage] = useState(1);
   const [unitId, setUnitId] = useState("");
   const load = useCallback(
@@ -287,15 +301,19 @@ function BatchTrace({ batchId, refreshVersion }) {
                   <p key={input.lotId}>
                     <span className="font-medium">{input.origin?.product?.name || "Nguyên liệu"}</span>
                     {" · "}{input.origin?.lot?.code || input.lotId}<br />
-                    {dateTime(input.origin?.origin?.purchasedAt || input.origin?.origin?.receivedAt)}
+                    {dateTime(input.origin?.origin?.receivedAt || input.origin?.origin?.purchasedAt)}
                   </p>
                 )) : "Chưa ghi nhận lô nguyên liệu"}
               </dd>
             </div>
             <div><dt className="font-semibold text-slate-900">Make · Bắt đầu chế biến</dt><dd className="mt-1 text-slate-600">{dateTime(batch.startedAt)}</dd></div>
             <div><dt className="font-semibold text-slate-900">Ready · Chế biến xong, dùng được</dt><dd className="mt-1 text-slate-600">{dateTime(batch.readyAt)}</dd></div>
+            <div><dt className="font-semibold text-slate-900">Completed · Hoàn thành</dt><dd className="mt-1 text-slate-600">{dateTime(batch.completedAt)}</dd></div>
             <div><dt className="font-semibold text-slate-900">Expired at · Hạn sử dụng</dt><dd className="mt-1 text-slate-600">{dateTime(unit?.expiresAt || batch.expiresAt)}</dd></div>
           </dl>
+          {unit && !query.loading && !query.error && !labels.loading && !labels.error && !productQuery.loading && !productQuery.error && productQuery.data && (
+            <OrderQrPrint key={unit.unitId} productName={productName} productImage={productQuery.data.imageUrl} batch={batch} unit={unit} />
+          )}
           {!batch.traceabilityComplete && (
             <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
               Mẻ chưa có đầy đủ hồ sơ nguyên liệu theo lô.
