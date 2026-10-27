@@ -17,25 +17,16 @@ export function labelQr(value) {
 
 export function formatLabelDate(value) {
   if (!value) return "—";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value.slice(8, 10)}/${value.slice(5, 7)} --:--`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value.slice(8, 10)}/${value.slice(5, 7)}/${value.slice(0, 4)} (chưa có giờ)`;
   const date = new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}+07:00`);
   if (Number.isNaN(date.getTime())) return "—";
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).formatToParts(date);
   const part = (type) => parts.find((item) => item.type === type).value;
-  return `${part("day")}/${part("month")} ${part("hour")}:${part("minute")}`;
+  return `${part("day")}/${part("month")}/${part("year")} ${part("hour")}:${part("minute")}:${part("second")}`;
 }
 
-export function buildLotLabelPayload({ productName, lotCode, serial, receivedAt, expiresAt }) {
-  return [
-    `Sản phẩm: ${productName || "Chưa có tên sản phẩm"}`,
-    `Lô: ${lotCode || "—"}`,
-    ...(serial ? [`Serial: ${serial}`] : []),
-    `Instock: ${formatLabelDate(receivedAt)}`,
-    `Expired: ${formatLabelDate(expiresAt)}`,
-  ].join("\n");
-}
-
-export function buildLotLabelDocument({ productName, lotCode, receivedAt, expiresAt, serials = [], quantity }) {
+export function buildLotLabelDocument({ productName, serials = [], quantity, labelPayload }) {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) throw new Error("Số lượng tem phải là số nguyên từ 1 đến 10.000.");
   const paperWidth = 70;
   const height = 22;
   const gap = 2;
@@ -43,7 +34,10 @@ export function buildLotLabelDocument({ productName, lotCode, receivedAt, expire
   const qrCache = new Map();
   const labels = Array.from({ length: quantity }, (_, index) => {
     const serial = serials.length ? serials[index % serials.length] : undefined;
-    const payload = buildLotLabelPayload({ productName, lotCode, serial, receivedAt, expiresAt });
+    const payload = typeof labelPayload === "function"
+      ? labelPayload(serial)
+      : labelPayload;
+    if (typeof payload !== "string" || !payload.trim()) throw new Error("Thiếu nội dung mã QR.");
     if (!qrCache.has(payload)) qrCache.set(payload, labelQr(payload));
     return `<article class="label"><div class="name">${escapeHtml(productName || "Chưa có tên sản phẩm")}</div><div class="qr">${qrCache.get(payload)}</div></article>`;
   });

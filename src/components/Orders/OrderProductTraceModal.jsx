@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { X, Search, RefreshCw } from "lucide-react";
 import { productionTraceApi } from "../../api/productionTraceApi";
 import { useReadQuery } from "../../hooks/useReadQuery";
+import OrderQrPrint from "./OrderQrPrint";
 
 const number = (value) =>
   Number(value || 0).toLocaleString("vi-VN", { maximumFractionDigits: 4 });
@@ -226,6 +227,7 @@ export default function OrderProductTraceModal({
                 <BatchTrace
                   key={batch.batchId}
                   batchId={batch.batchId}
+                  productName={productName}
                   refreshVersion={refreshVersion}
                 />
               )}
@@ -238,7 +240,7 @@ export default function OrderProductTraceModal({
   );
 }
 
-function BatchTrace({ batchId, refreshVersion }) {
+function BatchTrace({ batchId, refreshVersion, productName }) {
   const [page, setPage] = useState(1);
   const [unitId, setUnitId] = useState("");
   const load = useCallback(
@@ -287,15 +289,19 @@ function BatchTrace({ batchId, refreshVersion }) {
                   <p key={input.lotId}>
                     <span className="font-medium">{input.origin?.product?.name || "Nguyên liệu"}</span>
                     {" · "}{input.origin?.lot?.code || input.lotId}<br />
-                    {dateTime(input.origin?.origin?.purchasedAt || input.origin?.origin?.receivedAt)}
+                    {dateTime(input.origin?.origin?.receivedAt || input.origin?.origin?.purchasedAt)}
                   </p>
                 )) : "Chưa ghi nhận lô nguyên liệu"}
               </dd>
             </div>
             <div><dt className="font-semibold text-slate-900">Make · Bắt đầu chế biến</dt><dd className="mt-1 text-slate-600">{dateTime(batch.startedAt)}</dd></div>
             <div><dt className="font-semibold text-slate-900">Ready · Chế biến xong, dùng được</dt><dd className="mt-1 text-slate-600">{dateTime(batch.readyAt)}</dd></div>
+            <div><dt className="font-semibold text-slate-900">Completed · Hoàn thành</dt><dd className="mt-1 text-slate-600">{dateTime(batch.completedAt)}</dd></div>
             <div><dt className="font-semibold text-slate-900">Expired at · Hạn sử dụng</dt><dd className="mt-1 text-slate-600">{dateTime(unit?.expiresAt || batch.expiresAt)}</dd></div>
           </dl>
+          {unit && !query.loading && !query.error && !labels.loading && !labels.error && (
+            <OrderQrPrint key={unit.unitId} productName={productName} unit={unit} />
+          )}
           {!batch.traceabilityComplete && (
             <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
               Mẻ chưa có đầy đủ hồ sơ nguyên liệu theo lô.

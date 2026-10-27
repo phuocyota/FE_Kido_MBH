@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Package, Plus, Printer, Search, X } from "lucide-react";
 import LotQrPrintModal from "../../components/Stock/LotQrPrintModal";
+import LotQrDownloadButton from "../../components/Stock/LotQrDownloadButton";
 import LotSerialList from "../../components/Stock/LotSerialList";
 import StockSerials from "./StockSerials";
 import StockHeader from "../../components/Stock/StockHeader";
@@ -181,7 +182,10 @@ export function LotDetails({ lot, onClose, initialTrace, refreshVersion = 0 }) {
         <dl className="my-5 grid gap-4 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           {[["Sản phẩm", trace.product?.name], ["Kho / chi nhánh", [trace.location?.stockName, trace.location?.branchName].filter(Boolean).join(" / ")], ["Nhà cung cấp", trace.origin?.supplier?.name], ["Phiếu nhập gốc", trace.origin?.receiptCode], ["Ngày nhập", dateTime(trace.origin?.purchasedAt || trace.origin?.receivedAt)], ["Ngày sản xuất", lotDate(trace.lot?.manufacturedAt)], ["Hạn sử dụng", lotDate(trace.lot?.expiresAt)], ["Tồn hiện tại", `${lotNumber(trace.lot?.quantity)} ${lot.baseUnit?.code || lot.product?.unit || trace.product?.unit || ""}`]].map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800">{value || "Chưa có thông tin"}</dd></div>)}
         </dl>
-        <button type="button" onClick={() => setPrintOpen(true)} className="mb-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><Printer size={16} />In QR</button>
+        <div className="mb-4 flex flex-wrap items-start gap-3">
+          <button type="button" onClick={() => setPrintOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"><Printer size={16} />In QR</button>
+          <LotQrDownloadButton lotId={lot.id} lotCode={trace.lot?.code || lot.lotCode} />
+        </div>
         {printOpen && <LotQrPrintModal lot={lot} trace={trace} onClose={() => setPrintOpen(false)} />}
         <LotSerialList key={lot.id} lotId={lot.id} refreshVersion={refreshVersion} />
         <h4 className="mb-3 font-semibold text-slate-800">Lịch sử xuất nhập</h4>

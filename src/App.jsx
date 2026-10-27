@@ -18,6 +18,9 @@ import TimeKeeping from "./pages/Employee/TimeKeeping";
 import PaySheet from "./pages/Employee/Paysheet";
 import Suppliers from "./pages/Suppliers/Suppliers";
 import Orders from "./pages/Orders/Orders";
+import ProductTrace from "./pages/QR/ProductTrace";
+import Trace from "./pages/QR/Trace";
+import ProductLookup from "./pages/ProductLookup/ProductLookup";
 import BoardingOrder from "./pages/BoardingOrder/BoardingOrder";
 import BoardingOrderDemo from "./pages/BoardingOrder/BoardingOrderDemo";
 import ReportEmployee from "./pages/reports/ReportEmployee";
@@ -58,6 +61,11 @@ const App = () => {
       <Routes>
         {/* LOGIN (KHÔNG CÓ HEADER) */}
         <Route path="/login" element={<Login />} />
+        <Route path="/truyxuat" element={<ProductLookup />} />
+        <Route path="/qr" element={<Trace />} />
+
+        <Route path="/trace" element={<Trace />} />
+        <Route path="/product-trace" element={<ProductTrace />} />
         <Route path="/boarding-orders/demo" element={<BoardingOrderDemo />} />
 
         {/* CÁC TRANG CÓ HEADER */}
