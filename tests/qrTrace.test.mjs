@@ -69,3 +69,14 @@ test('public QR reports missing records and permission failures without redirect
   assert.match(traceErrorMessage({ response: { status: 404 } }), /Không tìm thấy/);
   for (const status of [401, 403]) assert.match(traceErrorMessage({ response: { status } }), /chưa cho phép/);
 });
+
+test('handed-over QR preserves historical expiry and shows the confirmed receipt time', () => {
+  const model = fullTraceModel({ type: 'FINISHED_GOOD', status: 'HANDED_OVER',
+    product: { name: 'Bánh mì' }, unit: { id: lotId, serial: 1 },
+    handover: { deliveredAt: '2026-10-23T13:00:00Z' },
+    lifecycle: { startedAt: '2026-10-23T10:00:00Z', expiresAt: '2026-10-23T14:00:00Z' }, inputs: [],
+  }, lotId);
+  assert.equal(model.params.get('status'), 'HANDED_OVER');
+  assert.equal(model.params.get('handedOver'), '23/10/2026 20:00:00');
+  assert.equal(model.params.get('expires'), '23/10/2026 21:00:00');
+});

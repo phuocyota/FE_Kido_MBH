@@ -231,3 +231,14 @@ test('public QR API requests only the data used by the product card', async () =
   assert.equal(request.url, '/stock-trace/full');
   assert.deepEqual(request.params, { lotId: unitId, includeMovements: false, includeConsumption: false, includeRecipe: false, includeTimeline: false });
 });
+
+test('received portions show handed-over status instead of expired while retaining the recorded expiry', () => {
+  fixtures();
+  const portion = globalThis.__orderTraceQueries['production-labels'].data.data[0];
+  portion.status = 'HANDED_OVER';
+  portion.handover = { deliveredAt: '2026-10-20T03:00:00Z' };
+  const html = render();
+  assert.ok(html.includes('Đã bàn giao'));
+  assert.ok(html.includes('Hạn sử dụng ghi nhận'));
+  assert.ok(!html.includes('Hết hạn'));
+});

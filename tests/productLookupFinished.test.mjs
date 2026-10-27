@@ -51,3 +51,12 @@ test('scan card and full profile render finished products without lot, identifie
     }
   } finally { await server.close(); }
 });
+
+test('handed-over product keeps receipt and original expiry as separate historical milestones', () => {
+  const model = productLookupModel({ ...finished, status: 'HANDED_OVER',
+    handover: { deliveredAt: '2026-10-23T13:00:00Z' },
+  });
+  assert.equal(model.status, 'HANDED_OVER');
+  assert.deepEqual(model.milestones.at(-2), ['Đã bàn giao', '20:00:00 23/10/2026']);
+  assert.deepEqual(model.milestones.at(-1), ['Hạn sử dụng ghi nhận', '21:02:36 23/10/2026']);
+});

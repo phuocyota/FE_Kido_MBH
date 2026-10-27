@@ -18,6 +18,9 @@ export function fullTraceModel(payload, lotId) {
     manufactured: formatLabelDate(lot.manufacturedAt || trace.manufacturedAt),
     expires: formatLabelDate(unit?.expiresAt || lot.expiresAt || batch.expiresAt || trace.expiresAt),
   });
+  if (trace.status) params.set("status", trace.status);
+  if (trace.handover?.deliveredAt || batch.handedOverAt)
+    params.set("handedOver", formatLabelDate(trace.handover?.deliveredAt || batch.handedOverAt));
   if (unit) {
     if (unit.serial != null) params.set("serial", String(unit.serial));
     params.set("stockFormat", "name-date");

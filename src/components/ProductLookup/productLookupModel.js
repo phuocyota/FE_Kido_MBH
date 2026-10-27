@@ -16,7 +16,8 @@ export function productLookupModel(data) {
       ["Make · Bắt đầu chế biến", lookupDate(lifecycle.startedAt)],
       ["Ready · Chế biến xong", lookupDate(lifecycle.readyAt)],
       ["Completed · Hoàn thành", lookupDate(lifecycle.completedAt)],
-      ["Expired · Hạn sử dụng", lookupDate(lifecycle.expiresAt)],
+      ...(lifecycle.handedOverAt || data.handover?.deliveredAt ? [["Đã bàn giao", lookupDate(lifecycle.handedOverAt || data.handover.deliveredAt)]] : []),
+      [data.status === "HANDED_OVER" ? "Hạn sử dụng ghi nhận" : "Expired · Hạn sử dụng", lookupDate(lifecycle.expiresAt)],
     ] : [
       ["Ngày sản xuất", lookupDate(lot.manufacturedAt)],
       ["Nhập kho", lookupDate(data.receivedAt || data.origin?.receivedAt)],

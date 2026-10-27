@@ -13,11 +13,12 @@ export const lookupLabels = {
   startedAt: "Bắt đầu chế biến", readyAt: "Chế biến xong", completedAt: "Hoàn thành",
   actualQuantity: "Sản lượng thực tế", plannedQuantity: "Sản lượng dự kiến", yieldQuantity: "Sản lượng công thức",
   cost: "Chi phí", unitCost: "Đơn giá", totalCost: "Tổng chi phí", version: "Phiên bản", referenceType: "Loại giao dịch",
-  production: "Thông tin chế biến", lifecycle: "Các mốc chế biến", inStockAt: "Nhập kho nguyên liệu", issuedQuantity: "Lượng xuất cho chế biến", traceabilityComplete: "Đầy đủ hồ sơ truy xuất",
+  handedOverAt: "Đã bàn giao", handover: "Thông tin bàn giao", deliveredAt: "Thời điểm bàn giao", production: "Thông tin chế biến", lifecycle: "Các mốc chế biến", inStockAt: "Nhập kho nguyên liệu", issuedQuantity: "Lượng xuất cho chế biến", traceabilityComplete: "Đầy đủ hồ sơ truy xuất",
 };
 
 export const lookupValues = {
   INGREDIENT: "Nguyên liệu", FINISHED_GOOD: "Thành phẩm", SUPPLIER: "Nhà cung cấp", PRODUCTION: "Sản xuất",
+  HANDED_OVER: "Đã bàn giao",
   EXPIRED: "Hết hạn", AVAILABLE: "Còn sử dụng", EXPIRING: "Sắp hết hạn", DEPLETED: "Đã hết hàng",
   IN: "Nhập kho", OUT: "Xuất kho", RECEIVED: "Tiếp nhận hàng", INBOUND: "Nhập kho", OUTBOUND: "Xuất kho",
   EXPIRY_DATE: "Hạn sử dụng", PRODUCTION_BATCH: "Mẻ chế biến", READY: "Sẵn sàng", COMPLETED: "Hoàn thành",

@@ -23,6 +23,7 @@ export default function ProductTraceCard({ name, params, live = false }) {
         <div>
           <p className="text-xs text-slate-500">Thông tin sản phẩm</p>
           <h1 className="mt-2 break-words text-2xl font-bold text-slate-900">{name}</h1>
+          {params.get("status") === "HANDED_OVER" && <p className="mt-2 font-semibold text-emerald-700">Đã bàn giao</p>}
           {params.get("lot") && <p className="mt-1 break-all text-sm text-slate-600">Lô: {params.get("lot")}</p>}
           {params.has("serial") && <p className="mt-1 break-all text-sm text-slate-600">Serial: {params.get("serial")}</p>}
         </div>

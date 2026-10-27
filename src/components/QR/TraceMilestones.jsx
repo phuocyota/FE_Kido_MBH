@@ -24,9 +24,14 @@ export default function TraceMilestones({ params }) {
     }
     return value;
   };
+  const rows = params.get("type") === "lot" ? lotMilestones : [
+    ...milestones.slice(0, -1),
+    ...(params.get("handedOver") ? [["Đã bàn giao", "handedOver"]] : []),
+    [params.get("status") === "HANDED_OVER" ? "Hạn sử dụng ghi nhận" : "Expired · Hạn sử dụng", "expires"],
+  ];
   return (
     <dl className="space-y-3 text-sm">
-      {(params.get("type") === "lot" ? lotMilestones : milestones).map(([label, key]) => (
+      {rows.map(([label, key]) => (
         <div key={key} className="rounded-lg bg-slate-50 p-3">
           <dt className="text-slate-500">{label}</dt>
           <dd className="mt-1 whitespace-pre-line break-words font-semibold text-slate-900">

@@ -332,7 +332,9 @@ function BatchTrace({ batchId, refreshVersion, productName }) {
                 <div className="space-y-1 rounded-lg bg-blue-50 p-3 text-sm text-blue-900">
                   <p>
                     <strong>Serial {unit.serial}</strong> ·{" "}
-                    {unit.status === "EXPIRED"
+                    {unit.status === "HANDED_OVER"
+                      ? "Đã bàn giao"
+                      : unit.status === "EXPIRED"
                       ? "Hết hạn"
                       : unit.status === "READY"
                         ? "Còn hạn"
@@ -341,7 +343,8 @@ function BatchTrace({ batchId, refreshVersion, productName }) {
                   <p className="break-all">
                     Mã thành phẩm: <code>{unit.unitId}</code>
                   </p>
-                  <p>Hạn sử dụng: {dateTime(unit.expiresAt)}</p>
+                  {unit.handover?.deliveredAt && <p>Đã bàn giao: {dateTime(unit.handover.deliveredAt)}</p>}
+                  <p>{unit.status === "HANDED_OVER" ? "Hạn sử dụng ghi nhận" : "Hạn sử dụng"}: {dateTime(unit.expiresAt)}</p>
                   <p className="break-all">
                     Mã QR: <code>{unit.qrPayload}</code>
                   </p>
