@@ -15,13 +15,22 @@ const lotMilestones = [
 ];
 
 export default function TraceMilestones({ params }) {
+  const valueFor = (key) => {
+    const value = params.get(key);
+    if (!value || value === "—") return "Chưa ghi nhận";
+    if (key === "stock" && params.get("type") !== "lot" && params.get("stockFormat") !== "name-date") {
+      // Older printed QR codes append a lot code in parentheses before each date.
+      return value.replace(/\s+\([^()\n]*\)(?=:\s*(?:\d{2}\/\d{2}\/\d{4}|—))/g, "");
+    }
+    return value;
+  };
   return (
     <dl className="space-y-3 text-sm">
       {(params.get("type") === "lot" ? lotMilestones : milestones).map(([label, key]) => (
         <div key={key} className="rounded-lg bg-slate-50 p-3">
           <dt className="text-slate-500">{label}</dt>
           <dd className="mt-1 whitespace-pre-line break-words font-semibold text-slate-900">
-            {!params.get(key) || params.get(key) === "—" ? "Chưa ghi nhận" : params.get(key)}
+            {valueFor(key)}
           </dd>
         </div>
       ))}

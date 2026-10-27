@@ -6,7 +6,6 @@ import { createServer } from 'vite';
 import { MemoryRouter } from 'react-router-dom';
 import { buildOrderTraceUrl } from '../src/components/Orders/orderTraceUrl.js';
 import { resolveProductImage } from '../src/components/QR/productImage.js';
-import { buildLotTraceUrl } from '../src/components/QR/lotTraceUrl.js';
 import { buildLotLabelDocument, labelQr } from '../src/components/Stock/lotLabelPrint.js';
 
 let server, Modal, api, http;
@@ -48,7 +47,6 @@ after(async () => {
 const page = (data, total = data.length) => ({ data, total, page: 1, size: 20 });
 function fixtures() {
   globalThis.__orderTraceQueries = {
-    'trace-product': { data: { id: 'dish', imageUrl: 'https://images.example.com/banh-mi.jpg' } },
     'order-product-trace': { data: { orderId: 'order', orderNumber: 1005, orderedQuantity: 1, batches: page([{ batchId, unitCount: 1, productionStatus: 'COMPLETED' }]) } },
     'production-labels': { data: page([{ unitId, batchId, serial: 1, status: 'READY', qrPayload: `MBH:UNIT:${unitId}`, expiresAt: '2026-10-20T10:00:00Z' }]) },
     'production-batch': { data: { batchId, traceabilityComplete: true, actualQuantity: 1, startedAt: '2026-10-20T02:00:00Z', readyAt: '2026-10-20T02:30:00Z', expiresAt: '2026-10-20T10:00:00Z', completedAt: '2026-10-20T02:31:00Z', inputs: [{ lotId: 'lot-pork', usedQuantity: 40, wasteQuantity: 0, returnedQuantity: 0, consumedQuantity: 40, origin: { product: { name: 'Chả', unit: 'g' }, lot: { code: 'LO-CHA', expiresAt: '2026-10-27' }, origin: { supplier: { name: 'Nhà cung cấp A' }, receiptCode: 'NK1005', purchasedAt: '2026-10-19T01:00:00Z' } } }] } },
@@ -117,58 +115,48 @@ test('finished-product QR opens the public photo page while printed labels conta
   });
   const parsed = new URL(url);
   assert.equal(parsed.origin, 'https://fe.admin.kidocanteen.kidoedu.vn');
-  assert.equal(parsed.pathname, '/truyxuat');
-  const params = new URLSearchParams(parsed.hash.slice(1));
-  assert.equal(params.get('name'), 'Cơm thịt kho trứng');
-  assert.equal(params.get('serial'), '1');
-  assert.equal(params.get('image'), 'https://images.example.com/com-thit.jpg?version=2&size=large');
-  assert.equal(params.get('stock'), 'Chả (LO-CHA): 19/10/2026 08:00:00');
-  assert.equal(params.get('ready'), '20/10/2026 09:30:00');
-  assert.equal(params.get('completed'), '20/10/2026 09:31:00');
-  const label = buildLotLabelDocument({ productName: params.get('name'), labelPayload: url, quantity: 1 });
+  assert.equal(parsed.pathname, '/qr');
+  assert.equal(parsed.searchParams.get('id'), unitId);
+  assert.equal([...parsed.searchParams].length, 1);
+  assert.equal(parsed.hash, '');
+  const label = buildLotLabelDocument({ productName: 'Cơm thịt kho trứng', labelPayload: url, quantity: 1 });
   assert.ok(label.includes(labelQr(url)));
   assert.ok(!label.includes('<img'));
-  const ProductTrace = (await server.ssrLoadModule('/src/pages/QR/ProductTrace.jsx')).default;
-  const html = renderToStaticMarkup(React.createElement(MemoryRouter, { initialEntries: [parsed.pathname + parsed.hash] }, React.createElement(ProductTrace)));
+  globalThis.__orderTraceQueries['qr-trace'] = { data: {
+    type: 'FINISHED_GOOD', unit: { id: unitId, serial: 1 },
+    product: { name: 'Cơm thịt kho trứng' }, imageUrl: 'https://images.example.com/com-thit.jpg?version=2&size=large',
+    lifecycle: { readyAt: '2026-10-20T02:30:00Z', completedAt: '2026-10-20T02:31:00Z' },
+  } };
+  const Trace = (await server.ssrLoadModule('/src/pages/QR/Trace.jsx')).default;
+  const html = renderToStaticMarkup(React.createElement(MemoryRouter, { initialEntries: [parsed.pathname + parsed.search] }, React.createElement(Trace)));
   assert.ok(html.includes('src="https://images.example.com/com-thit.jpg?version=2&amp;size=large"'));
   assert.ok(!html.includes('comthitkhotrung.jpg'));
   assert.ok(html.includes('Cơm thịt kho trứng'));
   assert.ok(html.includes('20/10/2026 09:30:00'));
   assert.ok(html.includes('20/10/2026 09:31:00'));
   assert.ok(html.includes('Serial: 1'));
-  for (const key of ['stock', 'make', 'ready', 'completed', 'expires']) {
-    assert.ok(html.includes(params.get(key)), key);
-  }
 });
 
-test('QR preserves every ingredient lot, receipt time and unavailable milestone without a backend lookup', async () => {
-  const url = buildOrderTraceUrl({
-    productName: 'Bánh mì',
-    batch: { inputs: [
-      { lotId: 'LO-A', origin: { product: { name: 'Chả' }, origin: { purchasedAt: '2026-10-18T01:00:00Z', receivedAt: '2026-10-19T01:00:00Z' } } },
-      { lotId: 'LO-B', origin: { product: { name: 'Rau' }, origin: { receivedAt: '2026-10-19T01:00:00Z' } } },
-      { lotId: 'LO-C' },
-    ] },
-    unit: { serial: 2 },
-  });
+test('previously printed snapshot QR remains readable and hides ingredient lot codes', async () => {
+  const params = new URLSearchParams({ name: 'Bánh mì', serial: '2', stock: 'Chả (LO-A): 19/10/2026 08:00:00\nRau (LO-B): 19/10/2026 08:00:00\nNguyên liệu (LO-C): —' });
+  const url = `https://site.example/qr#${params}`;
   const parsed = new URL(url);
-  const params = new URLSearchParams(parsed.hash.slice(1));
-  assert.equal(params.get('stock'), 'Chả (LO-A): 19/10/2026 08:00:00\nRau (LO-B): 19/10/2026 08:00:00\nNguyên liệu (LO-C): —');
   const ProductTrace = (await server.ssrLoadModule('/src/pages/QR/ProductTrace.jsx')).default;
   const html = renderToStaticMarkup(React.createElement(MemoryRouter, { initialEntries: [parsed.pathname + parsed.hash] }, React.createElement(ProductTrace)));
   assert.ok(html.includes('Chưa có hình ảnh sản phẩm'));
-  for (const text of ['LO-A', 'LO-B', 'LO-C', 'Chưa ghi nhận', 'Completed', 'Expired']) assert.ok(html.includes(text), text);
+  for (const text of ['Chả', 'Rau', 'Nguyên liệu', 'Chưa ghi nhận', 'Completed', 'Expired']) assert.ok(html.includes(text), text);
+  for (const code of ['LO-A', 'LO-B', 'LO-C']) assert.ok(!html.includes(code), code);
   assert.ok(labelQr(url).includes('<svg'));
 });
 
 test('lot trace page displays the product photo or placeholder and only lot milestones, with or without serial', async () => {
   const ProductTrace = (await server.ssrLoadModule('/src/pages/QR/ProductTrace.jsx')).default;
   for (const withPhoto of [true, false]) {
-    const url = new URL(buildLotTraceUrl({ productName: 'Thịt bò', lotCode: 'LOT-001',
-      productImage: withPhoto ? 'https://images.example.com/beef.jpg' : undefined,
-      serial: withPhoto ? 'SERIAL-1' : undefined,
-      manufacturedAt: '2026-10-19', receivedAt: '2026-10-20T01:30:00Z', expiresAt: '2026-10-21T10:00:00Z',
-    }));
+    const params = new URLSearchParams({ type: 'lot', name: 'Thịt bò', lot: 'LOT-001',
+      manufactured: '19/10/2026 (chưa có giờ)', stock: '20/10/2026 08:30:00', expires: '21/10/2026 17:00:00',
+    });
+    if (withPhoto) { params.set('image', 'https://images.example.com/beef.jpg'); params.set('serial', 'SERIAL-1'); }
+    const url = new URL(`https://site.example/qr#${params}`);
     const html = renderToStaticMarkup(React.createElement(MemoryRouter, { initialEntries: [url.pathname + url.hash] }, React.createElement(ProductTrace)));
     for (const text of ['Thịt bò', 'Lô: LOT-001', 'Ngày sản xuất', '19/10/2026', '20/10/2026 08:30:00', '21/10/2026 17:00:00']) assert.ok(html.includes(text), text);
     assert.ok(!html.includes('Bắt đầu chế biến'));
@@ -188,13 +176,21 @@ test('QR uses the current local or LAN website when printing during local testin
   try {
     for (const origin of ['http://localhost:5173', 'http://192.168.1.20:5173']) {
       globalThis.window.location = { origin };
-      const url = new URL(buildOrderTraceUrl({ productName: 'Bánh mì', batch: {}, unit: { serial: 2 } }));
+      const url = new URL(buildOrderTraceUrl({ unit: { unitId, serial: 2 } }));
       assert.equal(url.origin, origin);
-      assert.equal(url.pathname, '/truyxuat');
+      assert.equal(url.pathname, '/qr');
     }
   } finally {
     globalThis.window.location = previousLocation;
   }
+});
+
+test('order QR requires the finished unit ID and never substitutes a product, batch or serial ID', () => {
+  for (const unit of [{ serial: 1 }, { batchId, serial: 1 }, { id: unitId }, { unitId: '' }]) {
+    assert.throws(() => buildOrderTraceUrl({ unit }), /mã thành phẩm/);
+  }
+  const parsed = new URL(buildOrderTraceUrl({ origin: 'http://localhost:5173', unit: { unitId, batchId, serial: 1 } }));
+  assert.equal(parsed.href, `http://localhost:5173/qr?id=${unitId}`);
 });
 
 test('resolves uploaded product image paths and rejects non-web image URLs', () => {
@@ -215,14 +211,15 @@ test('public trace page does not render an unsupported image URL from a QR', asy
   assert.ok(html.includes('Serial: 2'));
 });
 
-test('warehouse QR tab appears after trace and is marked active', async () => {
+test('warehouse navigation keeps lots and trace without a QR tab', async () => {
   const StockHeader = (await server.ssrLoadModule('/src/components/Stock/StockHeader.jsx')).default;
-  const html = renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(StockHeader, { activeTab: 'qr' })));
-  assert.ok(html.indexOf('href="/warehouse/trace"') < html.indexOf('href="/warehouse/qr"'));
-  assert.match(html, /<a(?=[^>]*href="\/warehouse\/qr")(?=[^>]*aria-current="page")[^>]*>/);
+  const html = renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(StockHeader, { activeTab: 'lots' })));
+  assert.ok(html.includes('href="/stock-lots"'));
+  assert.ok(html.includes('href="/warehouse/trace"'));
+  assert.ok(!html.includes('href="/warehouse/qr"'));
 });
 
-test('full trace API sends the selected lot UUID and includes the full trace sections', async () => {
+test('public QR API requests only the data used by the product card', async () => {
   const { stockTraceApi } = await server.ssrLoadModule('/src/api/stockTraceApi.js');
   let request;
   const data = { product: { name: 'Thịt bò' }, lot: { id: unitId } };
@@ -232,5 +229,5 @@ test('full trace API sends the selected lot UUID and includes the full trace sec
   };
   assert.deepEqual(await stockTraceApi.getFull(unitId), data);
   assert.equal(request.url, '/stock-trace/full');
-  assert.deepEqual(request.params, { lotId: unitId, includeMovements: true, includeConsumption: true, includeRecipe: true, includeTimeline: true });
+  assert.deepEqual(request.params, { lotId: unitId, includeMovements: false, includeConsumption: false, includeRecipe: false, includeTimeline: false });
 });

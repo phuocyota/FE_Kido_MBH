@@ -8,16 +8,22 @@ export function fullTraceModel(payload, lotId) {
   const lot = trace.lot || trace.stockLot || {};
   const product = trace.product || lot.product || {};
   const origin = trace.origin || {};
-  const batch = trace.productionBatch || trace.batch || {};
+  const batch = trace.lifecycle || trace.productionBatch || trace.batch || {};
+  const unit = trace.unit;
+  const inputs = Array.isArray(trace.inputs) ? trace.inputs : [];
+  const stock = unit ? inputs.map((input) => `${input.product?.name || input.origin?.product?.name || "Nguyên liệu"}: ${formatLabelDate(input.receivedAt || input.origin?.receivedAt || input.origin?.origin?.receivedAt || input.purchasedAt)}`).join("\n") : "";
   const params = new URLSearchParams({
     name: product.name || trace.productName || "Chưa có tên sản phẩm",
-    lot: lot.code || lot.lotCode || trace.lotCode || lotId,
-    stock: formatLabelDate(trace.receivedAt || origin.receivedAt || lot.receivedAt || origin.purchasedAt),
+    stock: stock || formatLabelDate(batch.inStockAt || trace.receivedAt || origin.receivedAt || lot.receivedAt || origin.purchasedAt),
     manufactured: formatLabelDate(lot.manufacturedAt || trace.manufacturedAt),
-    expires: formatLabelDate(lot.expiresAt || batch.expiresAt || trace.expiresAt),
+    expires: formatLabelDate(unit?.expiresAt || lot.expiresAt || batch.expiresAt || trace.expiresAt),
   });
+  if (unit) {
+    if (unit.serial != null) params.set("serial", String(unit.serial));
+    params.set("stockFormat", "name-date");
+  } else params.set("lot", lot.code || lot.lotCode || trace.lotCode || lotId);
   const hasProduction = batch.startedAt || batch.readyAt || batch.completedAt;
-  if (hasProduction) {
+  if (unit || hasProduction) {
     params.set("make", formatLabelDate(batch.startedAt));
     params.set("ready", formatLabelDate(batch.readyAt));
     params.set("completed", formatLabelDate(batch.completedAt));
@@ -25,16 +31,5 @@ export function fullTraceModel(payload, lotId) {
   const image = trace.imageUrl || product.imageUrl || trace.productImageUrl;
   if (image) params.set("image", image);
   if (trace.imageSource) params.set("imageSource", trace.imageSource);
-  const supplier = origin.supplier || trace.supplier || {};
-  return {
-    trace,
-    params, lotId: lot.id || trace.lotId || lotId,
-    productCode: product.code || trace.productCode,
-    supplierName: supplier.name,
-    receiptCode: origin.receiptCode,
-    stockName: trace.location?.stockName || lot.stock?.name,
-    branchName: trace.location?.branchName,
-    movements: Array.isArray(trace.movements) ? trace.movements : [],
-    inputs: Array.isArray(batch.inputs) ? batch.inputs : [],
-  };
+  return { params };
 }

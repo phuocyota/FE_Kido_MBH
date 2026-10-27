@@ -4,7 +4,6 @@ import {
   BarChart3,
   Boxes,
   History,
-  QrCode,
   Package,
   RefreshCcw,
   ShoppingCart,
@@ -62,13 +61,6 @@ const tabs = [
     path: "/warehouse/trace",
     icon: History,
     hint: "Tra cứu ngày nhập, hạn dùng và nguồn gốc theo ID lô hoặc số serial",
-  },
-  {
-    id: "qr",
-    label: "QR",
-    path: "/warehouse/qr",
-    icon: QrCode,
-    hint: "Nhập ID lô hoặc quét QR để tra cứu hình ảnh và nguồn gốc sản phẩm",
   },
 ];
 

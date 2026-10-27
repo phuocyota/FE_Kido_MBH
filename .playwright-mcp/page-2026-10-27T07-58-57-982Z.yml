@@ -1,0 +1,17 @@
+- main [ref=f38e3]:
+  - generic [ref=f38e4]:
+    - generic [ref=f38e5]:
+      - generic [ref=f38e13]:
+        - heading "Truy xuất sản phẩm" [level=1] [ref=f38e14]
+        - paragraph [ref=f38e15]: Nhập ID lô hoặc quét QR để tra cứu nguồn gốc sản phẩm.
+      - tablist "Cách truy xuất sản phẩm" [ref=f38e16]:
+        - tab "Nhập ID" [selected] [ref=f38e17]
+        - tab "Quét QR bằng camera" [ref=f38e21]
+      - tabpanel "Nhập ID" [ref=f38e25]:
+        - generic [ref=f38e26]:
+          - generic [ref=f38e27]:
+            - generic [ref=f38e28]: ID hoặc mã lô
+            - textbox "ID hoặc mã lô" [ref=f38e29]:
+              - /placeholder: Nhập UUID, mã lô hoặc dán link API từ QR
+          - button "Tra cứu" [disabled] [ref=f38e30]
+    - generic [ref=f38e34]: Nhập UUID hoặc mã lô, quét bằng camera hoặc tải ảnh QR để bắt đầu tra cứu.

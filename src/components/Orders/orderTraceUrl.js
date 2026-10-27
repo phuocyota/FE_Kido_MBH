@@ -1,25 +1,11 @@
-import { formatLabelDate } from "../Stock/lotLabelPrint.js";
-import { resolveProductImage } from "../QR/productImage.js";
-
 import { getQrOrigin } from "../QR/traceUrl.js";
 
-export function buildOrderTraceUrl({ origin = getQrOrigin(), productName, productImage, batch, unit }) {
-  const stockDates = (batch.inputs || []).map((input) => {
-    const name = input.origin?.product?.name || "Nguyên liệu";
-    const lot = input.origin?.lot?.code || input.lotId;
-    const receivedAt = input.origin?.origin?.receivedAt || input.origin?.origin?.purchasedAt;
-    return `${name}${lot ? ` (${lot})` : ""}: ${formatLabelDate(receivedAt)}`;
-  });
-  const params = new URLSearchParams({
-    name: productName || "Chưa có tên sản phẩm",
-    serial: String(unit.serial ?? "—"),
-    stock: stockDates.join("\n") || "—",
-    make: formatLabelDate(batch.startedAt),
-    ready: formatLabelDate(batch.readyAt),
-    completed: formatLabelDate(batch.completedAt),
-    expires: formatLabelDate(unit.expiresAt || batch.expiresAt),
-  });
-  const image = resolveProductImage(productImage);
-  if (image) params.set("image", image);
-  return new URL(`/truyxuat#${params}`, origin).href;
+export function buildOrderTraceUrl({ origin = getQrOrigin(), unit }) {
+  const id = unit?.unitId;
+  if (typeof id !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) {
+    throw new Error("Thiếu mã thành phẩm hợp lệ để tạo QR.");
+  }
+  const url = new URL("/qr", origin);
+  url.searchParams.set("id", id);
+  return url.href;
 }

@@ -25,18 +25,8 @@ export function formatLabelDate(value) {
   return `${part("day")}/${part("month")}/${part("year")} ${part("hour")}:${part("minute")}:${part("second")}`;
 }
 
-export function buildLotLabelPayload({ productName, lotCode, serial, manufacturedAt, receivedAt, expiresAt }) {
-  return [
-    `Sản phẩm: ${productName || "Chưa có tên sản phẩm"}`,
-    `Lô: ${lotCode || "—"}`,
-    ...(serial ? [`Serial: ${serial}`] : []),
-    `Ngày sản xuất: ${formatLabelDate(manufacturedAt)}`,
-    `Instock: ${formatLabelDate(receivedAt)}`,
-    `Expired: ${formatLabelDate(expiresAt)}`,
-  ].join("\n");
-}
-
-export function buildLotLabelDocument({ productName, lotCode, manufacturedAt, receivedAt, expiresAt, serials = [], quantity, labelPayload }) {
+export function buildLotLabelDocument({ productName, serials = [], quantity, labelPayload }) {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) throw new Error("Số lượng tem phải là số nguyên từ 1 đến 10.000.");
   const paperWidth = 70;
   const height = 22;
   const gap = 2;
@@ -46,7 +36,8 @@ export function buildLotLabelDocument({ productName, lotCode, manufacturedAt, re
     const serial = serials.length ? serials[index % serials.length] : undefined;
     const payload = typeof labelPayload === "function"
       ? labelPayload(serial)
-      : labelPayload || buildLotLabelPayload({ productName, lotCode, serial, manufacturedAt, receivedAt, expiresAt });
+      : labelPayload;
+    if (typeof payload !== "string" || !payload.trim()) throw new Error("Thiếu nội dung mã QR.");
     if (!qrCache.has(payload)) qrCache.set(payload, labelQr(payload));
     return `<article class="label"><div class="name">${escapeHtml(productName || "Chưa có tên sản phẩm")}</div><div class="qr">${qrCache.get(payload)}</div></article>`;
   });
