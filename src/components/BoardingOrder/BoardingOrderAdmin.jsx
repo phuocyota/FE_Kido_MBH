@@ -178,7 +178,7 @@ const enumToMeal = {
   DINNER: "Ăn tối",
 };
 
-export default function BoardingOrderAdmin() {
+export default function BoardingOrderAdmin({ headerActions = null }) {
   const [level, setLevel] = useState("preschool");
   const [week, setWeek] = useState(getThisMondayStr());
   const [schedule, setSchedule] = useState({});
@@ -509,16 +509,16 @@ export default function BoardingOrderAdmin() {
   };
 
   return (
-    <div className="erp-page bg-slate-100">
+    <div className="erp-page">
       <div className="erp-content flex flex-col gap-4">
-        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-sky-50 p-4 lg:p-5 erp-page-header">
+        <section className="erp-panel">
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-t-[14px] border-b border-slate-100 bg-gradient-to-r from-emerald-50/70 via-white to-sky-50/60 p-4 lg:p-5">
             <div>
               <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
                 <ChefHat size={16} />
                 Quản lý bán trú
               </p>
-              <h1 className="mt-3 flex items-center gap-2 text-2xl font-bold text-slate-900 sm:text-3xl">
+              <h1 className="mt-3 flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                 Thiết lập món ăn hằng ngày và hằng tuần
                 {isLoading && <Loader2 className="animate-spin text-emerald-600" size={24} />}
               </h1>
@@ -526,6 +526,7 @@ export default function BoardingOrderAdmin() {
                 Thực đơn được lưu theo ngày, bữa ăn và khối lớp để phụ huynh xem đúng lịch trong trang đặt món bán trú.
               </p>
             </div>
+            {headerActions && <div className="flex flex-wrap items-center gap-2">{headerActions}</div>}
           </div>
 
           <div className="rounded-b-2xl grid gap-4 border-b border-slate-200 p-4 sm:grid-cols-2 xl:grid-cols-[180px_150px_180px_280px_1fr] xl:items-end xl:p-5">

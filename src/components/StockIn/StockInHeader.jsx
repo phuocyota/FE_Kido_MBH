@@ -1,91 +1,70 @@
 import React from "react";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { stockInPurposes, getStockInPurpose } from "./stockInPurposes";
 import { useNavigate } from "react-router-dom";
+import FormPageHeader from "../Management/FormPageHeader";
+
+const fieldClass =
+  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15";
 
 export default function StockInHeader({ reasonCode, onChangeReasonCode, paymentStatus, onChangePaymentStatus, reference, onChangeReference, onBack, disabled = false }) {
   const navigate = useNavigate();
+  const purpose = getStockInPurpose(reasonCode);
 
   return (
-    <div className="border-b border-gray-300 bg-gray-50 p-3 md:p-4">
-      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-
-        {/* Nút quay lại danh sách phiếu nhập kho */}
-        <div className="flex w-full shrink-0 flex-col items-start gap-2 sm:flex-row sm:items-center lg:w-auto">
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onBack || (() => navigate("/stock-in"))}
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 sm:w-auto"
+    <FormPageHeader
+      bare
+      eyebrow="Kho / Nhập kho"
+      title="Thêm mới phiếu nhập kho"
+      onBack={onBack || (() => navigate("/stock-in"))}
+      backDisabled={disabled}
+      note={`${purpose.description} ${purpose.example}`}
+    >
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
+        {/* Loại nhập */}
+        <div className="relative w-full sm:w-[240px]">
+          <select
+            aria-label="Lý do nhập kho"
+            value={reasonCode}
+            onChange={(event) => onChangeReasonCode(event.target.value)}
+            className={`${fieldClass} cursor-pointer appearance-none pr-10`}
           >
-            <ArrowLeft size={17} />
-            Quay lại
-          </button>
-
-          {/* Tiêu đề trang thêm mới */}
-          <h1 className="text-lg font-semibold leading-tight text-slate-900 md:text-xl">
-            Thêm mới phiếu nhập kho
-          </h1>
+            {stockInPurposes.map((p) => <option key={p.code} value={p.code}>{p.optionLabel}</option>)}
+          </select>
+          <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
         </div>
 
-        {/* Khu vực thao tác */}
-        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-
-          {/* Loại nhập */}
-          <div className="relative w-full sm:w-[240px]">
-            <select aria-label="Lý do nhập kho" value={reasonCode} onChange={(event) => onChangeReasonCode(event.target.value)} className="appearance-none h-10 w-full px-3 pr-10 text-sm bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition">
-              {stockInPurposes.map((purpose) => <option key={purpose.code} value={purpose.code}>{purpose.optionLabel}</option>)}
-            </select>
-
-            <ChevronDown
-              size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-            />
-          </div>
-
-          {/* Radio */}
-          <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input 
-                type="radio" 
-                name="payment" 
-                checked={paymentStatus === "DEBT"}
-                onChange={() => onChangePaymentStatus("DEBT")}
+        {/* Trạng thái thanh toán */}
+        <div className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm">
+          {[["DEBT", "Chưa thanh toán"], ["PAID", "Đã thanh toán"]].map(([value, label]) => (
+            <label
+              key={value}
+              className={`flex h-full cursor-pointer items-center whitespace-nowrap rounded-lg px-3 font-medium transition ${
+                paymentStatus === value ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment"
+                className="sr-only"
+                checked={paymentStatus === value}
+                onChange={() => onChangePaymentStatus(value)}
               />
-              Chưa thanh toán
+              {label}
             </label>
-
-            <label className="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-              <input 
-                type="radio" 
-                name="payment" 
-                checked={paymentStatus === "PAID"}
-                onChange={() => onChangePaymentStatus("PAID")}
-              />
-              Đã thanh toán
-            </label>
-          </div>
-
-          {/* Hóa đơn */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
-            <label className="text-sm font-medium whitespace-nowrap">
-              Chọn HĐ mua hàng
-            </label>
-
-            <input
-              type="text"
-              value={reference}
-              onChange={(e) => onChangeReference(e.target.value)}
-              placeholder="Nhập hóa đơn"
-              className="h-10 w-full sm:max-w-[260px] px-3 text-sm bg-white border border-gray-300 rounded-md shadow-sm placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-
+          ))}
         </div>
+
+        {/* Hóa đơn */}
+        <input
+          type="text"
+          aria-label="Chọn HĐ mua hàng"
+          value={reference}
+          onChange={(e) => onChangeReference(e.target.value)}
+          placeholder="Số hóa đơn mua hàng"
+          className={`${fieldClass} sm:w-[220px]`}
+        />
       </div>
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-        {getStockInPurpose(reasonCode).description} {getStockInPurpose(reasonCode).example}
-      </p>
-    </div>
+    </FormPageHeader>
   );
 }

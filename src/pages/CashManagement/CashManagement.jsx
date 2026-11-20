@@ -54,7 +54,6 @@ export default function CashManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f5f7]">
       <div
         className="erp-page"
       >
@@ -91,6 +90,5 @@ export default function CashManagement() {
           </main>
         </div>
       </div>
-    </div>
   );
 }

@@ -108,8 +108,8 @@ export default function StockInCreate({ embedded = false, initialItems = [], onS
   };
 
   return (
-    <div ref={formPanel} className={embedded ? "w-full" : "mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5"}>
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col overflow-visible">
+    <div ref={formPanel} className={embedded ? "w-full" : "erp-page"}>
+      <div className="erp-panel flex flex-col overflow-visible">
         {/* Header */}
         <StockInHeader
           reasonCode={reasonCode}

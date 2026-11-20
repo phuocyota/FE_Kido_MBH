@@ -4,7 +4,6 @@ import ReceiptVoucherInfo from "../../components/ReceiptVoucher/ReceiptVoucherIn
 import ReceiptVoucherTable from "../../components/ReceiptVoucher/ReceiptVoucherTable";
 import ReceiptVoucherFooter from "../../components/ReceiptVoucher/ReceiptVoucherFooter";
 import { walletApi, financeApi, productApi } from "../../api";
-import { ArrowLeft } from "lucide-react";
 
 export default function ReceiptVoucher({
   onBack,
@@ -163,17 +162,10 @@ export default function ReceiptVoucher({
   };
 
   return (
-    <div className="erp-page bg-gray-100">
-
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 mb-4 mt-2"
-      >
-        <ArrowLeft size={18} />
-        Quay lại
-      </button>
-      <div className="bg-white rounded-xl border border-gray-300 overflow-hidden">
+    <div className="erp-page">
+      <div className="erp-panel overflow-hidden">
         <ReceiptVoucherHeader
+          onBack={onBack}
           receiptType={receiptType}
           onChangeReceiptType={handleReceiptTypeChange}
           paymentMethod={paymentMethod}

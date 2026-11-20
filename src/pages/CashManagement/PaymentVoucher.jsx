@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import PaymentVoucherHeader from "../../components/PaymentVoucher/PaymentVoucherHeader";
 import PaymentVoucherPurchaseInfo from "../../components/PaymentVoucher/PaymentVoucherPurchaseInfo";
 import PaymentVoucherDetailTable from "../../components/PaymentVoucher/PaymentVoucherDetailTable";
@@ -15,16 +14,10 @@ export default function PaymentVoucher({ onBack }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [voucherDate] = useState(() => new Date().toISOString());
   return (
-    <div className="erp-page bg-gray-100">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 mb-4 mt-2"
-      >
-        <ArrowLeft size={18} /> Quay lại
-      </button>
-      <div className="bg-white rounded-xl border border-gray-300 overflow-hidden">
+    <div className="erp-page">
+      <div className="erp-panel overflow-hidden">
         <PaymentVoucherHeader
+          onBack={onBack}
           expenseType={expenseType}
           setExpenseType={setExpenseType}
           paymentMethod={paymentMethod}

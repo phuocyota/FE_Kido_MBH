@@ -1,17 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 
 import BoardingOrderAdmin from "../../components/BoardingOrder/BoardingOrderAdmin";
 
 export default function BoardingOrder() {
   return (
-    <>
-        <div className="flex justify-end bg-slate-50 px-6 pt-4">
-          <Link to="/boarding-orders/demo" className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100">
-            Mở trang demo
-          </Link>
-        </div>
-      <BoardingOrderAdmin />
-    </>
+    <BoardingOrderAdmin
+      headerActions={
+        <Link
+          to="/boarding-orders/demo"
+          className="inline-flex h-9 items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 text-sm font-semibold text-amber-800 hover:bg-amber-100"
+        >
+          <ExternalLink size={15} />
+          Mở trang demo
+        </Link>
+      }
+    />
   );
 }

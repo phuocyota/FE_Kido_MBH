@@ -143,8 +143,7 @@ export default function StockOutList({ saleMode = false }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f5f7]">
-      <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+      <div className="erp-page">
         <StockHeader
           activeTab={saleMode ? "sale" : "out"}
           onRefresh={loadReceipts}
@@ -194,6 +193,5 @@ export default function StockOutList({ saleMode = false }) {
           </div>
         </div>
       </div>
-    </div>
   );
 }

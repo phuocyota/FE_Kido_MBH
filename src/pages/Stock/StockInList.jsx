@@ -174,8 +174,7 @@ export default function StockInList() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f5f7]">
-      <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+      <div className="erp-page">
         <StockHeader activeTab="in" onRefresh={loadReceipts} />
 
         <StockInPurposeChoices onChoose={handleCreateClick} />
@@ -221,6 +220,5 @@ export default function StockInList() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

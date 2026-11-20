@@ -34,7 +34,7 @@ export default function StockLots() {
   const [refresh, setRefresh] = useState(0);
   const serial = params.get("tab") === "serial";
   return (
-    <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+    <div className="erp-page">
       <StockHeader
         activeTab="lots"
         onRefresh={() => setRefresh((v) => v + 1)}

@@ -27,8 +27,7 @@ export default function StockTakes() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f3f5f7]">
-      <div className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+      <div className="erp-page">
         <StockHeader activeTab="takes" onRefresh={loadRows} />
 
         <div className="mt-4">
@@ -42,6 +41,5 @@ export default function StockTakes() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

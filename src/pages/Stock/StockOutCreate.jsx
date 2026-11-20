@@ -69,8 +69,8 @@ export default function StockOutCreate({ saleMode = false }) {
   };
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5">
-      <div className="flex flex-col overflow-visible rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="erp-page">
+      <div className="erp-panel flex flex-col overflow-visible">
         <StockOutHeader saleMode={saleMode} />
 
         <div className="flex-1">

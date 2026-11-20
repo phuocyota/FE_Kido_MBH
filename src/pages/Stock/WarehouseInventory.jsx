@@ -105,7 +105,7 @@ export default function WarehouseInventory() {
     }
   };
   return (
-    <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+    <main className="erp-page">
       <StockHeader activeTab="inventory" onRefresh={reload} />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>

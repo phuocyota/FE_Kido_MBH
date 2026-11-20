@@ -65,7 +65,7 @@ export default function WarehouseOverview() {
   );
   const reload = () => setRefresh((value) => value + 1);
   return (
-    <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+    <main className="erp-page">
       <StockHeader activeTab="overview" onRefresh={reload} />
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>

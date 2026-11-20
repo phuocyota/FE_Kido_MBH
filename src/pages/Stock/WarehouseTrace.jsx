@@ -25,7 +25,7 @@ export default function WarehouseTrace() {
     params.has("id") ||
     (!params.has("mode") && !params.has("lotId") && !params.has("detailId"));
   return (
-    <main className="mx-auto w-full max-w-[1800px] p-3 md:p-5">
+    <main className="erp-page">
       <StockHeader
         activeTab="trace"
         onRefresh={() => setRefresh((value) => value + 1)}

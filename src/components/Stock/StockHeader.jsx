@@ -66,8 +66,8 @@ const tabs = [
 
 export default function StockHeader({ activeTab, onRefresh }) {
   return (
-    <header className="mb-4 rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-5">
+    <header className="erp-panel mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 md:px-5">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400">
             Vận hành / Kho
@@ -81,7 +81,7 @@ export default function StockHeader({ activeTab, onRefresh }) {
           <Link
             to="/stock-sale"
             title="Giữ nguyên nghiệp vụ xuất bán hiện có"
-            className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold ${activeTab === "sale" ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+            className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold ${activeTab === "sale" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
           >
             <ShoppingCart size={15} />
             Xuất bán
@@ -113,7 +113,7 @@ export default function StockHeader({ activeTab, onRefresh }) {
               to={path}
               title={hint}
               aria-current={active ? "page" : undefined}
-              className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-xs font-semibold transition lg:px-4 ${active ? "border-indigo-600 bg-indigo-50/40 text-indigo-700" : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+              className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-xs font-semibold transition lg:px-4 ${active ? "border-blue-600 bg-blue-50/40 text-blue-700" : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
             >
               <Icon size={15} />
               {label}

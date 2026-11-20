@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import FormPageHeader from "../../components/Management/FormPageHeader";
 import { branchApi, inventoryItemApi, stockTransferApi } from "../../api";
 
 const formatMoney = (value) =>
@@ -143,25 +144,16 @@ export default function StockTransfer() {
   };
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-[1800px] bg-gray-100 p-3 md:p-5">
-      <div className="flex flex-col gap-3 border-b border-gray-300 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
-  <button
-    type="button"
-    onClick={() => navigate("/stock-transfer")}
-    className="inline-flex w-fit items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-cyan-500 hover:bg-cyan-50 hover:text-cyan-700"
-  >
-    <ArrowLeft size={17} />
-    Quay lại
-  </button>
+    <div className="erp-page">
+      <FormPageHeader
+        eyebrow="Kho / Chuyển kho"
+        title="Thêm mới phiếu chuyển kho"
+        onBack={() => navigate("/stock-transfer")}
+      />
 
-  <h1 className="text-xl font-semibold sm:text-2xl">
-    Thêm mới phiếu chuyển kho
-  </h1>
-</div>
-
-      <div className="mt-4 space-y-4">
-        <div className="bg-white border border-gray-300 rounded-lg p-4">
-          <div role={loading ? "status" : undefined} className="mb-3 min-h-5 text-sm text-gray-500">{loading && "Đang tải dữ liệu..."}</div>
+      <div className="space-y-4">
+        <section className="erp-panel p-4 md:p-5">
+          <div role={loading ? "status" : undefined} className="mb-3 min-h-5 text-sm text-slate-500">{loading && "Đang tải dữ liệu..."}</div>
           {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
           {message && (
             <div className="text-sm text-green-600 mb-3">{message}</div>
@@ -169,11 +161,11 @@ export default function StockTransfer() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-4">
             <div className="xl:col-span-4">
-              <label className="block mb-1 text-sm font-medium">Chi nhánh xuất</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-slate-600">Chi nhánh xuất</label>
               <select
                 value={fromBranchId}
                 onChange={(event) => setFromBranchId(event.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15"
               >
                 {branches.map((branch) => (
                   <option key={branch.id} value={branch.id}>
@@ -184,11 +176,11 @@ export default function StockTransfer() {
             </div>
 
             <div className="xl:col-span-4">
-              <label className="block mb-1 text-sm font-medium">Chi nhánh nhập</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-slate-600">Chi nhánh nhập</label>
               <select
                 value={toBranchId}
                 onChange={(event) => setToBranchId(event.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15"
               >
                 {branches.map((branch) => (
                   <option key={branch.id} value={branch.id}>
@@ -199,48 +191,49 @@ export default function StockTransfer() {
             </div>
 
             <div className="xl:col-span-4">
-              <label className="block mb-1 text-sm font-medium">Thời gian</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-slate-600">Thời gian</label>
               <input
                 readOnly
                 value={new Date().toLocaleString("vi-VN")}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15 !bg-slate-50 text-slate-500"
               />
             </div>
 
             <div className="xl:col-span-12">
-              <label className="block mb-1 text-sm font-medium">Diễn giải</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-slate-600">Diễn giải</label>
               <input
                 type="text"
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm transition hover:border-slate-300 focus:border-blue-400 focus:outline-none focus:ring-3 focus:ring-blue-500/15"
               />
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-gray-300 flex items-center justify-between">
-            <h2 className="font-semibold text-base sm:text-lg">CHI TIẾT</h2>
+        <section className="erp-panel overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 md:px-5">
+            <h2 className="text-[15px] font-bold text-slate-900">Chi tiết hàng hóa</h2>
             <button
               onClick={() => setItems((prev) => [...prev, emptyLine()])}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
             >
-              + Thêm dòng
+              <Plus size={16} />
+              Thêm dòng
             </button>
           </div>
 
-          <div className="p-4 overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse text-sm">
+          <div className="overflow-x-auto">
+            <table className="erp-data-table min-w-[900px]">
               <thead>
-                <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
-                  <th className="border-b border-indigo-200 p-3 text-left">Mã hàng hóa</th>
-                  <th className="border-b border-indigo-200 p-3 text-left">Tên hàng hóa</th>
-                  <th className="border-b border-indigo-200 p-3 text-left">Đơn vị tính</th>
-                  <th className="border-b border-indigo-200 p-3 text-right">Số lượng</th>
-                  <th className="border-b border-indigo-200 p-3 text-right">Đơn giá vốn</th>
-                  <th className="border-b border-indigo-200 p-3 text-right">Thành tiền</th>
-                  <th className="border-b border-indigo-200 p-3 text-center">Thao tác</th>
+                <tr>
+                  <th className="border-b p-3 text-left">Mã hàng hóa</th>
+                  <th className="border-b p-3 text-left">Tên hàng hóa</th>
+                  <th className="border-b p-3 text-left">Đơn vị tính</th>
+                  <th className="border-b p-3 text-right">Số lượng</th>
+                  <th className="border-b p-3 text-right">Đơn giá vốn</th>
+                  <th className="border-b p-3 text-right">Thành tiền</th>
+                  <th className="border-b p-3 text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,14 +241,14 @@ export default function StockTransfer() {
                   const product = productMap[item.productId];
                   const unitCost = Number(product?.costPerUnit || product?.price || 0);
                   return (
-                    <tr key={index} className="border-b border-gray-300 hover:bg-indigo-50/60">
+                    <tr key={index} className="border-b">
                       <td className="p-3">
                         <select
                           value={item.productId}
                           onChange={(event) =>
                             updateItem(index, { productId: event.target.value })
                           }
-                          className="w-full border border-gray-300 rounded px-2 py-1 bg-white"
+                          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-sm focus:border-blue-400 focus:outline-none"
                         >
                           <option value="">Chọn hàng hóa</option>
                           {products.map((product) => (
@@ -265,8 +258,8 @@ export default function StockTransfer() {
                           ))}
                         </select>
                       </td>
-                      <td className="p-3 text-gray-700">{product?.name || ""}</td>
-                      <td className="p-3 text-gray-700">{product?.unit || ""}</td>
+                      <td className="p-3 text-slate-700">{product?.name || ""}</td>
+                      <td className="p-3 text-slate-700">{product?.unit || ""}</td>
                       <td className="p-3 text-right">
                         <input
                           type="number"
@@ -275,19 +268,21 @@ export default function StockTransfer() {
                           onChange={(event) =>
                             updateItem(index, { quantity: event.target.value })
                           }
-                          className="w-24 border border-gray-300 rounded px-2 py-1 text-right"
+                          className="h-9 w-24 rounded-lg border border-slate-200 px-2 text-right text-sm tabular-nums focus:border-blue-400 focus:outline-none"
                         />
                       </td>
-                      <td className="p-3 text-right">{formatMoney(unitCost)}</td>
-                      <td className="p-3 text-right font-semibold">
+                      <td className="p-3 text-right tabular-nums">{formatMoney(unitCost)}</td>
+                      <td className="p-3 text-right font-semibold tabular-nums text-slate-900">
                         {formatMoney(unitCost * Number(item.quantity || 0))}
                       </td>
                       <td className="p-3 text-center">
                         <button
                           onClick={() => removeItem(index)}
-                          className="text-red-600 hover:underline"
+                          aria-label="Xóa dòng"
+                          title="Xóa dòng"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                         >
-                          Xóa
+                          <Trash2 size={16} />
                         </button>
                       </td>
                     </tr>
@@ -296,35 +291,36 @@ export default function StockTransfer() {
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
 
-        <div className="bg-white border border-gray-300 rounded-lg">
-          <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between p-4 border-b border-gray-300">
-            <div className="text-sm text-gray-500">
+        <section className="erp-panel">
+          <div className="flex flex-col gap-4 border-b border-slate-100 p-4 md:px-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="text-sm text-slate-500">
               Chứng từ sẽ được backend tự sinh mã phiếu.
             </div>
-            <div className="text-lg sm:text-xl font-bold self-end">
-              TỔNG TIỀN: {formatMoney(totalAmount)}
+            <div className="flex items-baseline gap-3 self-end">
+              <span className="text-[13px] font-medium uppercase tracking-wide text-slate-500">Tổng tiền</span>
+              <span className="text-xl font-bold tabular-nums text-slate-900 sm:text-2xl">{formatMoney(totalAmount)}</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-end p-4">
+          <div className="flex flex-col justify-end gap-3 p-4 sm:flex-row md:px-5">
             <button
               onClick={() => save(false)}
               disabled={saving}
-              className="w-full sm:w-auto px-5 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
             >
               {saving ? "Đang lưu..." : "Lưu tạm"}
             </button>
             <button
               onClick={() => save(true)}
               disabled={saving}
-              className="w-full sm:w-auto px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="h-10 w-full rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
             >
               Hoàn thành
             </button>
           </div>
-        </div>
+        </section>
 
       </div>
     </div>
