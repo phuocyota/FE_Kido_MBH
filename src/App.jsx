@@ -3,7 +3,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import Header from "./components/layout/Header";
+import AdminLayout from "./components/layout/AdminLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
@@ -73,8 +73,7 @@ const App = () => {
           path="/*"
           element={
             <PrivateRoute>
-              <>
-                <Header />
+              <AdminLayout>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/products" element={<Products />} />
@@ -111,7 +110,7 @@ const App = () => {
                   <Route path="/stock-transfer/create" element={<StockTransfer />} />
                   <Route path="/cash-management" element={<CashManagement />} />
                 </Routes>
-              </>
+              </AdminLayout>
             </PrivateRoute>
           }
         />

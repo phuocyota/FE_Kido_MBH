@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { reportApi } from "../../api/reportApi";
 import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
+import { Receipt, Users, Wallet } from "lucide-react";
 
 export default function Summary() {
   const [todayStats, setTodayStats] = useState(null);
@@ -54,206 +55,110 @@ export default function Summary() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4 md:p-5">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-gray-100 rounded-2xl"></div>
-            ))}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="erp-panel h-[200px] animate-pulse p-5">
+            <div className="h-10 w-10 rounded-xl bg-slate-100" />
+            <div className="mt-5 h-4 w-1/2 rounded bg-slate-100" />
+            <div className="mt-3 h-8 w-2/3 rounded bg-slate-100" />
           </div>
-        </div>
+        ))}
       </div>
     );
   }
 
+  const revenue = todayStats?.revenue || 0;
+  const orders = todayStats?.orders || 0;
+  const customers = todayStats?.customers || 0;
+
+  const cards = [
+    {
+      title: "Doanh thu thuần hôm nay",
+      value: formatCurrency(revenue),
+      unit: "đ",
+      hint: revenue > 0 ? "Phát sinh doanh thu" : "Không phát sinh doanh thu",
+      icon: Wallet,
+      tone: "blue",
+      rows: [
+        ["Giảm giá hóa đơn", 0],
+        ["Trả hàng (0)", 0],
+      ],
+    },
+    {
+      title: "Số lượng đơn hôm nay",
+      value: formatCurrency(orders),
+      hint: orders > 0 ? "Đơn hàng phát sinh" : "Không phát sinh đơn",
+      icon: Receipt,
+      tone: "emerald",
+      rows: [
+        ["Trung bình đơn", orders > 0 && revenue > 0 ? formatCurrency(Math.round(revenue / orders)) : 0],
+        ["Số khách/đơn", orders > 0 && customers > 0 ? Math.round((customers / orders) * 10) / 10 : 0],
+      ],
+    },
+    {
+      title: "Tỷ lệ phủ bàn",
+      value: formatCurrency(customers),
+      hint: customers > 0 ? "Khách hàng hôm nay" : "Chưa có khách hàng",
+      icon: Users,
+      tone: "amber",
+      rows: [
+        ["Đơn đang phục vụ", orders],
+        ["Khách đang phục vụ", customers],
+      ],
+    },
+  ];
+
+  const tones = {
+    blue: { icon: "bg-blue-50 text-blue-600 ring-blue-100", bar: "from-blue-500 to-indigo-500" },
+    emerald: { icon: "bg-emerald-50 text-emerald-600 ring-emerald-100", bar: "from-emerald-500 to-teal-500" },
+    amber: { icon: "bg-amber-50 text-amber-600 ring-amber-100", bar: "from-amber-400 to-orange-500" },
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 sm:p-4 md:p-5">
-
-      {/* TITLE */}
-      <h2 className="text-[20px] sm:text-[24px] font-bold text-gray-900 mb-4 sm:mb-5">
-        Bức tranh kinh doanh
-      </h2>
-
-      {/* GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-
-        {/* CARD 1 */}
-<div className="
-  bg-gradient-to-b 
-  from-blue-100 
-  to-white
-  rounded-2xl 
-  border 
-  border-blue-100 
-  overflow-hidden 
-  min-h-[220px]
-">          <div className="flex h-full">
-
-            {/* LEFT BAR */}
-            <div className="w-1.5 bg-blue-500 shrink-0" />
-
-            {/* CONTENT */}
-            <div className="flex-1 p-4 sm:p-5 flex flex-col">
-
-              <div className="text-[15px] sm:text-[16px] font-semibold text-gray-900 mb-2">
-                Doanh thu thuần hôm nay
-              </div>
-
-              <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                {formatCurrency(todayStats?.revenue)}
-              </div>
-
-              <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                {todayStats?.revenue > 0 ? "Phát sinh doanh thu" : "Không phát sinh doanh thu"}
-              </div>
-
-              <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Giảm giá hóa đơn
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    0
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Trả hàng (0)
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    0
-                  </span>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CARD 2 */}
-<div className="
-  bg-gradient-to-b 
-  from-green-100 
-  to-white
-  rounded-2xl 
-  border 
-  border-green-100 
-  overflow-hidden 
-  min-h-[220px]
-">          <div className="flex h-full">
-
-            {/* LEFT BAR */}
-            <div className="w-1.5 bg-green-500 shrink-0" />
-
-            {/* CONTENT */}
-            <div className="flex-1 p-4 sm:p-5 flex flex-col">
-
-              <div className="text-[15px] sm:text-[16px] font-semibold text-gray-900 mb-2">
-                Số lượng đơn hôm nay
-              </div>
-
-              <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                {todayStats?.orders || 0}
-              </div>
-
-              <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                {todayStats?.orders > 0 ? "Đơn hàng phát sinh" : "Không phát sinh đơn"}
-              </div>
-
-              <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Trung bình đơn
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {todayStats?.orders > 0 && todayStats?.revenue > 0
-                      ? formatCurrency(Math.round(todayStats.revenue / todayStats.orders))
-                      : 0}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Số khách/đơn
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {todayStats?.orders > 0 && todayStats?.customers > 0
-                      ? Math.round((todayStats.customers / todayStats.orders) * 10) / 10
-                      : 0}
-                  </span>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CARD 3 */}
-<div className="
-  bg-gradient-to-b 
-  from-orange-100 
-  to-white
-  rounded-2xl 
-  border 
-  border-orange-100 
-  overflow-hidden 
-  min-h-[220px]
-">          <div className="flex h-full">
-
-            {/* LEFT BAR */}
-            <div className="w-1.5 bg-orange-400 shrink-0" />
-
-            {/* CONTENT */}
-            <div className="flex-1 p-4 sm:p-5 flex flex-col">
-
-              <div className="text-[15px] sm:text-[16px] font-semibold text-gray-900 mb-2">
-                Tỷ lệ phủ bàn
-              </div>
-
-              <div className="text-[32px] sm:text-[38px] font-bold text-black leading-none mb-2">
-                {todayStats?.customers || 0}
-              </div>
-
-              <div className="text-gray-500 text-[13px] sm:text-[14px] mb-5">
-                {todayStats?.customers > 0 ? "Khách hàng hôm nay" : "Chưa có khách hàng"}
-              </div>
-
-              <div className="space-y-2 text-[13px] sm:text-[14px] mt-auto">
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Đơn đang phục vụ
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {todayStats?.orders || 0}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-700">
-                    Khách đang phục vụ
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {todayStats?.customers || 0}
-                  </span>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-
+    <section>
+      <div className="mb-3 flex items-end justify-between">
+        <h2 className="text-[17px] font-bold tracking-tight text-slate-900">Bức tranh kinh doanh</h2>
+        <span className="text-[12px] text-slate-400">Hôm nay · {new Date().toLocaleDateString("vi-VN")}</span>
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          const tone = tones[card.tone];
+          return (
+            <div
+              key={card.title}
+              className="erp-panel group relative flex flex-col overflow-hidden p-5 transition-shadow hover:shadow-lg hover:shadow-slate-900/5"
+            >
+              <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${tone.bar}`} />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[13.5px] font-medium text-slate-500">{card.title}</div>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-[30px] font-bold leading-none tracking-tight text-slate-900 tabular-nums sm:text-[34px]">
+                      {card.value}
+                    </span>
+                    {card.unit && <span className="text-[15px] font-semibold text-slate-400">{card.unit}</span>}
+                  </div>
+                  <div className="mt-2 text-[12.5px] text-slate-400">{card.hint}</div>
+                </div>
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ${tone.icon}`}>
+                  <Icon size={20} />
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-[13px]">
+                {card.rows.map(([label, val]) => (
+                  <div key={label} className="flex items-center justify-between gap-3">
+                    <span className="text-slate-500">{label}</span>
+                    <span className="font-semibold text-slate-800 tabular-nums">{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
