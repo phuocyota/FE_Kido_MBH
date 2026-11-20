@@ -62,16 +62,25 @@ export const loginByCard = async (cardId) => {
   return authData;
 };
 
-export const loginStudent = ({ username, password, deviceId }) =>
-  apiRequest(API.AUTH.LOGIN_STUDENT, {
+export const loginStudent = async ({ username, password, deviceId }) => {
+  const response = await apiRequest(API.AUTH.LOGIN_STUDENT, {
     method: "POST",
     skipAuth: true,
     body: JSON.stringify({
-      email: username,
+      username: String(username || "").trim(),
       password,
       deviceId,
     }),
   });
+
+  const authData = unwrapAuthResponse(response);
+
+  if (!authData?.accessToken) {
+    throw new Error("Đăng nhập thất bại: thiếu accessToken");
+  }
+
+  return authData;
+};
 
 
   export const loginCashier = async ({

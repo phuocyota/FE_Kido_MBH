@@ -308,13 +308,27 @@ useEffect(() => {
             <div className="mb-2 text-sm">
               <span className="font-semibold">Thanh toán: </span>
 
-              {confirmModal.paymentMethod === "card" ? (
+              {confirmModal.paymentMethod === "card" && (
                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded ml-2 text-xs">
                   💳 Quẹt thẻ
                 </span>
-              ) : (
+              )}
+
+              {confirmModal.paymentMethod === "cash" && (
                 <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded ml-2 text-xs">
                   💵 Tiền mặt
+                </span>
+              )}
+
+              {confirmModal.paymentMethod === "momo" && (
+                <span className="bg-pink-100 text-pink-600 px-2 py-1 rounded ml-2 text-xs">
+                  📱 MoMo
+                </span>
+              )}
+
+              {confirmModal.paymentMethod === "unknown" && (
+                <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded ml-2 text-xs">
+                  Không rõ
                 </span>
               )}
             </div>

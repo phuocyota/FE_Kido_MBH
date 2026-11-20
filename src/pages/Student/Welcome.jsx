@@ -4,12 +4,63 @@ import { useNavigate } from "react-router-dom";
 import bg from "../../assets/anh-can-tin-so-2.webp";
 
 import QRVerify from "../../components/FaceId/QRVerify";
-import { loginByCard } from "../../api/auth";
+import { loginByCard, loginStudent } from "../../api/auth";
 import { saveAuthSession } from "../../api/session";
 
 export default function Welcome() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("card");
+  const [account, setAccount] = useState({ username: "", password: "" });
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountError, setAccountError] = useState("");
+
+  const handleAccountLogin = async (e) => {
+    e.preventDefault();
+
+    if (!account.username.trim() || !account.password) {
+      setAccountError("Vui lòng nhập tài khoản và mật khẩu");
+      return;
+    }
+
+    if (accountLoading) return;
+
+    try {
+      setAccountLoading(true);
+      setAccountError("");
+
+      const authData = await loginStudent({
+        username: account.username,
+        password: account.password,
+      });
+
+      saveAuthSession(authData);
+
+      const student = {
+        id: authData.userId,
+        cardId: authData.cardId,
+        userType: authData.userType,
+        name: authData.studentFullName || authData.fullName,
+        avatar: authData.avatar,
+        school: authData.school,
+        class: authData.class,
+        balance: authData.walletBalance,
+        debtLimit: authData.debtLimit,
+      };
+
+      localStorage.setItem("student", JSON.stringify(student));
+
+      navigate("/order", {
+        state: {
+          type: "student",
+          student,
+        },
+      });
+    } catch (error) {
+      setAccountError(error?.message || "Tài khoản hoặc mật khẩu không đúng");
+    } finally {
+      setAccountLoading(false);
+    }
+  };
   const scanInFlightRef = useRef(false);
   const qrInFlightRef = useRef(false);
   const scanBufferRef = useRef([]);
@@ -211,6 +262,16 @@ export default function Welcome() {
             📷 QR
           </button>
 
+          <button
+            onClick={() => setTab("account")}
+            className={`flex-1 py-2 text-sm font-medium ${tab === "account"
+              ? "border-b-2 border-white text-white"
+              : "text-white/60"
+              }`}
+          >
+            🔑 Tài khoản
+          </button>
+
           {/* Face ID disabled: QR-only flow */}
           {/* <button
             onClick={() => setTab("face")}
@@ -250,6 +311,57 @@ export default function Welcome() {
             />
 
           </div>
+        )}
+
+        {tab === "account" && (
+          <form
+            onSubmit={handleAccountLogin}
+            className="mt-4 rounded-2xl bg-black/60 p-6 text-left space-y-4"
+          >
+            <div>
+              <label className="block text-sm text-white/80 mb-1">
+                Tài khoản
+              </label>
+              <input
+                type="text"
+                autoComplete="username"
+                value={account.username}
+                onChange={(e) =>
+                  setAccount((prev) => ({ ...prev, username: e.target.value }))
+                }
+                className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-white/60"
+                placeholder="Email hoặc mã học sinh"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-white/80 mb-1">
+                Mật khẩu
+              </label>
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={account.password}
+                onChange={(e) =>
+                  setAccount((prev) => ({ ...prev, password: e.target.value }))
+                }
+                className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-white/60"
+                placeholder="Nhập mật khẩu"
+              />
+            </div>
+
+            {accountError && (
+              <p className="text-sm text-red-300">{accountError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={accountLoading}
+              className="w-full rounded-xl bg-white text-black font-semibold py-3 disabled:opacity-60"
+            >
+              {accountLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            </button>
+          </form>
         )}
 
         {/* Face ID disabled: QR-only flow */}

@@ -20,6 +20,16 @@ import {
   getProductsByPrice,
 } from "../../api/products";
 
+// Giá tối đa của món được hiển thị trên menu
+const MAX_PRODUCT_PRICE = 100000;
+
+// paymentMethod trên FE -> giá trị gửi lên backend
+const PAYMENT_METHOD_BE = {
+  card: "WALLET",
+  cash: "CASH",
+  momo: "MOMO",
+};
+
 export default function Order() {
   const location = useLocation();
 
@@ -67,7 +77,6 @@ export default function Order() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
-  const [cardPrice,setCardPrice]=useState(10000);
 
   // console.log("LOCAL TOKEN:", localStorage.getItem("accessToken"));
   // console.log("STUDENT:", localStorage.getItem("student"));
@@ -86,8 +95,6 @@ export default function Order() {
   }
 };
 
-  const originalAmount =
-  Number(localStorage.getItem("amount")) || amount;
 
   // const reloadCart = async () => {
   //   const nextCart = await getMyCart();
@@ -113,31 +120,20 @@ useEffect(() => {
   });
 }, [student]);
 
-  // LOADING PRODUCTS
-  const [loadingProducts, setLoadingProducts] =
-  useState(false);
  
  
 
 useEffect(() => {
 
-  if (!cardPrice) return;
-
-  if (loadingProducts) return;
-
   const loadOrderingData = async () => {
 
     try {
 
-      setLoadingProducts(true);
-
-      const maxPrice =
-        Number(cardPrice);
 
       const fullCategories =
         await getProductsByPrice(
           0,
-          maxPrice
+          MAX_PRODUCT_PRICE
         );
 
       const normalized =
@@ -161,24 +157,19 @@ useEffect(() => {
         error
       );
 
-    } finally {
-
-      setLoadingProducts(false);
-
     }
 
   };
 
   loadOrderingData();
 
-}, [cardPrice]);
+}, []);
   const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
   const products = apiProducts;
 
  
 
-// console.log("CARD PRICE:", cardPrice);
 const filteredProducts =
   products.filter((p) => {
 
@@ -192,15 +183,7 @@ const filteredProducts =
       activeCategory === "Tất cả" ||
       categoryName === activeCategory;
 
-    const matchPrice =
-      Number(cardPrice) === 5000
-        ? Number(p.price) <= 5000
-        : true;
-
-    return (
-      matchCategory &&
-      matchPrice
-    );
+    return matchCategory;
 
   });
 
@@ -242,12 +225,24 @@ const filteredProducts =
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
+  // Số tiền tối đa có thể trừ ví:
+  // - QR: số tiền của mã QR
+  // - Học sinh: số dư ví (không âm) + hạn mức nợ còn lại
+  const walletAvailable = amount != null
+    ? Number(amount) || 0
+    : Math.max(0, Number(student?.balance) || 0) +
+      Math.max(0, Number(student?.debtLimit) || 0);
+
+  // Đơn vượt quá số tiền có thể trừ ví -> chỉ cho MoMo hoặc tiền mặt
+  const canPayByWallet = total <= walletAvailable;
+
   const handlePayment = () => {
     if (cart.length === 0) {
       alert("Chưa có món");
       return;
     }
 
+    setPaymentMethod(canPayByWallet ? "card" : "cash");
     setConfirmModal(true);
   };
   const generateOrderNumber = () => {
@@ -269,15 +264,18 @@ const filteredProducts =
   const handleConfirmPayment = async () => {
     if (isSubmitting) return;
 
+    if (paymentMethod === "card" && !canPayByWallet) {
+      alert("Số dư ví không đủ, vui lòng chọn MoMo hoặc tiền mặt");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
       const result = await completeCart({
 
         paymentMethod:
-          paymentMethod === "cash"
-            ? "CASH"
-            : "WALLET",
+          PAYMENT_METHOD_BE[paymentMethod] || "CASH",
 
         orderType: "TAKEAWAY",
 
@@ -289,7 +287,7 @@ const filteredProducts =
       const order = payload?.order || payload;
       const orderNumber = order?.orderNumber || order?.code || order?.id || generateOrderNumber();
 
-      if (paymentMethod !== "cash" && student) {
+      if (paymentMethod === "card" && student) {
         const balanceBefore = Number(student.balance || 0);
         const balanceAfter = balanceBefore - total;
         const debtIncrease = Math.max(0, -balanceAfter) - Math.max(0, -balanceBefore);
@@ -400,20 +398,15 @@ const filteredProducts =
       style={{ backgroundImage: `url(${bgImg})` }}
     >
 
-      {/* <Header student={student} amount={remaining ?? amount} setCardPrice={setCardPrice}/> */}
       <Header
-  
-  student={student}
-  amount={remaining ?? amount}
-  originalAmount={originalAmount}
-  setCardPrice={setCardPrice}
-/>
+        student={student}
+        amount={remaining ?? amount}
+      />
 
 
       <div className="flex flex-1 overflow-hidden">
 
         <Left
-        key={cardPrice}
           categories={categories}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
@@ -448,6 +441,8 @@ const filteredProducts =
           setPickupType={setPickupType}
           paymentMethod={paymentMethod}
           setPaymentMethod={setPaymentMethod}
+          canPayByWallet={canPayByWallet}
+          walletAvailable={walletAvailable}
         />
 
       </div>

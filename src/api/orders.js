@@ -70,6 +70,16 @@ export const normalizeOrderItem = (item) => {
   };
 };
 
+// paymentMethod từ backend -> giá trị dùng trên FE
+const PAYMENT_METHOD_FE = {
+  WALLET: "card",
+  CASH: "cash",
+  MOMO: "momo",
+};
+
+export const normalizePaymentMethod = (value) =>
+  PAYMENT_METHOD_FE[String(value || "").toUpperCase()] || "unknown";
+
 export const normalizeOrder = (order, fallbackStatus) => {
   const student = order.student || order.Student || order.user || order.User || {};
   const customer = order.customer || order.Customer || {};
@@ -88,8 +98,7 @@ export const normalizeOrder = (order, fallbackStatus) => {
     studentId: order.studentId || student.id || student.cardId,
     studentName: customer.fullName || student.name || student.fullName || order.studentName || order.customerName,
     status: normalizeOrderStatus(order.status, fallbackStatus),
-    paymentMethod:
-      String(order.paymentMethod || "").toUpperCase() === "CASH" ? "cash" : "card",
+    paymentMethod: normalizePaymentMethod(order.paymentMethod),
     pickupType: normalizePickupType(order),
     createdAt: createdAt ? new Date(createdAt).getTime() : Date.now(),
     total: toNumber(total),

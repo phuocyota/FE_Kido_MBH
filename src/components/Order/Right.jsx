@@ -33,6 +33,8 @@ export default function Right({
   setPickupType,
   paymentMethod,
   setPaymentMethod,
+  canPayByWallet = true,
+  walletAvailable = 0,
 }) {
 
   const navigate = useNavigate();
@@ -340,27 +342,31 @@ export default function Right({
               <div className="mb-4">
                 <p className="font-semibold mb-2">💳 Thanh toán</p>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPaymentMethod("card")}
-                    className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "card"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100"
-                      }`}
-                  >
-                    Quẹt thẻ
-                  </button>
-
-                  <button
-                    onClick={() => setPaymentMethod("cash")}
-                    className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "cash"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100"
-                      }`}
-                  >
-                    Tiền mặt
-                  </button>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { key: "card", label: "Quẹt thẻ", disabled: !canPayByWallet },
+                    { key: "momo", label: "MoMo" },
+                    { key: "cash", label: "Tiền mặt" },
+                  ].map((method) => (
+                    <button
+                      key={method.key}
+                      disabled={method.disabled}
+                      onClick={() => setPaymentMethod(method.key)}
+                      className={`px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${paymentMethod === method.key
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100"
+                        }`}
+                    >
+                      {method.label}
+                    </button>
+                  ))}
                 </div>
+
+                {!canPayByWallet && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Số dư ví ({Number(walletAvailable).toLocaleString()}đ) không đủ để thanh toán đơn này. Vui lòng chọn MoMo hoặc tiền mặt.
+                  </p>
+                )}
               </div>
 
               {/* BUTTON */}
