@@ -27,3 +27,4 @@ package-lock.json
 
 # Playwright artifacts
 .playwright-mcp/
+yarn.lock
