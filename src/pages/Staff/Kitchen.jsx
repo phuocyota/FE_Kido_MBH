@@ -171,7 +171,7 @@ useEffect(() => {
       if (action === "pending") {
         // Thanh toán tiền mặt - gọi API receive-cash
         if (order.status === "cash") {
-          await receiveCashPayment(order.orderKey);
+          await receiveCashPayment(order.orderKey, extra.amount ?? order.total);
         }
         updated = orders.map(o =>
           o.orderKey === order.orderKey
@@ -435,7 +435,7 @@ useEffect(() => {
                   {/* BUTTON */}
                   <button
                     onClick={() => {
-                      updateOrder(confirmModal, "pending");
+                      updateOrder(confirmModal, "pending", { amount: Number(cashInput) });
                       setCashInput("");
                     }}
                     disabled={Number(cashInput) < confirmModal.total}

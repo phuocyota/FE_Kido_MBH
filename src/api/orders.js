@@ -158,9 +158,10 @@ export const updateOrderToDone = async (orderId) => {
   return normalizeOrder(response?.data || response, "DONE");
 };
 
-export const receiveCashPayment = async (orderId) => {
+export const receiveCashPayment = async (orderId, amount) => {
   const response = await kitchenRequest(API.ORDERS.RECEIVE_CASH(orderId), {
     method: "POST",
+    body: JSON.stringify({ amount: Number(amount) }),
   });
   return normalizeOrder(response?.data || response, "PREPARING");
 };
