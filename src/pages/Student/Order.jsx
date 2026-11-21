@@ -7,15 +7,28 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Order/Header";
 import Left from "../../components/Order/Left";
 import Right from "../../components/Order/Right";
-import { getProductsFull } from "../../api/products";
 import {
   addCartItem,
   completeCart,
   deleteCartItem,
   getMyCart,
   updateCartItem,
+  // getMyCartItems,
 } from "../../api/cart";
-import bgImg from "../../assets/anh-can-tin-so-2.png";
+import bgImg from "../../assets/anh-can-tin-so-2.webp";
+import {
+  getProductsByPrice,
+} from "../../api/products";
+
+// Giá tối đa của món được hiển thị trên menu
+const MAX_PRODUCT_PRICE = 100000;
+
+// paymentMethod trên FE -> giá trị gửi lên backend
+const PAYMENT_METHOD_BE = {
+  card: "WALLET",
+  cash: "CASH",
+  momo: "MOMO",
+};
 
 export default function Order() {
   const location = useLocation();
@@ -65,100 +78,163 @@ export default function Order() {
   const [amount, setAmount] = useState(null);
   const [remaining, setRemaining] = useState(null);
 
+  // console.log("LOCAL TOKEN:", localStorage.getItem("accessToken"));
+  // console.log("STUDENT:", localStorage.getItem("student"));
+
+  // const syncCart = (nextCart) => {
+  //   if (Array.isArray(nextCart?.items)) {
+  //     setCart(nextCart.items);
+  //   }
+  // };
   const syncCart = (nextCart) => {
-    if (Array.isArray(nextCart?.items)) {
-      setCart(nextCart.items);
+
+  console.log("SYNC CART:", nextCart);
+
+  if (Array.isArray(nextCart?.items)) {
+    setCart(nextCart.items);
+  }
+};
+
+
+  // const reloadCart = async () => {
+  //   const nextCart = await getMyCart();
+  //   syncCart(nextCart);
+  //   return nextCart;
+  // };
+const reloadCart = async () => {
+
+  const nextCart = await getMyCart();
+
+  console.log("GET MY CART:", nextCart);
+
+  syncCart(nextCart);
+
+  return nextCart;
+};
+
+useEffect(() => {
+  if (!student) return;
+
+  reloadCart().catch((error) => {
+    console.error("LOAD CART ERROR:", error);
+  });
+}, [student]);
+
+ 
+ 
+
+useEffect(() => {
+
+  const loadOrderingData = async () => {
+
+    try {
+
+
+      const fullCategories =
+        await getProductsByPrice(
+          0,
+          MAX_PRODUCT_PRICE
+        );
+
+      const normalized =
+        Array.isArray(fullCategories)
+          ? fullCategories
+          : [];
+
+      setApiCategories(normalized);
+
+      setApiProducts(
+        normalized.flatMap(
+          (category) =>
+            category.products || []
+        )
+      );
+
+    } catch (error) {
+
+      console.error(
+        "LOAD PRODUCT ERROR:",
+        error
+      );
+
     }
+
   };
 
-  const reloadCart = async () => {
-    const nextCart = await getMyCart();
-    syncCart(nextCart);
-    return nextCart;
-  };
+  loadOrderingData();
 
-  useEffect(() => {
-    const loadOrderingData = async () => {
-      const token = localStorage.getItem("accessToken");
-
-      try {
-        const fullCategories = await getProductsFull();
-        setApiCategories(fullCategories);
-        setApiProducts(fullCategories.flatMap((category) => category.products || []));
-        if (token) {
-          await reloadCart();
-        }
-      } catch (error) {
-        console.error("Không tải được dữ liệu order từ API", error);
-        alert(error?.message || "Không tải được danh sách sản phẩm");
-      }
-    };
-
-    loadOrderingData();
-  }, []);
-
+}, []);
   const categories = ["Tất cả", ...apiCategories.map((category) => category.name)];
 
   const products = apiProducts;
 
-  //   useEffect(() => {
-  //   const data = JSON.parse(localStorage.getItem("student") || "null");
-  //   const qrAmount = localStorage.getItem("amount");
+ 
 
-  //   if (qrAmount) {
-  //     const amountNumber = Number(qrAmount);
+const filteredProducts =
+  products.filter((p) => {
 
-  //     setAmount(amountNumber);        
-  //     setRemaining(amountNumber);    
-  //     setStudent(null);
-  //   } else if (data) {
-  //     setStudent(data);
-  //     setAmount(null);
-  //   } else {
+    const categoryName =
+      p.category?.name ||
+      p.categoryName ||
+      p.category ||
+      "";
 
-  //     console.warn("Không có dữ liệu từ scan");
-  //   }
-  // }, []);
-
-  const filteredProducts = products.filter((p) => {
-    // 👉 lọc theo category
     const matchCategory =
-      activeCategory === "Tất cả" || p.category === activeCategory;
+      activeCategory === "Tất cả" ||
+      categoryName === activeCategory;
 
-    // 👉 lọc theo tiền QR
-    const matchPrice =
-      !amount || p.price <= Number(amount);
+    return matchCategory;
 
-    return matchCategory && matchPrice;
   });
 
+  useEffect(() => {
+
+    console.log(
+      "CART STATE:",
+      cart
+    );
+
+  }, [cart]);
+
+   
 
   const addToCart = async (item) => {
-    // 👉 Nếu đang dùng QR
-    if (amount) {
-      if (remaining < item.price) {
-        alert("❌ Bạn không đủ tiền để mua món này");
-        return;
-      }
-    }
 
-    try {
+  try {
+
+    console.log("CLICK ITEM:", item);
+
+      // 👇 ADD API
       await addCartItem({
         productId: item.id,
         quantity: 1,
-        note: item.note || "",
+        note: "",
       });
+
       await reloadCart();
 
-      if (amount) {
-        setRemaining((prev) => (prev ?? 0) - item.price);
-      }
-    } catch (error) {
-      alert(error?.message || "Không thêm được sản phẩm vào giỏ");
+  } catch (error) {
+
+    console.log(
+      "ADD CART ERROR:",
+      error
+    );
+
     }
   };
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  // Số tiền tối đa có thể trừ ví:
+  // - QR: số tiền của mã QR
+  // - Học sinh: số dư ví (không âm) + hạn mức nợ còn lại
+  const walletAvailable = amount != null
+    ? Number(amount) || 0
+    : Math.max(0, Number(student?.balance) || 0) +
+      Math.max(0, Number(student?.debtLimit) || 0);
+
+  // Đơn vượt quá số tiền có thể trừ ví -> chỉ cho MoMo hoặc tiền mặt
+  const canPayByWallet = total <= walletAvailable;
 
   const handlePayment = () => {
     if (cart.length === 0) {
@@ -166,6 +242,7 @@ export default function Order() {
       return;
     }
 
+    setPaymentMethod(canPayByWallet ? "card" : "cash");
     setConfirmModal(true);
   };
   const generateOrderNumber = () => {
@@ -187,32 +264,40 @@ export default function Order() {
   const handleConfirmPayment = async () => {
     if (isSubmitting) return;
 
+    if (paymentMethod === "card" && !canPayByWallet) {
+      alert("Số dư ví không đủ, vui lòng chọn MoMo hoặc tiền mặt");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
-      if (paymentMethod !== "cash" && !amount && student && total > Number(student.balance || 0)) {
-        alert("Không đủ tiền");
-        return;
-      }
-
       const result = await completeCart({
-        branchId: localStorage.getItem("branchId") || import.meta.env.VITE_BRANCH_ID || "branch-id",
-        posDeviceId:
-          localStorage.getItem("posDeviceId") ||
-          localStorage.getItem("deviceId") ||
-          import.meta.env.VITE_POS_DEVICE_ID ||
-          "student-app",
-        paymentMethod: paymentMethod === "cash" ? "CASH" : "WALLET",
+
+        paymentMethod:
+          PAYMENT_METHOD_BE[paymentMethod] || "CASH",
+
         orderType: "TAKEAWAY",
+
         note: pickupType,
+
       });
 
       const payload = result?.data || result;
       const order = payload?.order || payload;
       const orderNumber = order?.orderNumber || order?.code || order?.id || generateOrderNumber();
 
-      if (paymentMethod !== "cash" && student) {
-        const updated = { ...student, balance: Number(student.balance || 0) - total };
+      if (paymentMethod === "card" && student) {
+        const balanceBefore = Number(student.balance || 0);
+        const balanceAfter = balanceBefore - total;
+        const debtIncrease = Math.max(0, -balanceAfter) - Math.max(0, -balanceBefore);
+        const updated = {
+          ...student,
+          balance: balanceAfter,
+          ...(student.debtLimit != null && {
+            debtLimit: Math.max(0, Number(student.debtLimit) - debtIncrease),
+          }),
+        };
         localStorage.setItem("student", JSON.stringify(updated));
         setStudent(updated);
       }
@@ -278,7 +363,12 @@ export default function Order() {
   const decreaseQty = async (item) => {
     try {
       if (item.cartItemId) {
-        await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        if (item.qty <= 1) {
+          await deleteCartItem(item.cartItemId);
+        } else {
+          await updateCartItem(item.cartItemId, { quantity: item.qty - 1 });
+        }
+
         await reloadCart();
       } else {
         setCart((prev) =>
@@ -308,7 +398,10 @@ export default function Order() {
       style={{ backgroundImage: `url(${bgImg})` }}
     >
 
-      <Header student={student} amount={remaining ?? amount} />
+      <Header
+        student={student}
+        amount={remaining ?? amount}
+      />
 
 
       <div className="flex flex-1 overflow-hidden">
@@ -319,7 +412,7 @@ export default function Order() {
           setActiveCategory={setActiveCategory}
           products={filteredProducts}
           addToCart={addToCart}
-        />
+         />
 
         <Right
           cart={cart}
@@ -348,6 +441,8 @@ export default function Order() {
           setPickupType={setPickupType}
           paymentMethod={paymentMethod}
           setPaymentMethod={setPaymentMethod}
+          canPayByWallet={canPayByWallet}
+          walletAvailable={walletAvailable}
         />
 
       </div>

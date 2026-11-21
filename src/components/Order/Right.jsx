@@ -1,16 +1,19 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.jpg";
-import bg_right from "../../assets/right_order.png";
+import bgConfirm from "../../assets/bgr_formXacNhanThanhToan.webp";
+import bg_right from "../../assets/right_order.webp";
+import {
+  updateCartItem,
+} from "../../api/cart";
 
 export default function Right({
   cart,
   setCart,
   total,
 
-   removeFromCart,     // 👈 thêm
+  removeFromCart,     // 👈 thêm
   increaseQty,        // 👈 thêm
-  decreaseQty,  
+  decreaseQty,
 
   student,
 
@@ -30,6 +33,8 @@ export default function Right({
   setPickupType,
   paymentMethod,
   setPaymentMethod,
+  canPayByWallet = true,
+  walletAvailable = 0,
 }) {
 
   const navigate = useNavigate();
@@ -187,16 +192,39 @@ export default function Right({
               </button>
 
               <button
-                onClick={() => {
-                  setCart((prev) =>
-                    prev.map((p) =>
-                      p.id === noteModal.id
-                        ? { ...p, note: noteValue }
-                        : p
-                    )
-                  );
+                onClick={async () => {
 
-                  setNoteModal(null);
+                  try {
+
+                    await updateCartItem(
+                      noteModal.cartItemId,
+                      {
+                        quantity: noteModal.qty,
+                        note: noteValue,
+                      }
+                    );
+
+                    setCart((prev) =>
+                      prev.map((p) =>
+                        p.id === noteModal.id
+                          ? {
+                            ...p,
+                            note: noteValue,
+                          }
+                          : p
+                      )
+                    );
+
+                    setNoteModal(null);
+
+                  } catch (error) {
+
+                    alert(
+                      error?.message ||
+                      "Không cập nhật được ghi chú"
+                    );
+
+                  }
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer"
               >
@@ -300,8 +328,8 @@ export default function Right({
                       key={type}
                       onClick={() => setPickupType(type)}
                       className={`px-3 py-1 rounded-lg border border-gray-300 ${pickupType === type
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100"
                         }`}
                     >
                       {type}
@@ -314,27 +342,31 @@ export default function Right({
               <div className="mb-4">
                 <p className="font-semibold mb-2">💳 Thanh toán</p>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setPaymentMethod("card")}
-                    className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "card"
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { key: "card", label: "Quẹt thẻ", disabled: !canPayByWallet },
+                    { key: "momo", label: "MoMo" },
+                    { key: "cash", label: "Tiền mặt" },
+                  ].map((method) => (
+                    <button
+                      key={method.key}
+                      disabled={method.disabled}
+                      onClick={() => setPaymentMethod(method.key)}
+                      className={`px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed ${paymentMethod === method.key
                         ? "bg-blue-600 text-white"
                         : "bg-gray-100"
-                      }`}
-                  >
-                    Quẹt thẻ
-                  </button>
-
-                  <button
-                    onClick={() => setPaymentMethod("cash")}
-                    className={`px-3 py-1 rounded-lg border border-gray-300 text-sm ${paymentMethod === "cash"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100"
-                      }`}
-                  >
-                    Tiền mặt
-                  </button>
+                        }`}
+                    >
+                      {method.label}
+                    </button>
+                  ))}
                 </div>
+
+                {!canPayByWallet && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Số dư ví ({Number(walletAvailable).toLocaleString()}đ) không đủ để thanh toán đơn này. Vui lòng chọn MoMo hoặc tiền mặt.
+                  </p>
+                )}
               </div>
 
               {/* BUTTON */}

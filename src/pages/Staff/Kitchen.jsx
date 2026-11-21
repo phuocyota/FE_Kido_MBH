@@ -1,36 +1,125 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import CashOrders from "../../components/Staff/CashOrders";
 import PendingOrders from "../../components/Staff/PendingOrders";
 import DoneOrders from "../../components/Staff/DoneOrders";
-import bgCantin from "../../assets/anh-can-tin-so-2.png";
-import { el } from "date-fns/locale";
+import bgCantin from "../../assets/anh-can-tin-so-2.webp";
+import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPickup, updateOrderToDone, receiveCashPayment } from "../../api/orders";
+import { useNavigate } from "react-router-dom";
+import StaffHeader from "../../components/Staff/StaffHeader"; 
+import { clearAuthSession, getAccessToken, isKitchenToken } from "../../api/session";
+import { disconnectSocket } from "../../api/socket";
+import useOrderSocket from "../../hooks/useOrderSocket";
+
 
 export default function Kitchen() {
-  // localStorage.removeItem("orders"); 
-
-
-
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null);
   const [cashInput, setCashInput] = React.useState("");
   const [cancelModal, setCancelModal] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   const bufferRef = useRef("");
+  const ordersRef = useRef([]);
+
+
+const fullName =
+  localStorage.getItem("fullName") || "Nhân viên";
+
+const avatar =
+  localStorage.getItem("avatar") ||
+  "https://i.pravatar.cc/150";
+  // đăng xuất 
+  
+  
+  const handleLogout = () => {
+
+  disconnectSocket();
+  clearAuthSession();
+
+  navigate("/cashier/login");
+};
+
+ 
+
+
+useEffect(() => {
+
+  const token =
+    getAccessToken();
+
+  if (!token || !isKitchenToken(token)) {
+    clearAuthSession();
+    navigate("/cashier/login");
+    return;
+  }
+
+}, [navigate]);
+
+ 
+
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
 
   // ================= LOAD DATA =================
-  useEffect(() => {
-    const loadOrders = () => {
-      const data = JSON.parse(localStorage.getItem("orders")) || [];
-      console.log(data)
-      setOrders(data);
-    };
+  const isMountedRef = useRef(true);
+  const loadingRef = useRef(false);
+  const reloadQueuedRef = useRef(false);
 
-    loadOrders();
+  const loadOrders = useCallback(async () => {
+    // Gộp các lần gọi chồng nhau: đang tải thì chỉ đánh dấu tải lại 1 lần nữa
+    if (loadingRef.current) {
+      reloadQueuedRef.current = true;
+      return;
+    }
+    loadingRef.current = true;
 
-    const interval = setInterval(loadOrders, 1000);
-    return () => clearInterval(interval);
+    try {
+      const [activeData, readyPickupData] = await Promise.all([
+        getActiveKitchenOrders(),
+        getReadyToPickupOrders(),
+      ]);
+
+      if (isMountedRef.current) {
+        setOrders([...activeData, ...readyPickupData]);
+        setLoadError("");
+      }
+    } catch (error) {
+      console.error("Khong tai duoc danh sach order kitchen", error);
+
+      if (isMountedRef.current) {
+        setLoadError(error?.message || "Khong tai duoc danh sach don hang");
+      }
+    } finally {
+      loadingRef.current = false;
+      if (reloadQueuedRef.current && isMountedRef.current) {
+        reloadQueuedRef.current = false;
+        loadOrders();
+      }
+    }
   }, []);
+
+  // Realtime: có event đơn hàng -> tải lại danh sách; reconnect -> tải bù
+  const { connected: socketConnected } = useOrderSocket({
+    onChange: loadOrders,
+    onReconnect: loadOrders,
+  });
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    loadOrders();
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [loadOrders]);
+
+  // Polling dự phòng: 3s khi mất socket, 30s khi socket đang kết nối
+  useEffect(() => {
+    const interval = setInterval(loadOrders, socketConnected ? 30000 : 3000);
+    return () => clearInterval(interval);
+  }, [loadOrders, socketConnected]);
 
   // ================= SCAN THẺ =================
   useEffect(() => {
@@ -67,10 +156,9 @@ export default function Kitchen() {
   // ================= HANDLE SCAN =================
   const handleScan = (cardId) => {
 
-    const all = JSON.parse(localStorage.getItem("orders")) || [];
 
     // tìm đơn theo studentId
-    const foundOrder = all.find(
+    const foundOrder = ordersRef.current.find(
       o =>
         String(o.studentId) === String(cardId) &&
         o.status !== "cancelled"
@@ -84,118 +172,88 @@ export default function Kitchen() {
   };
 
   // ================= UPDATE ORDER =================
-  const updateOrder = (order, action, extra = {}) => {
-    const all = JSON.parse(localStorage.getItem("orders")) || [];
-
+  const updateOrder = async (order, action, extra = {}) => {
     let updated = [];
 
-    if (action === "pending") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "pending" }
-          : o
-      );
-    }
-
-    else if (action === "done") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? { ...o, status: "done" }
-          : o
-      );
-    }
-
-    else if (action === "cancel") {
-      updated = all.map(o =>
-        o.orderKey === order.orderKey
-          ? {
-            ...o,
-            status: "cancelled",
-            isRefunded: true,
-            cancelReason: extra.reason || "Không có lý do"
-          }
-          : o
-      );
-    }
-
-    else if (action === "remove") {
-      updated = all.filter(o => o.orderKey !== order.orderKey);
-    }
-
-    localStorage.setItem("orders", JSON.stringify(updated));
-    setConfirmModal(null);
-  };
-
-  // hủy đơn và hoàn tiền
-  //   const handleCancel = (order, reason = "") => {
-  //   const isCancelable = Date.now() - order.createdAt <= 15 * 60 * 1000;
-
-  //   if (!isCancelable) {
-  //     alert("❌ Đơn đã quá 15 phút, không thể hủy");
-  //     return;
-  //   }
-
-  //   if (order.isRefunded) return;
-
-  //   const all = JSON.parse(localStorage.getItem("orders")) || [];
-
-  //   // 👉 HOÀN TIỀN
-  //   if (order.status === "pending") {
-  //     if (order.paymentMethod === "card") {
-  //       refundToCard(order);
-  //       alert(`💳 Đã hoàn ${order.total.toLocaleString()}đ vào tài khoản`);
-  //     } else {
-  //       alert(`💰 Trả lại ${order.total.toLocaleString()}đ`);
-  //     }
-  //   }
-
-  //   const updated = all.map(o =>
-  //     o.orderKey === order.orderKey
-  //       ? {
-  //           ...o,
-  //           status: "cancelled",
-  //           isRefunded: true,
-  //           cancelReason: reason || "Không có lý do"
-  //         }
-  //       : o
-  //   );
-
-  //   localStorage.setItem("orders", JSON.stringify(updated));
-  //   setConfirmModal(null);
-  // };
-
-  // hoàn tiền vào thẻ
-  const refundToCard = (order) => {
-    const students = JSON.parse(localStorage.getItem("students")) || [];
-
-    const updated = students.map(s => {
-      if (String(s.cardId) === String(order.studentId)) {
-        return {
-          ...s,
-          balance: s.balance + order.total
-        };
+    try {
+      if (action === "pending") {
+        // Thanh toán tiền mặt - gọi API receive-cash
+        if (order.status === "cash") {
+          await receiveCashPayment(order.orderKey, extra.amount ?? order.total);
+        }
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? { ...o, status: "pending" }
+            : o
+        );
       }
-      return s;
-    });
 
-    localStorage.setItem("students", JSON.stringify(updated));
+      else if (action === "done") {
+        // Gọi API để chuyển sang READY_TO_PICKUP
+        await updateOrderToReadyToPickup(order.orderKey);
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? { ...o, status: "done" }
+            : o
+        );
+      }
+
+      else if (action === "remove") {
+        // Gọi API để chuyển sang DONE
+        await updateOrderToDone(order.orderKey);
+        updated = orders.filter(o => o.orderKey !== order.orderKey);
+      }
+
+      else if (action === "cancel") {
+        updated = orders.map(o =>
+          o.orderKey === order.orderKey
+            ? {
+              ...o,
+              status: "cancelled",
+              isRefunded: true,
+              cancelReason: extra.reason || "Không có lý do"
+            }
+            : o
+        );
+      }
+
+      setOrders(updated);
+      setConfirmModal(null);
+    } catch (error) {
+      console.error(`Lỗi cập nhật đơn hàng (${action}):`, error);
+      alert(`❌ Lỗi cập nhật trạng thái: ${error?.message || "Thử lại"}`);
+    }
   };
-
 
   return (
     <div
-      className="h-screen flex bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgCantin})` }}
-    >
+  className="h-screen flex flex-col bg-cover bg-center"
+  style={{ backgroundImage: `url(${bgCantin})` }}
+>
+<StaffHeader
+  fullName={fullName}
+  avatar={avatar}
+  onLogout={handleLogout}
+/>
 
       {/* 3 CỘT */}
+      {loadError && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow">
+          {loadError}
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0 overflow-hidden"> 
+
       <CashOrders
         orders={orders.filter(o => o.status === "cash")}
         onSelect={setConfirmModal}
+        onPaid={(order) => updateOrder(order, "pending")}
       />
       <PendingOrders
         orders={orders.filter(o => o.status === "pending")}
         onSelect={setConfirmModal}
+        onDone={(order) => updateOrder(order, "done")}
       />
 
       {/* <DoneOrders
@@ -207,6 +265,7 @@ export default function Kitchen() {
         onPickup={(order) => updateOrder(order, "remove")}
         onSelect={setConfirmModal}
       />
+      </div>
 
       {/* ================= MODAL ================= */}
       {confirmModal && (
@@ -257,13 +316,27 @@ export default function Kitchen() {
             <div className="mb-2 text-sm">
               <span className="font-semibold">Thanh toán: </span>
 
-              {confirmModal.paymentMethod === "card" ? (
+              {confirmModal.paymentMethod === "card" && (
                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded ml-2 text-xs">
                   💳 Quẹt thẻ
                 </span>
-              ) : (
+              )}
+
+              {confirmModal.paymentMethod === "cash" && (
                 <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded ml-2 text-xs">
                   💵 Tiền mặt
+                </span>
+              )}
+
+              {confirmModal.paymentMethod === "momo" && (
+                <span className="bg-pink-100 text-pink-600 px-2 py-1 rounded ml-2 text-xs">
+                  📱 MoMo
+                </span>
+              )}
+
+              {confirmModal.paymentMethod === "unknown" && (
+                <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded ml-2 text-xs">
+                  Không rõ
                 </span>
               )}
             </div>
@@ -370,7 +443,7 @@ export default function Kitchen() {
                   {/* BUTTON */}
                   <button
                     onClick={() => {
-                      updateOrder(confirmModal, "pending");
+                      updateOrder(confirmModal, "pending", { amount: Number(cashInput) });
                       setCashInput("");
                     }}
                     disabled={Number(cashInput) < confirmModal.total}
@@ -482,15 +555,6 @@ export default function Kitchen() {
 
               <button
                 onClick={() => {
-                  // hoàn tiền trước
-                  if (cancelModal.paymentMethod === "card") {
-                    refundToCard(cancelModal);
-                    alert(`💳 Đã hoàn ${cancelModal.total.toLocaleString()}đ vào tài khoản`);
-                  } else {
-                    alert(`💰 Trả lại ${cancelModal.total.toLocaleString()}đ`);
-                  }
-
-                  // cập nhật trạng thái
                   updateOrder(cancelModal, "cancel", {
                     reason: cancelReason
 

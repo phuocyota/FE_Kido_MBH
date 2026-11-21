@@ -4,8 +4,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [
-    tailwindcss(),
-    basicSsl()
+    tailwindcss()
   ],
   server: {
     host: '0.0.0.0',
@@ -16,6 +15,11 @@ export default defineConfig({
         target: 'https://be.kidocanteen.kidoedu.vn',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/socket.io': {
+        target: 'https://be.kidocanteen.kidoedu.vn',
+        changeOrigin: true,
+        ws: true,
       },
     },
   },
