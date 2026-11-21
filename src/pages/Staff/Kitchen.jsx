@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import CashOrders from "../../components/Staff/CashOrders";
 import PendingOrders from "../../components/Staff/PendingOrders";
 import DoneOrders from "../../components/Staff/DoneOrders";
@@ -7,6 +7,8 @@ import { getActiveKitchenOrders, getReadyToPickupOrders, updateOrderToReadyToPic
 import { useNavigate } from "react-router-dom";
 import StaffHeader from "../../components/Staff/StaffHeader"; 
 import { clearAuthSession, getAccessToken, isKitchenToken } from "../../api/session";
+import { disconnectSocket } from "../../api/socket";
+import useOrderSocket from "../../hooks/useOrderSocket";
 
 
 export default function Kitchen() {
@@ -33,6 +35,7 @@ const avatar =
   
   const handleLogout = () => {
 
+  disconnectSocket();
   clearAuthSession();
 
   navigate("/cashier/login");
@@ -61,57 +64,62 @@ useEffect(() => {
   }, [orders]);
 
   // ================= LOAD DATA =================
-  useEffect(() => {
-    let isMounted = true;
+  const isMountedRef = useRef(true);
+  const loadingRef = useRef(false);
+  const reloadQueuedRef = useRef(false);
 
-    const loadInitialOrders = async () => {
-      try {
-        const [activeData, readyPickupData] = await Promise.all([
-          getActiveKitchenOrders(),
-          getReadyToPickupOrders(),
-        ]);
+  const loadOrders = useCallback(async () => {
+    // Gộp các lần gọi chồng nhau: đang tải thì chỉ đánh dấu tải lại 1 lần nữa
+    if (loadingRef.current) {
+      reloadQueuedRef.current = true;
+      return;
+    }
+    loadingRef.current = true;
 
-        if (isMounted) {
-          setOrders([...activeData, ...readyPickupData]);
-          setLoadError("");
-        }
-      } catch (error) {
-        console.error("Khong tai duoc danh sach order kitchen", error);
+    try {
+      const [activeData, readyPickupData] = await Promise.all([
+        getActiveKitchenOrders(),
+        getReadyToPickupOrders(),
+      ]);
 
-        if (isMounted) {
-          setLoadError(error?.message || "Khong tai duoc danh sach don hang");
-        }
+      if (isMountedRef.current) {
+        setOrders([...activeData, ...readyPickupData]);
+        setLoadError("");
       }
-    };
+    } catch (error) {
+      console.error("Khong tai duoc danh sach order kitchen", error);
 
-    const refreshActiveOrders = async () => {
-      try {
-        const [activeData, readyPickupData] = await Promise.all([
-          getActiveKitchenOrders(),
-          getReadyToPickupOrders(),
-        ]);
-
-        if (isMounted) {
-          setOrders([...activeData, ...readyPickupData]);
-          setLoadError("");
-        }
-      } catch (error) {
-        console.error("Khong tai duoc danh sach order kitchen", error);
-
-        if (isMounted) {
-          setLoadError(error?.message || "Khong tai duoc danh sach don hang");
-        }
+      if (isMountedRef.current) {
+        setLoadError(error?.message || "Khong tai duoc danh sach don hang");
       }
-    };
-
-    loadInitialOrders();
-
-    const interval = setInterval(refreshActiveOrders, 3000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+    } finally {
+      loadingRef.current = false;
+      if (reloadQueuedRef.current && isMountedRef.current) {
+        reloadQueuedRef.current = false;
+        loadOrders();
+      }
+    }
   }, []);
+
+  // Realtime: có event đơn hàng -> tải lại danh sách; reconnect -> tải bù
+  const { connected: socketConnected } = useOrderSocket({
+    onChange: loadOrders,
+    onReconnect: loadOrders,
+  });
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    loadOrders();
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [loadOrders]);
+
+  // Polling dự phòng: 3s khi mất socket, 30s khi socket đang kết nối
+  useEffect(() => {
+    const interval = setInterval(loadOrders, socketConnected ? 30000 : 3000);
+    return () => clearInterval(interval);
+  }, [loadOrders, socketConnected]);
 
   // ================= SCAN THẺ =================
   useEffect(() => {
